@@ -1,8 +1,8 @@
 # Reviews
 
-> **Phase owner:** Review (lifecycle spec §2 phase 6). **Lens group:** §3.6 *Review*. **Loop:** §5.5 *Review Loop*.
+> **Phase owner:** Review (lifecycle spec §2 phase 6). **Activity group:** §3.6 *Review*. **Loop:** §5.5 *Review Loop*.
 
-## Lenses Owned (in order)
+## Activities Owned (in order)
 
 `Self-Review` → `Code Review` → `Security Review?` → `Docs Review?` → `Decide`
 

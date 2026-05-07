@@ -1,6 +1,6 @@
 # Workflow (Branch, Worktree, Integration)
 
-> **Phase owner:** Integration (lifecycle spec §2 phase 7). **Lens group:** §3.7 *Integration*. **Invariants:** §10.
+> **Phase owner:** Integration (lifecycle spec §2 phase 7). **Activity group:** §3.7 *Integration*. **Invariants:** §10.
 
 This guide owns branch, worktree, delegation, and integration mechanics. Spec-driven rules and the definition of done live in `AGENTS.md`.
 
@@ -24,7 +24,7 @@ The repository supports the modes declared in `AGENTS.md` *Lifecycle Spec Confor
 - **single-plan parallel** — one plan, multiple worker branches; coordinator owns shared files. TODO: link to detailed reference if adopted.
 - **multi-plan parallel** — multiple plans in flight, each on its own worktree / branch. TODO: link to detailed reference if adopted.
 
-## Lenses Owned
+## Activities Owned
 
 `Re-validate` → `Resolve-Conflicts?` → `Merge` → `Post-Merge-Verify`
 
@@ -49,5 +49,5 @@ The repository supports the modes declared in `AGENTS.md` *Lifecycle Spec Confor
 ## Hand-Off
 
 - to **`RELEASES.md`** when the integrated change is release-ready
-- to **`ROADMAP.md`** *Sync* lens when active-work tracking needs updating
+- to **`ROADMAP.md`** *Sync* activity when active-work tracking needs updating
 - to **`ai/archive/`** when the plan is complete (move the plan file)

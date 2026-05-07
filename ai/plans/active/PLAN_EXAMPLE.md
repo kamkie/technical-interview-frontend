@@ -18,7 +18,7 @@
 
 - What will change: scaffold the repository against `ai/specs/APPLICATION_LIFECYCLE_SPEC.md` (§7 + §12 step 1).
 - Why it matters: gives every new contributor and AI agent the same lifecycle map.
-- How success will be measured: every required artifact (§7) exists; every lens (§3) has exactly one owner.
+- How success will be measured: every required artifact (§7) exists; every activity (§3) has exactly one owner.
 
 ## Scope
 
@@ -57,9 +57,9 @@
 
 ### Milestone 2: Scaffold `ai/` owner guides
 
-- goal: one owner guide per phase / lens group
+- goal: one owner guide per phase or activity group
 - deliverables: `ai/PLANNING.md`, `ai/EXECUTION.md`, `ai/PLAN_EXECUTION.md`, `ai/TESTING.md`, `ai/REVIEWS.md`, `ai/RELEASES.md`, `ai/WORKFLOW.md`, `ai/DOCUMENTATION.md`, `ai/ARCHITECTURE.md`, `ai/LEARNINGS.md`, `ai/CODE_STYLE.md`
-- validation checkpoint: every lens in spec §3 has exactly one owner guide
+- validation checkpoint: every activity in spec §3 has exactly one owner guide
 - commit checkpoint: one commit, message "scaffold: ai owner guides"
 
 ### Milestone 3: Scaffold templates and pinned spec
@@ -76,7 +76,7 @@
 ## Validation Plan
 
 - review-only validation (change class is *AI guidance change*).
-- spot-check: every artifact role from spec §7 maps to a file; every lens from spec §3 has an owner guide.
+- spot-check: every artifact role from spec §7 maps to a file; every activity from spec §3 has an owner guide.
 
 ## Testing Strategy
 

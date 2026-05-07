@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Roadmap** — owner of active-work tracking, sequencing, and current-cycle state (lifecycle spec §7, §2 phase 2 `Roadmap Intake`, lens group §3.2). Released history belongs in `CHANGELOG.md`.
+> **Roadmap** — owner of active-work tracking, sequencing, and current-cycle state (lifecycle spec §7, §2 phase 2 `Roadmap Intake`, activity group §3.2). Released history belongs in `CHANGELOG.md`.
 
 ## Current Project State
 
@@ -42,6 +42,6 @@ Items the repo does not yet cover (spec §12 step 9). Each gap has an owner and 
 
 ## Updating This File
 
-- `Sync` lens (spec §3.2, §3.11) is the cross-cutting trigger that routes here.
+- `Sync` activity (spec §3.2, §3.11) is the cross-cutting trigger that routes here.
 - Update on every phase transition of every active item.
 - When an item ships, move its entry from *Active Work* / *Recently Done* into `CHANGELOG.md` and archive its plan into `ai/archive/`.

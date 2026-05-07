@@ -1,6 +1,6 @@
 # Code Style
 
-> **Lens owner:** input to the `Code` lens (lifecycle spec §3.4). **Conditional descriptive guide:** load only when editing source files.
+> **Activity owner:** input to the `Code` activity (lifecycle spec §3.4). **Conditional descriptive guide:** load only when editing source files.
 
 Style rules consumed by Implementers. Keep this file short and enforceable; prefer formatter / linter configuration over prose.
 

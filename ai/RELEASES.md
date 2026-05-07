@@ -1,8 +1,8 @@
 # Releases
 
-> **Phase owner:** Release (lifecycle spec §2 phase 8). **Lens group:** §3.8 *Release*. Triggers `Rollback` and `Hotfix` (spec §6) co-route here.
+> **Phase owner:** Release (lifecycle spec §2 phase 8). **Activity group:** §3.8 *Release*. Triggers `Rollback` and `Hotfix` (spec §6) co-route here.
 
-## Lenses Owned (in order)
+## Activities Owned (in order)
 
 `Gate` → `Tag` → `Notes` → `Publish` → `Post-Release-Cleanup`
 

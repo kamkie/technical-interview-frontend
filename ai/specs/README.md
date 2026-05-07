@@ -9,7 +9,7 @@ Copy `ai/specs/APPLICATION_LIFECYCLE_SPEC.md` from the upstream source into this
 The pinned copy is **read-only from the repo's perspective**:
 
 - bump it deliberately, recording the new version and any rename map in `CHANGELOG.md`
-- breaking changes (renames of phases or lenses) require a coordinated update of every `ai/*.md` owner guide that names the renamed entity
+- breaking changes (renames of phases or activities) require a coordinated update of every `ai/*.md` owner guide that names the renamed entity
 
 ## Other Specs
 

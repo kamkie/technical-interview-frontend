@@ -1,6 +1,6 @@
 # Documentation Routing
 
-> **Lens owner:** `Docs` lens (lifecycle spec §3.4) and the `Docs-Routing` cross-cutting trigger (§6).
+> **Activity owner:** `Docs` activity (lifecycle spec §3.4) and the `Docs-Routing` cross-cutting trigger (§6).
 
 This guide tells the Implementer **which artifacts must move together** for each change-class. The summary table lives in `AGENTS.md` *Change-Class Table*; this file expands it.
 

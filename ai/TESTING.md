@@ -1,8 +1,8 @@
 # Testing
 
-> **Phase owner:** Testing (lifecycle spec §2 phase 5). **Lens group:** §3.5 *Testing And Verification*. **Loop:** §5.4 *Red-Green Loop*.
+> **Phase owner:** Testing (lifecycle spec §2 phase 5). **Activity group:** §3.5 *Testing And Verification*. **Loop:** §5.4 *Red-Green Loop*.
 
-## Lenses Owned (in order)
+## Activities Owned (in order)
 
 `Plan-Tests` → `Author-Tests` → `Run` → `Diagnose?` → `Fix?` → `Re-run` → `Record`
 

@@ -1,12 +1,12 @@
 # Planning
 
-> **Phase owner:** Planning (lifecycle spec §2 phase 3). **Lens group:** §3.3 *Design, Spec, And Planning*. **Loop:** §5.2 *Plan Loop*.
+> **Phase owner:** Planning (lifecycle spec §2 phase 3). **Activity group:** §3.3 *Design, Spec, And Planning*. **Loop:** §5.2 *Plan Loop*.
 
 ## Purpose
 
 Turn a roadmap item into a **decision-complete** plan that an Implementer can execute without re-deriving design choices.
 
-## Lenses Owned
+## Activities Owned
 
 In-order:
 

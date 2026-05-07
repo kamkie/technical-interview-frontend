@@ -1,6 +1,6 @@
 # Execution (Ad-Hoc / Single Milestone)
 
-> **Phase owner:** Implementation (lifecycle spec §2 phase 4). **Lens group:** §3.4 *Implementation*. **Loop:** §5.3 *Milestone Execution Loop* (single iteration).
+> **Phase owner:** Implementation (lifecycle spec §2 phase 4). **Activity group:** §3.4 *Implementation*. **Loop:** §5.3 *Milestone Execution Loop* (single iteration).
 
 Use this guide when:
 
@@ -9,7 +9,7 @@ Use this guide when:
 
 For multi-milestone execution, use `PLAN_EXECUTION.md` instead.
 
-## Lenses Owned (in order)
+## Activities Owned (in order)
 
 `Spec` → `Code` → `Docs` → `Run` → `Replan?` → `Self-Review` → `Code Review` → `Security Review?` → `Commit` → `Handoff`
 

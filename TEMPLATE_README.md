@@ -25,8 +25,8 @@ A minimal artifact set mapped to the **Required Artifact Set** in spec §7:
 
 Plus the spec's adoption-table stubs (§12 steps 5–7) inside `AGENTS.md`:
 
-- change-class table (`Docs` lens routing)
-- validation table (`Plan-Tests` / `Run` lens inputs)
+- change-class table (`Docs` activity routing)
+- validation table (`Plan-Tests` / `Run` activity inputs)
 - gate table (executable vs. named-approval per phase exit)
 - cross-cutting trigger map (§6)
 
@@ -38,8 +38,8 @@ Follow `APPLICATION_LIFECYCLE_SPEC.md` §12 *Adoption Guide*:
 2. Replace every `TODO:` marker with the repo's real value. Do not leave placeholders in committed files past the first cycle.
 3. Pin the lifecycle spec version in `AGENTS.md` (§16).
 4. Declare the conformance level in `AGENTS.md` (§13). Default for a new repo is **L1**.
-5. Map each lens in spec §3 to exactly one owner artifact below; if a lens has no owner, add one (do not silently drop it).
-6. Adopt lens labels (`[Code]`, `[Run]`, `[Replan?]`, …) inside owner-guide prose as the repo grows; this lifts conformance toward **L4 — Lens-Annotated**.
+5. Map each activity in spec §3 to exactly one owner artifact below; if an activity has no owner, add one (do not silently drop it).
+6. Adopt activity labels (`[Code]`, `[Run]`, `[Replan?]`, …) inside owner-guide prose as the repo grows; this lifts conformance toward **L4 — Activity-Tagged**.
 7. Record any spec gap as a roadmap entry with an owner (§12 step 9).
 
 ## Layout
@@ -54,20 +54,20 @@ Follow `APPLICATION_LIFECYCLE_SPEC.md` §12 *Adoption Guide*:
 ├── CONTRIBUTING.md            # Human-facing entry to the engineering rules
 └── ai/
     ├── ARCHITECTURE.md        # Architecture Snapshot (§7)
-    ├── CODE_STYLE.md          # Style rules consumed by the Code lens (§3.4)
+    ├── CODE_STYLE.md          # Style rules consumed by the Code activity (§3.4)
     ├── PLANNING.md            # Owner of Planning phase (§2 #3, §3.3, §5.2 Plan Loop)
     ├── EXECUTION.md           # Owner of ad-hoc Implementation (§3.4, §5.3 Milestone Loop)
     ├── PLAN_EXECUTION.md      # Owner of whole-plan execution (§5.3 Milestone Loop, multi-milestone)
     ├── TESTING.md             # Owner of Testing phase (§2 #5, §3.5, §5.4 Red-Green Loop)
     ├── REVIEWS.md             # Owner of Review phase (§2 #6, §3.6, §5.5 Review Loop)
     ├── RELEASES.md            # Owner of Release phase (§2 #8, §3.8)
-    ├── DOCUMENTATION.md       # Owner of `Docs` lens routing (§3.4) + change-class fan-out
+    ├── DOCUMENTATION.md       # Owner of `Docs` activity routing (§3.4) + change-class fan-out
     ├── WORKFLOW.md            # Branch / worktree / integration mechanics (§10)
     ├── LEARNINGS.md           # Learnings (§7, §3.11 Capture-Learning)
     ├── specs/
     │   └── APPLICATION_LIFECYCLE_SPEC.md  # pinned upstream spec
     ├── templates/
-    │   └── PLAN_TEMPLATE.md   # input to the `Decompose` / `Validate-Plan` lenses (§3.3)
+    │   └── PLAN_TEMPLATE.md   # input to the `Decompose` / `Validate-Plan` activities (§3.3)
     ├── plans/
     │   └── active/
     │       └── PLAN_EXAMPLE.md

@@ -19,7 +19,7 @@
 - branch and worktree invariants (spec §10)
 - the change-class, validation, and gate tables (spec §12 steps 5–7)
 - the cross-cutting trigger map (spec §6)
-- the lifecycle owner map (which `ai/` guide owns each phase / lens group)
+- the Phase Owner Map (which `ai/` guide owns each phase or activity group)
 
 Do not use this file for setup, IDE walkthroughs, or troubleshooting; those belong in `SETUP.md`.
 
@@ -63,9 +63,9 @@ Mirror of spec §8.1:
 | Learnings | `ai/LEARNINGS.md` | durable repo lessons |
 | Architecture Snapshot | `ai/ARCHITECTURE.md` | structural map |
 
-## Lifecycle Owner Map
+## Phase Owner Map
 
-Each phase / lens group has exactly one owner guide. Load `AGENTS.md` first, then add only the owner guide(s) matching the current task.
+Each phase or activity group has exactly one owner guide. Load `AGENTS.md` first, then add only the owner guide(s) matching the current task.
 
 | Lifecycle phase (spec §2) | Primary owner |
 | --- | --- |
@@ -88,7 +88,7 @@ Conditional descriptive guides (load only when the task touches them):
 - `ai/DOCUMENTATION.md` — contract-impacting changes
 - `ai/LEARNINGS.md` — recurring repo lessons
 
-## Change-Class Table (spec §12 step 5; consumed by the `Docs` lens)
+## Change-Class Table (spec §12 step 5; consumed by the `Docs` activity)
 
 For each change-class, list the artifacts that must move together.
 
@@ -142,13 +142,13 @@ Each trigger points to the artifact that owns it.
 | `Sync` | `ROADMAP.md` | any change affecting active-work tracking or contracts |
 | `Capture-Learning` | `ai/LEARNINGS.md` | recurring repo-wide lesson |
 | `Docs-Routing` | `ai/DOCUMENTATION.md` | change touches contract or maintainer-facing doc |
-| `Context-Hygiene` | `AGENTS.md` (rule below) | between every two lenses |
+| `Context-Hygiene` | `AGENTS.md` (rule below) | between every two activities |
 | `Rollback` | `ai/RELEASES.md` (+ deployment runbook **TODO**) | deployed behavior fails verification |
 | `Hotfix` | `ai/RELEASES.md` (+ **TODO: `ai/OPERATIONS.md`**) | production incident |
 
 ### Context Hygiene Rule
 
-Between any two lenses (spec §1 *Switch*), drop the prior working set before loading the next. Practical effects:
+Between any two activities (spec §1 *Switch*), drop the prior working set before loading the next. Practical effects:
 
 - close completed plans (move to `ai/archive/`)
 - summarize long investigations and discard the raw logs
@@ -186,7 +186,7 @@ The canonical local command entry-point is: **TODO: e.g. `./build.ps1`, `make`, 
 ## AI Instruction Load Policy
 
 - read `AGENTS.md` first
-- read only the owning AI guide for the current task (see *Lifecycle Owner Map*)
+- read only the owning AI guide for the current task (see *Phase Owner Map*)
 - read active `ai/plans/active/PLAN_*.md` only when planning, executing, verifying, or releasing that plan
 - read prompts / templates / detailed references / skill files / archived plans **only** when the task specifically needs them
 - do not bulk-load `ai/archive/`, `ai/templates/`, or any reference tree as standing context

@@ -18,7 +18,7 @@ For a single milestone or a tiny ad-hoc change, use `EXECUTION.md` instead.
    1. Run the plan-level validation listed in the plan's *Validation Plan* (may exceed any single milestone's check).
    2. Route to `REVIEWS.md` for full-diff review.
    3. Route to `WORKFLOW.md` for integration onto the integration branch.
-   4. Update `ROADMAP.md` (`Sync` lens).
+   4. Update `ROADMAP.md` (`Sync` activity).
    5. Move the plan to `ai/archive/` once integrated; release work continues in `RELEASES.md`.
 
 ## Milestone Boundaries
