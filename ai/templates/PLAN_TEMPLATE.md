@@ -9,7 +9,7 @@
 | Phase | Planning |
 | Status | Draft |
 | Roadmap entry | TODO: link to `ROADMAP.md` entry |
-| Request spec | TODO: link to `ai/specs/requests/YYYY-MM-DD-<slug>.md` |
+| Request spec | TODO: link to `ai/specs/requests/YYYY-MM-DD-<logical-task-slug>.md` |
 | Change class | TODO: row from `AGENTS.md` *Change-Class Table* |
 | Validation level | TODO: row from `AGENTS.md` *Validation Table* |
 | Workflow shape | TODO: `linear` (only currently declared workflow mode) |
@@ -119,7 +119,7 @@ For every delegated activity, create an `ai/templates/AGENT_HANDOFF_PACKET.md` p
 ## Required Content Checklist
 
 - [ ] what behavior is changing and why
-- [ ] which request spec captures the state-changing user input
+- [ ] which request spec captures the state-changing logical task
 - [ ] which `ROADMAP.md` entry tracks this plan
 - [ ] what is out of scope
 - [ ] which spec / contract artifacts define the behavior

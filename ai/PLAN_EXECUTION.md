@@ -19,7 +19,7 @@ At `M2`:
 
 ## Workflow
 
-1. **Request-Spec.** Create the request spec for the user input that starts or changes whole-plan execution using `ai/SPEC_DOCUMENTS.md`, or update that spec if it already exists for this same input.
+1. **Request-Spec.** Create or update the request spec for the logical task that starts or changes whole-plan execution using `ai/SPEC_DOCUMENTS.md`.
 2. **Load** the plan and only the owner guides referenced by its current milestone (context hygiene, `AGENTS.md` *Context Hygiene Rule*).
 3. Confirm the plan's *Multi-Agent Execution* section is filled. Use `M0: solo` when delegation does not add value.
 4. For each milestone, in order:
@@ -47,7 +47,7 @@ At `M2`:
 ## Done Criteria
 
 - every milestone deliverable in the plan is checked off
-- request spec reflects the final repository state for this user input
+- request spec reflects the final repository state for this logical task
 - every delegated activity has a handoff packet and result packet
 - plan-level validation passed and recorded
 - `ROADMAP.md` reflects post-change status

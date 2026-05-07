@@ -15,7 +15,7 @@
 `AGENTS.md` is the **Engineering Rules** artifact (spec §7). It owns:
 
 - spec-driven development rule (spec §8)
-- request-spec rule for repository-state-changing user inputs
+- request-spec rule for repository-state-changing logical tasks
 - truth priority (spec §8.1)
 - definition of done (spec §9)
 - branch and worktree invariants (spec §10)
@@ -30,7 +30,7 @@ Do not use this file for setup, IDE walkthroughs, or troubleshooting; those belo
 
 Mirror of spec §8:
 
-Repository extension: for every user input that will change repository state, create a request spec in `ai/specs/requests/` **before** other repository edits and keep it updated as the work progresses. Use `ai/SPEC_DOCUMENTS.md` for classification, naming, and minimum content.
+Repository extension: for any logical task that will change repository state, ensure a request spec exists in `ai/specs/requests/` **before** other repository edits and keep it updated as the work progresses. If a later prompt continues the same logical task, update the active request spec; if it changes topic, create a new request spec. Read-only research or clarification prompts do not require request-spec updates unless they change the intended repository state. Use `ai/SPEC_DOCUMENTS.md` for classification, topic-change detection, naming, and minimum content.
 
 1. Identify the behavior being changed.
 2. Identify the spec artifact that defines that behavior.
@@ -63,7 +63,7 @@ Mirror of spec §8.1:
 | Release History | `CHANGELOG.md` | shipped versions |
 | Engineering Rules | `AGENTS.md` (this file) | rules, lifecycle, DoD |
 | Plan | `ai/plans/active/PLAN_*.md` | per-task decision-complete handoff |
-| Request Spec | `ai/specs/requests/*.md` | per-user-input intended repository state, affected artifacts, and validation anchor |
+| Request Spec | `ai/specs/requests/*.md` | per-logical-task intended repository state, affected artifacts, and validation anchor |
 | Executable Spec | **TODO: e.g. `tests/`, `src/test/`** | behavior verified by automation |
 | Published Contract | **TODO: e.g. `docs/`, OpenAPI, schemas** | human-facing API/contract |
 | Phase Owner Guides | `ai/PLANNING.md`, `ai/EXECUTION.md`, … | per-phase guidance |
@@ -91,7 +91,7 @@ Each phase or activity group has exactly one owner guide. Load `AGENTS.md` first
 
 Conditional descriptive guides (load only when the task touches them):
 
-- `ai/SPEC_DOCUMENTS.md` — repository-state-changing user input classification and request-spec creation
+- `ai/SPEC_DOCUMENTS.md` — repository-state-changing prompt classification, logical-task tracking, and request-spec creation
 - `ai/ARCHITECTURE.md` — structural / package-ownership questions
 - `ai/CODE_STYLE.md` — code edits
 - `ai/DOCUMENTATION.md` — contract-impacting changes
@@ -101,7 +101,7 @@ Conditional descriptive guides (load only when the task touches them):
 
 For each change-class, list the artifacts that must move together.
 
-For every change-class that changes repository state, a request spec under `ai/specs/requests/` must be created before other repository edits and kept updated through handoff.
+For every change-class that changes repository state, a request spec under `ai/specs/requests/` must exist for the logical task before other repository edits and be kept updated through handoff.
 
 | Change class | Must update together | Notes |
 | --- | --- | --- |
@@ -149,7 +149,7 @@ Each trigger points to the artifact that owns it.
 | Trigger | Owner | When it fires |
 | --- | --- | --- |
 | `Replan` | `ai/PLANNING.md` | execution-time gap, contradicted decision, scope drift |
-| `Request-Spec` | `ai/SPEC_DOCUMENTS.md` | any user input whose execution changes repository state |
+| `Request-Spec` | `ai/SPEC_DOCUMENTS.md` | any prompt whose execution changes repository state or changes topic from the active request spec |
 | `Security Review` | `ai/REVIEWS.md` (+ **TODO: `ai/skills/security-best-practices/` or equivalent**) | auth, secrets, sensitive data, deploy/CI config, release path |
 | `Sync` | `ROADMAP.md` | any change affecting active-work tracking or contracts |
 | `Capture-Learning` | `ai/LEARNINGS.md` | recurring repo-wide lesson |
@@ -171,7 +171,7 @@ Between any two activities (spec §1 *Switch*), drop the prior working set befor
 Mirror of spec §9. A change is complete when **all** hold:
 
 - the intended behavior exists in an appropriate spec artifact
-- the request spec for the state-changing user input exists and reflects the final repository state
+- the request spec for the state-changing logical task exists and reflects the final repository state
 - implementation and specs agree
 - public contract artifacts are updated when behavior changed
 - required validation has passed and the result is recorded against the plan
@@ -210,7 +210,7 @@ The canonical local command entry-point is: **TODO: e.g. `./build.ps1`, `make`, 
 Detailed routing lives in `ai/DOCUMENTATION.md`. High-level rules:
 
 - public behavior changes update governing specs + implementation + published contract together
-- every repository-state-changing user input creates its request spec in `ai/specs/requests/` and keeps it updated through handoff
+- every repository-state-changing logical task has a request spec in `ai/specs/requests/` and keeps it updated through handoff
 - internal refactors preserve specs and contracts
 - setup / env changes route to `SETUP.md`
 - roadmap changes route to `ROADMAP.md`; released history goes in `CHANGELOG.md`

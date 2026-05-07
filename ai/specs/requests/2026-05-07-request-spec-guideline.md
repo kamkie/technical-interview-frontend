@@ -1,6 +1,6 @@
-# Request Spec: Repository-State-Changing User Input Guideline
+# Request Spec: Repository State Change Guideline
 
-> Request spec for the user input received on 2026-05-07. This is the durable spec record for the repository-state-changing request that adds the request-spec guideline.
+> Request spec for the logical task opened on 2026-05-07. This is the durable spec record for the repository-state-changing guideline task.
 
 ## Lifecycle
 
@@ -13,17 +13,21 @@
 | Related plan | N/A |
 | Owner | AI implementer |
 
-## User Input
+## Task Inputs
 
-Create an AI guideline that requires a spec document for each user input that changes repository state.
+- Initial input: create an AI guideline that requires a spec document for each user input that changes repository state.
+- Refinement: multiple prompts working on one logical task should update one spec file; a topic change in the same thread should create a new spec file; research-only or clarification-only prompts that do not change repository state should not be recorded.
 
 ## Intended Repository State
 
-- AI guidance defines what counts as a repository-state-changing user input.
-- AI agents must create a per-request spec document before making state-changing edits and keep it updated through handoff.
+- AI guidance defines what counts as a repository-state-changing prompt.
+- AI guidance defines one request spec per logical repository-state-changing task, not one spec per prompt.
+- AI agents update the active request spec when later prompts continue the same logical task and change repository state.
+- AI agents detect topic changes in the same thread and create a new request spec for the new logical task before state-changing edits.
+- AI agents do not record research-only, read-only, or clarification-only prompts that do not change repository state.
 - The request-spec location, naming, and minimum content are documented.
 - Existing lifecycle, planning, execution, and documentation routing guides point to the new rule without duplicating detailed workflow.
-- This request has its own request spec document.
+- This logical task has its own request spec document.
 
 ## Change Class
 
@@ -61,8 +65,8 @@ Review only. `AGENTS.md` marks AI guidance changes as requiring no executable va
 
 ## Validation Results
 
-- `git diff --check` passed.
-- Changed and untracked file trailing-whitespace check passed.
+- `git diff --check` passed after the logical-task refinement.
+- Changed and untracked file trailing-whitespace check passed after the logical-task refinement.
 
 ## Completion Checklist
 

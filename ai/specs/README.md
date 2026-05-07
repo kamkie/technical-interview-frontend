@@ -25,11 +25,11 @@ Defines optional multi-agent execution modes, activity delegation rules, handoff
 
 ## Request Specs
 
-`ai/specs/requests/*.md` holds one request spec per repository-state-changing user input. These files are required by `AGENTS.md` and governed by `ai/SPEC_DOCUMENTS.md`.
+`ai/specs/requests/*.md` holds one request spec per repository-state-changing logical task. These files are required by `AGENTS.md` and governed by `ai/SPEC_DOCUMENTS.md`.
 
 Request specs:
 
-- capture the intended repository state for the user input
+- capture the intended repository state for the logical task
 - name the change class, governing artifacts, affected files, and validation
 - do not replace executable specs, published contracts, plans, or roadmap tracking
-- should be updated when the active user input changes scope or validation results become known
+- should be updated when later state-changing prompts continue the same logical task and change scope, affected artifacts, or validation results

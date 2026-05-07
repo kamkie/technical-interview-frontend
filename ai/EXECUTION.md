@@ -27,7 +27,7 @@ The Coordinator must create `ai/templates/AGENT_HANDOFF_PACKET.md` before delega
 
 ## Workflow
 
-1. **Request-Spec.** Create the request spec for the state-changing user input using `ai/SPEC_DOCUMENTS.md`, or update that spec if it already exists for this same input.
+1. **Request-Spec.** Create or update the request spec for the state-changing logical task using `ai/SPEC_DOCUMENTS.md`.
 2. **Spec.** Confirm the spec artifact named by the plan (or by the change-class table) covers the intended behavior. If not, update it first (spec §8).
 3. **Code.** Make the smallest change that satisfies the spec. Follow `CODE_STYLE.md`. Touch only files named in the milestone *Owned files* or delegated Write Scope.
 4. **Docs.** Apply the routing in `DOCUMENTATION.md` for the change-class. Update contracts and AI guides in the same change when required.
@@ -41,7 +41,7 @@ The Coordinator must create `ai/templates/AGENT_HANDOFF_PACKET.md` before delega
 ## Done Criteria
 
 - validation passed and recorded in the plan
-- request spec reflects the final repository state for this user input
+- request spec reflects the final repository state for this logical task
 - delegated work has a completed Agent Result when `M2` was used
 - contract / docs updates landed in the same change
 - branch is in a state ready for `WORKFLOW.md` integration steps

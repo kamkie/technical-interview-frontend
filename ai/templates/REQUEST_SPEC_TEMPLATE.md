@@ -1,6 +1,6 @@
 # Request Spec: <title>
 
-> Created for a repository-state-changing user input. See `ai/SPEC_DOCUMENTS.md`.
+> Created for a repository-state-changing logical task. See `ai/SPEC_DOCUMENTS.md`.
 
 ## Lifecycle
 
@@ -13,9 +13,9 @@
 | Related plan | TODO: `ai/plans/active/PLAN_*.md` or N/A |
 | Owner | TODO |
 
-## User Input
+## Task Inputs
 
-TODO: quote or concise paraphrase of the state-changing user input.
+TODO: quote or concise paraphrase of state-changing prompt(s) in this logical task. Do not record read-only research or clarification-only prompts.
 
 ## Intended Repository State
 
