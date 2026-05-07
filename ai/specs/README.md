@@ -18,3 +18,7 @@ Add domain or contract specs here when they are not better expressed as executab
 - name the behavior it owns
 - name the artifacts that realize it
 - be referenced by at least one row in `AGENTS.md` *Authoritative Repository Artifacts* or *Change-Class Table*
+
+### MULTI_AGENT_EXECUTION_SPEC.md
+
+Defines optional multi-agent execution modes, activity delegation rules, handoff packets, agent result contracts, integration discipline, and skill usage for coding work.

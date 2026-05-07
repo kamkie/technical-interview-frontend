@@ -8,6 +8,7 @@
 - Pinned spec version: **TODO: e.g. `1.0.0`** (see spec §16).
 - Declared conformance level: **TODO: `L1` | `L2` | `L3` | `L4`** (see spec §13). Default for a new repo is `L1`.
 - Workflow modes supported: **TODO: e.g. `linear`, `single-plan parallel`, `multi-plan parallel`** (see spec §12 step 3 and `ai/WORKFLOW.md`).
+- Multi-agent execution level: **TODO: `M0` | `M1` | `M2` | `M3` | `M4`** (see `ai/specs/MULTI_AGENT_EXECUTION_SPEC.md` §4).
 
 ## Role Of This File
 
@@ -62,6 +63,7 @@ Mirror of spec §8.1:
 | Phase Owner Guides | `ai/PLANNING.md`, `ai/EXECUTION.md`, … | per-phase guidance |
 | Learnings | `ai/LEARNINGS.md` | durable repo lessons |
 | Architecture Snapshot | `ai/ARCHITECTURE.md` | structural map |
+| Multi-Agent Execution Spec | `ai/specs/MULTI_AGENT_EXECUTION_SPEC.md` | optional delegation modes, write scopes, handoff packets, and agent result contracts |
 
 ## Phase Owner Map
 
