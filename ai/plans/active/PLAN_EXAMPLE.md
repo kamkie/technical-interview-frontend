@@ -12,6 +12,7 @@
 | Change class | AI guidance change |
 | Validation level | none (review only) |
 | Workflow shape | linear |
+| Multi-agent mode | `M0: solo` |
 | Owner | TODO |
 
 ## Summary
@@ -40,6 +41,7 @@
 
 - Default conformance level is `L1 — Spec-Driven Core` until the repo gains release / ops capability.
 - Default workflow shape is `linear`.
+- Default multi-agent mode is `M0: solo` for this example plan; the repository may support `M2: bounded-worker` for real plans with clear Write Scopes.
 - Integration branch is `main` unless the user picks otherwise.
 
 ## Affected Artifacts
@@ -64,9 +66,20 @@
 
 ### Milestone 3: Scaffold templates and pinned spec
 
-- goal: `ai/templates/PLAN_TEMPLATE.md`, `ai/specs/APPLICATION_LIFECYCLE_SPEC.md` (pinned), `ai/archive/` placeholder
+- goal: `ai/templates/PLAN_TEMPLATE.md`, `ai/templates/AGENT_HANDOFF_PACKET.md`, `ai/templates/AGENT_RESULT.md`, `ai/specs/APPLICATION_LIFECYCLE_SPEC.md` (pinned), optional multi-agent execution spec, `ai/archive/` placeholder
 - validation checkpoint: a new plan can be created from the template without manual section invention
 - commit checkpoint: one commit, message "scaffold: plan template and pinned lifecycle spec"
+
+## Multi-Agent Execution
+
+- Mode: `M0: solo`
+- Coordinator: plan owner
+- Agents: none
+- Write-scope map: N/A
+- Integration order: N/A
+- Shared-risk areas: N/A
+- Required independent reviews: review-only validation
+- Final validation: artifact role and owner-guide spot-check
 
 ## Edge Cases And Failure Modes
 
@@ -101,7 +114,10 @@
 - [x] edge cases
 - [x] requirement gaps and fallbacks
 - [x] workflow shape
+- [x] multi-agent mode
 - [x] coordinator-owned files (none — linear shape)
+- [x] write-scope map (N/A — solo)
+- [x] handoff/result packets (N/A — solo)
 - [x] context per milestone
 - [x] artifacts that must move
 - [x] testing strategy (N/A justified)

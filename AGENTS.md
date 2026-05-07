@@ -7,8 +7,8 @@
 - This repository conforms to **`ai/specs/APPLICATION_LIFECYCLE_SPEC.md`**.
 - Pinned spec version: **TODO: e.g. `1.0.0`** (see spec §16).
 - Declared conformance level: **TODO: `L1` | `L2` | `L3` | `L4`** (see spec §13). Default for a new repo is `L1`.
-- Workflow modes supported: **TODO: e.g. `linear`, `single-plan parallel`, `multi-plan parallel`** (see spec §12 step 3 and `ai/WORKFLOW.md`).
-- Multi-agent execution level: **TODO: `M0` | `M1` | `M2` | `M3` | `M4`** (see `ai/specs/MULTI_AGENT_EXECUTION_SPEC.md` §4).
+- Workflow modes supported: **`linear`** (see spec §12 step 3 and `ai/WORKFLOW.md`).
+- Multi-agent execution level: **`M2: bounded-worker`** (see `ai/specs/MULTI_AGENT_EXECUTION_SPEC.md` §4).
 
 ## Role Of This File
 
@@ -20,6 +20,7 @@
 - branch and worktree invariants (spec §10)
 - the change-class, validation, and gate tables (spec §12 steps 5–7)
 - the cross-cutting trigger map (spec §6)
+- the multi-agent execution level (`ai/specs/MULTI_AGENT_EXECUTION_SPEC.md`)
 - the Phase Owner Map (which `ai/` guide owns each phase or activity group)
 
 Do not use this file for setup, IDE walkthroughs, or troubleshooting; those belong in `SETUP.md`.

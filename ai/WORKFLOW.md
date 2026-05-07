@@ -20,9 +20,25 @@ TODO: pick one and document it.
 
 The repository supports the modes declared in `AGENTS.md` *Lifecycle Spec Conformance*:
 
-- **linear** — one branch, one plan at a time. Default for L1.
-- **single-plan parallel** — one plan, multiple worker branches; coordinator owns shared files. TODO: link to detailed reference if adopted.
-- **multi-plan parallel** — multiple plans in flight, each on its own worktree / branch. TODO: link to detailed reference if adopted.
+- **linear** — one branch, one plan at a time. This is the current supported workflow mode.
+- **single-plan parallel** — not declared. Requires `M3: parallel-sliced` or higher before use.
+- **multi-plan parallel** — not declared. Requires repository-specific worktree / branch ownership rules before use.
+
+## Multi-Agent Mechanics
+
+This repository declares `M2: bounded-worker` in `AGENTS.md`.
+
+Rules:
+
+- the Coordinator owns integration, final validation, and user-facing status
+- a Worker Agent may edit only the Write Scope named in its handoff packet
+- shared files are Coordinator-owned unless the handoff packet assigns them explicitly
+- a delegated result must be reviewed before integration
+- integrate one Worker Agent result at a time
+- run the smallest relevant validation after integrating a Worker Agent result
+- route to `Replan?` when two agents need the same Write Scope or when integration requires a behavior decision
+
+`M2` does not allow multiple writing workers to run in parallel. Read-only review or verification sidecars are allowed when they do not edit files or block the active worker.
 
 ## Activities Owned
 
@@ -39,6 +55,7 @@ The repository supports the modes declared in `AGENTS.md` *Lifecycle Spec Confor
 
 - keep side-branch / worktree implementation isolated until the planned scope is complete and locally validated
 - do not cut releases from unintegrated side branches, worktrees, detached tips, or non-integrated changes
+- for `M2` delegation, the handoff packet must name the branch, worktree, or sandbox that contains the worker result
 
 ## Pull Requests
 

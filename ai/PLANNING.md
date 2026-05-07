@@ -13,7 +13,7 @@ In-order:
 - `Frame` — restate the actual change requested; in/out of scope.
 - `Design` — decide product or contract behavior.
 - `Spec` — record the decided behavior in the governing executable or published spec artifact (or note that this plan will create it).
-- `Decompose` — split into commit-sized milestone checkpoints; pick a workflow mode (see `WORKFLOW.md`).
+- `Decompose` — split into commit-sized milestone checkpoints; pick a workflow mode and multi-agent mode (see `WORKFLOW.md`).
 - `Validate-Plan` — run the readiness checklist below.
 - `Sync` — cross-cut to `ROADMAP.md`.
 - `Replan?` — re-enter when execution disagrees with locked decisions.
@@ -35,7 +35,9 @@ A plan is **decision-complete** when the *Required Content Checklist* in `ai/tem
 - each milestone has: goal, owned files, behavior to preserve, deliverables, validation checkpoint, commit checkpoint
 - change-class is named (matches a row in `AGENTS.md` *Change-Class Table*)
 - validation level is named (matches a row in `AGENTS.md` *Validation Table*)
-- workflow shape is named (`linear`, `single-plan parallel`, `multi-plan parallel`)
+- workflow shape is named; current supported value is `linear`
+- multi-agent mode is named; current supported maximum is `M2: bounded-worker`
+- delegated activities have explicit Write Scopes, stop conditions, and required validation when `M1` or higher is used
 - every material question is either resolved or explicitly blocking with a fallback
 
 ## Replan Trigger

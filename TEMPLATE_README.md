@@ -22,6 +22,7 @@ A minimal artifact set mapped to the **Required Artifact Set** in spec §7:
 | Learnings | `ai/LEARNINGS.md` |
 | Architecture Snapshot | `ai/ARCHITECTURE.md` |
 | Lifecycle Spec (pinned) | `ai/specs/APPLICATION_LIFECYCLE_SPEC.md` (copy from upstream, pin version) |
+| Multi-Agent Execution Spec | `ai/specs/MULTI_AGENT_EXECUTION_SPEC.md` |
 
 Plus the spec's adoption-table stubs (§12 steps 5–7) inside `AGENTS.md`:
 
@@ -29,6 +30,7 @@ Plus the spec's adoption-table stubs (§12 steps 5–7) inside `AGENTS.md`:
 - validation table (`Plan-Tests` / `Run` activity inputs)
 - gate table (executable vs. named-approval per phase exit)
 - cross-cutting trigger map (§6)
+- multi-agent execution level (`M0`–`M4`) and handoff/result templates
 
 ## How To Adopt
 
@@ -40,7 +42,8 @@ Follow `APPLICATION_LIFECYCLE_SPEC.md` §12 *Adoption Guide*:
 4. Declare the conformance level in `AGENTS.md` (§13). Default for a new repo is **L1**.
 5. Map each activity in spec §3 to exactly one owner artifact below; if an activity has no owner, add one (do not silently drop it).
 6. Adopt activity labels (`[Code]`, `[Run]`, `[Replan?]`, …) inside owner-guide prose as the repo grows; this lifts conformance toward **L4 — Activity-Tagged**.
-7. Record any spec gap as a roadmap entry with an owner (§12 step 9).
+7. Declare the multi-agent execution level in `AGENTS.md`. Default to **M2 — bounded-worker** only when the repo can enforce handoff packets, write scopes, and agent result review.
+8. Record any spec gap as a roadmap entry with an owner (§12 step 9).
 
 ## Layout
 
@@ -65,9 +68,12 @@ Follow `APPLICATION_LIFECYCLE_SPEC.md` §12 *Adoption Guide*:
     ├── WORKFLOW.md            # Branch / worktree / integration mechanics (§10)
     ├── LEARNINGS.md           # Learnings (§7, §3.11 Capture-Learning)
     ├── specs/
-    │   └── APPLICATION_LIFECYCLE_SPEC.md  # pinned upstream spec
+    │   ├── APPLICATION_LIFECYCLE_SPEC.md  # pinned upstream spec
+    │   └── MULTI_AGENT_EXECUTION_SPEC.md  # optional delegation spec
     ├── templates/
-    │   └── PLAN_TEMPLATE.md   # input to the `Decompose` / `Validate-Plan` activities (§3.3)
+    │   ├── PLAN_TEMPLATE.md   # input to the `Decompose` / `Validate-Plan` activities (§3.3)
+    │   ├── AGENT_HANDOFF_PACKET.md
+    │   └── AGENT_RESULT.md
     ├── plans/
     │   └── active/
     │       └── PLAN_EXAMPLE.md

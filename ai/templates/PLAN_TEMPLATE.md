@@ -11,7 +11,8 @@
 | Roadmap entry | TODO: link to `ROADMAP.md` entry |
 | Change class | TODO: row from `AGENTS.md` *Change-Class Table* |
 | Validation level | TODO: row from `AGENTS.md` *Validation Table* |
-| Workflow shape | TODO: `linear` \| `single-plan parallel` \| `multi-plan parallel` |
+| Workflow shape | TODO: `linear` (only currently declared workflow mode) |
+| Multi-agent mode | TODO: `M0: solo` \| `M1: sidecar-readonly` \| `M2: bounded-worker` |
 | Owner | TODO |
 
 ## Summary
@@ -70,6 +71,19 @@
 
 - …
 
+## Multi-Agent Execution
+
+- Mode: TODO: `M0: solo` unless a bounded delegated activity is useful; max supported level is `M2: bounded-worker`
+- Coordinator:
+- Agents:
+- Write-scope map:
+- Integration order:
+- Shared-risk areas:
+- Required independent reviews:
+- Final validation:
+
+For every delegated activity, create an `ai/templates/AGENT_HANDOFF_PACKET.md` packet before work starts. Each delegated agent must return `ai/templates/AGENT_RESULT.md` before integration.
+
 ## Edge Cases And Failure Modes
 
 - important error cases
@@ -111,7 +125,10 @@
 - [ ] what edge cases / failure modes / migration / rollout / benchmark risks matter
 - [ ] what requirement gaps still need input and whether they block planning
 - [ ] which workflow shape fits and why
+- [ ] which multi-agent mode fits and why
 - [ ] which files stay coordinator-owned if delegation is realistic
+- [ ] write-scope map exists for every delegated activity
+- [ ] delegated activities have handoff and result packets when `M1` or higher is used
 - [ ] context required per milestone
 - [ ] which tests / docs / contracts / AI guides must move
 - [ ] testing strategy (and N/A layers for docs-only or AI-guidance-only plans)
