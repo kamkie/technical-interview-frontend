@@ -34,7 +34,7 @@ The Coordinator must create `ai/templates/AGENT_HANDOFF_PACKET.md` before delega
 3. **Spec.** Confirm the spec artifact named by the milestone record, plan, request spec, or change-class table covers the intended behavior. If not, update it first (spec §8).
 4. **Code.** Make the smallest change that satisfies the spec. Follow `CODE_STYLE.md`. Touch only files named in the active milestone's owned files or delegated Write Scope.
 5. **Docs.** Apply the routing in `DOCUMENTATION.md` for the change-class. Update contracts and AI guides in the same change when required.
-6. **Run.** Execute the milestone's validation checkpoint and the smallest sufficient validation from `AGENTS.md` *Validation Table*. Detailed test policy lives in `TESTING.md`.
+6. **Run.** Execute the milestone's validation checkpoint and the smallest sufficient validation from `AGENTS.md` *Validation Table*. Capture material command output under repo-root `temp/` per `AGENTS.md` *Console Output Capture*. Detailed test policy lives in `TESTING.md`.
 7. **Replan?** If reality contradicts a locked decision or new design surfaces, stop and route to `PLANNING.md` *Replan Trigger*.
 8. **Self-Review.** Run the self-review pass in `REVIEWS.md`.
 9. **Security Review?** If any *Security Review* trigger fired (see `AGENTS.md` *Cross-Cutting Trigger Map*), route to `REVIEWS.md` *Security Review*.

@@ -199,6 +199,15 @@ See `SETUP.md` for setup walkthroughs and troubleshooting.
 
 The canonical local command entry-point is: **TODO: e.g. `./build.ps1`, `make`, `npm`, `pnpm`, `cargo`, `go`, `pytest`**.
 
+### Console Output Capture
+
+For repository-state-changing tasks, capture material AI-run command output in repo-root `temp/`, grouped by logical task slug (for example `temp/<YYYY-MM-DD>-<task-slug>/`). This includes validation, build, test, lint, diagnostic, and other command output used as evidence for decisions or handoff.
+
+- `temp/` is git-ignored and must not be committed.
+- Use tracked plans or request specs for durable validation summaries; use `temp/` only for transient raw logs.
+- Summarize relevant output in the user-facing handoff instead of relying on ignored files as the only record.
+- Do not write secrets or sensitive data into `temp/`; redact or avoid capture when needed.
+
 ## AI Instruction Load Policy
 
 - read `AGENTS.md` first
