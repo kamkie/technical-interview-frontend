@@ -31,6 +31,17 @@ TODO: quote or concise paraphrase of state-changing prompt(s) in this logical ta
 
 - TODO: files or directories expected to change
 
+## Ad-Hoc Milestone Record
+
+Fill this section when the task changes repository state and no approved plan supplies a milestone. Use N/A only when `Related plan` names the plan milestone.
+
+- Goal: TODO
+- Owned files or packages: TODO
+- Behavior to preserve: TODO
+- Exact deliverables: TODO
+- Validation checkpoint: TODO
+- Commit checkpoint: TODO
+
 ## Out Of Scope
 
 - TODO: explicit non-goals
@@ -47,6 +58,7 @@ TODO: quote or concise paraphrase of state-changing prompt(s) in this logical ta
 ## Completion Checklist
 
 - [ ] request captured before state-changing edits
+- [ ] ad-hoc milestone record filled, or approved plan milestone linked
 - [ ] governing specs / contracts updated first when behavior changes
 - [ ] implementation and docs match the requested state
 - [ ] required validation completed or explicitly marked N/A

@@ -9,9 +9,11 @@ Use this guide when:
 
 For multi-milestone execution, use `PLAN_EXECUTION.md` instead.
 
+Ad-hoc work is not milestone-free work. It is a single milestone whose record lives in the request spec when no approved plan exists.
+
 ## Activities Owned (in order)
 
-`Request-Spec` → `Spec` → `Code` → `Docs` → `Run` → `Replan?` → `Self-Review` → `Code Review` → `Security Review?` → `Commit` → `Handoff`
+`Request-Spec` → `Milestone-Record` → `Spec` → `Code` → `Docs` → `Run` → `Replan?` → `Self-Review` → `Code Review` → `Security Review?` → `Commit` → `Handoff`
 
 ## Multi-Agent Use
 
@@ -28,19 +30,21 @@ The Coordinator must create `ai/templates/AGENT_HANDOFF_PACKET.md` before delega
 ## Workflow
 
 1. **Request-Spec.** Create or update the request spec for the state-changing logical task using `ai/SPEC_DOCUMENTS.md`.
-2. **Spec.** Confirm the spec artifact named by the plan (or by the change-class table) covers the intended behavior. If not, update it first (spec §8).
-3. **Code.** Make the smallest change that satisfies the spec. Follow `CODE_STYLE.md`. Touch only files named in the milestone *Owned files* or delegated Write Scope.
-4. **Docs.** Apply the routing in `DOCUMENTATION.md` for the change-class. Update contracts and AI guides in the same change when required.
-5. **Run.** Execute the smallest sufficient validation from `AGENTS.md` *Validation Table*. Detailed test policy lives in `TESTING.md`.
-6. **Replan?** If reality contradicts a locked decision or new design surfaces, stop and route to `PLANNING.md` *Replan Trigger*.
-7. **Self-Review.** Run the self-review pass in `REVIEWS.md`.
-8. **Security Review?** If any *Security Review* trigger fired (see `AGENTS.md` *Cross-Cutting Trigger Map*), route to `REVIEWS.md` *Security Review*.
-9. **Commit.** One commit per milestone unless the plan says otherwise. Update the plan's *Validation Results* in the same commit.
-10. **Handoff.** Report status, blockers, and any required push or PR (`WORKFLOW.md`).
+2. **Milestone-Record.** Use the approved plan's milestone when one exists. For ad-hoc work, fill the request spec's single-milestone record before code edits: goal, owned files, behavior to preserve, deliverables, validation checkpoint, and commit checkpoint.
+3. **Spec.** Confirm the spec artifact named by the milestone record, plan, request spec, or change-class table covers the intended behavior. If not, update it first (spec §8).
+4. **Code.** Make the smallest change that satisfies the spec. Follow `CODE_STYLE.md`. Touch only files named in the active milestone's owned files or delegated Write Scope.
+5. **Docs.** Apply the routing in `DOCUMENTATION.md` for the change-class. Update contracts and AI guides in the same change when required.
+6. **Run.** Execute the milestone's validation checkpoint and the smallest sufficient validation from `AGENTS.md` *Validation Table*. Detailed test policy lives in `TESTING.md`.
+7. **Replan?** If reality contradicts a locked decision or new design surfaces, stop and route to `PLANNING.md` *Replan Trigger*.
+8. **Self-Review.** Run the self-review pass in `REVIEWS.md`.
+9. **Security Review?** If any *Security Review* trigger fired (see `AGENTS.md` *Cross-Cutting Trigger Map*), route to `REVIEWS.md` *Security Review*.
+10. **Commit.** One commit per milestone unless the plan says otherwise. Update the plan's *Validation Results*, or the request spec's *Validation Results* for ad-hoc work, in the same commit.
+11. **Handoff.** Report status, blockers, and any required push or PR (`WORKFLOW.md`).
 
 ## Done Criteria
 
-- validation passed and recorded in the plan
+- validation passed and recorded in the plan, or in the request spec when no plan exists
+- active milestone record is complete before implementation
 - request spec reflects the final repository state for this logical task
 - delegated work has a completed Agent Result when `M2` was used
 - contract / docs updates landed in the same change

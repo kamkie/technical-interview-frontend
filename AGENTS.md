@@ -103,6 +103,8 @@ For each change-class, list the artifacts that must move together.
 
 For every change-class that changes repository state, a request spec under `ai/specs/requests/` must exist for the logical task before other repository edits and be kept updated through handoff.
 
+Ad-hoc repository-state-changing tasks still execute as a single milestone. If no approved plan supplies milestone fields, the request spec must record the ad-hoc milestone before implementation: goal, owned files, behavior to preserve, deliverables, validation checkpoint, and commit checkpoint.
+
 | Change class | Must update together | Notes |
 | --- | --- | --- |
 | Public behavior change | governing spec, implementation, executable spec (tests), published contract, `CHANGELOG.md` (when released), `ROADMAP.md` entry | breaking changes also bump pinned version |
@@ -172,9 +174,10 @@ Mirror of spec §9. A change is complete when **all** hold:
 
 - the intended behavior exists in an appropriate spec artifact
 - the request spec for the state-changing logical task exists and reflects the final repository state
+- ad-hoc work has a single-milestone record in the request spec when no approved plan supplies one
 - implementation and specs agree
 - public contract artifacts are updated when behavior changed
-- required validation has passed and the result is recorded against the plan
+- required validation has passed and the result is recorded against the plan, or against the request spec for ad-hoc work without a plan
 - the change has landed on the integration branch (or, when run from a side branch, has been pushed and either merged or proposed via pull request)
 - the active-work tracking entry in `ROADMAP.md` reflects the post-change state
 - if released, the release artifact is published and notes are written

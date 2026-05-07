@@ -57,15 +57,29 @@ Every request spec must include:
 - validation required by `AGENTS.md`
 - completion checklist
 
+## Ad-Hoc Milestone Record
+
+When a repository-state-changing task skips a full plan, the request spec is also the single-milestone record. Fill these fields before implementation:
+
+- goal
+- owned files or packages
+- behavior to preserve
+- exact deliverables
+- validation checkpoint
+- commit checkpoint
+
+If an approved plan already supplies the milestone, link that plan from the request spec instead of duplicating the milestone fields.
+
 ## Workflow
 
 1. Classify whether the prompt is repository-state-changing.
 2. If it is not state-changing, do not create or update a request spec.
 3. If it is state-changing, decide whether it continues the active logical task or changes topic.
 4. Create a request spec for a new logical task, or update the active request spec for the same logical task, before other repository edits.
-5. Keep the request spec aligned when scope changes, affected artifacts change, validation changes, or validation results are known.
-6. Apply the usual spec-driven rule: update governing executable specs or published contracts before implementation when behavior changes.
-7. At handoff, make sure the request spec describes the final repository state.
+5. For ad-hoc work without an approved plan, fill the request spec's single-milestone record before implementation.
+6. Keep the request spec aligned when scope changes, affected artifacts change, validation changes, or validation results are known.
+7. Apply the usual spec-driven rule: update governing executable specs or published contracts before implementation when behavior changes.
+8. At handoff, make sure the request spec describes the final repository state.
 
 ## Exemptions
 
