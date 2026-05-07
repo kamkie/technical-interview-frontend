@@ -52,6 +52,7 @@ Move together:
 
 - the owning `ai/*.md`
 - `AGENTS.md` only when repo-level AI rules or document ownership change
+- the request spec required by `ai/SPEC_DOCUMENTS.md` for state-changing AI guidance edits
 
 ## Ownership Of Common Topics
 
@@ -60,6 +61,7 @@ When the same topic could land in two places, this table picks the owner.
 | Topic | Owner |
 | --- | --- |
 | Spec-driven rule, DoD, branch invariants | `AGENTS.md` |
+| Request spec documents | `ai/SPEC_DOCUMENTS.md` |
 | Lifecycle spec | `ai/specs/APPLICATION_LIFECYCLE_SPEC.md` |
 | Per-phase workflow | the matching `ai/<PHASE>.md` |
 | Local commands | `SETUP.md` (canonical) + `AGENTS.md` (one-line entry-point) |
@@ -73,5 +75,6 @@ When the same topic could land in two places, this table picks the owner.
 
 - duplicating setup steps across `README.md`, `SETUP.md`, and `AGENTS.md`
 - adding rules to `AGENTS.md` that are owned by an `ai/*.md` guide
+- making repository-state-changing edits before the request spec exists
 - updating an AI guide without updating the contract artifact when behavior changed
 - writing release notes in `ROADMAP.md` instead of `CHANGELOG.md`

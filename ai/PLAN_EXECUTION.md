@@ -19,17 +19,18 @@ At `M2`:
 
 ## Workflow
 
-1. **Load** the plan and only the owner guides referenced by its current milestone (context hygiene, `AGENTS.md` *Context Hygiene Rule*).
-2. Confirm the plan's *Multi-Agent Execution* section is filled. Use `M0: solo` when delegation does not add value.
-3. For each milestone, in order:
+1. **Request-Spec.** Create the request spec for the user input that starts or changes whole-plan execution using `ai/SPEC_DOCUMENTS.md`, or update that spec if it already exists for this same input.
+2. **Load** the plan and only the owner guides referenced by its current milestone (context hygiene, `AGENTS.md` *Context Hygiene Rule*).
+3. Confirm the plan's *Multi-Agent Execution* section is filled. Use `M0: solo` when delegation does not add value.
+4. For each milestone, in order:
    1. If the milestone delegates work, create an `ai/templates/AGENT_HANDOFF_PACKET.md` packet with the exact Write Scope.
    2. Run the milestone through the `EXECUTION.md` workflow.
    3. Require `ai/templates/AGENT_RESULT.md` from any delegated agent before accepting its output.
    4. Review the result against the Write Scope, integrate it, and run the smallest relevant validation.
    5. Tick the milestone in the plan; record validation outcome in *Validation Results*.
    6. Drop the milestone's working set before loading the next.
-4. **Replan?** if a milestone failure cannot be absorbed locally — route to `PLANNING.md`.
-5. After the final milestone:
+5. **Replan?** if a milestone failure cannot be absorbed locally — route to `PLANNING.md`.
+6. After the final milestone:
    1. Run the plan-level validation listed in the plan's *Validation Plan* (may exceed any single milestone's check).
    2. Route to `REVIEWS.md` for full-diff review.
    3. Route to `WORKFLOW.md` for integration onto the integration branch.
@@ -46,6 +47,7 @@ At `M2`:
 ## Done Criteria
 
 - every milestone deliverable in the plan is checked off
+- request spec reflects the final repository state for this user input
 - every delegated activity has a handoff packet and result packet
 - plan-level validation passed and recorded
 - `ROADMAP.md` reflects post-change status

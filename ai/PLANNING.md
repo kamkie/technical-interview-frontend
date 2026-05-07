@@ -10,6 +10,7 @@ Turn a roadmap item into a **decision-complete** plan that an Implementer can ex
 
 In-order:
 
+- `Request-Spec` — capture the state-changing user input in `ai/specs/requests/` before planning edits.
 - `Frame` — restate the actual change requested; in/out of scope.
 - `Design` — decide product or contract behavior.
 - `Spec` — record the decided behavior in the governing executable or published spec artifact (or note that this plan will create it).
@@ -20,17 +21,19 @@ In-order:
 
 ## Workflow
 
-1. Pick the roadmap item from `ROADMAP.md` *Up Next* (or *Active Work* if already in flight).
-2. Create `ai/plans/active/PLAN_<short-title>.md` from `ai/templates/PLAN_TEMPLATE.md`.
-3. Fill the plan top-down. Stop and ask the user when a *material* requirement gap exists; record fallbacks for non-material gaps as locked assumptions.
-4. Run `Validate-Plan` (checklist below). Iterate until it passes.
-5. Update `ROADMAP.md`: move the item to *Active Work* with status `Planning` → `Implementation` once approved.
-6. Hand off to `EXECUTION.md` (single milestone) or `PLAN_EXECUTION.md` (whole plan).
+1. Create the request spec for the state-changing user input using `ai/SPEC_DOCUMENTS.md`, or update that spec if it already exists for this same input.
+2. Pick the roadmap item from `ROADMAP.md` *Up Next* (or *Active Work* if already in flight).
+3. Create `ai/plans/active/PLAN_<short-title>.md` from `ai/templates/PLAN_TEMPLATE.md`.
+4. Fill the plan top-down. Stop and ask the user when a *material* requirement gap exists; record fallbacks for non-material gaps as locked assumptions.
+5. Run `Validate-Plan` (checklist below). Iterate until it passes.
+6. Update `ROADMAP.md`: move the item to *Active Work* with status `Planning` → `Implementation` once approved.
+7. Hand off to `EXECUTION.md` (single milestone) or `PLAN_EXECUTION.md` (whole plan).
 
 ## Plan Readiness Checklist
 
 A plan is **decision-complete** when the *Required Content Checklist* in `ai/templates/PLAN_TEMPLATE.md` is satisfied **and**:
 
+- request spec is named and reflects the user input that created or updated the plan
 - governing spec artifact is named (or scheduled to be created in milestone 1)
 - each milestone has: goal, owned files, behavior to preserve, deliverables, validation checkpoint, commit checkpoint
 - change-class is named (matches a row in `AGENTS.md` *Change-Class Table*)
@@ -49,4 +52,5 @@ Re-enter Planning when any of: locked decision contradicted by reality, scope dr
 A planned item leaves Planning when:
 
 - the plan is approved (named approval gate, see `AGENTS.md` *Gate Table*)
+- the request spec reflects the approved scope
 - `ROADMAP.md` reflects status `Implementation` (or the next phase the plan starts in)

@@ -22,3 +22,14 @@ Add domain or contract specs here when they are not better expressed as executab
 ### MULTI_AGENT_EXECUTION_SPEC.md
 
 Defines optional multi-agent execution modes, activity delegation rules, handoff packets, agent result contracts, integration discipline, and skill usage for coding work.
+
+## Request Specs
+
+`ai/specs/requests/*.md` holds one request spec per repository-state-changing user input. These files are required by `AGENTS.md` and governed by `ai/SPEC_DOCUMENTS.md`.
+
+Request specs:
+
+- capture the intended repository state for the user input
+- name the change class, governing artifacts, affected files, and validation
+- do not replace executable specs, published contracts, plans, or roadmap tracking
+- should be updated when the active user input changes scope or validation results become known
