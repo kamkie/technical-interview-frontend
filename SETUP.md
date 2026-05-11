@@ -1,12 +1,14 @@
 # Setup
 
-This repository does not have a frontend app scaffold yet. The only current local
-workflow is backend-contract import and documentation maintenance.
+This repository uses Vite, React, TypeScript, Node.js 24.x, and npm for the first-party
+browser frontend.
 
 ## Prerequisites
 
 - PowerShell 7 or Windows PowerShell
 - Git
+- Node.js 24.x
+- npm 11.x
 - Local sibling checkout of `technical-interview-demo` when refreshing backend contract
   artifacts
 
@@ -45,22 +47,28 @@ into `docs/backend/` and records the backend commit in `docs/backend/SOURCE.md`.
 
 | Task | Command |
 | --- | --- |
+| Install dependencies | `npm install` |
+| Run local dev server | `npm run dev` |
+| Run production preview | `npm run preview` |
+| Lint | `npm run lint` |
+| Typecheck | `npm run typecheck` |
+| Run tests once | `npm test` |
+| Run tests in watch mode | `npm run test:watch` |
+| Build | `npm run build` |
 | Refresh backend contract | `./scripts/sync-backend-contract.ps1` |
 | Validate docs/guidance diff | `git diff --check` |
-| Install dependencies | Not available until app scaffold exists |
-| Run local dev server | Not available until app scaffold exists |
-| Run tests | Not available until app scaffold exists |
-| Build | Not available until app scaffold exists |
 
-## App Scaffold Follow-Up
+## Validation Expectations
 
-The first app-scaffold change must choose and document:
+For app, tooling, or documentation changes, run the smallest applicable set from:
 
-- Node.js version and package manager
-- app framework and TypeScript settings
-- install command
-- local dev command
-- lint, typecheck, test, and build commands
-- browser smoke or e2e command for session/auth flows
+```powershell
+npm run lint
+npm run typecheck
+npm test
+npm run build
+git diff --check
+```
 
-Update `README.md`, `ROADMAP.md`, `AGENTS.md`, and this file in that same change.
+Session/auth browser smoke or e2e coverage should be added when those flows are
+implemented. Until then there is no canonical browser smoke command.

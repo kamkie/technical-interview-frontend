@@ -66,29 +66,34 @@ Backend integration invariants:
 
 ## Current Project State
 
-The frontend application has not been scaffolded yet. There is currently no canonical
-package manager, build command, test command, runtime stack, or CI command.
+The frontend application is scaffolded with Vite, React, and TypeScript. The canonical
+runtime is Node.js 24.x and the canonical package manager is npm.
 
-Until those exist:
+Canonical npm commands:
 
-- Documentation and AI-guidance changes should at least pass `git diff --check`.
-- API-facing work must start by importing or refreshing the backend contract artifacts.
-- The first app-scaffold change must update `README.md`, `SETUP.md`, `ROADMAP.md`,
-  and this file with the chosen commands and validation expectations.
+- install dependencies: `npm install`
+- local development server: `npm run dev`
+- production preview: `npm run preview`
+- lint: `npm run lint`
+- typecheck: `npm run typecheck`
+- tests: `npm test`
+- watch tests: `npm run test:watch`
+- production build: `npm run build`
+
+API-facing work must start by importing or refreshing the backend contract artifacts if
+the imported backend artifact appears stale or conflicts with the backend repository.
 
 ## Recommended First Implementation Shape
 
-When the app is scaffolded, prefer a typed frontend with:
+For upcoming implementation work, prefer:
 
 - generated or checked types from the imported OpenAPI contract
 - a small API client layer that centralizes session, CSRF, localization, and error
   handling
 - component and route tests for user-visible behavior
 - browser or smoke coverage for session bootstrap and logout
-- package scripts for `lint`, `typecheck`, `test`, `build`, and local development
-
-The exact stack is still undecided. Record the decision in `ROADMAP.md` before the
-first implementation commit.
+- the existing npm scripts for `lint`, `typecheck`, `test`, `build`, and local
+  development
 
 ## Change Routing
 
@@ -111,13 +116,13 @@ rule in the owner document above.
 
 Current minimum validation:
 
+- app or tooling changes: `npm run lint`, `npm run typecheck`, `npm test`,
+  `npm run build`, and `git diff --check`
 - docs/guidance-only: `git diff --check`
 - imported backend contract refresh: run `scripts/sync-backend-contract.ps1`, then
   `git diff --check`
-
-After the app scaffold exists, replace this section with the real commands. A typical
-frontend validation set should include lint, typecheck, unit/component tests, build,
-and browser smoke or e2e checks when session/auth behavior changes.
+- session/auth browser behavior: add and run browser smoke or e2e coverage for the
+  affected flow; no canonical command exists until those flows are implemented
 
 ## Git And Handoff
 

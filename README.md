@@ -7,12 +7,14 @@ published OpenAPI contract.
 
 ## Status
 
-The repository is in pre-implementation setup. The frontend app stack has not been
-selected yet, and no application source tree exists.
+The repository has an initial Vite app scaffold for the first-party browser UI. The
+selected stack is React, TypeScript, Vite, Node.js 24.x, and npm.
 
 Current useful artifacts:
 
 - `AGENTS.md` - AI rules for frontend/backend contract work
+- `package.json` and `package-lock.json` - canonical npm project metadata
+- `src/` - initial React app shell and component test
 - `docs/backend/` - imported backend contract artifacts for frontend agents
 - `ROADMAP.md` - next implementation steps
 - `SETUP.md` - current local setup notes
@@ -49,9 +51,34 @@ Out of scope unless explicitly planned:
 
 ## Quick Start
 
-There is no app runtime command yet. Start by choosing and scaffolding the frontend
-stack from `ROADMAP.md`, then update `SETUP.md`, `AGENTS.md`, and this README with the
-real install, development, build, and validation commands.
+Prerequisites:
+
+- Node.js 24.x
+- npm 11.x
+
+Install dependencies:
+
+```powershell
+npm install
+```
+
+Run the local development server:
+
+```powershell
+npm run dev
+```
+
+The dev server binds to `http://127.0.0.1:5173/`.
+
+Validate a change:
+
+```powershell
+npm run lint
+npm run typecheck
+npm test
+npm run build
+git diff --check
+```
 
 ## Documentation Map
 

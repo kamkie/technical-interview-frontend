@@ -11,22 +11,24 @@ Released history belongs in `CHANGELOG.md`.
 | Integration branch | `main` |
 | Breaking-change policy | Flexible until the first public frontend release |
 | Next target version | `0.1.0` |
-| Immediate next action | Choose the frontend stack and scaffold the app shell |
+| Frontend stack | Vite + React + TypeScript |
+| Package manager | npm |
+| Node.js version | 24.x |
+| Validation commands | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check` |
+| Immediate next action | Generate or verify API types from the imported backend OpenAPI contract |
 
 ## Active Work
 
-No active implementation work is selected.
+Initial app scaffolding is in place. The next implementation slice is backend contract
+type workflow.
 
 ## Up Next
 
-1. Choose frontend stack, package manager, Node.js version, and validation commands.
-2. Scaffold the app shell and update `README.md`, `SETUP.md`, `AGENTS.md`, and
-   `.gitignore` for the chosen tooling.
-3. Add backend contract import to the development workflow and generate or verify API
+1. Add backend contract import to the development workflow and generate or verify API
    types from `docs/backend/approved-openapi.json`.
-4. Implement the session bootstrap client around `GET /api/session`, including CSRF
+2. Implement the session bootstrap client around `GET /api/session`, including CSRF
    metadata handling and login-provider rendering.
-5. Build the first public read flow for books/categories using backend pagination,
+3. Build the first public read flow for books/categories using backend pagination,
    repeated filters, and localization rules.
 
 ## Later
@@ -35,7 +37,7 @@ No active implementation work is selected.
 - Admin/operator surfaces for backend-supported admin APIs.
 - Browser smoke or e2e coverage for login/logout once the local backend workflow is
   documented.
-- CI pipeline after the app scaffold and validation commands exist.
+- CI pipeline for the npm validation commands.
 
 ## Roadmap Rules
 

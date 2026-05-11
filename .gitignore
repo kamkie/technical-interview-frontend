@@ -13,6 +13,8 @@ test-results/
 .env
 .env.*
 !.env.example
+npm-debug.log*
+*.local
 
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
