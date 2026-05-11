@@ -1,26 +1,15 @@
 import type { components } from './generated/openapi'
+import {
+  ApiRequestError,
+  parseApiProblem,
+  type FetchImplementation,
+} from './http'
 
 export const SESSION_PATH = '/api/session' as const
 
 export type SessionResponse = components['schemas']['SessionResponse']
 export type SessionLoginProvider =
   components['schemas']['SessionLoginProvider']
-
-type FetchImplementation = (
-  input: RequestInfo | URL,
-  init?: RequestInit,
-) => Promise<Response>
-
-export class ApiRequestError extends Error {
-  constructor(
-    public readonly path: string,
-    public readonly status: number,
-    public readonly statusText: string,
-  ) {
-    super(`GET ${path} failed with ${status} ${statusText}`.trim())
-    this.name = 'ApiRequestError'
-  }
-}
 
 export async function fetchCurrentSession(
   fetchImplementation: FetchImplementation = globalThis.fetch,
@@ -35,9 +24,11 @@ export async function fetchCurrentSession(
 
   if (!response.ok) {
     throw new ApiRequestError(
+      'GET',
       SESSION_PATH,
       response.status,
       response.statusText || 'Unknown status',
+      await parseApiProblem(response),
     )
   }
 
@@ -105,3 +96,5 @@ function safeDecodeURIComponent(value: string) {
     return value
   }
 }
+
+export { ApiRequestError }

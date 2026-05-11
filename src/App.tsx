@@ -6,21 +6,7 @@ import {
   type SessionLoginProvider,
   type SessionResponse,
 } from './api/session'
-
-const readinessItems = [
-  {
-    label: 'Stack',
-    value: 'Vite + React + TypeScript',
-  },
-  {
-    label: 'Runtime',
-    value: 'Node.js 24 with npm',
-  },
-  {
-    label: 'Next',
-    value: 'Books and categories',
-  },
-] as const
+import { CatalogPanel } from './catalog/CatalogPanel'
 
 type SessionState =
   | { status: 'loading' }
@@ -49,15 +35,7 @@ export function App() {
         </section>
 
         <SessionBootstrapPanel state={sessionState} />
-
-        <section className="readiness-grid" aria-label="Project baseline">
-          {readinessItems.map((item) => (
-            <article className="readiness-card" key={item.label}>
-              <h2>{item.label}</h2>
-              <p>{item.value}</p>
-            </article>
-          ))}
-        </section>
+        <CatalogPanel />
       </main>
     </div>
   )

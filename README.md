@@ -8,8 +8,9 @@ published OpenAPI contract.
 ## Status
 
 The repository has an initial Vite app scaffold for the first-party browser UI. The
-app bootstraps browser session state from the backend session contract. The selected
-stack is React, TypeScript, Vite, Node.js 24.x, and npm.
+app bootstraps browser session state from the backend session contract and renders the
+first public books/categories read flow. The selected stack is React, TypeScript,
+Vite, Node.js 24.x, and npm.
 
 Current useful artifacts:
 
@@ -17,6 +18,7 @@ Current useful artifacts:
 - `package.json` and `package-lock.json` - canonical npm project metadata
 - `src/` - initial React app shell and component test
 - `src/api/session.ts` - typed session bootstrap client and CSRF header helper
+- `src/api/catalog.ts` - typed public books/categories read client
 - `src/api/generated/openapi.ts` - generated TypeScript API types from the imported
   OpenAPI contract
 - `docs/backend/` - imported backend contract artifacts for frontend agents

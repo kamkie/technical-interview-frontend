@@ -228,34 +228,177 @@ h1 {
   color: #667085;
 }
 
-.readiness-grid {
+.catalog-panel {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.readiness-card {
-  min-height: 10rem;
+  gap: 1.25rem;
   padding: 1.25rem;
   border: 1px solid #d8dee6;
   border-radius: 8px;
   background: #ffffff;
 }
 
-.readiness-card h2 {
-  margin: 0;
+.catalog-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.catalog-filters label {
+  display: grid;
+  gap: 0.4rem;
+  color: #344054;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.catalog-filters input {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1f2520;
+  padding: 0 0.75rem;
+}
+
+.catalog-filter-actions,
+.pagination-controls {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.catalog-filter-actions button,
+.pagination-controls button {
+  min-height: 2.75rem;
+  border: 0;
+  border-radius: 8px;
+  background: #106b5d;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0 1rem;
+}
+
+.catalog-filter-actions button:hover,
+.catalog-filter-actions button:focus-visible,
+.pagination-controls button:hover,
+.pagination-controls button:focus-visible {
+  background: #0b564b;
+}
+
+.catalog-filter-actions .secondary-button {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #344054;
+}
+
+.catalog-filter-actions .secondary-button:hover,
+.catalog-filter-actions .secondary-button:focus-visible {
+  background: #f1f5f9;
+}
+
+.pagination-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.category-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  min-height: 2.25rem;
+}
+
+.category-chip {
+  min-height: 2.25rem;
+  border: 1px solid #d8dee6;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #344054;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0 0.75rem;
+}
+
+.category-chip.selected {
+  border-color: #106b5d;
+  background: #dff8ee;
   color: #106b5d;
-  font-size: 0.85rem;
+}
+
+.catalog-summary p {
+  margin: 0;
+  color: #344054;
+  font-weight: 700;
+}
+
+.book-results {
+  display: grid;
+  gap: 1rem;
+}
+
+.book-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.book-row {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1fr) minmax(0, 1.6fr);
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #d8dee6;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.book-row h3 {
+  margin: 0;
+  color: #17211d;
+  font-size: 1.1rem;
+  letter-spacing: 0;
+}
+
+.book-row p {
+  margin: 0.35rem 0 0;
+  color: #4d554e;
+  line-height: 1.45;
+}
+
+.book-row dl {
+  display: grid;
+  grid-template-columns: 6rem minmax(8rem, 1fr) minmax(10rem, 1.4fr);
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.book-row dt {
+  margin: 0 0 0.3rem;
+  color: #667085;
+  font-size: 0.75rem;
+  font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
 }
 
-.readiness-card p {
-  margin: 2.25rem 0 0;
+.book-row dd {
+  margin: 0;
+  overflow-wrap: anywhere;
   color: #1f2520;
-  font-size: 1.3rem;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.35;
+}
+
+.pagination-controls {
+  justify-content: flex-end;
+}
+
+.pagination-controls span {
+  color: #344054;
+  font-weight: 700;
 }
 
 @media (max-width: 720px) {
@@ -276,7 +419,12 @@ h1 {
     grid-template-columns: 1fr;
   }
 
-  .readiness-grid {
+  .catalog-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .book-row,
+  .book-row dl {
     grid-template-columns: 1fr;
   }
 }

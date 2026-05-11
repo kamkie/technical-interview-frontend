@@ -1,0 +1,52 @@
+import type { components } from './generated/openapi'
+
+export type ApiProblemResponse = components['schemas']['ApiProblemResponse']
+
+export type FetchImplementation = (
+  input: RequestInfo | URL,
+  init?: RequestInit,
+) => Promise<Response>
+
+export class ApiRequestError extends Error {
+  constructor(
+    public readonly method: string,
+    public readonly path: string,
+    public readonly status: number,
+    public readonly statusText: string,
+    public readonly problem?: ApiProblemResponse,
+  ) {
+    super(
+      problem?.message ??
+        `${method} ${path} failed with ${status} ${statusText}`.trim(),
+    )
+    this.name = 'ApiRequestError'
+  }
+}
+
+export async function parseApiProblem(
+  response: Response,
+): Promise<ApiProblemResponse | undefined> {
+  const contentType = response.headers.get('Content-Type') ?? ''
+
+  if (!contentType.includes('json')) {
+    return undefined
+  }
+
+  try {
+    return (await response.clone().json()) as ApiProblemResponse
+  } catch {
+    return undefined
+  }
+}
+
+export function getBrowserAcceptLanguage() {
+  if (typeof navigator === 'undefined') {
+    return undefined
+  }
+
+  if (navigator.languages.length > 0) {
+    return navigator.languages.join(', ')
+  }
+
+  return navigator.language || undefined
+}
