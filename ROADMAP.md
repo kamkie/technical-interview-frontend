@@ -1,47 +1,47 @@
 # Roadmap
 
-> **Roadmap** — owner of active-work tracking, sequencing, and current-cycle state (lifecycle spec §7, §2 phase 2 `Roadmap Intake`, activity group §3.2). Released history belongs in `CHANGELOG.md`.
+This roadmap tracks the planned first-party frontend for `technical-interview-demo`.
+Released history belongs in `CHANGELOG.md`.
 
 ## Current Project State
 
-- Active release phase: **TODO: e.g. `pre-1.0`, `1.x maintenance`, `2.0 development`**
-- Next target version: **TODO: `0.1.0`**
-- Breaking-change policy: **TODO: e.g. allowed pre-1.0; SemVer-strict from 1.0**
-- Pinned lifecycle spec version: see `AGENTS.md`
+| Field | Current |
+| --- | --- |
+| Release phase | Pre-implementation |
+| Integration branch | `main` |
+| Breaking-change policy | Flexible until the first public frontend release |
+| Next target version | `0.1.0` |
+| Immediate next action | Choose the frontend stack and scaffold the app shell |
 
 ## Active Work
 
-Items in flight. One bullet per work item. Each bullet links to its `ai/plans/active/PLAN_*.md` when planned.
-
-- TODO: item — owner — plan link — status (`Discovery` | `Planning` | `Implementation` | `Testing` | `Review` | `Integration` | `Release`)
+No active implementation work is selected.
 
 ## Up Next
 
-Sequenced backlog. The first item should be the next thing the team picks up.
-
-1. TODO
-2. TODO
+1. Choose frontend stack, package manager, Node.js version, and validation commands.
+2. Scaffold the app shell and update `README.md`, `SETUP.md`, `AGENTS.md`, and
+   `.gitignore` for the chosen tooling.
+3. Add backend contract import to the development workflow and generate or verify API
+   types from `docs/backend/approved-openapi.json`.
+4. Implement the session bootstrap client around `GET /api/session`, including CSRF
+   metadata handling and login-provider rendering.
+5. Build the first public read flow for books/categories using backend pagination,
+   repeated filters, and localization rules.
 
 ## Later
 
-Unsequenced ideas. Promoted into *Up Next* when prioritized.
+- Authenticated account UI.
+- Admin/operator surfaces for backend-supported admin APIs.
+- Browser smoke or e2e coverage for login/logout once the local backend workflow is
+  documented.
+- CI pipeline after the app scaffold and validation commands exist.
 
-- TODO
+## Roadmap Rules
 
-## Recently Done
-
-Items recently transitioned to released or archived. Move to `CHANGELOG.md` on release.
-
-- TODO
-
-## Gaps Against Lifecycle Spec
-
-Items the repo does not yet cover (spec §12 step 9). Each gap has an owner and a target cycle.
-
-- TODO: gap — owner — target
-
-## Updating This File
-
-- `Sync` activity (spec §3.2, §3.11) is the cross-cutting trigger that routes here.
-- Update on every phase transition of every active item.
-- When an item ships, move its entry from *Active Work* / *Recently Done* into `CHANGELOG.md` and archive its plan into `ai/archive/`.
+- Keep this file focused on selected, planned, or deferred work.
+- Use `CHANGELOG.md` for shipped history.
+- Add a separate spec only when user-facing behavior is too broad or ambiguous for a
+  roadmap row.
+- Keep backend API assumptions out of this file; the imported backend contract under
+  `docs/backend/` owns those details.

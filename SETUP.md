@@ -1,44 +1,66 @@
-# Setup Guide
+# Setup
 
-> **Setup Guide** — owner of local environment, tooling, onboarding, and troubleshooting (lifecycle spec §7). Engineering rules and the lifecycle workflow live in `AGENTS.md`.
+This repository does not have a frontend app scaffold yet. The only current local
+workflow is backend-contract import and documentation maintenance.
 
 ## Prerequisites
 
-TODO: list required runtimes, SDKs, package managers, container engines, OS-specific tools, and minimum versions.
+- PowerShell 7 or Windows PowerShell
+- Git
+- Local sibling checkout of `technical-interview-demo` when refreshing backend contract
+  artifacts
 
-## First-Time Setup
+The default expected layout is:
 
-1. TODO: clone command
-2. TODO: install dependencies command
-3. TODO: bootstrap / generate command (if any)
-4. TODO: verify with the canonical command (see `AGENTS.md` *Local Environment*)
+```text
+D:\Projects\Jit\
+|-- technical-interview-demo\
+`-- technical-interview-frontend\
+```
+
+You can pass a different backend path to `scripts/sync-backend-contract.ps1` if needed.
+
+## Backend Contract Refresh
+
+From the repository root:
+
+```powershell
+./scripts/sync-backend-contract.ps1
+```
+
+Or with an explicit backend checkout:
+
+```powershell
+./scripts/sync-backend-contract.ps1 -BackendRepo D:\path\to\technical-interview-demo
+```
+
+The script copies:
+
+- `docs/FRONTEND_AI_CONTRACT.md`
+- `src/test/resources/openapi/approved-openapi.json`
+
+into `docs/backend/` and records the backend commit in `docs/backend/SOURCE.md`.
 
 ## Daily Commands
 
 | Task | Command |
 | --- | --- |
-| Build | TODO |
-| Run unit tests | TODO |
-| Run all validation (canonical) | TODO |
-| Lint / format | TODO |
-| Run the application locally | TODO |
+| Refresh backend contract | `./scripts/sync-backend-contract.ps1` |
+| Validate docs/guidance diff | `git diff --check` |
+| Install dependencies | Not available until app scaffold exists |
+| Run local dev server | Not available until app scaffold exists |
+| Run tests | Not available until app scaffold exists |
+| Build | Not available until app scaffold exists |
 
-## IDE / Editor
+## App Scaffold Follow-Up
 
-TODO: recommended IDE settings, plugins, formatter config locations.
+The first app-scaffold change must choose and document:
 
-## Containers / Local Services
+- Node.js version and package manager
+- app framework and TypeScript settings
+- install command
+- local dev command
+- lint, typecheck, test, and build commands
+- browser smoke or e2e command for session/auth flows
 
-TODO: docker-compose or equivalent commands; how to start / stop / reset.
-
-## Secrets And Local Configuration
-
-TODO: where local secrets / `.env` files live, what is committed, what is not.
-
-## Troubleshooting
-
-TODO: common failure modes and their fixes. Add an entry every time a contributor hits the same problem twice.
-
-## Updating This Guide
-
-Setup changes route here per the change-class table in `AGENTS.md`. If a wrapper script's surface or canonical command changes, update both this file and `AGENTS.md` *Local Environment*.
+Update `README.md`, `ROADMAP.md`, `AGENTS.md`, and this file in that same change.

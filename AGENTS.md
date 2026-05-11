@@ -1,235 +1,141 @@
 # AI Project Instructions
 
-`README.md` is the human-facing counterpart of this file. `SETUP.md` is the environment and onboarding guide. The `ai/` directory contains AI-facing support documents. Keep these aligned where their scopes overlap; do not duplicate setup detail from `SETUP.md` here.
+This repository is the first-party browser frontend for the sibling backend repository
+`technical-interview-demo`.
 
-## Lifecycle Spec Conformance
+Keep the AI guidance here lean and frontend-specific. Do not reintroduce a generic
+lifecycle scaffold unless the repository has enough code, tests, CI, and release
+workflow to justify the extra process.
 
-- This repository conforms to **`ai/specs/APPLICATION_LIFECYCLE_SPEC.md`**.
-- Pinned spec version: **TODO: e.g. `1.0.0`** (see spec §16).
-- Declared conformance level: **TODO: `L1` | `L2` | `L3` | `L4`** (see spec §13). Default for a new repo is `L1`.
-- Workflow modes supported: **`linear`** (see spec §12 step 3 and `ai/WORKFLOW.md`).
-- Multi-agent execution level: **`M2: bounded-worker`** (see `ai/specs/MULTI_AGENT_EXECUTION_SPEC.md` §4).
+## Core Rule
 
-## Role Of This File
+Frontend behavior must follow the backend contract. Agents must not invent endpoints,
+request fields, authentication headers, CORS requirements, or alternate transports.
 
-`AGENTS.md` is the **Engineering Rules** artifact (spec §7). It owns:
+When a task changes repository state:
 
-- spec-driven development rule (spec §8)
-- request-spec rule for repository-state-changing logical tasks
-- truth priority (spec §8.1)
-- definition of done (spec §9)
-- branch and worktree invariants (spec §10)
-- the change-class, validation, and gate tables (spec §12 steps 5–7)
-- the cross-cutting trigger map (spec §6)
-- the multi-agent execution level (`ai/specs/MULTI_AGENT_EXECUTION_SPEC.md`)
-- the Phase Owner Map (which `ai/` guide owns each phase or activity group)
+1. Identify the user-visible behavior or repository rule being changed.
+2. Identify the contract, test, or document that owns it.
+3. Update that owner before or alongside the implementation.
+4. Make the smallest coherent change.
+5. Run the smallest available validation and report anything that could not run.
 
-Do not use this file for setup, IDE walkthroughs, or troubleshooting; those belong in `SETUP.md`.
-
-## Core Approach: Spec-Driven Development
-
-Mirror of spec §8:
-
-Repository extension: for any logical task that will change repository state, ensure a request spec exists in `ai/specs/requests/` **before** other repository edits and keep it updated as the work progresses. If a later prompt continues the same logical task, update the active request spec; if it changes topic, create a new request spec. Read-only research or clarification prompts do not require request-spec updates unless they change the intended repository state. Use `ai/SPEC_DOCUMENTS.md` for classification, topic-change detection, naming, and minimum content.
-
-1. Identify the behavior being changed.
-2. Identify the spec artifact that defines that behavior.
-3. Update or add the spec **first**.
-4. Implement the smallest code change that satisfies the updated spec.
-5. Verify the executable and published specs remain aligned.
-
-If intended behavior is not clear enough to express as a spec, work returns to `Planning` and stays there until it is.
+If the intended behavior cannot be described clearly enough to test or document, stop
+and clarify before implementing it.
 
 ## Truth Priority
 
-Mirror of spec §8.1:
+Use this order when sources conflict:
 
-1. explicit user request in the current task
-2. executable specs (tests, contract checks, compatibility checks, benchmark gates)
-3. published contract documents
-4. current-cycle state in `ROADMAP.md`
-5. active request specs in `ai/specs/requests/`
-6. active planning entries in `ai/plans/active/`
-7. release history in `CHANGELOG.md`
-8. AI- or human-facing guidance documents (`ai/*.md`, `README.md`)
+1. Explicit user request in the current task.
+2. Imported backend OpenAPI contract: `docs/backend/approved-openapi.json`.
+3. Imported backend frontend guidance: `docs/backend/FRONTEND_AI_CONTRACT.md`.
+4. Backend REST Docs sources from `technical-interview-demo`, when consulted directly.
+5. Frontend executable specs and type checks, once the app scaffold exists.
+6. Frontend docs in this repo: `README.md`, `SETUP.md`, `ROADMAP.md`, and this file.
 
-## Authoritative Repository Artifacts
+If an imported backend artifact appears stale or conflicts with the backend repository,
+refresh it with `scripts/sync-backend-contract.ps1` before implementing API-facing
+frontend work.
 
-| Spec role (§7) | Repo file | Owner of |
-| --- | --- | --- |
-| Project Charter | `README.md` | mission, supported scope, public summary |
-| Setup Guide | `SETUP.md` | local env, tooling, onboarding |
-| Roadmap | `ROADMAP.md` | active-work tracking, sequencing, current cycle |
-| Release History | `CHANGELOG.md` | shipped versions |
-| Engineering Rules | `AGENTS.md` (this file) | rules, lifecycle, DoD |
-| Plan | `ai/plans/active/PLAN_*.md` | per-task decision-complete handoff |
-| Request Spec | `ai/specs/requests/*.md` | per-logical-task intended repository state, affected artifacts, and validation anchor |
-| Executable Spec | **TODO: e.g. `tests/`, `src/test/`** | behavior verified by automation |
-| Published Contract | **TODO: e.g. `docs/`, OpenAPI, schemas** | human-facing API/contract |
-| Phase Owner Guides | `ai/PLANNING.md`, `ai/EXECUTION.md`, … | per-phase guidance |
-| Learnings | `ai/LEARNINGS.md` | durable repo lessons |
-| Architecture Snapshot | `ai/ARCHITECTURE.md` | structural map |
-| Multi-Agent Execution Spec | `ai/specs/MULTI_AGENT_EXECUTION_SPEC.md` | optional delegation modes, write scopes, handoff packets, and agent result contracts |
+## Backend Contract Rules
 
-## Phase Owner Map
+Before implementing endpoint clients, generated API bindings, request or response
+types, authentication flow, CSRF handling, or API error handling, read:
 
-Each phase or activity group has exactly one owner guide. Load `AGENTS.md` first, then add only the owner guide(s) matching the current task.
+- `docs/backend/approved-openapi.json`
+- `docs/backend/FRONTEND_AI_CONTRACT.md`
+- `docs/backend/README.md`
 
-| Lifecycle phase (spec §2) | Primary owner |
+Backend integration invariants:
+
+- Browser traffic targets same-origin `/api/**`.
+- Do not add CORS-dependent behavior as a supported integration path.
+- Do not introduce JWT or bearer-token assumptions.
+- Bootstrap auth state with `GET /api/session`.
+- Render login options from `loginProviders[]`; do not hard-code provider paths.
+- Use session metadata for `accountPath`, `logoutPath`, CSRF cookie name, and CSRF
+  header name.
+- For unsafe writes with a real current session, mirror the readable CSRF cookie into
+  the configured CSRF request header.
+- Treat localized messages as display content. Branch on stable fields such as status,
+  `messageKey`, and endpoint context, not English message text.
+- Preserve Spring pagination conventions: `page`, `size`, and repeated `sort`.
+- Preserve repeated filters where documented, including repeated `category` filters.
+- Include a book `version` value when updating books.
+
+## Current Project State
+
+The frontend application has not been scaffolded yet. There is currently no canonical
+package manager, build command, test command, runtime stack, or CI command.
+
+Until those exist:
+
+- Documentation and AI-guidance changes should at least pass `git diff --check`.
+- API-facing work must start by importing or refreshing the backend contract artifacts.
+- The first app-scaffold change must update `README.md`, `SETUP.md`, `ROADMAP.md`,
+  and this file with the chosen commands and validation expectations.
+
+## Recommended First Implementation Shape
+
+When the app is scaffolded, prefer a typed frontend with:
+
+- generated or checked types from the imported OpenAPI contract
+- a small API client layer that centralizes session, CSRF, localization, and error
+  handling
+- component and route tests for user-visible behavior
+- browser or smoke coverage for session bootstrap and logout
+- package scripts for `lint`, `typecheck`, `test`, `build`, and local development
+
+The exact stack is still undecided. Record the decision in `ROADMAP.md` before the
+first implementation commit.
+
+## Change Routing
+
+Use the smallest owner that covers the change:
+
+| Change type | Required artifacts |
 | --- | --- |
-| Discovery / Roadmap Intake | `ROADMAP.md`, `ai/PLANNING.md` |
-| Planning | `ai/PLANNING.md` |
-| Implementation (whole plan) | `ai/PLAN_EXECUTION.md` + target plan |
-| Implementation (ad-hoc / single milestone) | `ai/EXECUTION.md` |
-| Testing | `ai/TESTING.md` |
-| Review | `ai/REVIEWS.md` |
-| Integration | `ai/WORKFLOW.md` |
-| Release | `ai/RELEASES.md` |
-| Deployment | **TODO: `ai/OPERATIONS.md` or skip if L1/L2** |
-| Operations | **TODO: `ai/OPERATIONS.md` or skip if L1/L2** |
-| Continuous Improvement | `ai/LEARNINGS.md`, `ROADMAP.md` |
+| Backend API integration | imported backend contract, API client/types, affected UI, tests |
+| Session/auth behavior | session client, CSRF handling, route guards, tests or smoke notes |
+| UI behavior | component/page code, user-facing tests, accessibility/responsive checks |
+| Localization/error handling | API client or UI rendering, locale tests, docs if behavior changes |
+| Setup/tooling | `SETUP.md`, package scripts/config, this file if canonical commands change |
+| AI guidance | this file and any directly affected human-facing doc |
+| Roadmap/product scope | `ROADMAP.md`; add a separate spec only when behavior is too broad for a roadmap row |
 
-Conditional descriptive guides (load only when the task touches them):
+Avoid storing durable rules in plans, scratch files, or final responses only. Put the
+rule in the owner document above.
 
-- `ai/SPEC_DOCUMENTS.md` — repository-state-changing prompt classification, logical-task tracking, and request-spec creation
-- `ai/ARCHITECTURE.md` — structural / package-ownership questions
-- `ai/CODE_STYLE.md` — code edits
-- `ai/DOCUMENTATION.md` — contract-impacting changes
-- `ai/LEARNINGS.md` — recurring repo lessons
+## Validation
 
-## Change-Class Table (spec §12 step 5; consumed by the `Docs` activity)
+Current minimum validation:
 
-For each change-class, list the artifacts that must move together.
+- docs/guidance-only: `git diff --check`
+- imported backend contract refresh: run `scripts/sync-backend-contract.ps1`, then
+  `git diff --check`
 
-For every change-class that changes repository state, a request spec under `ai/specs/requests/` must exist for the logical task before other repository edits and be kept updated through handoff.
+After the app scaffold exists, replace this section with the real commands. A typical
+frontend validation set should include lint, typecheck, unit/component tests, build,
+and browser smoke or e2e checks when session/auth behavior changes.
 
-Ad-hoc repository-state-changing tasks still execute as a single milestone. If no approved plan supplies milestone fields, the request spec must record the ad-hoc milestone before implementation: goal, owned files, behavior to preserve, deliverables, validation checkpoint, and commit checkpoint.
+## Git And Handoff
 
-| Change class | Must update together | Notes |
-| --- | --- | --- |
-| Public behavior change | governing spec, implementation, executable spec (tests), published contract, `CHANGELOG.md` (when released), `ROADMAP.md` entry | breaking changes also bump pinned version |
-| Internal refactor | implementation, existing tests | preserve specs and contract |
-| Documentation-only | the doc + any AI guide that owns the same topic | skip Deployment phase |
-| Setup / environment | `SETUP.md`, env scripts, **TODO: AI env quick-ref if any** | no contract churn |
-| Release-history only | `CHANGELOG.md` | follows Release phase |
-| AI guidance change | the owning `ai/*.md` only; `AGENTS.md` only when repo-level rule changes | no contract churn |
-| **TODO: add repo-specific classes** | | |
+- Do not commit unless the user asks for a commit.
+- Use `.gitmessage` as the commit-message format when committing AI-authored work.
+- Keep unrelated user changes intact.
+- In handoff, report changed files, validation run, skipped validation with reasons,
+  and any remaining risks.
 
-## Validation Table (spec §12 step 6; consumed by `Plan-Tests` / `Run`)
+## Instruction Load Policy
 
-For each change-class, the smallest sufficient validation.
+Start with this file and the user's request. Add only the files needed for the current
+task:
 
-| Change class | Smallest sufficient validation |
-| --- | --- |
-| Public behavior change | full build + executable specs + contract checks |
-| Internal refactor | affected unit + integration tests |
-| Documentation-only | doc lint / link check (if any); no test run required |
-| Setup / environment | repeat the documented setup on a clean target |
-| Release-history only | changelog format check |
-| AI guidance change | none (review only) |
-| **TODO: add repo-specific classes** | **TODO: e.g. `./build.ps1 build`, `npm test`, `pytest -q`, `go test ./…`** |
+- backend contract work: `docs/backend/`
+- setup/tooling work: `SETUP.md` and package/tool config
+- roadmap/product scope: `ROADMAP.md`
+- public project overview: `README.md`
+- commit formatting: `.gitmessage`
 
-The default repo-wide command is: **TODO: `<canonical build/test command>`**.
-
-## Gate Table (spec §12 step 7)
-
-| Phase exit | Gate type | Gate |
-| --- | --- | --- |
-| Discovery → Roadmap Intake | named approval | requester confirms scope |
-| Planning → Implementation | named approval | plan readiness checklist passes (`ai/PLANNING.md`) |
-| Implementation → Testing | executable | local build passes |
-| Testing → Review | executable | required validation passes; result recorded in plan |
-| Review → Integration | named approval | reviewer `Approve` |
-| Integration → Release | executable | post-merge checks green on integration branch |
-| Release → Deployment | named approval | release manager / **TODO** |
-| Deployment → Operations | executable | smoke checks green in target env |
-
-## Cross-Cutting Trigger Map (spec §6)
-
-Each trigger points to the artifact that owns it.
-
-| Trigger | Owner | When it fires |
-| --- | --- | --- |
-| `Replan` | `ai/PLANNING.md` | execution-time gap, contradicted decision, scope drift |
-| `Request-Spec` | `ai/SPEC_DOCUMENTS.md` | any prompt whose execution changes repository state or changes topic from the active request spec |
-| `Security Review` | `ai/REVIEWS.md` (+ **TODO: `ai/skills/security-best-practices/` or equivalent**) | auth, secrets, sensitive data, deploy/CI config, release path |
-| `Sync` | `ROADMAP.md` | any change affecting active-work tracking or contracts |
-| `Capture-Learning` | `ai/LEARNINGS.md` | recurring repo-wide lesson |
-| `Docs-Routing` | `ai/DOCUMENTATION.md` | change touches contract or maintainer-facing doc |
-| `Context-Hygiene` | `AGENTS.md` (rule below) | between every two activities |
-| `Rollback` | `ai/RELEASES.md` (+ deployment runbook **TODO**) | deployed behavior fails verification |
-| `Hotfix` | `ai/RELEASES.md` (+ **TODO: `ai/OPERATIONS.md`**) | production incident |
-
-### Context Hygiene Rule
-
-Between any two activities (spec §1 *Switch*), drop the prior working set before loading the next. Practical effects:
-
-- close completed plans (move to `ai/archive/`)
-- summarize long investigations and discard the raw logs
-- avoid bulk-loading reference / prompt / template / archived-plan trees as default context
-
-## Definition Of Done
-
-Mirror of spec §9. A change is complete when **all** hold:
-
-- the intended behavior exists in an appropriate spec artifact
-- the request spec for the state-changing logical task exists and reflects the final repository state
-- ad-hoc work has a single-milestone record in the request spec when no approved plan supplies one
-- implementation and specs agree
-- public contract artifacts are updated when behavior changed
-- required validation has passed and the result is recorded against the plan, or against the request spec for ad-hoc work without a plan
-- the change has landed on the integration branch (or, when run from a side branch, has been pushed and either merged or proposed via pull request)
-- the active-work tracking entry in `ROADMAP.md` reflects the post-change state
-- if released, the release artifact is published and notes are written
-
-## Branch And Worktree Invariants
-
-Mirror of spec §10:
-
-- treat **TODO: `main` | `trunk` | `<branch>`** as the integration branch for completed work
-- keep side-branch / worktree work isolated until planned scope is complete and locally validated
-- prefer merging accepted branches or PRs; cherry-pick only on explicit user request, partial acceptance, or when a normal merge is not viable, and record the reason
-- do not cut releases from unintegrated side branches, worktrees, detached tips, or non-integrated changes
-
-Detailed mechanics live in `ai/WORKFLOW.md`.
-
-## Local Environment And Command Execution
-
-See `SETUP.md` for setup walkthroughs and troubleshooting.
-
-The canonical local command entry-point is: **TODO: e.g. `./build.ps1`, `make`, `npm`, `pnpm`, `cargo`, `go`, `pytest`**.
-
-### Console Output Capture
-
-For repository-state-changing tasks, capture material AI-run command output in repo-root `temp/`, grouped by logical task slug (for example `temp/<YYYY-MM-DD>-<task-slug>/`). This includes validation, build, test, lint, diagnostic, and other command output used as evidence for decisions or handoff.
-
-- `temp/` is git-ignored and must not be committed.
-- Use tracked plans or request specs for durable validation summaries; use `temp/` only for transient raw logs.
-- Summarize relevant output in the user-facing handoff instead of relying on ignored files as the only record.
-- Do not write secrets or sensitive data into `temp/`; redact or avoid capture when needed.
-
-## AI Instruction Load Policy
-
-- read `AGENTS.md` first
-- read `ai/SPEC_DOCUMENTS.md` before repository-state-changing edits
-- read only the owning AI guide for the current task (see *Phase Owner Map*)
-- read active `ai/plans/active/PLAN_*.md` only when planning, executing, verifying, or releasing that plan
-- read prompts / templates / detailed references / skill files / archived plans **only** when the task specifically needs them
-- do not bulk-load `ai/archive/`, `ai/templates/`, or any reference tree as standing context
-
-## Required Updates By Change Type
-
-Detailed routing lives in `ai/DOCUMENTATION.md`. High-level rules:
-
-- public behavior changes update governing specs + implementation + published contract together
-- every repository-state-changing logical task has a request spec in `ai/specs/requests/` and keeps it updated through handoff
-- internal refactors preserve specs and contracts
-- setup / env changes route to `SETUP.md`
-- roadmap changes route to `ROADMAP.md`; released history goes in `CHANGELOG.md`
-- durable AI guidance changes route to the owning `ai/*.md`; update `AGENTS.md` only when repo-level rules or document ownership change
-
-## Git Commits
-
-- never initiate commits unsolicited; commit only when the user or a workflow guide explicitly requests it
-- **TODO:** add commit-message convention (e.g. Conventional Commits, repo-specific prefix)
-- **TODO:** add co-author trailer policy if AI-authored commits should be attributed
+Do not bulk-load generated contract files unless the task needs exact schema details.

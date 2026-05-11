@@ -3,7 +3,7 @@
 [optional body: explain what changed and why]
 
 Project-Source: <plan|milestone|task|prompt|manual>
-Project-Plan: <.agents/plans/PLAN_*.md or omit>
+Project-Plan: <plan path or omit>
 Project-Milestone: <milestone name or omit>
 Project-Task: <repo-task slug/title or omit>
 Project-Prompt: <short direct-request summary or omit>
