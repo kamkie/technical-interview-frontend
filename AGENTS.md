@@ -79,9 +79,13 @@ Canonical npm commands:
 - tests: `npm test`
 - watch tests: `npm run test:watch`
 - production build: `npm run build`
+- generate API types: `npm run api:types`
+- verify API types: `npm run api:types:check`
 
 API-facing work must start by importing or refreshing the backend contract artifacts if
 the imported backend artifact appears stale or conflicts with the backend repository.
+After a backend contract refresh, regenerate `src/api/generated/openapi.ts` with
+`npm run api:types`.
 
 ## Recommended First Implementation Shape
 
@@ -118,6 +122,7 @@ Current minimum validation:
 
 - app or tooling changes: `npm run lint`, `npm run typecheck`, `npm test`,
   `npm run build`, and `git diff --check`
+- API type workflow changes: `npm run api:types:check`
 - docs/guidance-only: `git diff --check`
 - imported backend contract refresh: run `scripts/sync-backend-contract.ps1`, then
   `git diff --check`

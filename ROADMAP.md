@@ -15,21 +15,21 @@ Released history belongs in `CHANGELOG.md`.
 | Package manager | npm |
 | Node.js version | 24.x |
 | Validation commands | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check` |
-| Immediate next action | Generate or verify API types from the imported backend OpenAPI contract |
+| Immediate next action | Build the first public read flow for books/categories |
 
 ## Active Work
 
-Initial app scaffolding is in place. The next implementation slice is backend contract
-type workflow.
+Initial app scaffolding is in place. Backend contract type generation is available
+from the imported OpenAPI contract, and the app bootstraps browser session state
+from `GET /api/session`. The next implementation slice is the public
+books/categories read flow.
 
 ## Up Next
 
-1. Add backend contract import to the development workflow and generate or verify API
-   types from `docs/backend/approved-openapi.json`.
-2. Implement the session bootstrap client around `GET /api/session`, including CSRF
-   metadata handling and login-provider rendering.
-3. Build the first public read flow for books/categories using backend pagination,
+1. Build the first public read flow for books/categories using backend pagination,
    repeated filters, and localization rules.
+2. Add CI pipeline coverage for the npm validation commands once the repository has a
+   selected CI target.
 
 ## Later
 
@@ -37,7 +37,6 @@ type workflow.
 - Admin/operator surfaces for backend-supported admin APIs.
 - Browser smoke or e2e coverage for login/logout once the local backend workflow is
   documented.
-- CI pipeline for the npm validation commands.
 
 ## Roadmap Rules
 

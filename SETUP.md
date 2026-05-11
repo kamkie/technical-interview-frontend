@@ -43,6 +43,19 @@ The script copies:
 
 into `docs/backend/` and records the backend commit in `docs/backend/SOURCE.md`.
 
+After refreshing the backend contract, regenerate the checked-in TypeScript API types:
+
+```powershell
+npm run api:types
+```
+
+To verify that `src/api/generated/openapi.ts` matches the imported OpenAPI contract
+without rewriting it, run:
+
+```powershell
+npm run api:types:check
+```
+
 ## Daily Commands
 
 | Task | Command |
@@ -56,6 +69,8 @@ into `docs/backend/` and records the backend commit in `docs/backend/SOURCE.md`.
 | Run tests in watch mode | `npm run test:watch` |
 | Build | `npm run build` |
 | Refresh backend contract | `./scripts/sync-backend-contract.ps1` |
+| Generate API types | `npm run api:types` |
+| Verify API types | `npm run api:types:check` |
 | Validate docs/guidance diff | `git diff --check` |
 
 ## Validation Expectations
@@ -69,6 +84,9 @@ npm test
 npm run build
 git diff --check
 ```
+
+`npm run typecheck` also verifies that the generated API types are current with
+`docs/backend/approved-openapi.json`.
 
 Session/auth browser smoke or e2e coverage should be added when those flows are
 implemented. Until then there is no canonical browser smoke command.
