@@ -85,6 +85,8 @@ progress tracker that records status, commit hash, validation, and remaining ris
 | M7 - Account Language Preference | M5/M6 plus CSRF mutation helper | Not ready from this plan alone | M7 needs proven authenticated session state and unsafe-write CSRF handling. |
 | M8-M11 Admin/Operator milestones | M5+ and per-milestone specs | Not ready from this plan alone | Each admin/operator slice should get the small spec called for in `ROADMAP.md` before implementation. |
 
+Next plan file: `.agents/plans/PLAN_follow_on_catalog_auth.md`.
+
 ## Requirement Gaps And Open Questions
 
 | ID | Question / Gap | Why It Matters | Owner | Status | Fallback / Decision | Blocks Ready? |
