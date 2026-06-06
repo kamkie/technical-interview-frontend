@@ -23,10 +23,10 @@
 | Decision Complete | Yes for dependency-ordered execution |
 | Blocking Open Questions | No known blockers for the next ready milestone |
 | Accepted Fallbacks | Execute the next ready milestone; dependent tasks become ready when their prerequisites are implemented and validated |
-| Ready For Execution | Yes; start M8-M11 specs |
+| Ready For Execution | Yes; start M8 implementation |
 | Last Updated | 2026-06-07 |
 
-Phases 1 through 3 are implemented and recorded. Remaining implementation proceeds by dependency
+Phases 1 through 4 are implemented and recorded. Remaining implementation proceeds by dependency
 order. Future dependency gates are sequencing rules, not blockers for starting the
 next ready milestone. When a milestone implements the prerequisite for another
 milestone, the coordinator updates this plan and marks the dependent task ready.
@@ -87,8 +87,8 @@ and no implementation work outside the selected milestone/spec scope.
 | 1 | M1, M2, M4 | Complete | Milestone commits landed and validation passed |
 | 2 | M3, M5 | Complete | Milestone commits landed and validation passed |
 | 3 | M6, M7 | Complete | Milestone commits landed and validation passed |
-| 4 | M8-M11 specs | Ready | Specs are ready because M7 proved auth/CSRF mutation patterns |
-| 5 | M8-M11 implementation | Waiting | Each implementation task becomes ready after its spec passes coordinator review |
+| 4 | M8-M11 specs | Complete | Spec commits landed and coordinator review passed |
+| 5 | M8-M11 implementation | Ready | M8 implementation is ready; remaining implementation slices are sequenced |
 
 ## Requirement Gaps And Open Questions
 
@@ -97,7 +97,7 @@ and no implementation work outside the selected milestone/spec scope.
 | Q1 | None for Phase 1 | M1/M2/M4 were ready to implement | Coordinator | Completed | Phase 1 executed and recorded | No |
 | Q2 | M3 and M5 depend on Phase 1 outputs | M3 needs M2 table shape; M5 needs M4 local auth workflow and M3 route foundation | Coordinator | M5 Ready | M3 landed; start M5 | No |
 | Q3 | M6 and M7 depend on M5 | Account work needs authenticated session/header/route guard foundation | Coordinator | M7 Ready | M6 landed; start M7 | No |
-| Q4 | Admin/operator implementation needs specs | Roadmap requires small specs before implementation | Coordinator | Specs Ready | M7 landed; assign M8-M11 specs and promote implementation after coordinator spec review | No |
+| Q4 | Admin/operator implementation needs specs | Roadmap requires small specs before implementation | Coordinator | M8 Ready | Specs landed and passed coordinator review; start M8 implementation | No |
 
 ## Decision Log And Assumptions
 
@@ -170,12 +170,16 @@ Status model:
 | 8: M6 Account Profile Surface | Done | M6 subagent | `e74790a` | Passed by M6 subagent and coordinator | Added read-only authenticated account profile and lazy account fetch |
 | 9: M7 Account Language Preference | Done | M7 subagent | `13f8f77` | Passed by M7 subagent and coordinator | Added preferred-language update and clear flow using session-derived CSRF metadata |
 | 10: Phase 3 integration gate | Done | Coordinator | N/A; status tracking only | Passed by coordinator | M8-M11 specs are ready |
-| 11: M8 Admin Catalog Spec | Ready | M8 spec subagent | Pending | Pending | M7 CSRF mutation pattern landed |
-| 12: M9 Admin Localization Spec | Ready | M9 spec subagent | Pending | Pending | M7 CSRF mutation pattern landed |
-| 13: M10 Operator Audit Spec | Ready | M10 spec subagent | Pending | Pending | M5 route/access foundation landed |
-| 14: M11 Admin User Management Spec | Ready | M11 spec subagent | Pending | Pending | M7 CSRF mutation pattern landed |
-| 15: Phase 4 spec review gate | Waiting | Coordinator | Pending | Pending | Review specs against roadmap and backend contract, then promote implementation tasks |
-| 16: M8-M11 implementation planning | Waiting | Coordinator | Pending | Pending | Create or activate implementation tasks after each spec passes coordinator review |
+| 11: M8 Admin Catalog Spec | Done | M8 spec subagent | `491871e` | Passed by worker and coordinator | Spec passed contract and roadmap review |
+| 12: M9 Admin Localization Spec | Done | M9 spec subagent | `1eafb13` | Passed by worker and coordinator | Spec passed contract and roadmap review |
+| 13: M10 Operator Audit Spec | Done | M10 spec subagent | `6023956` | Passed by worker and coordinator | Spec passed contract and roadmap review |
+| 14: M11 Admin User Management Spec | Done | M11 spec subagent | `231fde7` | Passed by worker and coordinator | Spec passed contract and roadmap review |
+| 15: Phase 4 spec review gate | Done | Coordinator | N/A; status tracking only | Passed by coordinator | Implementation tasks activated |
+| 16: M8-M11 implementation planning | Done | Coordinator | N/A; status tracking only | Passed by coordinator | M8 starts implementation sequence |
+| 17: M8 Admin Catalog Implementation | Ready | M8 implementation subagent | Pending | Pending | Implement `docs/specs/SPEC_admin_catalog_management.md` |
+| 18: M9 Admin Localization Implementation | Waiting | M9 implementation subagent | Pending | Pending | Sequence after M8 implementation lands |
+| 19: M10 Operator Audit Implementation | Waiting | M10 implementation subagent | Pending | Pending | Sequence after M9 implementation lands |
+| 20: M11 Admin User Management Implementation | Waiting | M11 implementation subagent | Pending | Pending | Sequence after M10 implementation lands |
 
 ## Phase 1: Completed Implementation
 
@@ -284,15 +288,14 @@ surface and reusable CSRF/session patterns are available.
 ## Phase 4: Admin And Operator Specs
 
 Gate: M7 is committed and validated. These tasks create specs only; they do not
-implement admin/operator UI. The coordinator may run these spec workers
-without additional user approval unless a spec reveals a product or contract decision
-that cannot be made from the roadmap and backend contract.
+implement admin/operator UI. The specs are complete and passed coordinator review
+against the roadmap and backend contract.
 
 ### Task 8: M8 Admin Catalog Spec
 
 | Field | Value |
 | --- | --- |
-| Status | Ready |
+| Status | Complete |
 | Goal | Specify combined admin book/category management |
 | Owned Files Or Packages | `docs/specs/SPEC_admin_catalog_management.md` |
 | Context Required | `ROADMAP.md` M8, `docs/backend/approved-openapi.json`, M7 CSRF helper handoff |
@@ -305,7 +308,7 @@ that cannot be made from the roadmap and backend contract.
 
 | Field | Value |
 | --- | --- |
-| Status | Ready |
+| Status | Complete |
 | Goal | Specify localization message editing plus locale coverage/status |
 | Owned Files Or Packages | `docs/specs/SPEC_admin_localization_management.md` |
 | Context Required | `ROADMAP.md` M9, `docs/backend/approved-openapi.json`, M7 CSRF helper handoff |
@@ -318,7 +321,7 @@ that cannot be made from the roadmap and backend contract.
 
 | Field | Value |
 | --- | --- |
-| Status | Ready |
+| Status | Complete |
 | Goal | Specify read-only operator overview plus pageable audit log |
 | Owned Files Or Packages | `docs/specs/SPEC_operator_audit_surface.md` |
 | Context Required | `ROADMAP.md` M10, `docs/backend/approved-openapi.json`, M5 route/access handoff |
@@ -331,7 +334,7 @@ that cannot be made from the roadmap and backend contract.
 
 | Field | Value |
 | --- | --- |
-| Status | Ready |
+| Status | Complete |
 | Goal | Specify admin user list/detail plus role management |
 | Owned Files Or Packages | `docs/specs/SPEC_admin_user_management.md` |
 | Context Required | `ROADMAP.md` M11, `docs/backend/approved-openapi.json`, M7 CSRF helper handoff |
@@ -349,10 +352,10 @@ not a blocking gate unless the spec exposes an unresolved product decision.
 
 | Milestone | Implementation Gate | Next Action |
 | --- | --- | --- |
-| M8 | `docs/specs/SPEC_admin_catalog_management.md` passes coordinator review | Create M8 implementation task or mark Task 16 ready |
-| M9 | `docs/specs/SPEC_admin_localization_management.md` passes coordinator review | Create M9 implementation task or mark Task 16 ready |
-| M10 | `docs/specs/SPEC_operator_audit_surface.md` passes coordinator review | Create M10 implementation task or mark Task 16 ready |
-| M11 | `docs/specs/SPEC_admin_user_management.md` passes coordinator review | Create M11 implementation task or mark Task 16 ready |
+| M8 | `docs/specs/SPEC_admin_catalog_management.md` passed coordinator review | Implement M8 now |
+| M9 | `docs/specs/SPEC_admin_localization_management.md` passed coordinator review | Implement after M8 lands |
+| M10 | `docs/specs/SPEC_operator_audit_surface.md` passed coordinator review | Implement after M9 lands |
+| M11 | `docs/specs/SPEC_admin_user_management.md` passed coordinator review | Implement after M10 lands |
 
 ## Blockers And Replan Triggers
 
@@ -417,7 +420,7 @@ not a blocking gate unless the spec exposes an unresolved product decision.
 | 2026-06-07 | `npm run lint`; `npm run typecheck`; `npm test`; `npm run build`; `git diff --check` | M5 / Phase 2 | Passed | 4 test files, 31 tests; authenticated provider smoke skipped because no canonical command or live OAuth-backed backend session was available |
 | 2026-06-07 | `npm run lint`; `npm run typecheck`; `npm test`; `npm run build`; `git diff --check` | M6 | Passed | 5 test files, 39 tests; full authenticated profile browser smoke skipped because no live authenticated backend session was available |
 | 2026-06-07 | `npm run lint`; `npm run typecheck`; `npm test`; `npm run build`; `git diff --check` | M7 / Phase 3 | Passed | 5 test files, 48 tests; browser smoke/e2e skipped because no canonical authenticated mutation command or live authenticated backend session was available |
-| 2026-06-07 | Pending | Phase 4 | Ready | M8-M11 specs are ready |
+| 2026-06-07 | `git diff --check` | Phase 4 specs | Passed | M8-M11 specs committed and passed coordinator review; M8 implementation is ready |
 | 2026-06-07 | Pending | Final roadmap execution | Pending | Coordinator records result |
 
 ## User Validation
