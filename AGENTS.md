@@ -99,6 +99,28 @@ For upcoming implementation work, prefer:
 - the existing npm scripts for `lint`, `typecheck`, `test`, `build`, and local
   development
 
+## Plan Execution Rules
+
+When the user asks to implement an active plan, the plan is the execution contract.
+
+- The orchestrator only orchestrates. It may update coordinator-owned plan/status
+  documents, assign workers, review worker output, run validation, resolve
+  integration, and create required commits, but it must not implement milestone or
+  spec tasks itself.
+- Milestone and spec implementation must be delegated to workers with explicit file
+  ownership and scoped validation requirements.
+- Do not start implementing a plan unless the whole selected plan scope is executable
+  to completion with the current repository state, available workers, and accepted
+  decisions. If any part is gated by unresolved product choices, missing specs,
+  required user acceptance, credentials, or external state that cannot be produced by
+  the plan itself, stop before implementation and report the blocker.
+- Once a plan run is started, keep executing through the plan until it is complete.
+  Do not stop for status-only handoffs, optional review points, routine validation
+  failures, or work that can be delegated, fixed, or decided from existing project
+  rules.
+- Stop only for unresolved decisions that cannot be made from the current user
+  request, the backend contract, executable tests, or owned project documents.
+
 ## Change Routing
 
 Use the smallest owner that covers the change:
