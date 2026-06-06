@@ -56,6 +56,14 @@ without rewriting it, run:
 npm run api:types:check
 ```
 
+## Local Auth Smoke
+
+Use [docs/LOCAL_AUTH_SMOKE.md](docs/LOCAL_AUTH_SMOKE.md) to verify the local
+same-origin OAuth session workflow against `..\technical-interview-demo`. It covers
+backend `local,oauth` startup, provider credentials, first-admin bootstrap, Vite
+`/api` proxy behavior, session/account/logout checks, CSRF handling, and automation
+limits.
+
 ## Daily Commands
 
 | Task | Command |

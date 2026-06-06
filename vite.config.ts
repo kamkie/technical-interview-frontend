@@ -12,6 +12,12 @@ export default defineConfig({
   server: {
     host: '127.0.0.1',
     port: 5173,
+    proxy: {
+      '^/api(?:$|/(?!.*\\.(?:ts|tsx|js|jsx|css|map)(?:\\?|$)).*)': {
+        target: 'http://localhost:8080',
+        changeOrigin: false,
+      },
+    },
   },
   preview: {
     host: '127.0.0.1',
