@@ -13,22 +13,23 @@
 
 | Status | Current |
 | --- | --- |
-| Phase | Whole-Plan Readiness Gate |
-| Status | Blocked For Remaining Implementation |
+| Phase | Dependency-Ordered Roadmap Execution |
+| Status | Unblocked For Next Ready Milestone |
 
 ## Planning Readiness
 
 | Field | Value |
 | --- | --- |
-| Decision Complete | No for remaining work |
-| Blocking Open Questions | Yes; later authenticated/admin/operator gates are unresolved |
-| Accepted Fallbacks | Do not start partial implementation; wait until the whole selected scope can finish |
-| Ready For Execution | No for remaining whole-plan implementation |
+| Decision Complete | Yes for dependency-ordered execution |
+| Blocking Open Questions | No known blockers for the next ready milestone |
+| Accepted Fallbacks | Execute the next ready milestone; dependent tasks become ready when their prerequisites are implemented and validated |
+| Ready For Execution | Yes; start with M3 |
 | Last Updated | 2026-06-07 |
 
-Phase 1 is implemented and recorded. Remaining implementation must not start as a
-partial phase run: the plan is blocked until the whole selected remaining scope can be
-executed to completion without unresolved gates.
+Phase 1 is implemented and recorded. Remaining implementation proceeds by dependency
+order. Future dependency gates are sequencing rules, not blockers for starting the
+next ready milestone. When a milestone implements the prerequisite for another
+milestone, the coordinator updates this plan and marks the dependent task ready.
 
 ## Linked Pre-Planning Artifacts
 
@@ -41,12 +42,13 @@ executed to completion without unresolved gates.
 ## Summary
 
 - Execute the frontend roadmap from M1 through M11 with one orchestrator-owned plan
-  only when the whole selected plan scope can finish.
+  by starting the next ready milestone and promoting dependent milestones as their
+  prerequisites land.
 - The orchestrator only orchestrates workers; milestone and spec implementation
   belongs to workers, not the orchestrator.
 - Keep one subagent/worker per milestone or spec slice.
 - Require one commit per milestone/spec slice.
-- Do not start partial implementation for a dependency-gated plan.
+- Do not treat future dependency gates as blockers for currently ready work.
 - Once a plan run starts, keep executing until complete unless an unresolved decision
   cannot be made from the user request, backend contract, tests, or project docs.
 
@@ -61,12 +63,12 @@ and no implementation work outside the selected milestone/spec scope.
   - Phase 2: M3 Advanced Catalog Controls, M5 Authenticated Session UX.
   - Phase 3: M6 Account Profile Surface, M7 Account Language Preference.
   - Phase 4: specs for M8-M11 admin/operator work.
-  - Phase 5: implementation planning gates for M8-M11 after specs are accepted.
+  - Phase 5: implementation tasks for M8-M11 after specs pass coordinator review.
   - Orchestrator progress tracking in this plan.
 - Out of scope:
   - Backend repository changes.
   - Inventing endpoints, request fields, auth headers, or transports.
-  - Implementing admin/operator UI before the relevant spec is accepted.
+  - Implementing admin/operator UI before the relevant spec passes coordinator review.
 
 ## Current State
 
@@ -83,19 +85,19 @@ and no implementation work outside the selected milestone/spec scope.
 | --- | --- | --- | --- |
 | 0 | M0 Foundation | Complete | Already validated |
 | 1 | M1, M2, M4 | Complete | Milestone commits landed and validation passed |
-| 2 | M3, M5 | Blocked | Do not start M3 alone; whole remaining scope is not executable yet |
-| 3 | M6, M7 | Dependency Gated | M5 complete and reusable auth/session state exists |
-| 4 | M8-M11 specs | Dependency Gated | M7 proves auth/CSRF mutation pattern |
-| 5 | M8-M11 implementation planning | Dependency Gated | Relevant spec accepted |
+| 2 | M3, M5 | Ready | Start M3 now; M5 becomes ready after M3 is committed and validated |
+| 3 | M6, M7 | Waiting | M6 becomes ready after M5; M7 becomes ready after M6 and reusable CSRF/session patterns |
+| 4 | M8-M11 specs | Waiting | Specs become ready after M7 proves auth/CSRF mutation patterns |
+| 5 | M8-M11 implementation | Waiting | Each implementation task becomes ready after its spec passes coordinator review |
 
 ## Requirement Gaps And Open Questions
 
 | ID | Question / Gap | Why It Matters | Owner | Status | Fallback / Decision | Blocks Ready? |
 | --- | --- | --- | --- | --- | --- | --- |
 | Q1 | None for Phase 1 | M1/M2/M4 were ready to implement | Coordinator | Completed | Phase 1 executed and recorded | No |
-| Q2 | M3 and M5 depend on Phase 1 outputs | M3 needs M2 table shape; M5 needs M4 local auth workflow and M3 route foundation | Coordinator | Gated | Do not execute M3 alone under the whole-plan rule | Yes |
-| Q3 | M6 and M7 depend on M5 | Account work needs authenticated session/header/route guard foundation | Coordinator | Dependency Gated | Wait for M5 | Yes for Phase 3 |
-| Q4 | Admin/operator implementation needs specs | Roadmap requires small specs before implementation | Coordinator | Dependency Gated | Execute Phase 4 first | Yes for Phase 5 |
+| Q2 | M3 and M5 depend on Phase 1 outputs | M3 needs M2 table shape; M5 needs M4 local auth workflow and M3 route foundation | Coordinator | Ready | Start M3; promote M5 after M3 lands | No |
+| Q3 | M6 and M7 depend on M5 | Account work needs authenticated session/header/route guard foundation | Coordinator | Sequenced | Promote M6 after M5; promote M7 after M6 | No |
+| Q4 | Admin/operator implementation needs specs | Roadmap requires small specs before implementation | Coordinator | Sequenced | Promote specs after M7; promote implementation after coordinator spec review | No |
 
 ## Decision Log And Assumptions
 
@@ -117,12 +119,16 @@ and no implementation work outside the selected milestone/spec scope.
 
 ## Execution Shape And Shared Files
 
-- Recommended shape: orchestrated serial delegation after whole-plan readiness is
-  established.
-- Before spawning implementation workers, the coordinator must audit the entire
-  selected plan scope and confirm that it can finish without unresolved gates.
-- If the whole selected scope cannot finish, the coordinator stops before
-  implementation and reports the exact unresolved decisions or external blockers.
+- Recommended shape: orchestrated serial delegation by next ready milestone or spec.
+- The selected execution scope is the current ready task plus any tasks that become
+  ready after its prerequisites are implemented, committed, and validated.
+- Before spawning a worker, the coordinator audits that worker's selected scope and
+  confirms it can finish without unresolved product, contract, or external gates.
+- If a worker finishes a prerequisite, the coordinator updates the Progress Tracker
+  and promotes newly unblocked dependent tasks to `Ready`.
+- Stop before implementation only when the next ready task has an unresolved decision
+  or external blocker that cannot be resolved from the user request, backend contract,
+  tests, or project docs.
 - The coordinator must not implement milestone or spec tasks. Coordinator-owned work
   is limited to orchestration, worker assignment, plan/status updates, cross-slice
   validation, integration review, and required commits.
@@ -140,6 +146,15 @@ Shared-file guardrails:
 - Backend contract artifacts under `docs/backend/` are read-only unless a contract
   refresh is explicitly part of the task.
 
+Status model:
+
+- `Done`: committed, validated, and recorded.
+- `Ready`: the coordinator may assign the worker now.
+- `Waiting`: normal predecessor dependency; promote to `Ready` when the predecessor
+  task is committed and validated.
+- `Blocked`: unresolved product, contract, credential, or external-state issue that
+  cannot be resolved from current project rules.
+
 ## Progress Tracker
 
 | Task | Status | Owner | Commit | Validation | Notes |
@@ -148,19 +163,19 @@ Shared-file guardrails:
 | 1: M1 CI and Quality Gate | Done | M1 subagent | `266f63d` | Passed by coordinator | Added GitHub Actions workflow |
 | 2: M2 Simple Public Catalog UX | Done | M2 subagent | `ec852da` | Passed by M2 subagent and coordinator | Added table UX and fixture-backed visible states |
 | 3: M4 Local Auth Workflow Docs | Done | M4 subagent | `3cb49be` | Passed by coordinator | Added auth smoke docs and Vite `/api` proxy |
-| 4: Phase 1 integration gate | Done | Coordinator | N/A; status tracking only | Passed by coordinator | M3 is unlocked; M5 still waits for M3 |
-| 5: M3 Advanced Catalog Controls | Blocked | M3 subagent | Pending | Pending | M2 table shape is complete, but whole remaining plan is not executable |
-| 6: M5 Authenticated Session UX | Blocked | M5 subagent | Pending | Pending | Wait for M3 route foundation |
-| 7: Phase 2 integration gate | Blocked | Coordinator | Pending | Pending | Unlock M6/M7 if M5 passes |
-| 8: M6 Account Profile Surface | Blocked | M6 subagent | Pending | Pending | Wait for M5 |
-| 9: M7 Account Language Preference | Blocked | M7 subagent | Pending | Pending | Wait for M6 and CSRF/session patterns |
-| 10: Phase 3 integration gate | Blocked | Coordinator | Pending | Pending | Unlock admin/operator specs |
-| 11: M8 Admin Catalog Spec | Blocked | M8 spec subagent | Pending | Pending | Wait for M7 |
-| 12: M9 Admin Localization Spec | Blocked | M9 spec subagent | Pending | Pending | Wait for M7 |
-| 13: M10 Operator Audit Spec | Blocked | M10 spec subagent | Pending | Pending | Wait for M5/M7 phase gate |
-| 14: M11 Admin User Management Spec | Blocked | M11 spec subagent | Pending | Pending | Wait for M7 |
-| 15: Phase 4 spec review gate | Blocked | Coordinator | Pending | Pending | Unlock per-milestone implementation planning |
-| 16: M8-M11 implementation planning | Blocked | Coordinator | Pending | Pending | Create or activate implementation tasks after specs are accepted |
+| 4: Phase 1 integration gate | Done | Coordinator | N/A; status tracking only | Passed by coordinator | M3 is ready; M5 waits for M3 |
+| 5: M3 Advanced Catalog Controls | Ready | M3 subagent | Pending | Pending | Start next |
+| 6: M5 Authenticated Session UX | Waiting | M5 subagent | Pending | Pending | Promote to Ready after M3 route foundation lands |
+| 7: Phase 2 integration gate | Waiting | Coordinator | Pending | Pending | Promote M6 after M5 passes |
+| 8: M6 Account Profile Surface | Waiting | M6 subagent | Pending | Pending | Promote to Ready after M5 |
+| 9: M7 Account Language Preference | Waiting | M7 subagent | Pending | Pending | Promote to Ready after M6 and CSRF/session patterns |
+| 10: Phase 3 integration gate | Waiting | Coordinator | Pending | Pending | Promote admin/operator specs after M7 |
+| 11: M8 Admin Catalog Spec | Waiting | M8 spec subagent | Pending | Pending | Promote to Ready after M7 |
+| 12: M9 Admin Localization Spec | Waiting | M9 spec subagent | Pending | Pending | Promote to Ready after M7 |
+| 13: M10 Operator Audit Spec | Waiting | M10 spec subagent | Pending | Pending | Promote to Ready after M7 phase gate |
+| 14: M11 Admin User Management Spec | Waiting | M11 spec subagent | Pending | Pending | Promote to Ready after M7 |
+| 15: Phase 4 spec review gate | Waiting | Coordinator | Pending | Pending | Review specs against roadmap and backend contract, then promote implementation tasks |
+| 16: M8-M11 implementation planning | Waiting | Coordinator | Pending | Pending | Create or activate implementation tasks after each spec passes coordinator review |
 
 ## Phase 1: Completed Implementation
 
@@ -205,15 +220,14 @@ Shared-file guardrails:
 
 ## Phase 2: Follow-On Catalog And Auth
 
-Gate: M2 and M4 are committed and validated, but Phase 2 must not start as a
-standalone partial run. M3 still precedes M5 inside the implementation order, but no
-Phase 2 worker should start until the whole selected remaining plan scope can finish.
+Gate: M2 and M4 are committed and validated. M3 is ready now. M5 becomes ready
+automatically after M3 lands the React Router route foundation and passes validation.
 
 ### Task 4: M3 Advanced Catalog Controls
 
 | Field | Value |
 | --- | --- |
-| Status | Blocked |
+| Status | Ready |
 | Goal | Add route-level catalog navigation with URL-synced filters, sorting UI, richer table controls, and browser history behavior |
 | Owned Files Or Packages | Routing setup, `src/catalog/`, catalog tests, `src/index.css`, package metadata for React Router |
 | Context Required | M2 implementation, `ROADMAP.md` M3, `docs/backend/FRONTEND_AI_CONTRACT.md` |
@@ -226,7 +240,7 @@ Phase 2 worker should start until the whole selected remaining plan scope can fi
 
 | Field | Value |
 | --- | --- |
-| Status | Blocked |
+| Status | Waiting for M3 |
 | Goal | Add authenticated session UX on the documented local auth workflow and React Router foundation |
 | Owned Files Or Packages | Session/auth API helpers, app shell/header, route guards/tests, logout UI/tests |
 | Context Required | M4 auth doc, M3 routing implementation, `docs/backend/FRONTEND_AI_CONTRACT.md` |
@@ -238,13 +252,14 @@ Phase 2 worker should start until the whole selected remaining plan scope can fi
 ## Phase 3: Account Profile And Language
 
 Gate: M5 must be committed, validated, and expose reusable authenticated session and
-route-guard patterns.
+route-guard patterns. M6 becomes ready after M5. M7 becomes ready after M6 proves the
+account surface and reusable CSRF/session patterns are available.
 
 ### Task 6: M6 Account Profile Surface
 
 | Field | Value |
 | --- | --- |
-| Status | Blocked |
+| Status | Waiting for M5 |
 | Goal | Add read-only current-account profile page plus account-aware menu/header |
 | Owned Files Or Packages | Account components/routes/tests, app shell/header/menu, account read API client |
 | Context Required | M5 session UX, `ROADMAP.md` M6, `docs/backend/FRONTEND_AI_CONTRACT.md` |
@@ -257,7 +272,7 @@ route-guard patterns.
 
 | Field | Value |
 | --- | --- |
-| Status | Blocked |
+| Status | Waiting for M6 |
 | Goal | Add current-user preferred-language update and clear flow |
 | Owned Files Or Packages | Account language preference components/tests, account API client, CSRF/mutation helper if needed |
 | Context Required | M5/M6 implementations, `docs/backend/approved-openapi.json`, `docs/backend/FRONTEND_AI_CONTRACT.md` |
@@ -269,13 +284,15 @@ route-guard patterns.
 ## Phase 4: Admin And Operator Specs
 
 Gate: M7 must be committed and validated. These tasks create specs only; they do not
-implement admin/operator UI.
+implement admin/operator UI. After M7, the coordinator may run these spec workers
+without additional user approval unless a spec reveals a product or contract decision
+that cannot be made from the roadmap and backend contract.
 
 ### Task 8: M8 Admin Catalog Spec
 
 | Field | Value |
 | --- | --- |
-| Status | Blocked |
+| Status | Waiting for M7 |
 | Goal | Specify combined admin book/category management |
 | Owned Files Or Packages | `docs/specs/SPEC_admin_catalog_management.md` |
 | Context Required | `ROADMAP.md` M8, `docs/backend/approved-openapi.json`, M7 CSRF helper handoff |
@@ -288,7 +305,7 @@ implement admin/operator UI.
 
 | Field | Value |
 | --- | --- |
-| Status | Blocked |
+| Status | Waiting for M7 |
 | Goal | Specify localization message editing plus locale coverage/status |
 | Owned Files Or Packages | `docs/specs/SPEC_admin_localization_management.md` |
 | Context Required | `ROADMAP.md` M9, `docs/backend/approved-openapi.json`, M7 CSRF helper handoff |
@@ -301,7 +318,7 @@ implement admin/operator UI.
 
 | Field | Value |
 | --- | --- |
-| Status | Blocked |
+| Status | Waiting for M7 |
 | Goal | Specify read-only operator overview plus pageable audit log |
 | Owned Files Or Packages | `docs/specs/SPEC_operator_audit_surface.md` |
 | Context Required | `ROADMAP.md` M10, `docs/backend/approved-openapi.json`, M5 route/access handoff |
@@ -314,7 +331,7 @@ implement admin/operator UI.
 
 | Field | Value |
 | --- | --- |
-| Status | Blocked |
+| Status | Waiting for M7 |
 | Goal | Specify admin user list/detail plus role management |
 | Owned Files Or Packages | `docs/specs/SPEC_admin_user_management.md` |
 | Context Required | `ROADMAP.md` M11, `docs/backend/approved-openapi.json`, M7 CSRF helper handoff |
@@ -323,24 +340,26 @@ implement admin/operator UI.
 | Validation Checkpoint | `git diff --check`; optional markdown/spec lint if available |
 | Commit Checkpoint | Commit using `.gitmessage`; record hash in Progress Tracker |
 
-## Phase 5: Admin And Operator Implementation Planning
+## Phase 5: Admin And Operator Implementation
 
-Gate: the relevant Phase 4 spec must be accepted. The coordinator should create or
-activate implementation tasks for M8-M11 one milestone at a time after spec review.
+Gate: the relevant Phase 4 spec must pass coordinator review against `ROADMAP.md` and
+`docs/backend/`. The coordinator should create or activate implementation tasks for
+M8-M11 one milestone at a time after spec review. User review is welcome, but it is
+not a blocking gate unless the spec exposes an unresolved product decision.
 
 | Milestone | Implementation Gate | Next Action |
 | --- | --- | --- |
-| M8 | `docs/specs/SPEC_admin_catalog_management.md` accepted | Create M8 implementation task or mark Task 16 ready |
-| M9 | `docs/specs/SPEC_admin_localization_management.md` accepted | Create M9 implementation task or mark Task 16 ready |
-| M10 | `docs/specs/SPEC_operator_audit_surface.md` accepted | Create M10 implementation task or mark Task 16 ready |
-| M11 | `docs/specs/SPEC_admin_user_management.md` accepted | Create M11 implementation task or mark Task 16 ready |
+| M8 | `docs/specs/SPEC_admin_catalog_management.md` passes coordinator review | Create M8 implementation task or mark Task 16 ready |
+| M9 | `docs/specs/SPEC_admin_localization_management.md` passes coordinator review | Create M9 implementation task or mark Task 16 ready |
+| M10 | `docs/specs/SPEC_operator_audit_surface.md` passes coordinator review | Create M10 implementation task or mark Task 16 ready |
+| M11 | `docs/specs/SPEC_admin_user_management.md` passes coordinator review | Create M11 implementation task or mark Task 16 ready |
 
 ## Blockers And Replan Triggers
 
 | Trigger / Blocker | Response | Owner | Status |
 | --- | --- | --- | --- |
 | A worker needs to change backend contract assumptions | Coordinator inspects or refreshes `docs/backend/`; stop only if the contract conflict remains unresolved | Coordinator | Open |
-| The selected plan scope is only partially executable | Stop before implementation; do not run a partial milestone slice unless the user explicitly re-scopes the plan | Coordinator | Open |
+| A future task is still waiting on a predecessor | Continue the current ready task; promote the waiting task when its prerequisite lands | Coordinator | Open |
 | M2 requires React Router or URL-synced behavior | Defer to M3 and keep M2 simple | M2 subagent | Open |
 | M4 cannot document runnable local auth | Keep M5 gated or split M5 into mocked unit-level session UX and defer browser smoke | Coordinator | Open |
 | M5 appears to need full account profile behavior | Keep M5 scoped to session UX and defer profile details to M6 unless the contract or user request creates an unresolved conflict | M5 subagent | Open |
@@ -394,7 +413,7 @@ activate implementation tasks for M8-M11 one milestone at a time after spec revi
 | Date | Command | Scope | Result | Notes |
 | --- | --- | --- | --- | --- |
 | 2026-06-07 | `npm run lint`; `npm run typecheck`; `npm test`; `npm run build`; `git diff --check` | Phase 1 | Passed | Reran after Vite proxy matcher fix; 4 test files, 19 tests; browser smoke mounted the app with expected backend-offline 502s |
-| 2026-06-07 | Pending | Phase 2 | Blocked | Do not start M3 alone; remaining whole-plan scope has unresolved gates |
+| 2026-06-07 | Pending | Phase 2 | Ready | M3 is ready; M5 waits for M3 route foundation |
 | 2026-06-07 | Pending | Phase 3 | Pending | Coordinator records result |
 | 2026-06-07 | Pending | Phase 4 | Pending | Coordinator records result |
 | 2026-06-07 | Pending | Final roadmap execution | Pending | Coordinator records result |
@@ -405,4 +424,5 @@ activate implementation tasks for M8-M11 one milestone at a time after spec revi
 - Use the catalog table and URL/history behavior after M2/M3.
 - Follow `docs/LOCAL_AUTH_SMOKE.md` for session/login/logout checks after M4/M5.
 - Verify account profile and language preference after M6/M7.
-- Review M8-M11 specs before any admin/operator implementation starts.
+- Review M8-M11 specs as they land; coordinator review unlocks implementation unless
+  a spec exposes an unresolved product decision.
