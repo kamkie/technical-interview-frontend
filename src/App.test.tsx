@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { App } from './App'
+import { ACCOUNT_PATH, type UserAccount } from './api/account'
 import {
   BOOKS_PATH,
   CATEGORIES_PATH,
@@ -105,8 +106,8 @@ describe('App', () => {
     )
   })
 
-  it('renders authenticated header state and the guarded account placeholder', async () => {
-    mockAppFetch({
+  it('renders authenticated header state and the guarded account profile', async () => {
+    const fetchMock = mockAppFetch({
       session: createSession({
         authenticated: true,
       }),
@@ -124,12 +125,82 @@ describe('App', () => {
     expect(
       screen.getByRole('heading', { name: 'Account' }),
     ).toBeInTheDocument()
+    expect(await screen.findByText('Kamil Kiewisz')).toBeInTheDocument()
+    expect(screen.getByText('kamkie')).toBeInTheDocument()
+    expect(screen.getByText('kamil@example.test')).toBeInTheDocument()
+    expect(screen.getByText('pl')).toBeInTheDocument()
+    expect(screen.getByText('USER')).toBeInTheDocument()
     expect(
-      screen.getByText('Authenticated session established.'),
-    ).toBeInTheDocument()
+      fetchMock.mock.calls.some(([input]) => String(input) === ACCOUNT_PATH),
+    ).toBe(true)
+    expect(fetchMock).toHaveBeenCalledWith(ACCOUNT_PATH, {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: {
+        Accept: 'application/json',
+      },
+    })
     expect(
       screen.queryByRole('link', { name: /Sign in with/ }),
     ).not.toBeInTheDocument()
+  })
+
+  it('does not fetch the account profile when an authenticated user stays on catalog', async () => {
+    const fetchMock = mockAppFetch({
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    renderApp('/catalog')
+
+    expect(await screen.findByRole('button', { name: 'Sign out' })).toBeInTheDocument()
+    expect(await screen.findByText('Clean Code')).toBeInTheDocument()
+    expect(
+      fetchMock.mock.calls.some(([input]) => String(input) === ACCOUNT_PATH),
+    ).toBe(false)
+  })
+
+  it('renders account loading state after authenticated session bootstrap', async () => {
+    mockAppFetch({
+      account: () => new Promise<Response>(() => undefined),
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    renderApp('/account')
+
+    expect(await screen.findByText('Loading account...')).toBeInTheDocument()
+  })
+
+  it('renders localized backend account errors', async () => {
+    mockAppFetch({
+      account: Response.json(
+        {
+          status: 403,
+          messageKey: 'error.account.access_denied',
+          message: 'Profil konta jest niedostepny.',
+          language: 'pl',
+        },
+        {
+          status: 403,
+          statusText: 'Forbidden',
+          headers: {
+            'Content-Type': 'application/problem+json',
+          },
+        },
+      ),
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    renderApp('/account')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Profil konta jest niedostepny.',
+    )
   })
 
   it('posts metadata-driven logout with the configured CSRF header and refreshes session', async () => {
@@ -196,7 +267,7 @@ describe('App', () => {
   })
 
   it('keeps authenticated-only routes guarded for anonymous sessions', async () => {
-    mockAppFetch({
+    const fetchMock = mockAppFetch({
       session: createSession({
         loginProviders: [
           {
@@ -217,6 +288,9 @@ describe('App', () => {
       screen.getByRole('link', { name: 'Sign in with Company SSO' }),
     ).toHaveAttribute('href', '/api/session/oauth2/authorization/oidc')
     expect(screen.queryByRole('link', { name: 'Account' })).not.toBeInTheDocument()
+    expect(
+      fetchMock.mock.calls.some(([input]) => String(input) === ACCOUNT_PATH),
+    ).toBe(false)
   })
 })
 
@@ -229,11 +303,13 @@ function renderApp(initialEntry = '/catalog') {
 }
 
 function mockAppFetch({
+  account = createAccount(),
   books = createBookPage(),
   categories = [{ id: 1, name: 'Java' }],
   logoutResponse = new Response(null, { status: 204 }),
   session,
 }: {
+  account?: UserAccount | Response | ((path: string) => UserAccount | Response | Promise<Response>)
   books?: BookPage
   categories?: Category[]
   logoutResponse?: Response
@@ -254,6 +330,14 @@ function mockAppFetch({
       return Promise.resolve(logoutResponse)
     }
 
+    if (path === (currentSession.accountPath ?? ACCOUNT_PATH)) {
+      const accountResponse = resolveValue(account, path)
+
+      return accountResponse instanceof Promise
+        ? accountResponse
+        : Promise.resolve(toAccountResponse(accountResponse))
+    }
+
     if (path === CATEGORIES_PATH) {
       return Promise.resolve(Response.json(categories))
     }
@@ -268,6 +352,22 @@ function mockAppFetch({
   vi.stubGlobal('fetch', fetchMock)
 
   return fetchMock
+}
+
+function createAccount(overrides: UserAccount = {}): UserAccount {
+  return {
+    id: 42,
+    provider: 'github',
+    login: 'kamkie',
+    displayName: 'Kamil Kiewisz',
+    email: 'kamil@example.test',
+    preferredLanguage: 'pl',
+    roles: ['USER'],
+    lastLoginAt: '2026-06-06T22:10:00Z',
+    createdAt: '2026-05-11T12:00:00Z',
+    updatedAt: '2026-06-06T22:10:00Z',
+    ...overrides,
+  }
 }
 
 function createBookPage(): BookPage {
@@ -311,6 +411,19 @@ function createSession(overrides: SessionResponse = {}): SessionResponse {
     },
     ...overrides,
   }
+}
+
+function resolveValue<T, TArgs extends unknown[]>(
+  value: T | ((...args: TArgs) => T),
+  ...args: TArgs
+) {
+  return typeof value === 'function'
+    ? (value as (...args: TArgs) => T)(...args)
+    : value
+}
+
+function toAccountResponse(value: UserAccount | Response) {
+  return value instanceof Response ? value : Response.json(value)
 }
 
 function clearDocumentCookies() {

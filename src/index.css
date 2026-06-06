@@ -330,7 +330,8 @@ h1 {
 }
 
 .auth-guard,
-.protected-panel {
+.protected-panel,
+.account-panel {
   display: grid;
   gap: 1rem;
   padding: 1.25rem;
@@ -344,6 +345,80 @@ h1 {
   color: #17211d;
   font-size: 1.35rem;
   letter-spacing: 0;
+}
+
+.account-profile {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.account-summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.account-name {
+  margin: 0;
+  color: #17211d;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.account-subtitle {
+  margin: 0.35rem 0 0;
+  color: #4d554e;
+  font-weight: 700;
+}
+
+.account-roles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.role-pill {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  border-radius: 999px;
+  background: #e8f4f1;
+  color: #106b5d;
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 0 0.7rem;
+}
+
+.account-metadata {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+}
+
+.account-metadata div {
+  min-width: 0;
+}
+
+.account-metadata dt {
+  margin: 0 0 0.35rem;
+  color: #667085;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.account-metadata dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #1f2520;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .catalog-filters {
@@ -601,6 +676,18 @@ h1 {
   }
 
   .session-metadata {
+    grid-template-columns: 1fr;
+  }
+
+  .account-summary {
+    flex-direction: column;
+  }
+
+  .account-roles {
+    justify-content: flex-start;
+  }
+
+  .account-metadata {
     grid-template-columns: 1fr;
   }
 

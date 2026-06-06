@@ -8,6 +8,7 @@ import {
   type SessionLoginProvider,
   type SessionResponse,
 } from './api/session'
+import { AccountProfile } from './account/AccountProfile'
 import {
   RequireAuthenticated,
   type SessionState,
@@ -85,7 +86,9 @@ export function App() {
             path={ACCOUNT_ROUTE_PATH}
             element={
               <RequireAuthenticated state={sessionState}>
-                <AccountRoutePlaceholder />
+                {sessionState.status === 'ready' && (
+                  <AccountProfile session={sessionState.session} />
+                )}
               </RequireAuthenticated>
             }
           />
@@ -286,18 +289,6 @@ function SessionDetails({ session }: { session: SessionResponse }) {
         <p className="session-message muted">No login providers available.</p>
       )}
     </div>
-  )
-}
-
-function AccountRoutePlaceholder() {
-  return (
-    <section className="protected-panel" aria-labelledby="account-route-title">
-      <div className="section-heading">
-        <p className="eyebrow">Authenticated area</p>
-        <h2 id="account-route-title">Account</h2>
-      </div>
-      <p className="session-message">Authenticated session established.</p>
-    </section>
   )
 }
 
