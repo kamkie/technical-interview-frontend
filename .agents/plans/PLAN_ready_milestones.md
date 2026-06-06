@@ -71,6 +71,12 @@ progress tracker that records status, commit hash, validation, and remaining ris
 
 ## Follow-On Readiness
 
+### Becomes Ready After Current Plan
+
+- M3 becomes ready after M2 lands, because it needs the final table/catalog shape.
+- M5 becomes ready after M4 lands, assuming M4 documents a runnable local auth
+  workflow.
+
 | Milestone | Dependency In This Plan | Expected Readiness After This Plan | Notes |
 | --- | --- | --- | --- |
 | M3 - Advanced Catalog Controls | M2 - Simple Public Catalog UX | Ready to plan/implement next | M3 builds on the M2 table/catalog shape and already has React Router plus browser-history decisions recorded in `ROADMAP.md`. |
