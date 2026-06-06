@@ -6,6 +6,7 @@ import {
   fetchCurrentSession,
   getCsrfHeaders,
   getLoginProviders,
+  logoutCurrentSession,
   readCookie,
   type SessionResponse,
 } from './session'
@@ -50,6 +51,114 @@ describe('fetchCurrentSession', () => {
         status: 503,
       } satisfies Partial<ApiRequestError>,
     )
+  })
+})
+
+describe('logoutCurrentSession', () => {
+  it('posts to the backend-provided logout path with configured CSRF metadata', async () => {
+    const session = createSession({
+      authenticated: true,
+      logoutPath: '/api/session/logout',
+    })
+    const fetchImplementation = vi.fn().mockResolvedValue(
+      new Response(null, {
+        status: 204,
+      }),
+    )
+
+    await expect(
+      logoutCurrentSession(
+        session,
+        fetchImplementation,
+        'language=en; XSRF-TOKEN=token%201',
+      ),
+    ).resolves.toBeUndefined()
+
+    expect(fetchImplementation).toHaveBeenCalledWith('/api/session/logout', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        Accept: 'application/json',
+        'X-XSRF-TOKEN': 'token 1',
+      },
+    })
+  })
+
+  it('does not invent a CSRF header when the readable cookie is missing', async () => {
+    const session = createSession({
+      authenticated: true,
+      logoutPath: '/api/session/logout',
+    })
+    const fetchImplementation = vi.fn().mockResolvedValue(
+      new Response(null, {
+        status: 204,
+      }),
+    )
+
+    await logoutCurrentSession(session, fetchImplementation, 'language=en')
+
+    expect(fetchImplementation).toHaveBeenCalledWith('/api/session/logout', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        Accept: 'application/json',
+      },
+    })
+  })
+
+  it('does not send CSRF headers for anonymous idempotent logout', async () => {
+    const session = createSession({
+      authenticated: false,
+      logoutPath: '/api/session/logout',
+    })
+    const fetchImplementation = vi.fn().mockResolvedValue(
+      new Response(null, {
+        status: 204,
+      }),
+    )
+
+    await logoutCurrentSession(session, fetchImplementation, 'XSRF-TOKEN=token')
+
+    expect(fetchImplementation).toHaveBeenCalledWith('/api/session/logout', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        Accept: 'application/json',
+      },
+    })
+  })
+
+  it('raises a typed API error with localized backend problem details', async () => {
+    const session = createSession({
+      authenticated: true,
+      logoutPath: '/api/session/logout',
+    })
+    const fetchImplementation = vi.fn().mockResolvedValue(
+      Response.json(
+        {
+          status: 403,
+          messageKey: 'error.csrf.invalid',
+          message: 'Token CSRF jest nieprawidlowy.',
+          language: 'pl',
+        },
+        {
+          status: 403,
+          statusText: 'Forbidden',
+          headers: {
+            'Content-Type': 'application/problem+json',
+          },
+        },
+      ),
+    )
+
+    await expect(
+      logoutCurrentSession(session, fetchImplementation, 'XSRF-TOKEN=stale'),
+    ).rejects.toMatchObject({
+      name: 'ApiRequestError',
+      path: '/api/session/logout',
+      status: 403,
+      message: 'Token CSRF jest nieprawidlowy.',
+    } satisfies Partial<ApiRequestError>)
   })
 })
 

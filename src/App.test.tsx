@@ -1,14 +1,20 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { App } from './App'
-import { BOOKS_PATH, CATEGORIES_PATH, type BookPage, type Category } from './api/catalog'
+import {
+  BOOKS_PATH,
+  CATEGORIES_PATH,
+  type BookPage,
+  type Category,
+} from './api/catalog'
 import { SESSION_PATH, type SessionResponse } from './api/session'
 
 describe('App', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
+    clearDocumentCookies()
   })
 
   it('bootstraps the browser session and renders login providers', async () => {
@@ -68,7 +74,7 @@ describe('App', () => {
         },
       },
     )
-    expect(screen.getByText('Signed out')).toBeInTheDocument()
+    expect(screen.getAllByText('Signed out')).toHaveLength(2)
     expect(screen.getByText('XSRF-TOKEN -> X-XSRF-TOKEN')).toBeInTheDocument()
     expect(await screen.findByText('Clean Code')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Java' })).toBeInTheDocument()
@@ -98,6 +104,120 @@ describe('App', () => {
       'GET /api/session failed with 503 Service Unavailable',
     )
   })
+
+  it('renders authenticated header state and the guarded account placeholder', async () => {
+    mockAppFetch({
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    renderApp('/account')
+
+    expect(
+      await screen.findByRole('button', { name: 'Sign out' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Account' })).toHaveAttribute(
+      'href',
+      '/account',
+    )
+    expect(
+      screen.getByRole('heading', { name: 'Account' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Authenticated session established.'),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: /Sign in with/ }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('posts metadata-driven logout with the configured CSRF header and refreshes session', async () => {
+    document.cookie = 'XSRF-TOKEN=token%201'
+    const fetchMock = mockAppFetch({
+      session: [
+        createSession({
+          authenticated: true,
+        }),
+        createSession({
+          authenticated: false,
+        }),
+      ],
+    })
+
+    renderApp('/account')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Sign out' }))
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith('/api/session/logout', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'X-XSRF-TOKEN': 'token 1',
+        },
+      })
+    })
+    expect(
+      await screen.findByRole('heading', { name: 'Sign in required' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Sign out' })).not.toBeInTheDocument()
+  })
+
+  it('does not block logout when the configured CSRF cookie is missing', async () => {
+    const fetchMock = mockAppFetch({
+      session: [
+        createSession({
+          authenticated: true,
+        }),
+        createSession({
+          authenticated: false,
+        }),
+      ],
+    })
+
+    renderApp('/account')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Sign out' }))
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith('/api/session/logout', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+        },
+      })
+    })
+    expect(
+      await screen.findByRole('heading', { name: 'Sign in required' }),
+    ).toBeInTheDocument()
+  })
+
+  it('keeps authenticated-only routes guarded for anonymous sessions', async () => {
+    mockAppFetch({
+      session: createSession({
+        loginProviders: [
+          {
+            registrationId: 'oidc',
+            clientName: 'Company SSO',
+            authorizationPath: '/api/session/oauth2/authorization/oidc',
+          },
+        ],
+      }),
+    })
+
+    renderApp('/account')
+
+    expect(
+      await screen.findByRole('heading', { name: 'Sign in required' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'Sign in with Company SSO' }),
+    ).toHaveAttribute('href', '/api/session/oauth2/authorization/oidc')
+    expect(screen.queryByRole('link', { name: 'Account' })).not.toBeInTheDocument()
+  })
 })
 
 function renderApp(initialEntry = '/catalog') {
@@ -111,17 +231,27 @@ function renderApp(initialEntry = '/catalog') {
 function mockAppFetch({
   books = createBookPage(),
   categories = [{ id: 1, name: 'Java' }],
+  logoutResponse = new Response(null, { status: 204 }),
   session,
 }: {
   books?: BookPage
   categories?: Category[]
-  session: SessionResponse
+  logoutResponse?: Response
+  session: SessionResponse | SessionResponse[]
 }) {
+  const sessionResponses = Array.isArray(session) ? [...session] : [session]
+  let currentSession = sessionResponses[0] ?? createSession()
   const fetchMock = vi.fn().mockImplementation((input: RequestInfo | URL) => {
     const path = String(input)
 
     if (path === SESSION_PATH) {
-      return Promise.resolve(Response.json(session))
+      currentSession = sessionResponses.shift() ?? currentSession
+
+      return Promise.resolve(Response.json(currentSession))
+    }
+
+    if (path === '/api/session/logout') {
+      return Promise.resolve(logoutResponse)
     }
 
     if (path === CATEGORIES_PATH) {
@@ -181,4 +311,14 @@ function createSession(overrides: SessionResponse = {}): SessionResponse {
     },
     ...overrides,
   }
+}
+
+function clearDocumentCookies() {
+  document.cookie
+    .split(';')
+    .map((cookie) => cookie.split('=')[0]?.trim())
+    .filter(Boolean)
+    .forEach((cookieName) => {
+      document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`
+    })
 }

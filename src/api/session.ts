@@ -35,6 +35,37 @@ export async function fetchCurrentSession(
   return (await response.json()) as SessionResponse
 }
 
+export async function logoutCurrentSession(
+  session: SessionResponse,
+  fetchImplementation: FetchImplementation = globalThis.fetch,
+  cookieSource = getBrowserCookieSource(),
+): Promise<void> {
+  const logoutPath = session.logoutPath
+
+  if (!logoutPath) {
+    throw new Error('Logout is unavailable for the current session.')
+  }
+
+  const response = await fetchImplementation(logoutPath, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {
+      Accept: 'application/json',
+      ...getCsrfHeaders(session, cookieSource),
+    },
+  })
+
+  if (!response.ok) {
+    throw new ApiRequestError(
+      'POST',
+      logoutPath,
+      response.status,
+      response.statusText || 'Unknown status',
+      await parseApiProblem(response),
+    )
+  }
+}
+
 export function getLoginProviders(
   session: SessionResponse,
 ): readonly SessionLoginProvider[] {

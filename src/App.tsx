@@ -1,35 +1,71 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
 
 import {
   fetchCurrentSession,
   getLoginProviders,
+  logoutCurrentSession,
   type SessionLoginProvider,
   type SessionResponse,
 } from './api/session'
+import {
+  RequireAuthenticated,
+  type SessionState,
+} from './auth/RequireAuthenticated'
 import { CatalogPanel } from './catalog/CatalogPanel'
 import { CATALOG_ROUTE_PATH } from './catalog/catalogQuery'
 
-type SessionState =
-  | { status: 'loading' }
-  | { status: 'ready'; session: SessionResponse }
+const ACCOUNT_ROUTE_PATH = '/account'
+
+type LogoutState =
+  | { status: 'idle' }
+  | { status: 'submitting' }
   | { status: 'error'; message: string }
 
 export function App() {
-  const sessionState = useSessionBootstrap()
+  const { refreshSession, sessionState } = useSessionBootstrap()
+  const [logoutState, setLogoutState] = useState<LogoutState>({
+    status: 'idle',
+  })
+
+  async function handleLogout(session: SessionResponse) {
+    setLogoutState({ status: 'submitting' })
+
+    try {
+      await logoutCurrentSession(session)
+      await refreshSession()
+      setLogoutState({ status: 'idle' })
+    } catch (error: unknown) {
+      setLogoutState({
+        status: 'error',
+        message: getDisplayMessage(error, 'Logout failed.'),
+      })
+    }
+  }
 
   return (
     <div className="app-shell">
       <header className="topbar">
-        <div className="brand-lockup">
-          <span className="brand-mark" aria-hidden="true">
-            TI
-          </span>
-          <span className="brand-name">Technical Interview Frontend</span>
+        <div className="topbar-primary">
+          <div className="brand-lockup">
+            <span className="brand-mark" aria-hidden="true">
+              TI
+            </span>
+            <span className="brand-name">Technical Interview Frontend</span>
+          </div>
+          <nav className="topnav" aria-label="Primary navigation">
+            <NavLink to={CATALOG_ROUTE_PATH}>Catalog</NavLink>
+            {sessionState.status === 'ready' &&
+              sessionState.session.authenticated === true && (
+                <NavLink to={ACCOUNT_ROUTE_PATH}>Account</NavLink>
+              )}
+          </nav>
         </div>
-        <nav className="topnav" aria-label="Primary navigation">
-          <NavLink to={CATALOG_ROUTE_PATH}>Catalog</NavLink>
-        </nav>
+        <SessionHeader
+          logoutState={logoutState}
+          state={sessionState}
+          onLogout={handleLogout}
+        />
       </header>
 
       <main className="workspace">
@@ -45,6 +81,14 @@ export function App() {
         <Routes>
           <Route index element={<Navigate to={CATALOG_ROUTE_PATH} replace />} />
           <Route path={CATALOG_ROUTE_PATH} element={<CatalogPanel />} />
+          <Route
+            path={ACCOUNT_ROUTE_PATH}
+            element={
+              <RequireAuthenticated state={sessionState}>
+                <AccountRoutePlaceholder />
+              </RequireAuthenticated>
+            }
+          />
           <Route path="*" element={<Navigate to={CATALOG_ROUTE_PATH} replace />} />
         </Routes>
       </main>
@@ -52,8 +96,24 @@ export function App() {
   )
 }
 
-function useSessionBootstrap(): SessionState {
-  const [state, setState] = useState<SessionState>({ status: 'loading' })
+function useSessionBootstrap() {
+  const [sessionState, setSessionState] = useState<SessionState>({
+    status: 'loading',
+  })
+
+  const refreshSession = useCallback(async () => {
+    setSessionState({ status: 'loading' })
+
+    try {
+      const session = await fetchCurrentSession()
+      setSessionState({ status: 'ready', session })
+    } catch (error: unknown) {
+      setSessionState({
+        status: 'error',
+        message: getDisplayMessage(error, 'Session bootstrap failed.'),
+      })
+    }
+  }, [])
 
   useEffect(() => {
     let ignore = false
@@ -61,17 +121,14 @@ function useSessionBootstrap(): SessionState {
     fetchCurrentSession()
       .then((session) => {
         if (!ignore) {
-          setState({ status: 'ready', session })
+          setSessionState({ status: 'ready', session })
         }
       })
       .catch((error: unknown) => {
         if (!ignore) {
-          setState({
+          setSessionState({
             status: 'error',
-            message:
-              error instanceof Error
-                ? error.message
-                : 'Session bootstrap failed',
+            message: getDisplayMessage(error, 'Session bootstrap failed.'),
           })
         }
       })
@@ -81,7 +138,64 @@ function useSessionBootstrap(): SessionState {
     }
   }, [])
 
-  return state
+  return { refreshSession, sessionState }
+}
+
+function SessionHeader({
+  logoutState,
+  onLogout,
+  state,
+}: {
+  logoutState: LogoutState
+  onLogout: (session: SessionResponse) => void
+  state: SessionState
+}) {
+  if (state.status === 'loading') {
+    return (
+      <div className="header-session" aria-label="Session status">
+        <span className="header-session-text" role="status">
+          Checking session...
+        </span>
+      </div>
+    )
+  }
+
+  if (state.status === 'error') {
+    return (
+      <div className="header-session" aria-label="Session status">
+        <span className="header-session-text error">Session unavailable</span>
+      </div>
+    )
+  }
+
+  if (state.session.authenticated !== true) {
+    return (
+      <div className="header-session" aria-label="Session status">
+        <span className="status-pill anonymous">Signed out</span>
+      </div>
+    )
+  }
+
+  const submitting = logoutState.status === 'submitting'
+
+  return (
+    <div className="header-session" aria-label="Session status">
+      <span className="status-pill authenticated">Signed in</span>
+      <button
+        className="logout-button"
+        type="button"
+        disabled={submitting || !state.session.logoutPath}
+        onClick={() => onLogout(state.session)}
+      >
+        {submitting ? 'Signing out...' : 'Sign out'}
+      </button>
+      {logoutState.status === 'error' && (
+        <span className="header-session-text error" role="alert">
+          {logoutState.message}
+        </span>
+      )}
+    </div>
+  )
 }
 
 function SessionBootstrapPanel({ state }: { state: SessionState }) {
@@ -112,7 +226,8 @@ function SessionBootstrapPanel({ state }: { state: SessionState }) {
 function SessionDetails({ session }: { session: SessionResponse }) {
   const loginProviders = getLoginProviders(session).filter(hasAuthorizationPath)
   const csrf = session.csrf
-  const statusLabel = session.authenticated ? 'Signed in' : 'Signed out'
+  const statusLabel =
+    session.authenticated === true ? 'Signed in' : 'Signed out'
   const csrfLabel =
     csrf?.enabled === true
       ? `${csrf.cookieName ?? 'CSRF cookie'} -> ${csrf.headerName ?? 'CSRF header'}`
@@ -123,7 +238,7 @@ function SessionDetails({ session }: { session: SessionResponse }) {
       <div className="session-summary">
         <span
           className={`status-pill ${
-            session.authenticated ? 'authenticated' : 'anonymous'
+            session.authenticated === true ? 'authenticated' : 'anonymous'
           }`}
         >
           {statusLabel}
@@ -133,7 +248,11 @@ function SessionDetails({ session }: { session: SessionResponse }) {
       <dl className="session-metadata">
         <div>
           <dt>Account</dt>
-          <dd>{session.authenticated ? session.accountPath ?? 'Unavailable' : 'None'}</dd>
+          <dd>
+            {session.authenticated === true
+              ? session.accountPath ?? 'Unavailable'
+              : 'None'}
+          </dd>
         </div>
         <div>
           <dt>Logout</dt>
@@ -149,7 +268,7 @@ function SessionDetails({ session }: { session: SessionResponse }) {
         </div>
       </dl>
 
-      {!session.authenticated && loginProviders.length > 0 && (
+      {session.authenticated !== true && loginProviders.length > 0 && (
         <nav className="login-actions" aria-label="Login providers">
           {loginProviders.map((provider) => (
             <a
@@ -163,10 +282,22 @@ function SessionDetails({ session }: { session: SessionResponse }) {
         </nav>
       )}
 
-      {!session.authenticated && loginProviders.length === 0 && (
+      {session.authenticated !== true && loginProviders.length === 0 && (
         <p className="session-message muted">No login providers available.</p>
       )}
     </div>
+  )
+}
+
+function AccountRoutePlaceholder() {
+  return (
+    <section className="protected-panel" aria-labelledby="account-route-title">
+      <div className="section-heading">
+        <p className="eyebrow">Authenticated area</p>
+        <h2 id="account-route-title">Account</h2>
+      </div>
+      <p className="session-message">Authenticated session established.</p>
+    </section>
   )
 }
 
@@ -174,6 +305,10 @@ function hasAuthorizationPath(
   provider: SessionLoginProvider,
 ): provider is SessionLoginProvider & { authorizationPath: string } {
   return Boolean(provider.authorizationPath)
+}
+
+function getDisplayMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback
 }
 
 export default App
