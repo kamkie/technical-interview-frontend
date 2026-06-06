@@ -15,13 +15,14 @@ This roadmap tracks the planned first-party browser frontend for the sibling
 | CI target           | GitHub Actions                                                                       |
 | Backend integration | Same-origin `/api/**` browser traffic                                                |
 | Contract source     | `docs/backend/approved-openapi.json` and `docs/backend/FRONTEND_AI_CONTRACT.md`      |
-| Implemented surface | Session bootstrap, login-provider rendering, public book/category reads              |
+| Implemented surface | Session bootstrap, login-provider rendering, public catalog table, local auth docs, CI validation |
 | Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check` |
 
 The app currently bootstraps browser session state with `GET /api/session`, renders
-login options from session metadata, generates checked OpenAPI TypeScript types, and
-shows the first public catalog flow for books and categories with contract-shaped
-pagination, repeated filters, and localized backend error display.
+login options from session metadata, generates checked OpenAPI TypeScript types, shows
+a simple public catalog table for books and categories with contract-shaped
+pagination, repeated filters, and localized backend error display, documents local
+same-origin auth smoke steps, and runs the canonical validation baseline in CI.
 
 ## Product Direction
 
@@ -38,10 +39,10 @@ pagination, repeated filters, and localized backend error display.
 | Milestone                         | Status      | Scope                                                                                                    | Done when                                                                                                                                                 |
 |-----------------------------------|-------------|----------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
 | M0 - Foundation                   | Complete    | Project scaffold, generated API types, session bootstrap, public catalog reads                           | Existing validation baseline passes and the app can render session plus catalog states from `/api/session`, `/api/books`, and `/api/categories`           |
-| M1 - CI and Quality Gate          | Next        | GitHub Actions workflow for canonical npm validation commands                                            | CI runs lint, typecheck, tests, build, and whitespace checks on pull requests or the selected branch workflow                                             |
-| M2 - Simple Public Catalog UX     | Planned     | Basic table layout with read-only search, filters, pagination, loading, empty, localized errors, and mock/test fixtures for each visible state | Users can scan and filter public books without relying on implementation placeholders; component tests cover fixture-backed visible states                |
-| M3 - Advanced Catalog Controls    | Planned     | React Router route-level navigation with browser history expectations, richer table controls, URL-synced filters, sorting UI, and deeper catalog state handling | Users can share filtered catalog URLs, adjust sorting through the UI, navigate with browser back/forward controls, and use richer table controls with tests covering route/query-state synchronization |
-| M4 - Local Auth Workflow Docs     | Planned     | Document repeatable local same-origin auth against `..\technical-interview-demo`, including backend startup, Vite `/api` proxy wiring, OAuth setup, manual smoke steps, and automation limits | `SETUP.md` links to a local auth smoke doc covering `local,oauth` startup, provider credentials, admin identity seeding, session/account/logout checks, CSRF handling, and anonymous-vs-authenticated automation policy |
+| M1 - CI and Quality Gate          | Complete    | GitHub Actions workflow for canonical npm validation commands                                            | CI runs lint, typecheck, tests, build, and whitespace checks on pull requests or the selected branch workflow                                             |
+| M2 - Simple Public Catalog UX     | Complete    | Basic table layout with read-only search, filters, pagination, loading, empty, localized errors, and mock/test fixtures for each visible state | Users can scan and filter public books without relying on implementation placeholders; component tests cover fixture-backed visible states                |
+| M3 - Advanced Catalog Controls    | Next        | React Router route-level navigation with browser history expectations, richer table controls, URL-synced filters, sorting UI, and deeper catalog state handling | Users can share filtered catalog URLs, adjust sorting through the UI, navigate with browser back/forward controls, and use richer table controls with tests covering route/query-state synchronization |
+| M4 - Local Auth Workflow Docs     | Complete    | Document repeatable local same-origin auth against `..\technical-interview-demo`, including backend startup, Vite `/api` proxy wiring, OAuth setup, manual smoke steps, and automation limits | `SETUP.md` links to a local auth smoke doc covering `local,oauth` startup, provider credentials, admin identity seeding, session/account/logout checks, CSRF handling, and anonymous-vs-authenticated automation policy |
 | M5 - Authenticated Session UX     | Planned     | Account-aware header/state, logout flow, and route guarding for authenticated-only areas                 | UI refreshes session after login/logout paths, mirrors CSRF metadata for unsafe authenticated writes, and has smoke or e2e coverage based on the documented local workflow |
 | M6 - Account Profile Surface      | Planned     | Read-only account profile page plus account-aware menu/header                                            | Account UI only appears after session bootstrap establishes the current user and tests cover unauthenticated and authenticated states                     |
 | M7 - Account Language Preference  | Planned     | Account self-service flow for reading, updating, and clearing the current user's preferred language      | Users can update or clear the contract-backed account language preference with CSRF handling and tests for loading, success, validation/error, unauthenticated, and missing-CSRF states |
@@ -52,13 +53,11 @@ pagination, repeated filters, and localized backend error display.
 
 ## Near-Term Backlog
 
-1. Add a GitHub Actions workflow that runs the validation baseline.
-2. Tighten simple public catalog UI behavior before expanding into advanced catalog
-   controls or authenticated writes.
-3. Document the local backend login/logout workflow against
-   `..\technical-interview-demo` before implementing authenticated session UX.
-4. Introduce a shared mutation helper only when the first unsafe write is implemented.
-5. Revisit account self-service and the first admin/operator slice after account
+1. Add React Router catalog navigation with URL-synced filters, sorting UI, and
+   browser history behavior.
+2. Implement authenticated session UX against the documented local auth workflow.
+3. Introduce a shared mutation helper only when the first unsafe write is implemented.
+4. Revisit account self-service and the first admin/operator slice after account
    profile and CSRF behavior are proven in the frontend.
 
 ## Pragmatic Smoke Split
@@ -75,17 +74,17 @@ pagination, repeated filters, and localized backend error display.
 
 - Roadmap implementation is coordinated by
   `.agents/plans/PLAN_frontend_roadmap_execution.md`.
-- M1 CI should add `.github/workflows/ci.yml`, trigger on pull requests and pushes to
-  `main`, use Node.js 24.x with `npm ci`, and run lint, typecheck, tests, build, and
+- M1 CI lives at `.github/workflows/ci.yml`, triggers on pull requests and pushes to
+  `main`, uses Node.js 24.x with `npm ci`, and runs lint, typecheck, tests, build, and
   `git diff --check`.
-- M2 table columns should be title, author, publication year, ISBN, and categories.
+- M2 table columns are title, author, publication year, ISBN, and categories.
   Pagination stays button-based in M2; richer table controls belong to M3.
-- M2 fixture-backed visible states should use shared fixtures under
-  `src/test/fixtures/`, covering loading, populated, empty, filtered, paginated,
-  localized book error, and category error states.
-- M4 local auth documentation should live at `docs/LOCAL_AUTH_SMOKE.md` and be linked
-  from `SETUP.md`.
-- M4 local same-origin development should use a Vite `/api` proxy to
+- M2 fixture-backed visible states use shared fixtures under `src/test/fixtures/`,
+  covering loading, populated, empty, filtered, paginated, localized book error, and
+  category error states.
+- M4 local auth documentation lives at `docs/LOCAL_AUTH_SMOKE.md` and is linked from
+  `SETUP.md`.
+- M4 local same-origin development uses a Vite `/api` proxy to
   `http://localhost:8080` for the backend running from `..\technical-interview-demo`.
 
 ## Deferred Scope

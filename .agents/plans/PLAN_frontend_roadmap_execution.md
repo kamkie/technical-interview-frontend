@@ -13,8 +13,8 @@
 
 | Status | Current |
 | --- | --- |
-| Phase | Planning |
-| Status | Dependency Gated |
+| Phase | Phase 2 Gate |
+| Status | Ready For M3 |
 
 ## Planning Readiness
 
@@ -26,8 +26,8 @@
 | Ready For Execution | Partially |
 | Last Updated | 2026-06-07 |
 
-This plan is partially executable: Phase 1 is ready now; later phases are dependency
-gated and become executable as their prerequisite commits and specs land.
+This plan is partially executable: Phase 1 is implemented; M3 is ready next; later
+tasks remain dependency gated and become executable as their prerequisites land.
 
 ## Linked Pre-Planning Artifacts
 
@@ -65,7 +65,7 @@ and no implementation work outside the selected milestone/spec scope.
 
 ## Current State
 
-- M0 is complete.
+- M0 and Phase 1 are complete.
 - Frontend stack is Vite, React, TypeScript, Node.js 24.x, and npm 11.x.
 - Browser traffic must target same-origin `/api/**`.
 - The sibling backend checkout is expected at `..\technical-interview-demo`.
@@ -77,8 +77,8 @@ and no implementation work outside the selected milestone/spec scope.
 | Phase | Milestones | Status | Gate |
 | --- | --- | --- | --- |
 | 0 | M0 Foundation | Complete | Already validated |
-| 1 | M1, M2, M4 | Ready | No product blockers |
-| 2 | M3, M5 | Dependency Gated | M2 and M4 complete |
+| 1 | M1, M2, M4 | Complete | Milestone commits landed and validation passed |
+| 2 | M3, M5 | Partially Ready | M3 ready; M5 waits for M3 route foundation |
 | 3 | M6, M7 | Dependency Gated | M5 complete and reusable auth/session state exists |
 | 4 | M8-M11 specs | Dependency Gated | M7 proves auth/CSRF mutation pattern |
 | 5 | M8-M11 implementation planning | Dependency Gated | Relevant spec accepted |
@@ -88,7 +88,7 @@ and no implementation work outside the selected milestone/spec scope.
 | ID | Question / Gap | Why It Matters | Owner | Status | Fallback / Decision | Blocks Ready? |
 | --- | --- | --- | --- | --- | --- | --- |
 | Q1 | None for Phase 1 | M1/M2/M4 are ready to implement | Coordinator | Answered | Execute Phase 1 | No |
-| Q2 | M3 and M5 depend on Phase 1 outputs | M3 needs M2 table shape; M5 needs M4 local auth workflow | Coordinator | Dependency Gated | Wait for Phase 1 completion | Yes for Phase 2 |
+| Q2 | M3 and M5 depend on Phase 1 outputs | M3 needs M2 table shape; M5 needs M4 local auth workflow and M3 route foundation | Coordinator | Partially Answered | Execute M3 next; keep M5 gated until M3 lands | No for M3; yes for M5 |
 | Q3 | M6 and M7 depend on M5 | Account work needs authenticated session/header/route guard foundation | Coordinator | Dependency Gated | Wait for M5 | Yes for Phase 3 |
 | Q4 | Admin/operator implementation needs specs | Roadmap requires small specs before implementation | Coordinator | Dependency Gated | Execute Phase 4 first | Yes for Phase 5 |
 
@@ -132,12 +132,12 @@ Shared-file guardrails:
 | Task | Status | Owner | Commit | Validation | Notes |
 | --- | --- | --- | --- | --- | --- |
 | 0: M0 Foundation | Done | Coordinator | Existing | Passed | M0 is complete |
-| 1: M1 CI and Quality Gate | Not Started | M1 subagent | Pending | Pending | Add GitHub Actions workflow |
-| 2: M2 Simple Public Catalog UX | Not Started | M2 subagent | Pending | Pending | Add table UX and fixture-backed visible states |
-| 3: M4 Local Auth Workflow Docs | Not Started | M4 subagent | Pending | Pending | Add auth smoke docs and Vite `/api` proxy |
-| 4: Phase 1 integration gate | Not Started | Coordinator | Pending | Pending | Unlock M3/M5 if M2/M4 pass |
-| 5: M3 Advanced Catalog Controls | Blocked | M3 subagent | Pending | Pending | Wait for M2 |
-| 6: M5 Authenticated Session UX | Blocked | M5 subagent | Pending | Pending | Wait for M4 and M3 route foundation |
+| 1: M1 CI and Quality Gate | Done | M1 subagent | `266f63d` | Passed by coordinator | Added GitHub Actions workflow |
+| 2: M2 Simple Public Catalog UX | Done | M2 subagent | `ec852da` | Passed by M2 subagent and coordinator | Added table UX and fixture-backed visible states |
+| 3: M4 Local Auth Workflow Docs | Done | M4 subagent | `3cb49be` | Passed by coordinator | Added auth smoke docs and Vite `/api` proxy |
+| 4: Phase 1 integration gate | Done | Coordinator | N/A; status tracking only | Passed by coordinator | M3 is unlocked; M5 still waits for M3 |
+| 5: M3 Advanced Catalog Controls | Ready | M3 subagent | Pending | Pending | M2 table shape is complete |
+| 6: M5 Authenticated Session UX | Blocked | M5 subagent | Pending | Pending | Wait for M3 route foundation |
 | 7: Phase 2 integration gate | Blocked | Coordinator | Pending | Pending | Unlock M6/M7 if M5 passes |
 | 8: M6 Account Profile Surface | Blocked | M6 subagent | Pending | Pending | Wait for M5 |
 | 9: M7 Account Language Preference | Blocked | M7 subagent | Pending | Pending | Wait for M6 and CSRF/session patterns |
@@ -378,8 +378,8 @@ activate implementation tasks for M8-M11 one milestone at a time after spec revi
 
 | Date | Command | Scope | Result | Notes |
 | --- | --- | --- | --- | --- |
-| 2026-06-07 | Pending | Phase 1 | Pending | Coordinator records result |
-| 2026-06-07 | Pending | Phase 2 | Pending | Coordinator records result |
+| 2026-06-07 | `npm run lint`; `npm run typecheck`; `npm test`; `npm run build`; `git diff --check` | Phase 1 | Passed | Reran after Vite proxy matcher fix; 4 test files, 19 tests; browser smoke mounted the app with expected backend-offline 502s |
+| 2026-06-07 | Pending | Phase 2 | Pending | M3 is ready; M5 waits for M3 route foundation |
 | 2026-06-07 | Pending | Phase 3 | Pending | Coordinator records result |
 | 2026-06-07 | Pending | Phase 4 | Pending | Coordinator records result |
 | 2026-06-07 | Pending | Final roadmap execution | Pending | Coordinator records result |
