@@ -144,6 +144,39 @@ select {
   opacity: 0.55;
 }
 
+.secondary-button,
+.danger-button {
+  min-height: 2.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #344054;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0 0.85rem;
+}
+
+.secondary-button:hover,
+.secondary-button:focus-visible {
+  background: #f1f5f9;
+}
+
+.danger-button {
+  border-color: #fecdca;
+  color: #b42318;
+}
+
+.danger-button:hover,
+.danger-button:focus-visible {
+  background: #fff1f3;
+}
+
+.secondary-button:disabled,
+.danger-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .workspace {
   display: grid;
   align-content: start;
@@ -320,13 +353,175 @@ h1 {
   border: 0;
 }
 
-.catalog-panel {
+.catalog-panel,
+.admin-catalog-panel {
   display: grid;
   gap: 1.25rem;
   padding: 1.25rem;
   border: 1px solid #d8dee6;
   border-radius: 8px;
   background: #ffffff;
+}
+
+.admin-catalog-layout {
+  display: grid;
+  gap: 2rem;
+}
+
+.admin-section {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.admin-section + .admin-section {
+  padding-top: 1.25rem;
+  border-top: 1px solid #d8dee6;
+}
+
+.admin-section-heading,
+.form-heading-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-section-heading h3,
+.form-heading-row h4 {
+  margin: 0;
+  color: #17211d;
+  font-size: 1.15rem;
+  letter-spacing: 0;
+}
+
+.book-management-form {
+  display: grid;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #d8dee6;
+}
+
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.admin-form-grid label,
+.category-create-form label {
+  display: grid;
+  gap: 0.4rem;
+  color: #344054;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.admin-form-grid input,
+.admin-checkbox-group input[type="text"],
+.category-create-form input,
+.admin-categories-table input {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1f2520;
+  padding: 0 0.75rem;
+}
+
+.admin-form-grid input:disabled {
+  background: #f1f5f9;
+  color: #667085;
+}
+
+.admin-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.admin-checkbox-group legend {
+  width: 100%;
+  margin-bottom: 0.25rem;
+  color: #344054;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.admin-checkbox-group label {
+  display: inline-flex;
+  min-height: 2.25rem;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid #d8dee6;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #344054;
+  font-weight: 700;
+  padding: 0 0.65rem;
+}
+
+.admin-action-row,
+.category-create-form,
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.admin-action-row button,
+.category-create-form button,
+.row-actions button {
+  min-height: 2.5rem;
+  border: 0;
+  border-radius: 8px;
+  background: #106b5d;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0 0.85rem;
+}
+
+.admin-action-row button:hover,
+.admin-action-row button:focus-visible,
+.category-create-form button:hover,
+.category-create-form button:focus-visible,
+.row-actions button:hover,
+.row-actions button:focus-visible {
+  background: #0b564b;
+}
+
+.admin-action-row .secondary-button,
+.row-actions .secondary-button {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #344054;
+}
+
+.row-actions .danger-button {
+  border: 1px solid #fecdca;
+  background: #ffffff;
+  color: #b42318;
+}
+
+.admin-action-row button:disabled,
+.category-create-form button:disabled,
+.row-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.category-create-form {
+  align-items: end;
+}
+
+.category-create-form label {
+  min-width: min(100%, 18rem);
 }
 
 .auth-guard,
@@ -770,6 +965,20 @@ h1 {
 
   .account-metadata {
     grid-template-columns: 1fr;
+  }
+
+  .admin-section-heading,
+  .form-heading-row {
+    flex-direction: column;
+  }
+
+  .admin-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .category-create-form {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .catalog-filters {

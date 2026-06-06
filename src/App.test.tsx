@@ -14,6 +14,7 @@ import {
   ACCOUNT_PATH,
   type UserAccount,
 } from './api/account'
+import { ADMIN_CATALOG_ROUTE_PATH } from './admin/AdminCatalogPage'
 import {
   BOOKS_PATH,
   CATEGORIES_PATH,
@@ -483,6 +484,32 @@ describe('App', () => {
     expect(
       fetchMock.mock.calls.some(([input]) => String(input) === ACCOUNT_PATH),
     ).toBe(false)
+  })
+
+  it('guards the admin catalog route for anonymous sessions', async () => {
+    mockAppFetch({
+      session: createSession({
+        loginProviders: [
+          {
+            registrationId: 'github',
+            clientName: 'GitHub',
+            authorizationPath: '/api/session/oauth2/authorization/github',
+          },
+        ],
+      }),
+    })
+
+    renderApp(ADMIN_CATALOG_ROUTE_PATH)
+
+    expect(
+      await screen.findByRole('heading', { name: 'Sign in required' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'Sign in with GitHub' }),
+    ).toHaveAttribute('href', '/api/session/oauth2/authorization/github')
+    expect(
+      screen.queryByRole('button', { name: 'Create book' }),
+    ).not.toBeInTheDocument()
   })
 })
 

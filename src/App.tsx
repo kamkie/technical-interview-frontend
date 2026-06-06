@@ -10,6 +10,10 @@ import {
 } from './api/session'
 import { AccountProfile } from './account/AccountProfile'
 import {
+  ADMIN_CATALOG_ROUTE_PATH,
+  AdminCatalogPage,
+} from './admin/AdminCatalogPage'
+import {
   RequireAuthenticated,
   type SessionState,
 } from './auth/RequireAuthenticated'
@@ -58,7 +62,10 @@ export function App() {
             <NavLink to={CATALOG_ROUTE_PATH}>Catalog</NavLink>
             {sessionState.status === 'ready' &&
               sessionState.session.authenticated === true && (
-                <NavLink to={ACCOUNT_ROUTE_PATH}>Account</NavLink>
+                <>
+                  <NavLink to={ADMIN_CATALOG_ROUTE_PATH}>Admin catalog</NavLink>
+                  <NavLink to={ACCOUNT_ROUTE_PATH}>Account</NavLink>
+                </>
               )}
           </nav>
         </div>
@@ -88,6 +95,16 @@ export function App() {
               <RequireAuthenticated state={sessionState}>
                 {sessionState.status === 'ready' && (
                   <AccountProfile session={sessionState.session} />
+                )}
+              </RequireAuthenticated>
+            }
+          />
+          <Route
+            path={ADMIN_CATALOG_ROUTE_PATH}
+            element={
+              <RequireAuthenticated state={sessionState}>
+                {sessionState.status === 'ready' && (
+                  <AdminCatalogPage session={sessionState.session} />
                 )}
               </RequireAuthenticated>
             }
