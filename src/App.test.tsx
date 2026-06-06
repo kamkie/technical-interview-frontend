@@ -1,9 +1,19 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { App } from './App'
-import { ACCOUNT_PATH, type UserAccount } from './api/account'
+import {
+  ACCOUNT_LANGUAGE_PATH,
+  ACCOUNT_PATH,
+  type UserAccount,
+} from './api/account'
 import {
   BOOKS_PATH,
   CATEGORIES_PATH,
@@ -129,6 +139,8 @@ describe('App', () => {
     expect(screen.getByText('kamkie')).toBeInTheDocument()
     expect(screen.getByText('kamil@example.test')).toBeInTheDocument()
     expect(screen.getByText('pl')).toBeInTheDocument()
+    expect(screen.getByLabelText('Language')).toHaveValue('pl')
+    expect(screen.getByRole('button', { name: 'Save language' })).toBeDisabled()
     expect(screen.getByText('USER')).toBeInTheDocument()
     expect(
       fetchMock.mock.calls.some(([input]) => String(input) === ACCOUNT_PATH),
@@ -143,6 +155,186 @@ describe('App', () => {
     expect(
       screen.queryByRole('link', { name: /Sign in with/ }),
     ).not.toBeInTheDocument()
+  })
+
+  it('updates the account language preference and visible profile', async () => {
+    document.cookie = 'XSRF-TOKEN=token%201'
+    const fetchMock = mockAppFetch({
+      languageResponse: createAccount({
+        preferredLanguage: 'de',
+        updatedAt: '2026-06-07T09:30:00Z',
+      }),
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    renderApp('/account')
+
+    fireEvent.change(await screen.findByLabelText('Language'), {
+      target: {
+        value: 'de',
+      },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Save language' }))
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(ACCOUNT_LANGUAGE_PATH, {
+        method: 'PUT',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'X-XSRF-TOKEN': 'token 1',
+        },
+        body: JSON.stringify({
+          preferredLanguage: 'de',
+        }),
+      })
+    })
+    expect(
+      await screen.findByText('Language preference updated.'),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Language')).toHaveValue('de')
+
+    const preferredLanguageField = screen
+      .getByText('Preferred language')
+      .closest('div')
+
+    expect(preferredLanguageField).not.toBeNull()
+    expect(within(preferredLanguageField as HTMLElement).getByText('de')).toBeInTheDocument()
+  })
+
+  it('clears the account language preference with a blank contract body', async () => {
+    document.cookie = 'XSRF-TOKEN=token'
+    const fetchMock = mockAppFetch({
+      languageResponse: createAccount({
+        preferredLanguage: undefined,
+        updatedAt: '2026-06-07T09:35:00Z',
+      }),
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    renderApp('/account')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Clear preference' }))
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(ACCOUNT_LANGUAGE_PATH, {
+        method: 'PUT',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'X-XSRF-TOKEN': 'token',
+        },
+        body: JSON.stringify({
+          preferredLanguage: '',
+        }),
+      })
+    })
+    expect(
+      await screen.findByText('Language preference cleared.'),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText('Language')).toHaveValue('')
+
+    const preferredLanguageField = screen
+      .getByText('Preferred language')
+      .closest('div')
+
+    expect(preferredLanguageField).not.toBeNull()
+    expect(
+      within(preferredLanguageField as HTMLElement).getByText('No preference'),
+    ).toBeInTheDocument()
+  })
+
+  it('renders localized backend language validation errors', async () => {
+    document.cookie = 'XSRF-TOKEN=token'
+    mockAppFetch({
+      languageResponse: Response.json(
+        {
+          status: 400,
+          messageKey: 'error.account.language.invalid',
+          message: 'Kod jezyka jest nieprawidlowy.',
+          language: 'pl',
+        },
+        {
+          status: 400,
+          statusText: 'Bad Request',
+          headers: {
+            'Content-Type': 'application/problem+json',
+          },
+        },
+      ),
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    renderApp('/account')
+
+    fireEvent.change(await screen.findByLabelText('Language'), {
+      target: {
+        value: 'de',
+      },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Save language' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Kod jezyka jest nieprawidlowy.',
+    )
+    expect(screen.getByLabelText('Language')).toHaveValue('de')
+  })
+
+  it('lets the backend handle missing CSRF for language updates', async () => {
+    const fetchMock = mockAppFetch({
+      languageResponse: Response.json(
+        {
+          status: 403,
+          messageKey: 'error.csrf.invalid',
+          message: 'Token CSRF jest wymagany.',
+          language: 'pl',
+        },
+        {
+          status: 403,
+          statusText: 'Forbidden',
+          headers: {
+            'Content-Type': 'application/problem+json',
+          },
+        },
+      ),
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    renderApp('/account')
+
+    fireEvent.change(await screen.findByLabelText('Language'), {
+      target: {
+        value: 'fr',
+      },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Save language' }))
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(ACCOUNT_LANGUAGE_PATH, {
+        method: 'PUT',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          preferredLanguage: 'fr',
+        }),
+      })
+    })
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Token CSRF jest wymagany.',
+    )
   })
 
   it('does not fetch the account profile when an authenticated user stays on catalog', async () => {
@@ -306,18 +498,29 @@ function mockAppFetch({
   account = createAccount(),
   books = createBookPage(),
   categories = [{ id: 1, name: 'Java' }],
+  languageResponse = createAccount(),
   logoutResponse = new Response(null, { status: 204 }),
   session,
 }: {
   account?: UserAccount | Response | ((path: string) => UserAccount | Response | Promise<Response>)
   books?: BookPage
   categories?: Category[]
+  languageResponse?:
+    | UserAccount
+    | Response
+    | ((
+        path: string,
+        init: RequestInit | undefined,
+      ) => UserAccount | Response | Promise<Response>)
   logoutResponse?: Response
   session: SessionResponse | SessionResponse[]
 }) {
   const sessionResponses = Array.isArray(session) ? [...session] : [session]
   let currentSession = sessionResponses[0] ?? createSession()
-  const fetchMock = vi.fn().mockImplementation((input: RequestInfo | URL) => {
+  const fetchMock = vi.fn().mockImplementation((
+    input: RequestInfo | URL,
+    init?: RequestInit,
+  ) => {
     const path = String(input)
 
     if (path === SESSION_PATH) {
@@ -328,6 +531,14 @@ function mockAppFetch({
 
     if (path === '/api/session/logout') {
       return Promise.resolve(logoutResponse)
+    }
+
+    if (path === ACCOUNT_LANGUAGE_PATH) {
+      const accountResponse = resolveValue(languageResponse, path, init)
+
+      return accountResponse instanceof Promise
+        ? accountResponse
+        : Promise.resolve(toAccountResponse(accountResponse))
     }
 
     if (path === (currentSession.accountPath ?? ACCOUNT_PATH)) {

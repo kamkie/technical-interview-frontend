@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import {
+  ACCOUNT_LANGUAGE_PATH,
   ACCOUNT_PATH,
   fetchCurrentAccount,
   getAccountPath,
+  updateAccountLanguage,
   type UserAccount,
 } from './account'
 import type { SessionResponse } from './session'
@@ -98,6 +100,136 @@ describe('fetchCurrentAccount', () => {
         fetchImplementation,
       ),
     ).rejects.toThrow('Profil konta jest niedostepny.')
+  })
+})
+
+describe('updateAccountLanguage', () => {
+  it('puts the preferred language with configured CSRF metadata', async () => {
+    const account = createAccount({
+      preferredLanguage: 'de',
+    })
+    const fetchImplementation = vi.fn().mockResolvedValue(Response.json(account))
+    const session = createSession({
+      authenticated: true,
+    })
+
+    await expect(
+      updateAccountLanguage(
+        session,
+        'de',
+        fetchImplementation,
+        'language=en; XSRF-TOKEN=token%201',
+      ),
+    ).resolves.toEqual(account)
+
+    expect(fetchImplementation).toHaveBeenCalledWith(ACCOUNT_LANGUAGE_PATH, {
+      method: 'PUT',
+      credentials: 'same-origin',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'X-XSRF-TOKEN': 'token 1',
+      },
+      body: JSON.stringify({
+        preferredLanguage: 'de',
+      }),
+    })
+  })
+
+  it('uses a blank preferred language body when clearing the preference', async () => {
+    const account = createAccount({
+      preferredLanguage: undefined,
+    })
+    const fetchImplementation = vi.fn().mockResolvedValue(Response.json(account))
+
+    await expect(
+      updateAccountLanguage(
+        createSession({
+          authenticated: true,
+        }),
+        '',
+        fetchImplementation,
+        'XSRF-TOKEN=token',
+      ),
+    ).resolves.toEqual(account)
+
+    expect(fetchImplementation).toHaveBeenCalledWith(
+      ACCOUNT_LANGUAGE_PATH,
+      expect.objectContaining({
+        body: JSON.stringify({
+          preferredLanguage: '',
+        }),
+      }),
+    )
+  })
+
+  it('does not fetch account language updates for anonymous sessions', async () => {
+    const fetchImplementation = vi.fn()
+
+    await expect(
+      updateAccountLanguage(createSession(), 'pl', fetchImplementation),
+    ).rejects.toThrow(
+      'Account language preference requires an authenticated session.',
+    )
+    expect(fetchImplementation).not.toHaveBeenCalled()
+  })
+
+  it('does not invent a CSRF header when the readable cookie is missing', async () => {
+    const fetchImplementation = vi
+      .fn()
+      .mockResolvedValue(Response.json(createAccount()))
+
+    await updateAccountLanguage(
+      createSession({
+        authenticated: true,
+      }),
+      'fr',
+      fetchImplementation,
+      'language=en',
+    )
+
+    expect(fetchImplementation).toHaveBeenCalledWith(ACCOUNT_LANGUAGE_PATH, {
+      method: 'PUT',
+      credentials: 'same-origin',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        preferredLanguage: 'fr',
+      }),
+    })
+  })
+
+  it('surfaces localized backend language validation errors', async () => {
+    const fetchImplementation = vi.fn().mockResolvedValue(
+      Response.json(
+        {
+          status: 400,
+          messageKey: 'error.account.language.invalid',
+          message: 'Kod jezyka jest nieprawidlowy.',
+          language: 'pl',
+        },
+        {
+          status: 400,
+          statusText: 'Bad Request',
+          headers: {
+            'Content-Type': 'application/problem+json',
+          },
+        },
+      ),
+    )
+
+    await expect(
+      updateAccountLanguage(
+        createSession({
+          authenticated: true,
+        }),
+        'zz',
+        fetchImplementation,
+        'XSRF-TOKEN=token',
+      ),
+    ).rejects.toThrow('Kod jezyka jest nieprawidlowy.')
   })
 })
 

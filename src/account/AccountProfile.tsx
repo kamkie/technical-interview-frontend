@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import {
   fetchCurrentAccount,
+  updateAccountLanguage,
   type UserAccount,
 } from '../api/account'
 import type { SessionResponse } from '../api/session'
@@ -59,13 +60,27 @@ export function AccountProfile({ session }: { session: SessionResponse }) {
       )}
 
       {accountState.status === 'ready' && (
-        <AccountProfileDetails account={accountState.value} />
+        <AccountProfileDetails
+          account={accountState.value}
+          session={session}
+          onAccountChange={(account) => {
+            setAccountState({ status: 'ready', value: account })
+          }}
+        />
       )}
     </section>
   )
 }
 
-function AccountProfileDetails({ account }: { account: UserAccount }) {
+function AccountProfileDetails({
+  account,
+  onAccountChange,
+  session,
+}: {
+  account: UserAccount
+  onAccountChange: (account: UserAccount) => void
+  session: SessionResponse
+}) {
   const displayName =
     account.displayName || account.login || account.email || 'Current user'
   const roles = (account.roles ?? []).filter(Boolean)
@@ -94,13 +109,149 @@ function AccountProfileDetails({ account }: { account: UserAccount }) {
         <ProfileField label="Login" value={account.login} />
         <ProfileField label="Email" value={account.email} />
         <ProfileField label="Provider" value={account.provider} />
-        <ProfileField label="Preferred language" value={account.preferredLanguage} />
+        <ProfileField
+          label="Preferred language"
+          value={account.preferredLanguage ?? 'No preference'}
+        />
         <ProfileField label="User ID" value={formatNumber(account.id)} />
         <ProfileField label="Last login" value={account.lastLoginAt} />
         <ProfileField label="Created" value={account.createdAt} />
         <ProfileField label="Updated" value={account.updatedAt} />
       </dl>
+
+      <LanguagePreferenceForm
+        account={account}
+        key={account.id ?? 'current'}
+        session={session}
+        onAccountChange={onAccountChange}
+      />
     </div>
+  )
+}
+
+const LANGUAGE_OPTIONS = [
+  { value: 'en', label: 'English (en)' },
+  { value: 'es', label: 'Spanish (es)' },
+  { value: 'de', label: 'German (de)' },
+  { value: 'fr', label: 'French (fr)' },
+  { value: 'pl', label: 'Polish (pl)' },
+  { value: 'uk', label: 'Ukrainian (uk)' },
+  { value: 'no', label: 'Norwegian (no)' },
+] as const
+
+type LanguageMutationState =
+  | { status: 'idle' }
+  | { status: 'submitting' }
+  | { status: 'success'; message: string }
+  | { status: 'error'; message: string }
+
+function LanguagePreferenceForm({
+  account,
+  onAccountChange,
+  session,
+}: {
+  account: UserAccount
+  onAccountChange: (account: UserAccount) => void
+  session: SessionResponse
+}) {
+  const currentLanguage = account.preferredLanguage?.trim() ?? ''
+  const [selectedLanguage, setSelectedLanguage] = useState(currentLanguage)
+  const [mutationState, setMutationState] = useState<LanguageMutationState>({
+    status: 'idle',
+  })
+  const submitting = mutationState.status === 'submitting'
+  const unchanged = selectedLanguage === currentLanguage
+  const canClear = Boolean(currentLanguage || selectedLanguage)
+
+  async function submitLanguage(preferredLanguage: string) {
+    setMutationState({ status: 'submitting' })
+
+    try {
+      const updatedAccount = await updateAccountLanguage(
+        session,
+        preferredLanguage,
+      )
+      onAccountChange(updatedAccount)
+      setMutationState({
+        status: 'success',
+        message: preferredLanguage
+          ? 'Language preference updated.'
+          : 'Language preference cleared.',
+      })
+    } catch (error: unknown) {
+      setMutationState({
+        status: 'error',
+        message: getDisplayMessage(
+          error,
+          'Language preference could not be saved.',
+        ),
+      })
+    }
+  }
+
+  return (
+    <form
+      className="language-preference"
+      aria-label="Language preference"
+      onSubmit={(event) => {
+        event.preventDefault()
+        void submitLanguage(selectedLanguage)
+      }}
+    >
+      <div className="language-preference-header">
+        <div>
+          <h3>Language preference</h3>
+        </div>
+      </div>
+
+      <div className="language-preference-controls">
+        <label htmlFor="preferred-language">Language</label>
+        <select
+          id="preferred-language"
+          value={selectedLanguage}
+          disabled={submitting}
+          onChange={(event) => {
+            setSelectedLanguage(event.currentTarget.value)
+            setMutationState({ status: 'idle' })
+          }}
+        >
+          <option value="">No preference</option>
+          {LANGUAGE_OPTIONS.map((language) => (
+            <option key={language.value} value={language.value}>
+              {language.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="language-preference-actions">
+        <button type="submit" disabled={submitting || unchanged}>
+          {submitting ? 'Saving...' : 'Save language'}
+        </button>
+        <button
+          className="secondary-button"
+          type="button"
+          disabled={submitting || !canClear}
+          onClick={() => {
+            setSelectedLanguage('')
+            void submitLanguage('')
+          }}
+        >
+          Clear preference
+        </button>
+      </div>
+
+      {mutationState.status === 'success' && (
+        <p className="session-message" role="status">
+          {mutationState.message}
+        </p>
+      )}
+      {mutationState.status === 'error' && (
+        <p className="session-message error" role="alert">
+          {mutationState.message}
+        </p>
+      )}
+    </form>
   )
 }
 
