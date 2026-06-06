@@ -9,13 +9,13 @@ browser frontend.
 - Git
 - Node.js 24.x
 - npm 11.x
-- Local sibling checkout of `technical-interview-demo` when refreshing backend contract
-  artifacts
+- Local sibling checkout of `technical-interview-demo` at `..\technical-interview-demo`
+  when refreshing backend contract artifacts or defining local smoke coverage
 
 The default expected layout is:
 
 ```text
-D:\Projects\Jit\
+D:\Projects\demo\
 |-- technical-interview-demo\
 `-- technical-interview-frontend\
 ```
