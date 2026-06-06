@@ -5,17 +5,17 @@ Released history belongs in `CHANGELOG.md`.
 
 ## Current Project State
 
-| Field | Current |
-| --- | --- |
-| Release phase | Pre-implementation |
-| Integration branch | `main` |
-| Breaking-change policy | Flexible until the first public frontend release |
-| Next target version | `0.1.0` |
-| Frontend stack | Vite + React + TypeScript |
-| Package manager | npm |
-| Node.js version | 24.x |
-| Validation commands | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check` |
-| Immediate next action | Add CI pipeline coverage for npm validation commands |
+| Field                  | Current                                                                              |
+|------------------------|--------------------------------------------------------------------------------------|
+| Release phase          | Pre-implementation                                                                   |
+| Integration branch     | `main`                                                                               |
+| Breaking-change policy | Flexible until the first public frontend release                                     |
+| Next target version    | `0.1.0`                                                                              |
+| Frontend stack         | Vite + React + TypeScript                                                            |
+| Package manager        | npm                                                                                  |
+| Node.js version        | 24.x                                                                                 |
+| Validation commands    | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check` |
+| Immediate next action  | Add CI pipeline coverage for npm validation commands                                 |
 
 ## Active Work
 
