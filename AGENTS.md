@@ -109,17 +109,28 @@ When the user asks to implement an active plan, the plan is the execution contra
   spec tasks itself.
 - Milestone and spec implementation must be delegated to workers with explicit file
   ownership and scoped validation requirements.
-- Do not start implementing a plan unless the whole selected plan scope is executable
-  to completion with the current repository state, available workers, and accepted
-  decisions. If any part is gated by unresolved product choices, missing specs,
-  required user acceptance, credentials, or external state that cannot be produced by
-  the plan itself, stop before implementation and report the blocker.
+- Execute plans in dependency order. The selected executable scope is the next
+  `Ready` milestone/spec slice plus any dependent slices that become `Ready` after a
+  predecessor is implemented, committed, and validated. Do not treat later roadmap
+  dependencies, missing future specs, or future review gates as blockers for a
+  currently `Ready` slice.
+- Use plan status terms consistently:
+  - `Ready`: the orchestrator may assign the worker now.
+  - `Waiting`: normal predecessor dependency; promote to `Ready` when the predecessor
+    lands.
+  - `Blocked`: unresolved product choice, backend contract conflict, required
+    credential, user acceptance gate explicitly required by the current task, or
+    external state that cannot be produced by the plan itself.
+- Stop before implementation only when the next `Ready` slice is actually `Blocked`
+  by a decision or external condition that cannot be resolved from the current user
+  request, backend contract, executable tests, or owned project documents.
 - Once a plan run is started, keep executing through the plan until it is complete.
   Do not stop for status-only handoffs, optional review points, routine validation
   failures, or work that can be delegated, fixed, or decided from existing project
   rules.
-- Stop only for unresolved decisions that cannot be made from the current user
-  request, the backend contract, executable tests, or owned project documents.
+- A spec or review step inside the plan is work to perform, not a blocker for earlier
+  milestones. Coordinator review may unlock follow-on implementation unless the
+  current task explicitly requires separate user acceptance.
 
 ## Change Routing
 
