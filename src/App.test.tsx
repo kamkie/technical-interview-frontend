@@ -15,12 +15,17 @@ import {
   type UserAccount,
 } from './api/account'
 import { ADMIN_CATALOG_ROUTE_PATH } from './admin/AdminCatalogPage'
+import { ADMIN_LOCALIZATION_ROUTE_PATH } from './admin/AdminLocalizationPage'
 import {
   BOOKS_PATH,
   CATEGORIES_PATH,
   type BookPage,
   type Category,
 } from './api/catalog'
+import {
+  LOCALIZATIONS_PATH,
+  type LocalizationPage,
+} from './api/localizations'
 import { SESSION_PATH, type SessionResponse } from './api/session'
 
 describe('App', () => {
@@ -136,6 +141,10 @@ describe('App', () => {
     expect(
       screen.getByRole('heading', { name: 'Account' }),
     ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Admin localizations' })).toHaveAttribute(
+      'href',
+      '/admin/localizations',
+    )
     expect(await screen.findByText('Kamil Kiewisz')).toBeInTheDocument()
     expect(screen.getByText('kamkie')).toBeInTheDocument()
     expect(screen.getByText('kamil@example.test')).toBeInTheDocument()
@@ -511,6 +520,64 @@ describe('App', () => {
       screen.queryByRole('button', { name: 'Create book' }),
     ).not.toBeInTheDocument()
   })
+
+  it('guards the admin localization route for anonymous sessions', async () => {
+    const fetchMock = mockAppFetch({
+      session: createSession({
+        loginProviders: [
+          {
+            registrationId: 'github',
+            clientName: 'GitHub',
+            authorizationPath: '/api/session/oauth2/authorization/github',
+          },
+        ],
+      }),
+    })
+
+    renderApp(ADMIN_LOCALIZATION_ROUTE_PATH)
+
+    expect(
+      await screen.findByRole('heading', { name: 'Sign in required' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'Sign in with GitHub' }),
+    ).toHaveAttribute('href', '/api/session/oauth2/authorization/github')
+    expect(
+      screen.queryByRole('button', { name: 'Create localization' }),
+    ).not.toBeInTheDocument()
+    expect(
+      fetchMock.mock.calls.some(([input]) =>
+        String(input).startsWith(LOCALIZATIONS_PATH),
+      ),
+    ).toBe(false)
+  })
+
+  it('renders the admin localization route for admin users', async () => {
+    const fetchMock = mockAppFetch({
+      account: createAccount({
+        roles: ['USER', 'ADMIN'],
+      }),
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    renderApp(ADMIN_LOCALIZATION_ROUTE_PATH)
+
+    expect(
+      await screen.findByRole('heading', { name: 'Localization management' }),
+    ).toBeInTheDocument()
+    expect(
+      await screen.findByRole('button', { name: 'Edit account.title en' }),
+    ).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${LOCALIZATIONS_PATH}?page=0&size=20&sort=messageKey%2CASC&sort=language%2CASC`,
+      expect.objectContaining({
+        credentials: 'same-origin',
+        method: 'GET',
+      }),
+    )
+  })
 })
 
 function renderApp(initialEntry = '/catalog') {
@@ -526,6 +593,7 @@ function mockAppFetch({
   books = createBookPage(),
   categories = [{ id: 1, name: 'Java' }],
   languageResponse = createAccount(),
+  localizations = createLocalizationPage(),
   logoutResponse = new Response(null, { status: 204 }),
   session,
 }: {
@@ -539,6 +607,7 @@ function mockAppFetch({
         path: string,
         init: RequestInit | undefined,
       ) => UserAccount | Response | Promise<Response>)
+  localizations?: LocalizationPage
   logoutResponse?: Response
   session: SessionResponse | SessionResponse[]
 }) {
@@ -584,6 +653,10 @@ function mockAppFetch({
       return Promise.resolve(Response.json(books))
     }
 
+    if (path.startsWith(LOCALIZATIONS_PATH)) {
+      return Promise.resolve(Response.json(localizations))
+    }
+
     return Promise.resolve(new Response(null, { status: 404 }))
   })
 
@@ -625,6 +698,29 @@ function createBookPage(): BookPage {
     number: 0,
     numberOfElements: 1,
     size: 10,
+    totalElements: 1,
+    totalPages: 1,
+  }
+}
+
+function createLocalizationPage(): LocalizationPage {
+  return {
+    content: [
+      {
+        id: 1,
+        messageKey: 'account.title',
+        language: 'en',
+        messageText: 'Account',
+        description: 'Account title',
+        createdAt: '2026-06-07T09:00:00Z',
+        updatedAt: '2026-06-07T09:00:00Z',
+      },
+    ],
+    first: true,
+    last: true,
+    number: 0,
+    numberOfElements: 1,
+    size: 20,
     totalElements: 1,
     totalPages: 1,
   }

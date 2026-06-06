@@ -354,7 +354,8 @@ h1 {
 }
 
 .catalog-panel,
-.admin-catalog-panel {
+.admin-catalog-panel,
+.admin-localization-panel {
   display: grid;
   gap: 1.25rem;
   padding: 1.25rem;
@@ -363,7 +364,8 @@ h1 {
   background: #ffffff;
 }
 
-.admin-catalog-layout {
+.admin-catalog-layout,
+.admin-localization-layout {
   display: grid;
   gap: 2rem;
 }
@@ -394,7 +396,8 @@ h1 {
   letter-spacing: 0;
 }
 
-.book-management-form {
+.book-management-form,
+.localization-management-form {
   display: grid;
   gap: 1rem;
   padding-top: 1rem;
@@ -417,9 +420,11 @@ h1 {
 }
 
 .admin-form-grid input,
+.admin-form-grid select,
 .admin-checkbox-group input[type="text"],
 .category-create-form input,
-.admin-categories-table input {
+.admin-categories-table input,
+.localization-message-field textarea {
   width: 100%;
   min-height: 2.75rem;
   border: 1px solid #cbd5e1;
@@ -427,6 +432,13 @@ h1 {
   background: #ffffff;
   color: #1f2520;
   padding: 0 0.75rem;
+}
+
+.localization-message-field textarea {
+  min-height: 8rem;
+  padding-bottom: 0.75rem;
+  padding-top: 0.75rem;
+  resize: vertical;
 }
 
 .admin-form-grid input:disabled {
@@ -522,6 +534,92 @@ h1 {
 
 .category-create-form label {
   min-width: min(100%, 18rem);
+}
+
+.localization-filters {
+  display: grid;
+  grid-template-columns: minmax(16rem, 1fr) minmax(9rem, 0.3fr) auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.localization-filters label,
+.localization-controls label,
+.localization-message-field {
+  display: grid;
+  gap: 0.4rem;
+  color: #344054;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.localization-filters input,
+.localization-filters select,
+.localization-controls select {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1f2520;
+  padding: 0 0.75rem;
+}
+
+.localization-controls {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1fr) minmax(9rem, 0.35fr);
+  gap: 1rem;
+  align-items: end;
+}
+
+.localization-form-grid {
+  grid-template-columns: minmax(14rem, 1fr) minmax(8rem, 0.35fr) minmax(14rem, 1fr);
+}
+
+.coverage-pill {
+  display: inline-flex;
+  min-height: 1.75rem;
+  align-items: center;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 0 0.65rem;
+}
+
+.coverage-pill.complete {
+  background: #dff8ee;
+  color: #106b5d;
+}
+
+.coverage-pill.partial,
+.coverage-pill.unknown {
+  background: #fff4d6;
+  color: #8a4b0f;
+}
+
+.coverage-pill.missing,
+.coverage-pill.conflict {
+  background: #fff1f3;
+  color: #b42318;
+}
+
+.localization-locale-button {
+  min-height: 2rem;
+  border: 1px solid #fecdca;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #b42318;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 0 0.65rem;
+}
+
+.localization-locale-button:hover,
+.localization-locale-button:focus-visible {
+  background: #fff1f3;
 }
 
 .auth-guard,
@@ -918,6 +1016,10 @@ h1 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .localization-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .catalog-filter-actions {
     grid-column: 1 / -1;
   }
@@ -986,6 +1088,12 @@ h1 {
   }
 
   .catalog-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .localization-filters,
+  .localization-controls,
+  .localization-form-grid {
     grid-template-columns: 1fr;
   }
 }
