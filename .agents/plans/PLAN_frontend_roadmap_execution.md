@@ -23,10 +23,10 @@
 | Decision Complete | Yes for dependency-ordered execution |
 | Blocking Open Questions | No known blockers for the next ready milestone |
 | Accepted Fallbacks | Execute the next ready milestone; dependent tasks become ready when their prerequisites are implemented and validated |
-| Ready For Execution | Yes; start with M6 |
+| Ready For Execution | Yes; start with M7 |
 | Last Updated | 2026-06-07 |
 
-Phase 1 and Phase 2 are implemented and recorded. Remaining implementation proceeds by dependency
+Phase 1, Phase 2, and M6 are implemented and recorded. Remaining implementation proceeds by dependency
 order. Future dependency gates are sequencing rules, not blockers for starting the
 next ready milestone. When a milestone implements the prerequisite for another
 milestone, the coordinator updates this plan and marks the dependent task ready.
@@ -86,7 +86,7 @@ and no implementation work outside the selected milestone/spec scope.
 | 0 | M0 Foundation | Complete | Already validated |
 | 1 | M1, M2, M4 | Complete | Milestone commits landed and validation passed |
 | 2 | M3, M5 | Complete | Milestone commits landed and validation passed |
-| 3 | M6, M7 | Ready | M6 is ready; M7 becomes ready after M6 and reusable CSRF/session patterns |
+| 3 | M6, M7 | In Progress | M6 is complete; M7 is ready |
 | 4 | M8-M11 specs | Waiting | Specs become ready after M7 proves auth/CSRF mutation patterns |
 | 5 | M8-M11 implementation | Waiting | Each implementation task becomes ready after its spec passes coordinator review |
 
@@ -96,7 +96,7 @@ and no implementation work outside the selected milestone/spec scope.
 | --- | --- | --- | --- | --- | --- | --- |
 | Q1 | None for Phase 1 | M1/M2/M4 were ready to implement | Coordinator | Completed | Phase 1 executed and recorded | No |
 | Q2 | M3 and M5 depend on Phase 1 outputs | M3 needs M2 table shape; M5 needs M4 local auth workflow and M3 route foundation | Coordinator | M5 Ready | M3 landed; start M5 | No |
-| Q3 | M6 and M7 depend on M5 | Account work needs authenticated session/header/route guard foundation | Coordinator | M6 Ready | M5 landed; start M6 and promote M7 after M6 | No |
+| Q3 | M6 and M7 depend on M5 | Account work needs authenticated session/header/route guard foundation | Coordinator | M7 Ready | M6 landed; start M7 | No |
 | Q4 | Admin/operator implementation needs specs | Roadmap requires small specs before implementation | Coordinator | Sequenced | Promote specs after M7; promote implementation after coordinator spec review | No |
 
 ## Decision Log And Assumptions
@@ -167,8 +167,8 @@ Status model:
 | 5: M3 Advanced Catalog Controls | Done | M3 subagent | `146aca0` | Passed by M3 subagent and coordinator | Added React Router catalog route, URL-synced query state, sorting, and history coverage |
 | 6: M5 Authenticated Session UX | Done | M5 subagent | `fba7742` | Passed by M5 subagent and coordinator | Added session-aware header, metadata-driven logout, CSRF handling, and route guard infrastructure |
 | 7: Phase 2 integration gate | Done | Coordinator | N/A; status tracking only | Passed by coordinator | M6 is ready |
-| 8: M6 Account Profile Surface | Ready | M6 subagent | Pending | Pending | M5 session and route guard foundation landed |
-| 9: M7 Account Language Preference | Waiting | M7 subagent | Pending | Pending | Promote to Ready after M6 and CSRF/session patterns |
+| 8: M6 Account Profile Surface | Done | M6 subagent | `e74790a` | Passed by M6 subagent and coordinator | Added read-only authenticated account profile and lazy account fetch |
+| 9: M7 Account Language Preference | Ready | M7 subagent | Pending | Pending | M6 account surface and M5 CSRF/session helpers landed |
 | 10: Phase 3 integration gate | Waiting | Coordinator | Pending | Pending | Promote admin/operator specs after M7 |
 | 11: M8 Admin Catalog Spec | Waiting | M8 spec subagent | Pending | Pending | Promote to Ready after M7 |
 | 12: M9 Admin Localization Spec | Waiting | M9 spec subagent | Pending | Pending | Promote to Ready after M7 |
@@ -252,14 +252,14 @@ the React Router route foundation and passed validation.
 ## Phase 3: Account Profile And Language
 
 Gate: M5 is committed, validated, and exposes reusable authenticated session and
-route-guard patterns. M6 is ready. M7 becomes ready after M6 proves the account
+route-guard patterns. M6 is committed and validated. M7 is ready because the account
 surface and reusable CSRF/session patterns are available.
 
 ### Task 6: M6 Account Profile Surface
 
 | Field | Value |
 | --- | --- |
-| Status | Ready |
+| Status | Complete |
 | Goal | Add read-only current-account profile page plus account-aware menu/header |
 | Owned Files Or Packages | Account components/routes/tests, app shell/header/menu, account read API client |
 | Context Required | M5 session UX, `ROADMAP.md` M6, `docs/backend/FRONTEND_AI_CONTRACT.md` |
@@ -272,7 +272,7 @@ surface and reusable CSRF/session patterns are available.
 
 | Field | Value |
 | --- | --- |
-| Status | Waiting for M6 |
+| Status | Ready |
 | Goal | Add current-user preferred-language update and clear flow |
 | Owned Files Or Packages | Account language preference components/tests, account API client, CSRF/mutation helper if needed |
 | Context Required | M5/M6 implementations, `docs/backend/approved-openapi.json`, `docs/backend/FRONTEND_AI_CONTRACT.md` |
@@ -415,6 +415,7 @@ not a blocking gate unless the spec exposes an unresolved product decision.
 | 2026-06-07 | `npm run lint`; `npm run typecheck`; `npm test`; `npm run build`; `git diff --check` | Phase 1 | Passed | Reran after Vite proxy matcher fix; 4 test files, 19 tests; browser smoke mounted the app with expected backend-offline 502s |
 | 2026-06-07 | `npm run lint`; `npm run typecheck`; `npm test`; `npm run build`; `git diff --check` | M3 | Passed | 4 test files, 23 tests; M5 is ready |
 | 2026-06-07 | `npm run lint`; `npm run typecheck`; `npm test`; `npm run build`; `git diff --check` | M5 / Phase 2 | Passed | 4 test files, 31 tests; authenticated provider smoke skipped because no canonical command or live OAuth-backed backend session was available |
+| 2026-06-07 | `npm run lint`; `npm run typecheck`; `npm test`; `npm run build`; `git diff --check` | M6 | Passed | 5 test files, 39 tests; full authenticated profile browser smoke skipped because no live authenticated backend session was available |
 | 2026-06-07 | Pending | Phase 3 | Pending | Coordinator records result |
 | 2026-06-07 | Pending | Phase 4 | Pending | Coordinator records result |
 | 2026-06-07 | Pending | Final roadmap execution | Pending | Coordinator records result |
