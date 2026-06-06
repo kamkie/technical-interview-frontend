@@ -23,10 +23,10 @@
 | Decision Complete | Yes for dependency-ordered execution |
 | Blocking Open Questions | No known blockers for the next ready milestone |
 | Accepted Fallbacks | Execute the next ready milestone; dependent tasks become ready when their prerequisites are implemented and validated |
-| Ready For Execution | Yes; start with M3 |
+| Ready For Execution | Yes; start with M5 |
 | Last Updated | 2026-06-07 |
 
-Phase 1 is implemented and recorded. Remaining implementation proceeds by dependency
+Phase 1 and M3 are implemented and recorded. Remaining implementation proceeds by dependency
 order. Future dependency gates are sequencing rules, not blockers for starting the
 next ready milestone. When a milestone implements the prerequisite for another
 milestone, the coordinator updates this plan and marks the dependent task ready.
@@ -85,7 +85,7 @@ and no implementation work outside the selected milestone/spec scope.
 | --- | --- | --- | --- |
 | 0 | M0 Foundation | Complete | Already validated |
 | 1 | M1, M2, M4 | Complete | Milestone commits landed and validation passed |
-| 2 | M3, M5 | Ready | Start M3 now; M5 becomes ready after M3 is committed and validated |
+| 2 | M3, M5 | In Progress | M3 is complete; M5 is ready |
 | 3 | M6, M7 | Waiting | M6 becomes ready after M5; M7 becomes ready after M6 and reusable CSRF/session patterns |
 | 4 | M8-M11 specs | Waiting | Specs become ready after M7 proves auth/CSRF mutation patterns |
 | 5 | M8-M11 implementation | Waiting | Each implementation task becomes ready after its spec passes coordinator review |
@@ -95,7 +95,7 @@ and no implementation work outside the selected milestone/spec scope.
 | ID | Question / Gap | Why It Matters | Owner | Status | Fallback / Decision | Blocks Ready? |
 | --- | --- | --- | --- | --- | --- | --- |
 | Q1 | None for Phase 1 | M1/M2/M4 were ready to implement | Coordinator | Completed | Phase 1 executed and recorded | No |
-| Q2 | M3 and M5 depend on Phase 1 outputs | M3 needs M2 table shape; M5 needs M4 local auth workflow and M3 route foundation | Coordinator | Ready | Start M3; promote M5 after M3 lands | No |
+| Q2 | M3 and M5 depend on Phase 1 outputs | M3 needs M2 table shape; M5 needs M4 local auth workflow and M3 route foundation | Coordinator | M5 Ready | M3 landed; start M5 | No |
 | Q3 | M6 and M7 depend on M5 | Account work needs authenticated session/header/route guard foundation | Coordinator | Sequenced | Promote M6 after M5; promote M7 after M6 | No |
 | Q4 | Admin/operator implementation needs specs | Roadmap requires small specs before implementation | Coordinator | Sequenced | Promote specs after M7; promote implementation after coordinator spec review | No |
 
@@ -164,8 +164,8 @@ Status model:
 | 2: M2 Simple Public Catalog UX | Done | M2 subagent | `ec852da` | Passed by M2 subagent and coordinator | Added table UX and fixture-backed visible states |
 | 3: M4 Local Auth Workflow Docs | Done | M4 subagent | `3cb49be` | Passed by coordinator | Added auth smoke docs and Vite `/api` proxy |
 | 4: Phase 1 integration gate | Done | Coordinator | N/A; status tracking only | Passed by coordinator | M3 is ready; M5 waits for M3 |
-| 5: M3 Advanced Catalog Controls | Ready | M3 subagent | Pending | Pending | Start next |
-| 6: M5 Authenticated Session UX | Waiting | M5 subagent | Pending | Pending | Promote to Ready after M3 route foundation lands |
+| 5: M3 Advanced Catalog Controls | Done | M3 subagent | `146aca0` | Passed by M3 subagent and coordinator | Added React Router catalog route, URL-synced query state, sorting, and history coverage |
+| 6: M5 Authenticated Session UX | Ready | M5 subagent | Pending | Pending | M3 route foundation landed |
 | 7: Phase 2 integration gate | Waiting | Coordinator | Pending | Pending | Promote M6 after M5 passes |
 | 8: M6 Account Profile Surface | Waiting | M6 subagent | Pending | Pending | Promote to Ready after M5 |
 | 9: M7 Account Language Preference | Waiting | M7 subagent | Pending | Pending | Promote to Ready after M6 and CSRF/session patterns |
@@ -220,14 +220,14 @@ Status model:
 
 ## Phase 2: Follow-On Catalog And Auth
 
-Gate: M2 and M4 are committed and validated. M3 is ready now. M5 becomes ready
-automatically after M3 lands the React Router route foundation and passes validation.
+Gate: M2, M3, and M4 are committed and validated. M5 is ready because M3 landed
+the React Router route foundation and passed validation.
 
 ### Task 4: M3 Advanced Catalog Controls
 
 | Field | Value |
 | --- | --- |
-| Status | Ready |
+| Status | Complete |
 | Goal | Add route-level catalog navigation with URL-synced filters, sorting UI, richer table controls, and browser history behavior |
 | Owned Files Or Packages | Routing setup, `src/catalog/`, catalog tests, `src/index.css`, package metadata for React Router |
 | Context Required | M2 implementation, `ROADMAP.md` M3, `docs/backend/FRONTEND_AI_CONTRACT.md` |
@@ -240,7 +240,7 @@ automatically after M3 lands the React Router route foundation and passes valida
 
 | Field | Value |
 | --- | --- |
-| Status | Waiting for M3 |
+| Status | Ready |
 | Goal | Add authenticated session UX on the documented local auth workflow and React Router foundation |
 | Owned Files Or Packages | Session/auth API helpers, app shell/header, route guards/tests, logout UI/tests |
 | Context Required | M4 auth doc, M3 routing implementation, `docs/backend/FRONTEND_AI_CONTRACT.md` |
@@ -413,7 +413,7 @@ not a blocking gate unless the spec exposes an unresolved product decision.
 | Date | Command | Scope | Result | Notes |
 | --- | --- | --- | --- | --- |
 | 2026-06-07 | `npm run lint`; `npm run typecheck`; `npm test`; `npm run build`; `git diff --check` | Phase 1 | Passed | Reran after Vite proxy matcher fix; 4 test files, 19 tests; browser smoke mounted the app with expected backend-offline 502s |
-| 2026-06-07 | Pending | Phase 2 | Ready | M3 is ready; M5 waits for M3 route foundation |
+| 2026-06-07 | `npm run lint`; `npm run typecheck`; `npm test`; `npm run build`; `git diff --check` | M3 | Passed | 4 test files, 23 tests; M5 is ready |
 | 2026-06-07 | Pending | Phase 3 | Pending | Coordinator records result |
 | 2026-06-07 | Pending | Phase 4 | Pending | Coordinator records result |
 | 2026-06-07 | Pending | Final roadmap execution | Pending | Coordinator records result |
