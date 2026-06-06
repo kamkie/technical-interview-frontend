@@ -73,8 +73,8 @@ pagination, repeated filters, and localized backend error display.
 
 ## Implementation Defaults
 
-- Ready milestone implementation is coordinated by
-  `.agents/plans/PLAN_ready_milestones.md`.
+- Roadmap implementation is coordinated by
+  `.agents/plans/PLAN_frontend_roadmap_execution.md`.
 - M1 CI should add `.github/workflows/ci.yml`, trigger on pull requests and pushes to
   `main`, use Node.js 24.x with `npm ci`, and run lint, typecheck, tests, build, and
   `git diff --check`.
