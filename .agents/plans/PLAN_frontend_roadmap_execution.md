@@ -23,10 +23,10 @@
 | Decision Complete | Yes for dependency-ordered execution |
 | Blocking Open Questions | No known blockers for the next ready milestone |
 | Accepted Fallbacks | Execute the next ready milestone; dependent tasks become ready when their prerequisites are implemented and validated |
-| Ready For Execution | Yes; start with M7 |
+| Ready For Execution | Yes; start M8-M11 specs |
 | Last Updated | 2026-06-07 |
 
-Phase 1, Phase 2, and M6 are implemented and recorded. Remaining implementation proceeds by dependency
+Phases 1 through 3 are implemented and recorded. Remaining implementation proceeds by dependency
 order. Future dependency gates are sequencing rules, not blockers for starting the
 next ready milestone. When a milestone implements the prerequisite for another
 milestone, the coordinator updates this plan and marks the dependent task ready.
@@ -86,8 +86,8 @@ and no implementation work outside the selected milestone/spec scope.
 | 0 | M0 Foundation | Complete | Already validated |
 | 1 | M1, M2, M4 | Complete | Milestone commits landed and validation passed |
 | 2 | M3, M5 | Complete | Milestone commits landed and validation passed |
-| 3 | M6, M7 | In Progress | M6 is complete; M7 is ready |
-| 4 | M8-M11 specs | Waiting | Specs become ready after M7 proves auth/CSRF mutation patterns |
+| 3 | M6, M7 | Complete | Milestone commits landed and validation passed |
+| 4 | M8-M11 specs | Ready | Specs are ready because M7 proved auth/CSRF mutation patterns |
 | 5 | M8-M11 implementation | Waiting | Each implementation task becomes ready after its spec passes coordinator review |
 
 ## Requirement Gaps And Open Questions
@@ -97,7 +97,7 @@ and no implementation work outside the selected milestone/spec scope.
 | Q1 | None for Phase 1 | M1/M2/M4 were ready to implement | Coordinator | Completed | Phase 1 executed and recorded | No |
 | Q2 | M3 and M5 depend on Phase 1 outputs | M3 needs M2 table shape; M5 needs M4 local auth workflow and M3 route foundation | Coordinator | M5 Ready | M3 landed; start M5 | No |
 | Q3 | M6 and M7 depend on M5 | Account work needs authenticated session/header/route guard foundation | Coordinator | M7 Ready | M6 landed; start M7 | No |
-| Q4 | Admin/operator implementation needs specs | Roadmap requires small specs before implementation | Coordinator | Sequenced | Promote specs after M7; promote implementation after coordinator spec review | No |
+| Q4 | Admin/operator implementation needs specs | Roadmap requires small specs before implementation | Coordinator | Specs Ready | M7 landed; assign M8-M11 specs and promote implementation after coordinator spec review | No |
 
 ## Decision Log And Assumptions
 
@@ -168,12 +168,12 @@ Status model:
 | 6: M5 Authenticated Session UX | Done | M5 subagent | `fba7742` | Passed by M5 subagent and coordinator | Added session-aware header, metadata-driven logout, CSRF handling, and route guard infrastructure |
 | 7: Phase 2 integration gate | Done | Coordinator | N/A; status tracking only | Passed by coordinator | M6 is ready |
 | 8: M6 Account Profile Surface | Done | M6 subagent | `e74790a` | Passed by M6 subagent and coordinator | Added read-only authenticated account profile and lazy account fetch |
-| 9: M7 Account Language Preference | Ready | M7 subagent | Pending | Pending | M6 account surface and M5 CSRF/session helpers landed |
-| 10: Phase 3 integration gate | Waiting | Coordinator | Pending | Pending | Promote admin/operator specs after M7 |
-| 11: M8 Admin Catalog Spec | Waiting | M8 spec subagent | Pending | Pending | Promote to Ready after M7 |
-| 12: M9 Admin Localization Spec | Waiting | M9 spec subagent | Pending | Pending | Promote to Ready after M7 |
-| 13: M10 Operator Audit Spec | Waiting | M10 spec subagent | Pending | Pending | Promote to Ready after M7 phase gate |
-| 14: M11 Admin User Management Spec | Waiting | M11 spec subagent | Pending | Pending | Promote to Ready after M7 |
+| 9: M7 Account Language Preference | Done | M7 subagent | `13f8f77` | Passed by M7 subagent and coordinator | Added preferred-language update and clear flow using session-derived CSRF metadata |
+| 10: Phase 3 integration gate | Done | Coordinator | N/A; status tracking only | Passed by coordinator | M8-M11 specs are ready |
+| 11: M8 Admin Catalog Spec | Ready | M8 spec subagent | Pending | Pending | M7 CSRF mutation pattern landed |
+| 12: M9 Admin Localization Spec | Ready | M9 spec subagent | Pending | Pending | M7 CSRF mutation pattern landed |
+| 13: M10 Operator Audit Spec | Ready | M10 spec subagent | Pending | Pending | M5 route/access foundation landed |
+| 14: M11 Admin User Management Spec | Ready | M11 spec subagent | Pending | Pending | M7 CSRF mutation pattern landed |
 | 15: Phase 4 spec review gate | Waiting | Coordinator | Pending | Pending | Review specs against roadmap and backend contract, then promote implementation tasks |
 | 16: M8-M11 implementation planning | Waiting | Coordinator | Pending | Pending | Create or activate implementation tasks after each spec passes coordinator review |
 
@@ -272,7 +272,7 @@ surface and reusable CSRF/session patterns are available.
 
 | Field | Value |
 | --- | --- |
-| Status | Ready |
+| Status | Complete |
 | Goal | Add current-user preferred-language update and clear flow |
 | Owned Files Or Packages | Account language preference components/tests, account API client, CSRF/mutation helper if needed |
 | Context Required | M5/M6 implementations, `docs/backend/approved-openapi.json`, `docs/backend/FRONTEND_AI_CONTRACT.md` |
@@ -283,8 +283,8 @@ surface and reusable CSRF/session patterns are available.
 
 ## Phase 4: Admin And Operator Specs
 
-Gate: M7 must be committed and validated. These tasks create specs only; they do not
-implement admin/operator UI. After M7, the coordinator may run these spec workers
+Gate: M7 is committed and validated. These tasks create specs only; they do not
+implement admin/operator UI. The coordinator may run these spec workers
 without additional user approval unless a spec reveals a product or contract decision
 that cannot be made from the roadmap and backend contract.
 
@@ -292,7 +292,7 @@ that cannot be made from the roadmap and backend contract.
 
 | Field | Value |
 | --- | --- |
-| Status | Waiting for M7 |
+| Status | Ready |
 | Goal | Specify combined admin book/category management |
 | Owned Files Or Packages | `docs/specs/SPEC_admin_catalog_management.md` |
 | Context Required | `ROADMAP.md` M8, `docs/backend/approved-openapi.json`, M7 CSRF helper handoff |
@@ -305,7 +305,7 @@ that cannot be made from the roadmap and backend contract.
 
 | Field | Value |
 | --- | --- |
-| Status | Waiting for M7 |
+| Status | Ready |
 | Goal | Specify localization message editing plus locale coverage/status |
 | Owned Files Or Packages | `docs/specs/SPEC_admin_localization_management.md` |
 | Context Required | `ROADMAP.md` M9, `docs/backend/approved-openapi.json`, M7 CSRF helper handoff |
@@ -318,7 +318,7 @@ that cannot be made from the roadmap and backend contract.
 
 | Field | Value |
 | --- | --- |
-| Status | Waiting for M7 |
+| Status | Ready |
 | Goal | Specify read-only operator overview plus pageable audit log |
 | Owned Files Or Packages | `docs/specs/SPEC_operator_audit_surface.md` |
 | Context Required | `ROADMAP.md` M10, `docs/backend/approved-openapi.json`, M5 route/access handoff |
@@ -331,7 +331,7 @@ that cannot be made from the roadmap and backend contract.
 
 | Field | Value |
 | --- | --- |
-| Status | Waiting for M7 |
+| Status | Ready |
 | Goal | Specify admin user list/detail plus role management |
 | Owned Files Or Packages | `docs/specs/SPEC_admin_user_management.md` |
 | Context Required | `ROADMAP.md` M11, `docs/backend/approved-openapi.json`, M7 CSRF helper handoff |
@@ -416,8 +416,8 @@ not a blocking gate unless the spec exposes an unresolved product decision.
 | 2026-06-07 | `npm run lint`; `npm run typecheck`; `npm test`; `npm run build`; `git diff --check` | M3 | Passed | 4 test files, 23 tests; M5 is ready |
 | 2026-06-07 | `npm run lint`; `npm run typecheck`; `npm test`; `npm run build`; `git diff --check` | M5 / Phase 2 | Passed | 4 test files, 31 tests; authenticated provider smoke skipped because no canonical command or live OAuth-backed backend session was available |
 | 2026-06-07 | `npm run lint`; `npm run typecheck`; `npm test`; `npm run build`; `git diff --check` | M6 | Passed | 5 test files, 39 tests; full authenticated profile browser smoke skipped because no live authenticated backend session was available |
-| 2026-06-07 | Pending | Phase 3 | Pending | Coordinator records result |
-| 2026-06-07 | Pending | Phase 4 | Pending | Coordinator records result |
+| 2026-06-07 | `npm run lint`; `npm run typecheck`; `npm test`; `npm run build`; `git diff --check` | M7 / Phase 3 | Passed | 5 test files, 48 tests; browser smoke/e2e skipped because no canonical authenticated mutation command or live authenticated backend session was available |
+| 2026-06-07 | Pending | Phase 4 | Ready | M8-M11 specs are ready |
 | 2026-06-07 | Pending | Final roadmap execution | Pending | Coordinator records result |
 
 ## User Validation
