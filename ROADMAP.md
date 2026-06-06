@@ -71,6 +71,21 @@ pagination, repeated filters, and localized backend error display.
   login-provider rendering from session metadata, session refresh after login/logout,
   and CSRF handling for unsafe authenticated writes.
 
+## Implementation Defaults
+
+- M1 CI should add `.github/workflows/ci.yml`, trigger on pull requests and pushes to
+  `main`, use Node.js 24.x with `npm ci`, and run lint, typecheck, tests, build, and
+  `git diff --check`.
+- M2 table columns should be title, author, publication year, ISBN, and categories.
+  Pagination stays button-based in M2; richer table controls belong to M3.
+- M2 fixture-backed visible states should use shared fixtures under
+  `src/test/fixtures/`, covering loading, populated, empty, filtered, paginated,
+  localized book error, and category error states.
+- M4 local auth documentation should live at `docs/LOCAL_AUTH_SMOKE.md` and be linked
+  from `SETUP.md`.
+- M4 local same-origin development should use a Vite `/api` proxy to
+  `http://localhost:8080` for the backend running from `..\technical-interview-demo`.
+
 ## Deferred Scope
 
 - Alternate API transports, cross-origin browser support, JWT, and bearer-token auth.
