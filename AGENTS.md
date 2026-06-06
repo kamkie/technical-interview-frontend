@@ -132,6 +132,10 @@ Current minimum validation:
 ## Git And Handoff
 
 - Do not commit unless the user asks for a commit.
+- When the current user request asks to implement an active plan that contains commit
+  checkpoints, those plan checkpoints are explicit commit authorization for the
+  scoped plan work. Create the plan-required commits without asking again, while
+  keeping unrelated changes out of each commit.
 - Use `.gitmessage` as the commit-message format when committing AI-authored work.
 - Keep unrelated user changes intact.
 - In handoff, report changed files, validation run, skipped validation with reasons,
