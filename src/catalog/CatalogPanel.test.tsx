@@ -1,4 +1,5 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { BOOKS_PATH, CATEGORIES_PATH, type BookPage, type Category } from '../api/catalog'
@@ -10,6 +11,7 @@ import {
   populatedBookPage,
 } from '../test/fixtures/catalog'
 import { CatalogPanel } from './CatalogPanel'
+import { CATALOG_ROUTE_PATH } from './catalogQuery'
 
 describe('CatalogPanel', () => {
   afterEach(() => {
@@ -22,7 +24,7 @@ describe('CatalogPanel', () => {
       vi.fn().mockReturnValue(new Promise<Response>(() => undefined)),
     )
 
-    render(<CatalogPanel />)
+    renderCatalogRoute()
 
     expect(screen.getByText('Loading categories...')).toBeInTheDocument()
     expect(screen.getByText('Loading books...')).toBeInTheDocument()
@@ -31,15 +33,17 @@ describe('CatalogPanel', () => {
   it('loads public categories and books with contract-shaped query parameters', async () => {
     const fetchMock = mockCatalogFetch()
 
-    render(<CatalogPanel />)
+    renderCatalogRoute()
 
     expect(await screen.findByText('Effective Java')).toBeInTheDocument()
-    expect(screen.getByRole('columnheader', { name: 'Title' })).toBeInTheDocument()
-    expect(screen.getByRole('columnheader', { name: 'Author' })).toBeInTheDocument()
     expect(
-      screen.getByRole('columnheader', { name: 'Publication year' }),
+      screen.getByRole('button', { name: /Title/ }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('columnheader', { name: 'ISBN' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Author/ })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /Publication year/ }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /ISBN/ })).toBeInTheDocument()
     expect(
       screen.getByRole('columnheader', { name: 'Categories' }),
     ).toBeInTheDocument()
@@ -68,7 +72,7 @@ describe('CatalogPanel', () => {
   it('renders an empty state when no books match the current filters', async () => {
     mockCatalogFetch({ books: emptyBookPage })
 
-    render(<CatalogPanel />)
+    renderCatalogRoute()
 
     expect(await screen.findByText('0 books')).toBeInTheDocument()
     expect(
@@ -82,7 +86,7 @@ describe('CatalogPanel', () => {
         path.includes('title=clean') ? filteredBookPage : populatedBookPage,
     })
 
-    render(<CatalogPanel />)
+    renderCatalogRoute()
 
     const titleInput = screen.getByLabelText('Title')
     const authorInput = screen.getByLabelText('Author')
@@ -110,10 +114,10 @@ describe('CatalogPanel', () => {
   it('requests the next button-based page with Spring pagination parameters', async () => {
     const fetchMock = mockCatalogFetch({ books: paginatedBookPage })
 
-    render(<CatalogPanel />)
+    renderCatalogRoute()
 
     expect(await screen.findByText('Refactoring')).toBeInTheDocument()
-    expect(screen.getByText('Page 1 of 3')).toBeInTheDocument()
+    expect(screen.getByText(/Page 1\s+of 3/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled()
 
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
@@ -163,7 +167,7 @@ describe('CatalogPanel', () => {
       }),
     )
 
-    render(<CatalogPanel />)
+    renderCatalogRoute()
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Filtr jest nieprawidlowy.',
@@ -190,14 +194,186 @@ describe('CatalogPanel', () => {
         ),
     })
 
-    render(<CatalogPanel />)
+    renderCatalogRoute()
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Kategorie sa chwilowo niedostepne.',
     )
     expect(await screen.findByText('Effective Java')).toBeInTheDocument()
   })
+
+  it('hydrates filters, pagination, and repeated sorts from the catalog route query', async () => {
+    const fetchMock = mockCatalogFetch()
+
+    renderCatalogRoute(
+      `${CATALOG_ROUTE_PATH}?title=clean&author=martin&isbn=978013&category=Java&category=Architecture&page=2&size=20&sort=publicationYear,DESC&sort=title,ASC`,
+    )
+
+    expect(await screen.findByDisplayValue('clean')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('martin')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('978013')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Java' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByRole('button', { name: 'Architecture' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${BOOKS_PATH}?title=clean&author=martin&isbn=978013&category=Java&category=Architecture&page=2&size=20&sort=publicationYear%2CDESC&sort=title%2CASC`,
+      expect.objectContaining({
+        credentials: 'same-origin',
+        method: 'GET',
+      }),
+    )
+  })
+
+  it('sanitizes invalid and duplicate route query values before requesting books', async () => {
+    const fetchMock = mockCatalogFetch()
+
+    renderCatalogRoute(
+      `${CATALOG_ROUTE_PATH}?title=%20clean%20&category=Java&category=Java&category=&page=-2&size=999&sort=unknown,DESC`,
+    )
+
+    await screen.findByDisplayValue('clean')
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${BOOKS_PATH}?title=clean&category=Java&page=0&size=10&sort=title%2CASC`,
+      expect.objectContaining({
+        credentials: 'same-origin',
+        method: 'GET',
+      }),
+    )
+  })
+
+  it('syncs filter, category, and sort changes into browser history', async () => {
+    const fetchMock = mockCatalogFetch()
+    const { router } = renderCatalogRoute()
+
+    const titleInput = await screen.findByLabelText('Title')
+    fireEvent.change(titleInput, { target: { value: 'clean' } })
+    fireEvent.submit(titleInput.closest('form')!)
+
+    await waitFor(() => {
+      expect(router.state.location.search).toBe('?title=clean')
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Java' }))
+
+    await waitFor(() => {
+      expect(router.state.location.search).toBe('?title=clean&category=Java')
+    })
+
+    fireEvent.change(screen.getByLabelText('Sort by'), {
+      target: { value: 'publicationYear,DESC' },
+    })
+
+    await waitFor(() => {
+      expect(router.state.location.search).toBe(
+        '?title=clean&category=Java&sort=publicationYear%2CDESC',
+      )
+    })
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        `${BOOKS_PATH}?title=clean&category=Java&page=0&size=10&sort=publicationYear%2CDESC`,
+        expect.objectContaining({
+          credentials: 'same-origin',
+          method: 'GET',
+        }),
+      )
+    })
+
+    await act(async () => {
+      await router.navigate(-1)
+    })
+
+    await waitFor(() => {
+      expect(router.state.location.search).toBe('?title=clean&category=Java')
+    })
+    expect(screen.getByLabelText('Sort by')).toHaveValue('title,ASC')
+
+    await act(async () => {
+      await router.navigate(-1)
+    })
+
+    await waitFor(() => {
+      expect(router.state.location.search).toBe('?title=clean')
+    })
+    expect(screen.getByRole('button', { name: 'Java' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+
+    await act(async () => {
+      await router.navigate(1)
+    })
+
+    await waitFor(() => {
+      expect(router.state.location.search).toBe('?title=clean&category=Java')
+    })
+  })
+
+  it('updates page size and sortable headers through query state', async () => {
+    const fetchMock = mockCatalogFetch({ books: paginatedBookPage })
+    const { router } = renderCatalogRoute()
+
+    expect(await screen.findByText('Refactoring')).toBeInTheDocument()
+
+    fireEvent.change(screen.getAllByLabelText('Rows per page')[0], {
+      target: { value: '20' },
+    })
+
+    await waitFor(() => {
+      expect(router.state.location.search).toBe('?size=20')
+    })
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        `${BOOKS_PATH}?page=0&size=20&sort=title%2CASC`,
+        expect.objectContaining({
+          credentials: 'same-origin',
+          method: 'GET',
+        }),
+      )
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /Publication year/ }))
+
+    await waitFor(() => {
+      expect(router.state.location.search).toBe(
+        '?size=20&sort=publicationYear%2CASC',
+      )
+    })
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        `${BOOKS_PATH}?page=0&size=20&sort=publicationYear%2CASC`,
+        expect.objectContaining({
+          credentials: 'same-origin',
+          method: 'GET',
+        }),
+      )
+    })
+  })
 })
+
+function renderCatalogRoute(initialEntry: string = CATALOG_ROUTE_PATH) {
+  const router = createMemoryRouter(
+    [
+      {
+        path: CATALOG_ROUTE_PATH,
+        element: <CatalogPanel />,
+      },
+    ],
+    {
+      initialEntries: [initialEntry],
+    },
+  )
+
+  return {
+    router,
+    ...render(<RouterProvider router={router} />),
+  }
+}
 
 function mockCatalogFetch({
   books = populatedBookPage,

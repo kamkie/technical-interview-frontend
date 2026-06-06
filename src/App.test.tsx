@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { App } from './App'
@@ -23,7 +24,7 @@ describe('App', () => {
       }),
     })
 
-    render(<App />)
+    renderApp()
 
     expect(
       screen.getByRole('heading', {
@@ -32,6 +33,10 @@ describe('App', () => {
       }),
     ).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Books' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Catalog' })).toHaveAttribute(
+      'href',
+      '/catalog',
+    )
 
     const loginLink = await screen.findByRole('link', {
       name: 'Sign in with GitHub',
@@ -87,13 +92,21 @@ describe('App', () => {
       return Promise.resolve(Response.json([]))
     }))
 
-    render(<App />)
+    renderApp()
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'GET /api/session failed with 503 Service Unavailable',
     )
   })
 })
+
+function renderApp(initialEntry = '/catalog') {
+  return render(
+    <MemoryRouter initialEntries={[initialEntry]}>
+      <App />
+    </MemoryRouter>,
+  )
+}
 
 function mockAppFetch({
   books = createBookPage(),

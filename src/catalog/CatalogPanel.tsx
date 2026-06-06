@@ -1,44 +1,58 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import {
-  DEFAULT_BOOK_PAGE_SIZE,
-  DEFAULT_BOOK_SORT,
   fetchBooks,
   fetchCategories,
   type Book,
   type BookPage,
   type Category,
 } from '../api/catalog'
+import {
+  DEFAULT_CATALOG_QUERY,
+  PAGE_SIZE_OPTIONS,
+  SORT_OPTIONS,
+  catalogQueryToBookSearchParams,
+  catalogQueryToSearchParams,
+  createCatalogFilterDraft,
+  getPrimarySort,
+  getSortDirection,
+  nextSortForField,
+  parseCatalogSearchParams,
+  type CatalogFilterDraft,
+  type CatalogQueryState,
+  type PageSize,
+  type SortField,
+  type SortValue,
+} from './catalogQuery'
 
 type LoadState<T> =
   | { status: 'loading' }
   | { status: 'ready'; value: T }
   | { status: 'error'; message: string }
 
-type BookFilters = {
-  title: string
-  author: string
-  categories: readonly string[]
-  page: number
-}
-
-const initialFilters: BookFilters = {
-  title: '',
-  author: '',
-  categories: [],
-  page: 0,
-}
-
 export function CatalogPanel() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const query = useMemo(
+    () => parseCatalogSearchParams(searchParams),
+    [searchParams],
+  )
   const [categoriesState, setCategoriesState] = useState<LoadState<Category[]>>({
     status: 'loading',
   })
   const [booksState, setBooksState] = useState<LoadState<BookPage>>({
     status: 'loading',
   })
-  const [filters, setFilters] = useState<BookFilters>(initialFilters)
-  const [draftTitle, setDraftTitle] = useState('')
-  const [draftAuthor, setDraftAuthor] = useState('')
+  const routeFilterDraft = createCatalogFilterDraft(query)
+  const routeFilterDraftKey = createFilterDraftKey(routeFilterDraft)
+  const [filterDraftState, setFilterDraftState] = useState(() => ({
+    key: routeFilterDraftKey,
+    value: routeFilterDraft,
+  }))
+  const filterDraft =
+    filterDraftState.key === routeFilterDraftKey
+      ? filterDraftState.value
+      : routeFilterDraft
 
   useEffect(() => {
     let ignore = false
@@ -66,14 +80,7 @@ export function CatalogPanel() {
   useEffect(() => {
     let ignore = false
 
-    fetchBooks({
-      title: filters.title,
-      author: filters.author,
-      category: filters.categories,
-      page: filters.page,
-      size: DEFAULT_BOOK_PAGE_SIZE,
-      sort: DEFAULT_BOOK_SORT,
-    })
+    fetchBooks(catalogQueryToBookSearchParams(query))
       .then((books) => {
         if (!ignore) {
           setBooksState({ status: 'ready', value: books })
@@ -91,47 +98,84 @@ export function CatalogPanel() {
     return () => {
       ignore = true
     }
-  }, [filters])
+  }, [query])
 
   const categories =
     categoriesState.status === 'ready' ? categoriesState.value : []
-  const activeCategoryCount = filters.categories.length
+  const activeCategoryCount = query.categories.length
+  const primarySort = getPrimarySort(query)
+
+  function updateCatalogQuery(nextQuery: CatalogQueryState) {
+    const nextSearchParams = catalogQueryToSearchParams(nextQuery)
+
+    if (nextSearchParams.toString() !== searchParams.toString()) {
+      setSearchParams(nextSearchParams)
+    }
+  }
+
+  function updateFilterDraft(update: Partial<CatalogFilterDraft>) {
+    setFilterDraftState({
+      key: routeFilterDraftKey,
+      value: {
+        ...filterDraft,
+        ...update,
+      },
+    })
+  }
 
   function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setFilters((current) => ({
-      ...current,
-      author: draftAuthor.trim(),
+    updateCatalogQuery({
+      ...query,
+      author: filterDraft.author.trim(),
+      isbn: filterDraft.isbn.trim(),
       page: 0,
-      title: draftTitle.trim(),
-    }))
+      title: filterDraft.title.trim(),
+    })
   }
 
   function clearFilters() {
-    setDraftAuthor('')
-    setDraftTitle('')
-    setFilters(initialFilters)
+    updateFilterDraft(createCatalogFilterDraft(DEFAULT_CATALOG_QUERY))
+    updateCatalogQuery(DEFAULT_CATALOG_QUERY)
   }
 
   function toggleCategory(categoryName: string) {
-    setFilters((current) => {
-      const categories = current.categories.includes(categoryName)
-        ? current.categories.filter((name) => name !== categoryName)
-        : [...current.categories, categoryName]
+    const categories = query.categories.includes(categoryName)
+      ? query.categories.filter((name) => name !== categoryName)
+      : [...query.categories, categoryName]
 
-      return {
-        ...current,
-        categories,
-        page: 0,
-      }
+    updateCatalogQuery({
+      ...query,
+      categories,
+      page: 0,
     })
   }
 
   function goToPage(page: number) {
-    setFilters((current) => ({
-      ...current,
+    updateCatalogQuery({
+      ...query,
       page: Math.max(0, page),
-    }))
+    })
+  }
+
+  function changePageSize(size: PageSize) {
+    updateCatalogQuery({
+      ...query,
+      page: 0,
+      size,
+    })
+  }
+
+  function changeSort(sort: SortValue) {
+    updateCatalogQuery({
+      ...query,
+      page: 0,
+      sort: [sort],
+    })
+  }
+
+  function sortByField(field: SortField) {
+    changeSort(nextSortForField(query, field))
   }
 
   return (
@@ -147,8 +191,8 @@ export function CatalogPanel() {
           <input
             name="title"
             type="search"
-            value={draftTitle}
-            onChange={(event) => setDraftTitle(event.target.value)}
+            value={filterDraft.title}
+            onChange={(event) => updateFilterDraft({ title: event.target.value })}
           />
         </label>
         <label>
@@ -156,8 +200,17 @@ export function CatalogPanel() {
           <input
             name="author"
             type="search"
-            value={draftAuthor}
-            onChange={(event) => setDraftAuthor(event.target.value)}
+            value={filterDraft.author}
+            onChange={(event) => updateFilterDraft({ author: event.target.value })}
+          />
+        </label>
+        <label>
+          <span>ISBN</span>
+          <input
+            name="isbn"
+            type="search"
+            value={filterDraft.isbn}
+            onChange={(event) => updateFilterDraft({ isbn: event.target.value })}
           />
         </label>
         <div className="catalog-filter-actions">
@@ -171,9 +224,38 @@ export function CatalogPanel() {
       <CategoryFilter
         categories={categories}
         categoriesState={categoriesState}
-        selectedCategories={filters.categories}
+        selectedCategories={query.categories}
         onToggleCategory={toggleCategory}
       />
+
+      <div className="catalog-controls" aria-label="Catalog table controls">
+        <label>
+          <span>Sort by</span>
+          <select
+            value={primarySort}
+            onChange={(event) => changeSort(event.target.value as SortValue)}
+          >
+            {SORT_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Rows per page</span>
+          <select
+            value={query.size}
+            onChange={(event) => changePageSize(Number(event.target.value) as PageSize)}
+          >
+            {PAGE_SIZE_OPTIONS.map((size) => (
+              <option key={size} value={size}>
+                {size}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
 
       <div className="catalog-summary" aria-live="polite">
         {booksState.status === 'ready' && (
@@ -201,8 +283,11 @@ export function CatalogPanel() {
       {booksState.status === 'ready' && (
         <BookResults
           page={booksState.value}
-          onPreviousPage={() => goToPage(filters.page - 1)}
-          onNextPage={() => goToPage(filters.page + 1)}
+          query={query}
+          onNextPage={() => goToPage(query.page + 1)}
+          onPageSizeChange={changePageSize}
+          onPreviousPage={() => goToPage(query.page - 1)}
+          onSortByField={sortByField}
         />
       )}
     </section>
@@ -268,19 +353,41 @@ function CategoryFilter({
 
 function BookResults({
   onNextPage,
+  onPageSizeChange,
   onPreviousPage,
+  onSortByField,
   page,
+  query,
 }: {
   onNextPage: () => void
+  onPageSizeChange: (size: PageSize) => void
   onPreviousPage: () => void
+  onSortByField: (field: SortField) => void
   page: BookPage
+  query: CatalogQueryState
 }) {
   const books = page.content ?? []
-  const pageNumber = page.number ?? 0
+  const pageNumber = page.number ?? query.page
+  const pageSize = page.size ?? query.size
   const totalPages = page.totalPages ?? 0
 
   if (books.length === 0) {
-    return <p className="session-message muted">No books match these filters.</p>
+    return (
+      <div className="book-results">
+        <p className="session-message muted">No books match these filters.</p>
+        <PaginationControls
+          pageNumber={pageNumber}
+          pageSize={pageSize}
+          querySize={query.size}
+          totalPages={totalPages}
+          first={page.first === true}
+          last={page.last === true}
+          onNextPage={onNextPage}
+          onPageSizeChange={onPageSizeChange}
+          onPreviousPage={onPreviousPage}
+        />
+      </div>
+    )
   }
 
   return (
@@ -290,11 +397,33 @@ function BookResults({
           <caption className="visually-hidden">Public books</caption>
           <thead>
             <tr>
-              <th scope="col">Title</th>
-              <th scope="col">Author</th>
-              <th scope="col">Publication year</th>
-              <th scope="col">ISBN</th>
-              <th scope="col">Categories</th>
+              <SortableColumnHeader
+                field="title"
+                label="Title"
+                query={query}
+                onSortByField={onSortByField}
+              />
+              <SortableColumnHeader
+                field="author"
+                label="Author"
+                query={query}
+                onSortByField={onSortByField}
+              />
+              <SortableColumnHeader
+                field="publicationYear"
+                label="Publication year"
+                query={query}
+                onSortByField={onSortByField}
+              />
+              <SortableColumnHeader
+                field="isbn"
+                label="ISBN"
+                query={query}
+                onSortByField={onSortByField}
+              />
+              <th className="plain-column-header" scope="col">
+                Categories
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -308,18 +437,101 @@ function BookResults({
         </table>
       </div>
 
-      <div className="pagination-controls" aria-label="Book pagination">
-        <button type="button" disabled={page.first === true} onClick={onPreviousPage}>
-          Previous
-        </button>
-        <span>
-          Page {pageNumber + 1}
-          {totalPages > 0 ? ` of ${totalPages}` : ''}
+      <PaginationControls
+        pageNumber={pageNumber}
+        pageSize={pageSize}
+        querySize={query.size}
+        totalPages={totalPages}
+        first={page.first === true}
+        last={page.last === true}
+        onNextPage={onNextPage}
+        onPageSizeChange={onPageSizeChange}
+        onPreviousPage={onPreviousPage}
+      />
+    </div>
+  )
+}
+
+function SortableColumnHeader({
+  field,
+  label,
+  onSortByField,
+  query,
+}: {
+  field: SortField
+  label: string
+  onSortByField: (field: SortField) => void
+  query: CatalogQueryState
+}) {
+  const direction = getSortDirection(query, field)
+  const ariaSort =
+    direction === 'ASC' ? 'ascending' : direction === 'DESC' ? 'descending' : 'none'
+  const indicator =
+    direction === 'ASC' ? 'ascending' : direction === 'DESC' ? 'descending' : 'not sorted'
+
+  return (
+    <th aria-sort={ariaSort} scope="col">
+      <button
+        className="column-sort-button"
+        type="button"
+        onClick={() => onSortByField(field)}
+      >
+        <span>{label}</span>
+        <span className="sort-indicator" aria-hidden="true">
+          {direction === 'ASC' ? 'Asc' : direction === 'DESC' ? 'Desc' : '-'}
         </span>
-        <button type="button" disabled={page.last === true} onClick={onNextPage}>
-          Next
-        </button>
-      </div>
+        <span className="visually-hidden">{indicator}</span>
+      </button>
+    </th>
+  )
+}
+
+function PaginationControls({
+  first,
+  last,
+  onNextPage,
+  onPageSizeChange,
+  onPreviousPage,
+  pageNumber,
+  pageSize,
+  querySize,
+  totalPages,
+}: {
+  first: boolean
+  last: boolean
+  onNextPage: () => void
+  onPageSizeChange: (size: PageSize) => void
+  onPreviousPage: () => void
+  pageNumber: number
+  pageSize: number
+  querySize: PageSize
+  totalPages: number
+}) {
+  return (
+    <div className="pagination-controls" aria-label="Book pagination">
+      <button type="button" disabled={first} onClick={onPreviousPage}>
+        Previous
+      </button>
+      <span>
+        Page {pageNumber + 1}
+        {totalPages > 0 ? ` of ${totalPages}` : ''} - {pageSize} rows
+      </span>
+      <label className="inline-page-size">
+        <span className="visually-hidden">Rows per page</span>
+        <select
+          value={querySize}
+          onChange={(event) => onPageSizeChange(Number(event.target.value) as PageSize)}
+        >
+          {PAGE_SIZE_OPTIONS.map((size) => (
+            <option key={size} value={size}>
+              {size}
+            </option>
+          ))}
+        </select>
+      </label>
+      <button type="button" disabled={last} onClick={onNextPage}>
+        Next
+      </button>
     </div>
   )
 }
@@ -342,4 +554,8 @@ function BookTableRow({ book }: { book: Book }) {
 
 function getDisplayMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback
+}
+
+function createFilterDraftKey(draft: CatalogFilterDraft) {
+  return `${draft.title}\u0000${draft.author}\u0000${draft.isbn}`
 }

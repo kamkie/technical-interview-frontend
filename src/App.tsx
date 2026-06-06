@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
 
 import {
   fetchCurrentSession,
@@ -7,6 +8,7 @@ import {
   type SessionResponse,
 } from './api/session'
 import { CatalogPanel } from './catalog/CatalogPanel'
+import { CATALOG_ROUTE_PATH } from './catalog/catalogQuery'
 
 type SessionState =
   | { status: 'loading' }
@@ -19,10 +21,15 @@ export function App() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <span className="brand-mark" aria-hidden="true">
-          TI
-        </span>
-        <span className="brand-name">Technical Interview Frontend</span>
+        <div className="brand-lockup">
+          <span className="brand-mark" aria-hidden="true">
+            TI
+          </span>
+          <span className="brand-name">Technical Interview Frontend</span>
+        </div>
+        <nav className="topnav" aria-label="Primary navigation">
+          <NavLink to={CATALOG_ROUTE_PATH}>Catalog</NavLink>
+        </nav>
       </header>
 
       <main className="workspace">
@@ -35,7 +42,11 @@ export function App() {
         </section>
 
         <SessionBootstrapPanel state={sessionState} />
-        <CatalogPanel />
+        <Routes>
+          <Route index element={<Navigate to={CATALOG_ROUTE_PATH} replace />} />
+          <Route path={CATALOG_ROUTE_PATH} element={<CatalogPanel />} />
+          <Route path="*" element={<Navigate to={CATALOG_ROUTE_PATH} replace />} />
+        </Routes>
       </main>
     </div>
   )

@@ -40,6 +40,7 @@ select {
 .topbar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 0.75rem;
   min-height: 4rem;
   padding: 0 2rem;
@@ -47,8 +48,16 @@ select {
   background: #ffffff;
 }
 
+.brand-lockup {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .brand-mark {
   display: inline-grid;
+  flex: 0 0 auto;
   width: 2.25rem;
   height: 2.25rem;
   place-items: center;
@@ -62,6 +71,30 @@ select {
 .brand-name {
   font-size: 0.95rem;
   font-weight: 700;
+}
+
+.topnav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.topnav a {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  border-radius: 8px;
+  color: #344054;
+  font-weight: 700;
+  padding: 0 0.85rem;
+  text-decoration: none;
+}
+
+.topnav a:hover,
+.topnav a:focus-visible,
+.topnav a.active {
+  background: #e8f4f1;
+  color: #106b5d;
 }
 
 .workspace {
@@ -251,12 +284,13 @@ h1 {
 
 .catalog-filters {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
   gap: 1rem;
   align-items: end;
 }
 
-.catalog-filters label {
+.catalog-filters label,
+.catalog-controls label {
   display: grid;
   gap: 0.4rem;
   color: #344054;
@@ -264,7 +298,9 @@ h1 {
   font-weight: 700;
 }
 
-.catalog-filters input {
+.catalog-filters input,
+.catalog-controls select,
+.inline-page-size select {
   width: 100%;
   min-height: 2.75rem;
   border: 1px solid #cbd5e1;
@@ -272,6 +308,13 @@ h1 {
   background: #ffffff;
   color: #1f2520;
   padding: 0 0.75rem;
+}
+
+.catalog-controls {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1fr) minmax(9rem, 0.35fr);
+  gap: 1rem;
+  align-items: end;
 }
 
 .catalog-filter-actions,
@@ -374,12 +417,53 @@ h1 {
 }
 
 .catalog-table thead th {
+  padding: 0;
   background: #f1f5f9;
   color: #344054;
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0;
   text-transform: uppercase;
+}
+
+.catalog-table thead .plain-column-header {
+  padding: 0.85rem 1rem;
+}
+
+.column-sort-button {
+  display: flex;
+  width: 100%;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: 0;
+  padding: 0.85rem 1rem;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.column-sort-button:hover,
+.column-sort-button:focus-visible {
+  background: #e2e8f0;
+}
+
+.sort-indicator {
+  display: inline-flex;
+  min-width: 3rem;
+  justify-content: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  color: #344054;
+  font-size: 0.72rem;
+  line-height: 1.6;
+  text-transform: none;
 }
 
 .catalog-table tbody th {
@@ -401,14 +485,36 @@ h1 {
   justify-content: flex-end;
 }
 
+.inline-page-size {
+  display: inline-flex;
+}
+
+.inline-page-size select {
+  min-width: 5rem;
+}
+
 .pagination-controls span {
   color: #344054;
   font-weight: 700;
 }
 
+@media (max-width: 960px) {
+  .catalog-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .catalog-filter-actions {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 720px) {
   .topbar {
+    align-items: flex-start;
+    flex-direction: column;
     padding: 0 1rem;
+    padding-bottom: 0.75rem;
+    padding-top: 0.75rem;
   }
 
   .workspace {
@@ -425,6 +531,10 @@ h1 {
   }
 
   .catalog-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .catalog-controls {
     grid-template-columns: 1fr;
   }
 }
