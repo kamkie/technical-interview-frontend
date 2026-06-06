@@ -285,10 +285,27 @@ function BookResults({
 
   return (
     <div className="book-results">
-      <div className="book-list">
-        {books.map((book) => (
-          <BookRow book={book} key={book.id ?? `${book.title}-${book.isbn}`} />
-        ))}
+      <div className="catalog-table-scroll">
+        <table className="catalog-table">
+          <caption className="visually-hidden">Public books</caption>
+          <thead>
+            <tr>
+              <th scope="col">Title</th>
+              <th scope="col">Author</th>
+              <th scope="col">Publication year</th>
+              <th scope="col">ISBN</th>
+              <th scope="col">Categories</th>
+            </tr>
+          </thead>
+          <tbody>
+            {books.map((book) => (
+              <BookTableRow
+                book={book}
+                key={book.id ?? `${book.title}-${book.isbn}`}
+              />
+            ))}
+          </tbody>
+        </table>
       </div>
 
       <div className="pagination-controls" aria-label="Book pagination">
@@ -307,32 +324,19 @@ function BookResults({
   )
 }
 
-function BookRow({ book }: { book: Book }) {
+function BookTableRow({ book }: { book: Book }) {
   const categories = (book.categories ?? [])
     .map((category) => category.name)
     .filter(Boolean)
 
   return (
-    <article className="book-row">
-      <div>
-        <h3>{book.title ?? 'Untitled book'}</h3>
-        <p>{book.author ?? 'Unknown author'}</p>
-      </div>
-      <dl>
-        <div>
-          <dt>Year</dt>
-          <dd>{book.publicationYear ?? 'Unknown'}</dd>
-        </div>
-        <div>
-          <dt>ISBN</dt>
-          <dd>{book.isbn ?? 'Unknown'}</dd>
-        </div>
-        <div>
-          <dt>Categories</dt>
-          <dd>{categories.length > 0 ? categories.join(', ') : 'None'}</dd>
-        </div>
-      </dl>
-    </article>
+    <tr>
+      <th scope="row">{book.title ?? 'Untitled book'}</th>
+      <td>{book.author ?? 'Unknown author'}</td>
+      <td>{book.publicationYear ?? 'Unknown'}</td>
+      <td>{book.isbn ?? 'Unknown'}</td>
+      <td>{categories.length > 0 ? categories.join(', ') : 'None'}</td>
+    </tr>
   )
 }
 
