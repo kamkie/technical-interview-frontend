@@ -43,10 +43,10 @@ selected M19 public catalog workflow polish for canonical route state, visible
 query-state summaries, accessible sort affordances, the selected M23
 light/dark/system theme preference, and the completed M24 browser session
 surface cleanup. Remaining roadmap work starts with the selected M25 public
-catalog and app shell visual pass before selecting the next product, visual, or
-automation slice. M26 is complete by explicit request and added a
-contract-backed mock API so frontend-only UI work can run without starting the
-sibling backend.
+catalog and app shell visual pass, then fixes the admin catalog actions-column
+wrapping issue before selecting the next product, visual, or automation slice.
+M26 is complete by explicit request and added a contract-backed mock API so
+frontend-only UI work can run without starting the sibling backend.
 
 ## Product Direction
 
@@ -86,17 +86,21 @@ Status terms:
 | M24 - Browser Session Surface Cleanup | Done | Moved the Browser Session status and session metadata out of the main page content into a hidden-by-default Session details surface in the app chrome. Account, logout, session cookie, and CSRF metadata remain available for troubleshooting without making session diagnostics a primary page section. | Primary implemented pages no longer show the Browser Session panel by default, session diagnostics remain reachable through an explicit control with accessible naming and keyboard support, and session bootstrap/login/logout behavior remains unchanged. | Focused App tests cover the disclosure behavior and metadata-driven sign-in links; browser evidence covers the main page and opened session surface. |
 | M25 - Public Catalog And App Shell Visual Design Pass | Ready | Polish the implemented anonymous `/catalog` flow and shared app shell now that the Browser Session surface cleanup has landed. Scope includes header/action layout, intro hierarchy, catalog filters, category chips, query summary, table readability, pagination, focus-visible styling, and responsive behavior across light/dark/system themes without backend/API, auth, route, query-string, sorting, filtering, pagination, or localization behavior changes. | The catalog and shell are easier to scan on desktop and mobile, preserve existing route/query/session behavior, keep keyboard focus visible, and have explicit browser evidence for representative light and dark catalog states. | Focused App/catalog tests, browser screenshots or smoke for `/catalog` at desktop and mobile widths in light and dark modes, and full baseline for app changes. |
 | M26 - Contract-Backed Mock API Development Mode | Done | Added an opt-in Vite mock API development mode so frontend-only work can run without the sibling backend. The mock serves same-origin `/api/**`, uses generated OpenAPI types for fixtures and route shapes, and keeps session-cookie metadata, login-provider metadata, logout, CSRF, localization, pagination, repeated filters, and representative error behavior aligned with the backend contract. | `npm run dev:mock` runs the frontend against mock middleware instead of the local backend proxy, supports admin/user/anonymous sessions plus success/empty/error scenarios, keeps in-memory mutations for development, and documents that live backend smoke remains the contract-confidence path. | Mock handler tests cover OpenAPI path coverage, session metadata and cookies, CSRF enforcement, repeated category filtering, pagination, version increments, empty/error scenarios, and login/logout state. |
+| M27 - Admin Catalog Actions Column Polish | Waiting: after M25 | Polish the admin books table actions column so long edit/delete labels do not wrap into bulky multi-line buttons for rows such as `Manual Regression Book no-tag`. Scope includes action button labeling/layout, column sizing, wrapping behavior, responsive behavior, and accessibility/focus treatment while preserving existing backend/API, auth, sorting, filtering, pagination, localization, and destructive-action behavior. | Admin catalog row actions remain easy to scan and operate on desktop and mobile, long labels do not distort the table, keyboard focus stays visible, and edit/delete intent and destructive-action safeguards remain unchanged. | Focused admin catalog tests or browser smoke for representative long-label rows, plus full baseline for app changes. |
 
 ## Near-Term Backlog
 
 1. Implement the selected M25 public catalog and app shell visual pass.
-2. Keep backend surface expansion unselected unless a future backend contract
+2. Polish the admin catalog actions column after M25 so long edit/delete labels
+   remain compact and accessible without changing backend/API or destructive-action
+   behavior.
+3. Keep backend surface expansion unselected unless a future backend contract
    refresh or product decision introduces an approved operation gap.
-3. Turn the M18 fake-OAuth readiness contract into an executable authenticated smoke
+4. Turn the M18 fake-OAuth readiness contract into an executable authenticated smoke
    command when that automation slice is selected.
-4. Exercise the documented local auth smoke workflow against the sibling backend and
+5. Exercise the documented local auth smoke workflow against the sibling backend and
    move repeatable gaps into tests or owner docs.
-5. For future releases, push `main` and the annotated tag, then monitor the Release
+6. For future releases, push `main` and the annotated tag, then monitor the Release
    workflow and verify the GHCR package, signature/provenance evidence, and
    published release notes against `CHANGELOG.md`.
 
