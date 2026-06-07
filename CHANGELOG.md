@@ -43,6 +43,9 @@ until they are promoted for a release tag.
   and high-or-critical dependency-review enforcement.
 - Aligned CI and container builds to install the npm version declared by
   `package.json` before running clean installs.
+- Pinned the Release workflow's Cosign installer action to a published
+  `sigstore/cosign-installer` tag so tag-triggered publication can resolve the
+  signing setup step.
 
 ## [0.1.0] - 2026-06-07
 

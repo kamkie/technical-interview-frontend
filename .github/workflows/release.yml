@@ -159,7 +159,7 @@ jobs:
           } >> "${GITHUB_OUTPUT}"
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v4
+        uses: sigstore/cosign-installer@v4.1.2
         with:
           cosign-release: v3.0.5
 
