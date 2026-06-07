@@ -14,7 +14,7 @@
 | Status | Current |
 | --- | --- |
 | Phase | M12-B Final Release Cut |
-| Status | M12-B Release Metadata Prepared; Validation Pending |
+| Status | Complete |
 | Last Updated | 2026-06-07 |
 
 ## Planning Readiness
@@ -24,7 +24,7 @@
 | Decision Complete | Yes for M12 release-readiness, M14 human docs, M15 AI references, and M13 selection-first hardening |
 | Blocking Open Questions | None for the next ready slice |
 | Accepted Fallbacks | Authenticated browser smoke remains manual until credentials and a canonical command exist; remote release publication requires an explicit current user request |
-| Ready For Execution | M12-B final release cut and post-release cleanup |
+| Ready For Execution | Complete |
 
 ## Summary
 
@@ -110,7 +110,8 @@ Out of scope:
   section.
 - CI runs `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`,
   `npm run build`, and `git diff --check`.
-- No frontend release tag is recorded in `ROADMAP.md`.
+- Local annotated tag `v0.1.0` points to release commit `6b7bd03`; remote
+  publication was not requested or performed.
 
 ## Phase Map
 
@@ -122,13 +123,13 @@ Out of scope:
 | 3 | M15 AI procedure reference layer | Done | M14 commit landed and validation passed |
 | 4 | M13-A Hardening selection and triage rules | Done | M14/M15 owners exist |
 | 5 | M13-B Selected hardening tooling implementation | Done | M13-A selection is committed and unblocked |
-| 6 | M12-B Final release cut and post-release cleanup | Ready | M13-B, M14, and M15 are complete; local `main` is at the release-candidate state |
+| 6 | M12-B Final release cut and post-release cleanup | Done | M13-B, M14, and M15 are complete; local `main` is at the release-candidate state |
 
 ## Requirement Gaps And Open Questions
 
 | ID | Question / Gap | Why It Matters | Owner | Status | Fallback / Decision | Blocks Ready? |
 | --- | --- | --- | --- | --- | --- | --- |
-| Q1 | Is local `main` synced to the exact release candidate? | M12-B must cut from the intended first-parent release state | Coordinator | Open until M12-B | Stop M12-B with concrete git state if not on synced `main` | No for M12-A |
+| Q1 | Is local `main` synced to the exact release candidate? | M12-B must cut from the intended first-parent release state | Coordinator | Resolved for local release | Preflight found branch `main`, clean worktree, no existing tags, and `0 48` behind/ahead after fetch; local tag cut from release commit `6b7bd03` | No |
 | Q2 | Which M13 tools are release-blocking? | M13 candidates vary in local reproducibility and maintenance cost | M13-A worker | Selected in M13-A output | Implement explicit workflow permissions/concurrency, CodeQL, dependency-review, npm audit, and Dependabot; defer artifact, threshold, credential, and custom-rule candidates until their triggers exist | No for M13-B |
 | Q3 | Are authenticated smoke credentials available? | Auth smoke cannot be automated without stable local identity and credentials | Coordinator / maintainer | Open | Keep manual smoke evidence documented; do not block docs/tooling slices | No |
 | Q4 | Are backend contract artifacts stale? | API-facing changes must follow imported contract owners | Coordinator | No conflict known | Refresh only if conflict appears during execution | No |
@@ -183,7 +184,7 @@ Status model:
 | 3: M15 AI procedure references | Done | M15 worker | `40478d4` | Passed by worker and coordinator | AI procedure references landed |
 | 4: M13-A Hardening selection | Done | M13 worker | `d469976` | Passed by worker and coordinator | Selected hardening gates, deferrals, and triage rules documented |
 | 5: M13-B Hardening implementation | Done | M13 worker | `324f462` | Passed by worker and coordinator | Selected hardening gates landed; CodeQL, dependency-review, and Dependabot are CI-owned signals |
-| 6: M12-B Release cut | Ready | M12 worker for metadata edits; coordinator for validation, commit, tag, and plan recording | Pending | Full baseline, selected M13 command, tag verification, clean git status | M13-B landed; preflight pending |
+| 6: M12-B Release cut | Done | M12 worker for metadata edits; coordinator for validation, commit, tag, and plan recording | `6b7bd03`; tag `v0.1.0` | Passed by worker and coordinator | Release metadata committed; annotated local tag created; remote publication not requested |
 
 ## Phase 1: M12-A Release-Readiness Audit
 
@@ -365,7 +366,7 @@ M13-B implementation notes:
 
 | Field | Value |
 | --- | --- |
-| Status | Ready |
+| Status | Done |
 | Goal | Cut the first frontend release locally from synced `main` after selected roadmap hardening is complete |
 | Owned Files Or Packages | `CHANGELOG.md`, `ROADMAP.md`, package metadata if needed, this plan, git annotated tag |
 | Context Required | Completed M12-A, M13, M14, M15; release procedure in `ROADMAP.md`; `.gitmessage` |
@@ -412,6 +413,15 @@ M12-B release metadata/preflight notes:
   Workflow permissions/concurrency are configuration evidence. The coordinator will
   run the full validation baseline, `npm run audit:security`, and final git/tag
   verification after these metadata edits.
+- Coordinator final validation on 2026-06-07 passed with Corepack npm `11.14.1`:
+  `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`,
+  `npm run audit:security`, package metadata version check, and
+  `git diff --check`.
+- Release metadata commit `6b7bd03` was tagged locally with annotated tag
+  `v0.1.0` and annotation `Release v0.1.0`; `git rev-parse 'v0.1.0^{}'`
+  verified the tag target as `6b7bd03`.
+- This plan-recording update is intentionally after the release tag so the plan can
+  record the release commit and tag without changing the tagged release metadata.
 
 ## Validation Plan
 
