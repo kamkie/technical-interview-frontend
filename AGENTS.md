@@ -104,23 +104,61 @@ For upcoming implementation work, prefer:
 - browser or smoke coverage for session bootstrap and logout
 - the existing npm scripts for `lint`, `typecheck`, `test`, `build`, and local development
 
-## Focused AI References
+## Instruction Map
 
-Use these focused references for procedure details that do not belong inline here:
+Start with this file and the user's request. Load only the mapped owner files needed for the current task, and do not bulk-load generated contract files unless exact schema details are required.
 
-- `.agents/references/architecture.md` owns frontend route, API/client, component, test, and abstraction placement guidance.
-- `.agents/references/code-style.md` owns frontend TypeScript, React, CSS, accessibility, and edit-shape guidance.
-- `.agents/references/documentation.md` owns AI-facing artifact routing and cross-file alignment checks.
-- `.agents/references/execution.md` owns ordinary task gates, repository-state checks, execution loop, and handoff expectations.
-- `.agents/references/plan-execution.md` owns active-plan execution for delegated milestone and spec slices.
-- `.agents/references/planning.md` owns plan authoring, readiness rules, status terms, and planning handoff shape.
-- `.agents/references/references-rules.md` owns maintenance rules for focused AI references.
-- `.agents/references/roadmap.md` owns roadmap editing, selected-row shaping, archive/changelog routing, and roadmap alignment checks.
-- `.agents/references/testing.md` owns validation selection by change type.
-- `.agents/references/troubleshooting.md` owns validation failure triage and local problem-solving routes.
-- `.agents/references/reviews.md` owns code-review, spec-drift, documentation-drift, and security-review triggers.
-- `.agents/references/releases.md` owns release sequencing, version choice, annotated tags, changelog promotion, package checks, GHCR package publication, GitHub Release verification, and post-release roadmap cleanup.
-- `.agents/references/workflow.md` owns coordinator, planner, worker, reviewer, verifier, and delegation mechanics.
+### Focused AI References
+
+| File                                     | Owns                                                                                            | Load when the task involves                                                               |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `.agents/references/architecture.md`     | Frontend route, API/client, component, test, and abstraction placement                          | Architecture, route boundaries, API/client placement, test placement, shared abstractions |
+| `.agents/references/code-style.md`       | Frontend TypeScript, React, CSS, accessibility, and edit shape                                  | App source, tests, fixtures, UI behavior, layout, styling, accessibility                  |
+| `.agents/references/documentation.md`    | AI-facing artifact routing and cross-file alignment                                             | Documentation, owner routing, repository rules, cross-file consistency                    |
+| `.agents/references/execution.md`        | Ordinary task gates, repository-state checks, execution loop, and handoff                       | Implementation authorization, dirty worktree handling, ordinary execution, handoff        |
+| `.agents/references/plan-execution.md`   | Active-plan execution for delegated milestone and spec slices                                   | Implementing an active plan, plan dependency order, checkpoint commits                    |
+| `.agents/references/planning.md`         | Plan authoring, readiness rules, status terms, and planning handoff shape                       | Creating or updating `.agents/plans/` execution plans                                     |
+| `.agents/references/references-rules.md` | Maintenance rules for focused AI references                                                     | Adding, removing, merging, or rerouting focused AI references                             |
+| `.agents/references/releases.md`         | Release sequencing, version choice, tags, package checks, publication, and post-release cleanup | Release preparation, metadata, tags, package publication, release verification            |
+| `.agents/references/reviews.md`          | Code-review, spec-drift, documentation-drift, and security-review triggers                      | Reviewing changes or checking drift/security risk during implementation                   |
+| `.agents/references/roadmap.md`          | Roadmap editing, selected-row shaping, archive/changelog routing, and roadmap alignment         | `ROADMAP.md` scope, stable IDs, statuses, dependencies, blocked backlog                   |
+| `.agents/references/testing.md`          | Validation selection by change type                                                             | Choosing validation, reporting skipped checks, smoke or hardening evidence                |
+| `.agents/references/troubleshooting.md`  | Validation failure triage and local problem-solving routes                                      | Failed commands, local workflow issues, incomplete smoke results                          |
+| `.agents/references/workflow.md`         | Coordinator, planner, worker, reviewer, verifier, and delegation mechanics                      | Delegation, worker prompts, read sets, scoped handoffs                                    |
+
+### Authoritative Documentation
+
+| File                                                | Owns                                                                                                                  | Load when the task involves                                                               |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `docs/README.md`                                    | Human documentation index and documentation ownership map                                                             | Finding the durable human-facing owner for a topic                                        |
+| `docs/DEVELOPMENT_LIFECYCLE.md`                     | Human-facing lifecycle and artifact routing                                                                           | Repository lifecycle, artifact routing, owner selection                                   |
+| `docs/DESIGN.md`                                    | Durable frontend product and design intent                                                                            | Product direction, UX hierarchy, workflow priorities, UI non-goals                        |
+| `docs/LOCAL_DEVELOPMENT.md`                         | Local setup, npm commands, CI reproduction, troubleshooting, contract refresh, smoke workflow, and hardening commands | Setup, local commands, CI reproduction, proxy/dev server, smoke, hardening                |
+| `docs/LOCAL_AUTH_SMOKE.md`                          | Manual same-origin authenticated smoke workflow                                                                       | Browser auth smoke, fake-OAuth/local backend readiness                                    |
+| `docs/WORKING_WITH_AI.md`                           | Human guidance for AI-assisted planning, implementation, validation, review, and releases                             | Human-facing AI collaboration guidance                                                    |
+| `docs/API_COVERAGE.md`                              | Approved backend operation coverage audit                                                                             | API operation coverage, contract coverage gaps, generated/client/UI/test mapping          |
+| `docs/ROADMAP_ARCHIVE.md`                           | Completed roadmap summaries that left the active roadmap                                                              | Historical completed roadmap context; do not edit archive content unless explicitly asked |
+| `docs/backend/approved-openapi.json`                | Imported backend OpenAPI contract                                                                                     | Exact endpoint, schema, request, response, pagination, filter, and error shapes           |
+| `docs/backend/FRONTEND_AI_CONTRACT.md`              | Imported backend frontend integration guidance                                                                        | API-facing frontend behavior, session/auth/CSRF/localization invariants                   |
+| `docs/backend/README.md`                            | Backend contract import bundle usage                                                                                  | How to use or refresh imported backend contract artifacts                                 |
+| `docs/backend/SOURCE.md`                            | Backend contract artifact provenance                                                                                  | Verifying the source and timestamp of imported backend artifacts                          |
+| `docs/specs/SPEC_admin_catalog_management.md`       | Selected admin catalog management behavior                                                                            | Admin book/category management visible states, access, errors, tests                      |
+| `docs/specs/SPEC_admin_localization_management.md`  | Selected admin localization management behavior                                                                       | Admin locale/message editing, coverage/status behavior, tests                             |
+| `docs/specs/SPEC_admin_user_management.md`          | Selected admin user management behavior                                                                               | Admin user list/detail/role-management visible states and tests                           |
+| `docs/specs/SPEC_operator_audit_surface.md`         | Selected operator overview and audit-log behavior                                                                     | Operator metrics, audit filters, details, partial payloads, tests                         |
+| `docs/specs/SPEC_public_catalog_workflow_polish.md` | Selected public catalog workflow polish behavior                                                                      | Public catalog query UX, filter/sort/page summaries, route-query behavior                 |
+
+### Root Owners
+
+| File              | Owns                                                                                          | Load when the task involves                                    |
+| ----------------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `README.md`       | Public project overview and current surface                                                   | Public-facing project summary or top-level documentation links |
+| `SETUP.md`        | Short setup entry point that routes to `docs/LOCAL_DEVELOPMENT.md`                            | Setup entry-point wording or compatibility with local docs     |
+| `ROADMAP.md`      | Selected scope, status, dependencies, blocked backlog, release context, and product non-goals | Roadmap/product scope, stable IDs, release state, planned work |
+| `CHANGELOG.md`    | Release-candidate and shipped user-visible history                                            | Release notes, shipped history, release-candidate changes      |
+| `CONTRIBUTING.md` | Contributor orientation                                                                       | Contributor entry-point rules or links                         |
+| `SECURITY.md`     | Vulnerability reporting and supported security-fix lines                                      | Security reporting policy or supported lines                   |
+| `.gitmessage`     | AI-authored commit-message format                                                             | Creating commits when explicitly authorized                    |
 
 ## Ad Hoc Implementation Delegation
 
@@ -152,28 +190,3 @@ Use `.agents/references/testing.md` to choose validation by change type. Report 
 - Keep unrelated user changes intact.
 - Follow `.agents/references/releases.md` for release commits, annotated tags, changelog promotion, package checks, and post-release cleanup.
 - In handoff, report changed files, validation run, skipped validation with reasons, and any remaining risks.
-
-## Instruction Load Policy
-
-Start with this file and the user's request. Add only the files needed for the current task:
-
-- backend contract work: `docs/backend/`
-- setup/tooling work: `SETUP.md` and package/tool config
-- roadmap/product scope: `ROADMAP.md`
-- product/design intent: `docs/DESIGN.md`
-- public project overview: `README.md`
-- commit formatting: `.gitmessage`
-- architecture and code placement: `.agents/references/architecture.md`
-- frontend code style: `.agents/references/code-style.md`
-- documentation routing: `.agents/references/documentation.md`
-- ordinary task execution: `.agents/references/execution.md`
-- delegation workflow: `.agents/references/workflow.md`
-- plan authoring: `.agents/references/planning.md`
-- active plan execution: `.agents/references/plan-execution.md`
-- focused reference maintenance: `.agents/references/references-rules.md`
-- troubleshooting: `.agents/references/troubleshooting.md`
-- validation selection: `.agents/references/testing.md`
-- reviews: `.agents/references/reviews.md`
-- release preparation: `.agents/references/releases.md`
-
-Do not bulk-load generated contract files unless the task needs exact schema details.
