@@ -16,7 +16,7 @@
     "preview": "vite preview --host 127.0.0.1",
     "lint": "npm run lint:markdown && npm run lint:eslint",
     "lint:eslint": "eslint .",
-    "lint:markdown": "node scripts/check-markdown-line-endings.mjs && markdownlint-cli2",
+    "lint:markdown": "node scripts/check-markdown-line-endings.mjs && node scripts/check-mermaid-markdown.mjs && markdownlint-cli2",
     "format:markdown": "node scripts/format-markdown.mjs",
     "audit:security": "npm audit --audit-level=high",
     "hardening:m20": "npm run hardening:runtime && npm run hardening:kube-linter && npm run hardening:trivy",
