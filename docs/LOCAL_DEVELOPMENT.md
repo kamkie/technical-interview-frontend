@@ -103,6 +103,8 @@ These manifests are reference assets. Deployment-specific TLS, DNS, ingress cont
 | Run local dev server with mock API           | `npm run dev:mock`              |
 | Run production preview                       | `npm run preview`               |
 | Lint                                         | `npm run lint`                  |
+| Lint Markdown only                           | `npm run lint:markdown`         |
+| Lint ESLint only                             | `npm run lint:eslint`           |
 | Typecheck and API type freshness check       | `npm run typecheck`             |
 | Run tests once                               | `npm test`                      |
 | Run tests with coverage                      | `npm run test:coverage`         |
@@ -160,10 +162,13 @@ CI installs with `npm ci`, so use `npm ci` locally when reproducing lockfile or 
 Docs and guidance-only changes may use:
 
 ```powershell
+npm run lint:markdown
 git diff --check
 ```
 
 Run broader validation when a docs change also modifies package scripts, generated files, workflows, source code, or test behavior.
+
+Tracked Markdown must use LF line endings, include a final newline, avoid hard-wrapped prose and list-item continuation prose outside fenced code, and keep pipe tables aligned with `npm run lint:markdown`.
 
 For Dockerfile, Nginx runtime configuration, or release image workflow changes, also run:
 

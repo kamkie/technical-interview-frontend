@@ -6,7 +6,7 @@ This file owns AI-facing validation selection by change type. Use the smallest v
 
 | Change type                                                           | Required validation                                                                                                                                                                                                                    |
 | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Docs or AI guidance only                                              | `git diff --check`                                                                                                                                                                                                                     |
+| Docs or AI guidance only                                              | `npm run lint:markdown`, `git diff --check`                                                                                                                                                                                            |
 | App source, tests, package scripts, tool config, or workflow behavior | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`                                                                                                                                                   |
 | Dockerfile, Nginx runtime config, or container release workflow       | Full baseline, `npm run docker:build`, and a container smoke check when runtime behavior changes; record Docker unavailability explicitly                                                                                              |
 | M20 hardening selection docs                                          | `git diff --check`                                                                                                                                                                                                                     |
@@ -31,6 +31,8 @@ git diff --check
 ```
 
 Use Corepack to invoke the repository package manager when plain `npm` resolves outside `package.json` `engines` or `packageManager`.
+
+`npm run lint` runs Markdown validation before ESLint. Use `npm run lint:markdown` for docs-only changes that need only the Markdown rule surface: LF line endings, final newline, no hard-wrapped prose or list-item continuation prose outside fenced code, and deterministically aligned pipe tables.
 
 `npm run typecheck` already includes API type freshness. Use `npm run api:types` to rewrite generated API types only after an intentional contract refresh.
 

@@ -93,6 +93,8 @@ Canonical npm commands:
 - local development server: `npm run dev`
 - production preview: `npm run preview`
 - lint: `npm run lint`
+- Markdown lint: `npm run lint:markdown`
+- ESLint only: `npm run lint:eslint`
 - typecheck: `npm run typecheck`
 - tests: `npm test`
 - watch tests: `npm run test:watch`
@@ -102,6 +104,10 @@ Canonical npm commands:
 - verify API types: `npm run api:types:check`
 
 API-facing work must start by importing or refreshing the backend contract artifacts if the imported backend artifact appears stale or conflicts with the backend repository. After a backend contract refresh, regenerate `src/api/generated/openapi.ts` with `npm run api:types`.
+
+## Markdown Formatting
+
+Tracked Markdown must use LF line endings, end with a final newline, keep prose and list-item prose on one physical line instead of hard-wrapped continuation lines, and keep pipe tables in the deterministic alignment enforced by `npm run lint:markdown`.
 
 ## Recommended First Implementation Shape
 
