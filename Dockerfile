@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.23.0
 
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 
 WORKDIR /workspace
 
@@ -13,7 +13,7 @@ COPY eslint.config.js tsconfig.json tsconfig.app.json tsconfig.node.json vite.co
 COPY src ./src
 RUN npm run build
 
-FROM nginxinc/nginx-unprivileged:1.29-alpine
+FROM nginxinc/nginx-unprivileged:1.31-alpine
 
 ENV FRONTEND_API_UPSTREAM=http://host.docker.internal:8080
 
