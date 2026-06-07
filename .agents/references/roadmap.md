@@ -37,6 +37,9 @@ Use these status terms for selected rows:
 - `Blocked`: the milestone needs a product choice, credential, backend contract
   refresh, or external state before implementation can start.
 
+Use `Deferred` only for unclear, unselected, or explicitly deferred scope. Defined
+work belongs in `Ready`, `Waiting`, or `Blocked` roadmap rows.
+
 Detailed procedures belong in the owner document or executable tests. Add a
 separate spec only when user-facing behavior is too broad or ambiguous for a
 roadmap row.
@@ -44,6 +47,8 @@ roadmap row.
 ## Editing Checks
 
 - Make the smallest coherent roadmap change.
+- Handle roadmap-only documentation edits directly; they do not require subagents
+  unless the user explicitly asks for delegation.
 - Preserve backend contract invariants and do not change API-facing rules through
   roadmap wording alone.
 - Update `ROADMAP.md` when roadmap or product scope changes.

@@ -158,6 +158,9 @@ For this work, use one subagent for planning and a separate subagent for
 implementation. This repository rule pre-authorizes those subagents; agents must not
 ask again before using them.
 
+Roadmap-only documentation edits are governed by `.agents/references/roadmap.md`;
+they do not require subagents unless the user explicitly asks for delegation.
+
 Do not spawn subagents with full thread history. Keep `fork_context` disabled or
 omitted, and write a complete scoped prompt that includes the repository path,
 relevant instructions, ownership boundaries, validation expectations, and the
