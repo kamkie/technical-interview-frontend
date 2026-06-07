@@ -1,186 +1,223 @@
 # Plan: [Plan Title]
 
-## Provenance
+Plan-ID: PLAN-<short-kebab-slug>
 
-| Field              | Value                                                                                                                               |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Plan ID            | `[PLAN-short-kebab-slug]`                                                                                                           |
-| Created By         | [Agent or person]                                                                                                                   |
-| Created On         | [YYYY-MM-DD]                                                                                                                        |
-| Source Request     | [Short description or link to request]                                                                                              |
-| Generation Context | [AGENTS.md, ROADMAP.md stable IDs, docs/specs, backend contract artifacts, focused references, or other source artifacts consulted] |
+Status: Draft
 
-## Lifecycle
+<!-- For Status: Closed, add `Close-Reason: Released|Rejected|Superseded|Deferred|Archived`. -->
 
-| Field         | Value                                                    |
-| ------------- | -------------------------------------------------------- |
-| Phase         | [Planning / Execution / Review / Complete]               |
-| Status        | [Ready / Waiting / Blocked / Complete]                   |
-| Current Slice | [Next executable milestone, spec, task, or worker slice] |
-| Last Updated  | [YYYY-MM-DD]                                             |
+Workers: 1
 
-## Planning Readiness
+Filename: `.agents/plans/PLAN-<short-kebab-slug>.md`
 
-| Field                                      | Value                                                       |
-| ------------------------------------------ | ----------------------------------------------------------- |
-| Objective Clear Enough To Test Or Document | [Yes / No]                                                  |
-| Decision Complete                          | [Yes / No]                                                  |
-| Blocking Open Questions                    | [None or list IDs]                                          |
-| Accepted Fallbacks                         | [Fallbacks selected from existing owner documents, or None] |
-| Ready For Execution                        | [Yes / No]                                                  |
+## Readiness
 
-Use `Ready` only when the slice can be assigned from the current repository state. Use `Waiting` for normal predecessor dependency. Use `Blocked` only for unresolved product choices, backend contract conflicts, credentials, thresholds, failure owners, explicit user acceptance gates, or external state the plan cannot produce.
+- Plan readiness: Not ready until open questions, owner routing, validation, and required decisions are resolved.
+- Approved by:
+- Approved at:
+- Open questions: Yes; see `## Open Questions`.
+- Implementation progress: Not started.
 
-## Linked And Source Artifacts
+Use `Status: Draft` while shaping the plan. Use `Status: Approved` only after explicit user approval is recorded. Creating or updating this plan is not implementation approval.
 
-| Artifact           | Path                           | Role                                                                                                                          | Status                                     |
-| ------------------ | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| Root AI rules      | `AGENTS.md`                    | Implementation authorization, dirty-worktree protection, backend contract invariants, delegation, validation, and git handoff | [Current / Needs update / Read-only]       |
-| Roadmap            | `ROADMAP.md`                   | Selected scope, stable IDs, status, dependencies, blocked backlog, release context, and product non-goals                     | [Current / Needs update / Read-only]       |
-| Design owner       | `docs/DESIGN.md`               | Durable frontend product and design intent                                                                                    | [Current / Needs update / Not applicable]  |
-| Backend contract   | `docs/backend/`                | API behavior truth for endpoint, auth, CSRF, pagination, repeated filters, localization, and generated type work              | [Current / Needs refresh / Not applicable] |
-| Focused references | `.agents/references/[file].md` | Procedure owner for [planning / execution / testing / reviews / documentation / other]                                        | [Current / Needs update / Read-only]       |
-| Specs or tests     | `[path]`                       | Executable or documented owner for changed behavior                                                                           | [Current / Needs update / Not applicable]  |
+## Status History
 
-## Artifact Lookup
+- YYYY-MM-DDTHH:mm:ss+HH:mm: none -> Draft by [actor]; plan created.
 
-- Resolve `PLAN-<short-kebab-slug>` in `.agents/plans/` first, then `.agents/plans/archive/`.
-- Resolve `M-AREA-NNN`, `E-AREA-NNN`, and `T-AREA-NNN` in `ROADMAP.md` first, then `docs/ROADMAP_ARCHIVE.md`.
-- Resolve selected behavior specs under `docs/specs/`.
-- Resolve named repository prompts through `.agents/prompts/README.md`, then load only the matching prompt file.
-- Use scoped lookup in the owning directory before broad repository search.
+## Goal
 
-## Summary
+State the frontend behavior, repository rule, release state, or execution outcome this plan should achieve.
 
-[Briefly state the intended outcome, user-visible behavior or repository rule being changed, and why this plan exists.]
+## Non-Goals
 
-Durable rules discovered during execution must move to the owning backend contract artifact, executable test, human doc, design guide, roadmap row, focused reference, or source file before this plan is complete.
+- List work that is intentionally out of scope.
+- Do not include unrelated cleanup, generic command wrappers, broad workflow-state directories, or reusable process scaffolding unless selected roadmap work names that need.
 
-## Scope
+## Source Artifacts
 
-In scope:
+- User request:
+- Roadmap refs:
+- Design/spec refs:
+- Backend contract refs:
+- Focused references:
+- Source files or tests:
 
-- [Selected milestone, spec, task, documentation, or implementation slice]
-- [Files or package areas workers may edit]
-- [Validation and review evidence required]
+Load only the artifacts needed for this plan. Do not bulk-load generated contract files, source trees, archived plans, or roadmap archives unless a task packet names them or an escalation trigger fires.
 
-Out of scope:
+## Assumptions
 
-- [Explicit non-goal]
-- [Files or behaviors workers must not edit]
-- Generic command wrappers, broad workflow-state directories, context buses, or other reusable scaffolding unless this plan explicitly selects a concrete need and owner.
+- Document assumptions that are safe enough to proceed with and name the owner or revisit trigger.
+
+## Open Questions
+
+- List task-specific questions that block approval or execution.
+- Approved plans must have every question answered, moved to an owner document, or documented as an allowed assumption.
+
+## Proposed Changes
+
+- List files, modules, docs, tests, or generated artifacts expected to change.
+- Keep this at the level of implementation steps and owner updates, not backlog history.
+- Reference related roadmap IDs, specs, prompts, or source files when applicable.
 
 ## Contract And Repository Invariants
 
 - Route API-facing behavior through `docs/backend/` and the imported backend contract artifacts before implementation.
 - Do not invent endpoints, request fields, authentication flows, transport assumptions, provider-specific OAuth paths, pagination/filter semantics, or update concurrency rules.
 - Preserve routine frontend/backend boundaries: same-origin `/api/**`, session-cookie auth, backend-provided session metadata, localized messages as display content, and stable-field branching.
-- Confirm implementation authorization before changing repository state unless this active plan and current user request explicitly authorize the scoped work.
-- Run `git status --short` before editing and treat existing or unexpected changes as user-owned.
+- Move durable rules discovered during execution into the owning backend contract artifact, executable test, human doc, design guide, roadmap row, focused reference, or source file before this plan is complete.
+- Run `git status --short` before edits and treat existing or unexpected changes as user-owned.
 - Assign explicit write scopes to workers and keep unrelated user or parallel-worker changes intact.
 - Commit only when the current request and plan checkpoint authorize it, and keep unrelated files out of the checkpoint commit.
 
-## Decisions, Open Questions, And Assumptions
-
-| ID  | Type       | Item            | Owner   | Status            | Fallback Or Decision | Blocks Ready? |
-| --- | ---------- | --------------- | ------- | ----------------- | -------------------- | ------------- |
-| D1  | Decision   | [Decision made] | [Owner] | [Accepted]        | [Result]             | No            |
-| Q1  | Question   | [Open question] | [Owner] | [Open / Answered] | [Fallback if any]    | [Yes / No]    |
-| A1  | Assumption | [Assumption]    | [Owner] | [Active]          | [Revisit trigger]    | No            |
-
-## Execution Shape And Ownership
-
-- Coordinator owns plan sequencing, dirty-worktree protection, shared-file assignment, worker prompts, review, validation reporting, and plan-authorized commits.
-- Planning workers return objective, source documents, ownership, implementation steps, validation, risks, open questions, and non-goals.
-- Implementation workers edit only assigned files, preserve user-owned changes, run scoped validation, and report changed files, validation, skipped checks, and remaining risks.
-- Reviewers check for owner drift, backend contract drift, documentation drift, security risk, missing validation, and scope leaks.
-- Shared files are coordinator-owned unless assigned to one worker at a time.
-- Every repository-changing task should include a commit checkpoint after that task's validation; read-only or no-change tasks should state that no commit is needed.
-
 ## Progress Tracker
 
-| Slice              | Status                                 | Owner                  | Depends On            | Last Updated | Notes        |
-| ------------------ | -------------------------------------- | ---------------------- | --------------------- | ------------ | ------------ |
-| [Slice ID or name] | [Ready / Waiting / Blocked / Complete] | [Coordinator / worker] | [None or predecessor] | [YYYY-MM-DD] | [Short note] |
+| Packet          | Status                               | Owner                | Depends On | Last Updated | Notes      |
+| --------------- | ------------------------------------ | -------------------- | ---------- | ------------ | ---------- |
+| T1-[task-label] | Ready / Waiting / Blocked / Complete | Coordinator / worker | None       | YYYY-MM-DD   | Short note |
 
-## Plan Tasks
+Use `Ready` only when the packet can be assigned from the current repository state. Use `Waiting` for normal predecessor dependency. Use `Blocked` only for unresolved product choices, backend contract conflicts, credentials, selected thresholds, failure owners, explicit user acceptance gates, or external state the plan cannot produce.
 
-### Task 1: [Task Name]
+## Task Packets
 
-| Field                   | Value                                                                                              |
-| ----------------------- | -------------------------------------------------------------------------------------------------- |
-| Status                  | [Ready / Waiting / Blocked / Complete]                                                             |
-| Goal                    | [Outcome]                                                                                          |
-| Owned Files Or Packages | `[exact write scope]`                                                                              |
-| Read-Only Context       | `[files workers may consult but must not edit]`                                                    |
-| Behavior To Preserve    | [Backend contract, user-visible behavior, repository rule, or non-goal]                            |
-| Deliverables            | [Concrete output]                                                                                  |
-| Validation Checkpoint   | `[command]` or [manual review]                                                                     |
-| Commit Checkpoint       | [Authorized after validation with files listed / No commit needed for read-only or no-change task] |
+Use task packets for approved multi-task plans. For a single-task plan, keep one task packet so the worker assignment, validation, and result summary stay explicit.
 
-Implementation notes:
+Use inline task packets by default. For long plans with more than six worker-owned tasks, multiple parallel waves, or an expected parent-plan length above roughly 200 lines after packeting, link child packet files here and keep stable task packet refs in the parent plan.
 
-- [Narrow implementation note, if needed]
-- [Stop condition, if needed]
+### Task Packet: T1-[task-label]
 
-## Blockers And Replan Triggers
+Task id: T1-[task-label]
 
-| Trigger Or Blocker                                                 | Response                                                                                                                | Owner               | Status |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- | ------------------- | ------ |
-| Backend contract conflict appears                                  | Inspect or refresh imported backend artifacts only if API-facing behavior is changing; otherwise record as out of scope | [Coordinator]       | [Open] |
-| Unexpected dirty changes appear inside assigned write scope        | Stop and report changed files, scope impact, and proposed next action                                                   | [Worker]            | [Open] |
-| Work requires edits outside assigned scope                         | Stop and replan or assign a new scoped worker                                                                           | [Coordinator]       | [Open] |
-| Work requires an unassigned roadmap, decision, or owner-doc change | Stop and replan or assign that owner before implementation continues                                                    | [Coordinator]       | [Open] |
-| Durable rule would live only in this plan                          | Move the rule to its owner document, contract, test, reference, roadmap row, or source file before completion           | [Coordinator]       | [Open] |
-| Validation failure is routine and scoped                           | Fix, reassign, or record according to the task; do not treat it as a user blocker by default                            | [Responsible owner] | [Open] |
+Lane: implementation
+
+<!-- Use `implementation`, `design`, `exploration`, `testing`, or `review`. Design, exploration, testing, and review packets must use `Write scope: read-only` unless the plan explicitly assigns draft or test artifact edits. -->
+
+Goal:
+
+- State the exact task outcome.
+
+Initial context budget:
+
+- Read first:
+  - Plan header, `## Readiness`, `## Progress Tracker`, `## Execution Model`, this task packet, and this packet's `Result summary`.
+  - Exact owner artifacts and source files required for this task, such as `AGENTS.md`, `docs/DESIGN.md`, selected `ROADMAP.md` rows, `docs/backend/`, `.agents/references/testing.md`, or specific source files.
+- Escalate to:
+  - Exact owner guides, source files, specs, validation output, browser evidence, or backend contract artifacts allowed only when an escalation trigger fires.
+
+Allowed inputs:
+
+- Files and artifacts named in `Read first`.
+- Files and artifacts named in `Escalate to` only after an escalation trigger fires.
+
+Forbidden inputs:
+
+- Unrelated archived plans.
+- Unrelated roadmap archive entries.
+- Previous worker chat beyond the coordinator handoff summary.
+- Implementation evidence from unrelated task packets.
+
+Write scope:
+
+- Exact files or directories this task may edit, or `read-only` for design, exploration, testing, and review packets without assigned artifact edits.
+
+Dependencies:
+
+- List predecessor task packets, wave constraints, or `none`.
+
+Validation:
+
+- List task-specific commands and manual checks selected through `.agents/references/testing.md`.
+- List self-review checks selected through `.agents/references/reviews.md`.
+- State the task or approved parallel-wave commit boundary that must exist before any dependent task or wave starts, or state that no commit is authorized.
+
+Escalation triggers:
+
+- Conditions that allow the worker to load additional named context, such as a missing owner, backend contract conflict, design ambiguity, validation blocker, or need to align with another owner guide.
+
+Stop conditions:
+
+- List missing decisions, unsafe assumptions, dirty-worktree conflicts inside write scope, owner drift, or edits outside scope that should stop work.
+
+Expected output:
+
+- Changed files or reviewed diff.
+- Validation evidence from `.agents/references/testing.md`.
+- Self-review evidence from `.agents/references/reviews.md`.
+- Commit identifier when a commit checkpoint is authorized and completed.
+- Coordinator reconciliation note comparing worker claims with the final diff, validation output, and governing artifact.
+- Blockers.
+- Review risks.
+- Handoff notes and next action.
+
+Result summary:
+
+- Status: pending
+- Worker:
+- Changed files or reviewed diff:
+- Validation evidence from `.agents/references/testing.md`:
+- Self-review evidence from `.agents/references/reviews.md`:
+- Commit:
+- Coordinator reconciliation:
+- Changelog/docs/spec/roadmap updates:
+- Blockers:
+- Review risks:
+- Handoff notes and next action:
+
+## Execution Model
+
+- `Workers: 1` for sequential execution, or `Workers: N (parallel, tasks: <task refs or labels>)` when the approved plan marks those tasks independent with disjoint write scopes.
+- Active-plan implementation uses a coordinator plus one fresh implementation worker subagent per repository-changing task packet.
+- Research, exploration, planning, testing, and review subagents are optional unless this plan makes a packet mandatory.
+- If required implementation worker subagents are unavailable, unauthorized by the active tool contract, or explicitly forbidden, stop before implementation and report the blocker instead of running the task locally.
+- Dispatch only the plan header or readiness summary, execution graph, assigned task packet, and explicitly named governing artifacts or source files. Do not dispatch the full approved plan by default.
+- Record any task that is safe to run in parallel only when it has a disjoint write scope.
+- Before write delegation, check current worktree state, reserve explicit write scopes, and keep parallel write scopes disjoint.
+- Each repository-changing task or approved parallel wave must be implemented, validated through `.agents/references/testing.md`, self-reviewed through `.agents/references/reviews.md`, and committed when the plan checkpoint and current request authorize a commit before the next dependent task or wave starts.
+- Before starting the next dependent task or approved parallel wave, confirm every predecessor result summary records implementation status, validation evidence, self-review evidence, and any required commit identifier.
+- Keep compact evidence in the plan. Do not paste raw test output, raw worker transcripts, browser logs, or bulky run logs.
+
+## Long-Run Continuity
+
+Use this checkpoint for multi-task, context-heavy, delegated, parallel, or likely-compaction plans. Update it before starting each dependent task or wave, before a pause or handoff, and after any context transition.
+
+- Resume docs reread:
+  - After context compaction, interruption, resume, or handoff, reread the latest user request, `AGENTS.md`, this plan's header, `## Readiness`, `## Long-Run Continuity`, `## Execution Model`, the current task packet and result summary, `.agents/references/plan-execution.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and the next action's exact owner docs or source files.
+- Current task or wave:
+- Completed commits:
+- Plan status and readiness:
+- Validation and self-review state:
+- Coordinator reconciliation state:
+- Changelog, docs, spec, roadmap, or plan updates:
+- Blockers or open questions:
+- Next action:
+- Context handoff notes:
+
+## Execution Graph
+
+```mermaid
+flowchart TD
+    O1["O1<br/>Coordinator"]
+    W1["W1<br/>T1: task label"]
+    O1 --> W1
+```
 
 ## Validation Plan
 
-Required validation:
-
-```powershell
-[smallest relevant command]
-```
-
-Additional validation, if selected:
-
-- [Command or manual review]
-- [Browser, smoke, route, component, contract, typecheck, lint, build, or release check]
-
-Skipped validation must be reported with reasons. Broader npm commands are not required unless the plan changes package scripts, source code, generated files, tests, workflow YAML, or behavior that those checks protect.
+- List commands, manual checks, browser smoke, or content reviews expected for the plan.
+- Select validation through `.agents/references/testing.md`; use `docs/LOCAL_DEVELOPMENT.md` and `package.json` for command details.
+- Skipped validation must be reported with reasons.
 
 ## Review Expectations
 
 - Review for documentation and owner drift before handoff.
 - Review for backend contract drift if API-facing wording, client code, generated types, auth/session/CSRF handling, localization, pagination, filters, or update behavior changes.
-- Security review is required when auth, session, CSRF, permissions, headers, cookies, or transport assumptions change beyond restating existing invariants.
+- Security review is required when auth, session, CSRF, permissions, headers, cookies, storage, redirects, or transport assumptions change beyond restating existing invariants.
 - Findings must be fixed, delegated, or recorded with owner and risk before calling the plan complete.
 
-## Handoff Expectations
+## Risks
 
-Each worker report must include:
+- Note backend contract, design, roadmap, validation, smoke, accessibility, hardening, release, or coordination risks.
 
-- changed files
-- confirmation that files outside the assigned write scope were not edited
-- validation run and result
-- skipped validation with reasons
-- whether `ROADMAP.md` was edited and which stable IDs or references changed
-- whether obsolete roadmap sections were recreated
-- remaining risks, contradictions, smoke gaps, contract gaps, or owner-drift concerns
+## Handoff Notes
 
-After resume, compaction, or summarized handoff, reread the latest user request, `AGENTS.md`, this plan, and the next slice's governing owner before continuing. If validation failed, retries repeated, CI failed, or the user corrected the agent during plan work, record whether the lesson belongs in a test, owner document, focused reference, prompt, active plan update, or no durable rule.
-
-Final handoff must include:
-
-- all changed files
-- validation commands and results
-- skipped checks and reasons
-- roadmap changes by stable ID, or confirmation `ROADMAP.md` was not edited
-- confirmation obsolete roadmap sections were not recreated
-- remaining risks or blocked follow-up work
-
-## Validation Results
-
-| Date         | Command     | Scope               | Result                      | Notes   |
-| ------------ | ----------- | ------------------- | --------------------------- | ------- |
-| [YYYY-MM-DD] | `[command]` | [Files or behavior] | [Passed / Failed / Skipped] | [Notes] |
+- Record anything the next coordinator, worker, reviewer, verifier, or maintainer should know after implementation.
+- If a new question appeared during implementation, note where it was recorded and whether work resumed.
