@@ -53,13 +53,9 @@ For API-facing security questions, keep the frontend same-origin and session-coo
 
 ## Hardening Triage
 
-For selected M13 hardening gates:
+Use `.agents/references/testing.md` to select hardening validation and `docs/LOCAL_DEVELOPMENT.md` for current command procedures. Review workflow permissions, concurrency, CodeQL, dependency-review, npm audit, Dependabot grouping, runtime, container, and manifest findings for the selected threshold state.
 
-- Workflow permission and concurrency changes should be reviewed for least privilege, no unexpected write scopes, and no concurrency rule that cancels protected branch or release/tag evidence. Pull-request runs may cancel superseded runs.
-- CodeQL alerts should be treated as actionable until the relevant data or control flow is understood. Use GitHub code scanning alerts and CodeQL workflow logs as the report locations. Prefer source fixes; use a scoped exception only when the alert is demonstrably not exploitable or cannot be fixed before the selected release.
-- Dependency-review and npm audit failures should be fixed through dependency updates, lockfile refreshes, or a package replacement where practical. Use pull-request checks, annotations, workflow logs, and `npm run audit:security` output as the report locations. In private-repository advisory mode, treat unsupported dependency-review runs as a signal to rely on npm audit until dependency graph and GitHub Advanced Security support are enabled. Exceptions must name the advisory, package path, owner, mitigation, expiration or revisit trigger, and release decision.
-- Dependabot grouping should reduce review noise without hiding security updates. Do not require named individual reviewers until the repository owns a stable reviewer team or `CODEOWNERS`.
-- A skipped or disabled hardening check must have a scoped rationale and an owner. Do not raise the global audit threshold or disable the entire workflow for one finding.
+Prefer source, dependency, lockfile, or configuration fixes where practical. A skipped or disabled hardening check must have a scoped rationale and an owner. Exceptions must name the finding or advisory, affected package or path, owner, mitigation or planned fix, expiration or revisit trigger, and release decision. Do not weaken a global threshold or disable a full workflow to work around a single finding.
 
 ## Review Handoff
 

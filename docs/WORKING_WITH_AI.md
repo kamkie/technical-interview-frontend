@@ -46,7 +46,7 @@ npm run build
 git diff --check
 ```
 
-For docs-only changes, `git diff --check` is usually enough. For API type workflow changes, include `npm run api:types:check`. For browser smoke, require the AI to state whether the smoke is anonymous, authenticated manual, or unavailable because credentials and a canonical command do not exist.
+For docs-only changes, expect `npm run lint:markdown` plus `git diff --check`, unless a narrower explicit task says otherwise. For API type workflow changes, include `npm run api:types:check`. For browser smoke, require the AI to state whether the smoke is anonymous, authenticated manual, or unavailable because credentials and a canonical command do not exist.
 
 The final handoff should list validation commands, results, skipped checks, and the reason for each skip.
 

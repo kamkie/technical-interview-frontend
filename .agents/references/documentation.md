@@ -1,6 +1,6 @@
 # AI Documentation Reference
 
-This file owns AI-facing artifact routing and cross-file alignment checks for this frontend repository. Use it with `docs/DEVELOPMENT_LIFECYCLE.md` when a task changes documentation, repository rules, roadmap scope, product or design intent, setup instructions, active plans, release state, or focused AI references.
+This file owns AI-facing artifact routing and cross-file alignment checks for this frontend repository. Use it with `docs/DEVELOPMENT_LIFECYCLE.md` for the human lifecycle overview when a task changes documentation, repository rules, roadmap scope, product or design intent, setup instructions, active plans, release state, or focused AI references.
 
 ## Routing Rules
 
@@ -28,22 +28,19 @@ Use focused AI references for procedure details that are too specific for `AGENT
 
 Current focused owners:
 
+- `.agents/references/architecture.md` owns frontend placement, route/API/client/component boundaries, and abstraction placement.
+- `.agents/references/code-style.md` owns frontend TypeScript, React, CSS, accessibility, and edit-shape guidance.
 - `.agents/references/documentation.md` owns artifact routing and cross-file alignment checks.
+- `.agents/references/execution.md` owns ordinary task execution gates, repository-state checks, validation routing, and handoff expectations.
+- `.agents/references/plan-execution.md` owns active-plan execution rules for delegated milestone and spec slices.
+- `.agents/references/planning.md` owns plan authoring and readiness rules.
+- `.agents/references/references-rules.md` owns maintenance rules for focused AI references.
+- `.agents/references/releases.md` owns release sequencing, version choice, release commits, tags, package checks, publication, release verification, and post-release roadmap cleanup.
+- `.agents/references/reviews.md` owns code-review, spec-drift, documentation-drift, and security-review triggers.
 - `.agents/references/roadmap.md` owns roadmap editing, stable-ID handling, archive/changelog routing, and roadmap alignment checks.
 - `.agents/references/testing.md` owns validation selection by change type.
-- `.agents/references/reviews.md` owns code-review, spec-drift, documentation-drift, and security-review triggers.
-- `.agents/references/releases.md` owns release sequencing, version choice, release commits, tags, package checks, publication, release verification, and post-release roadmap cleanup.
-- `.agents/references/references-rules.md` owns maintenance rules for focused AI references.
-
-Planned focused owners for this guidance model:
-
-- `.agents/references/architecture.md` should own frontend placement, route/API/client/component boundaries, and where new abstractions belong.
-- `.agents/references/code-style.md` should own frontend TypeScript, React, CSS, and edit-shape guidance.
-- `.agents/references/execution.md` should own ordinary task execution gates, repository-state checks, and handoff expectations.
-- `.agents/references/workflow.md` should own planner, worker, reviewer, verifier, and coordinator workflow details.
-- `.agents/references/planning.md` should own plan authoring and readiness rules.
-- `.agents/references/plan-execution.md` should own active-plan execution rules for delegated milestone and spec slices.
-- `.agents/references/troubleshooting.md` should own validation failure triage and local problem-solving routes.
+- `.agents/references/troubleshooting.md` owns validation failure triage and local problem-solving routes.
+- `.agents/references/workflow.md` owns planner, worker, reviewer, verifier, and coordinator workflow details.
 
 Use `.agents/references/references-rules.md` when adding, removing, merging, or rerouting focused AI references.
 
@@ -52,6 +49,7 @@ Use `.agents/references/references-rules.md` when adding, removing, merging, or 
 Before handoff, check the files that describe the same behavior from different entry points:
 
 - `AGENTS.md` keeps core AI rules, backend integration invariants, and links to focused AI references.
+- `docs/DEVELOPMENT_LIFECYCLE.md` keeps the human lifecycle overview; focused AI references should point to it instead of duplicating its full lifecycle table.
 - `docs/README.md` indexes human-facing documentation owners.
 - `README.md`, `SETUP.md`, and `CONTRIBUTING.md` should link to owner docs instead of copying procedure bodies.
 - `docs/DESIGN.md` owns durable product and design intent; `ROADMAP.md` owns selected scope, stable IDs, status, dependencies, release context, blocked backlog, and product non-goals.

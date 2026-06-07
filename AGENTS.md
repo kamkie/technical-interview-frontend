@@ -20,19 +20,9 @@ If the intended behavior cannot be described clearly enough to test or document,
 
 ## Implementation Authorization
 
-Do not treat critique, direction, desired outcomes, or proposed change lists as permission to edit files.
+Do not treat critique, direction, desired outcomes, or proposed change lists as permission to edit files. Before changing repository state, confirm that the current task explicitly authorizes implementation with wording such as "implement this", "apply the change", "edit the files", "fix it now", "make the change", or an equivalent direct instruction.
 
-Before changing repository state, confirm that the current task contains explicit implementation authorization such as "implement this", "apply the change", "edit the files", "fix it now", "make the change", or an equivalent direct instruction.
-
-Examples that require clarification before editing:
-
-- "design changes to make this look more production"
-- "the menu is messy"
-- "admin stuff should be separate"
-- "this needs cleanup"
-- "what should change"
-
-For those requests, respond with a proposed approach, affected files, and validation plan. Wait for explicit approval before editing.
+If implementation is not clearly authorized, respond with a proposed approach, affected files, and validation plan, then wait. Use `.agents/references/execution.md` for the ordinary task gate, execution loop, validation selection, and handoff expectations.
 
 ## Dirty Worktree Protection
 
@@ -40,15 +30,7 @@ Before any file edit, run `git status --short`.
 
 Treat all existing or unexpected changes as user-owned. Do not revert, delete, overwrite, normalize, or clean up those changes unless the user explicitly asks for that exact recovery action.
 
-When a prior dirty-worktree observation conflicts with the current `git status --short`, treat the current Git state as authoritative and reconcile before stopping. If files that were previously dirty are now clean, check `git diff`, `git diff --cached`, and recent commit history or reflog as needed to determine whether the changes were committed or otherwise resolved; do not report a blocker based only on stale dirty-state memory.
-
-If unexpected changes appear during a task, stop and report:
-
-1. Which files changed.
-2. Whether they are inside the intended write scope.
-3. What action you propose next.
-
-Do not use delegated-worker scope as a reason to revert files outside that scope.
+If unexpected changes appear during a task, stop and report the files changed, whether they are inside the intended write scope, and the proposed next action. Treat the current `git status --short` as authoritative when reconciling stale dirty-worktree observations, using `.agents/references/execution.md` for the detailed gate.
 
 ## Truth Priority
 
@@ -142,31 +124,17 @@ Use these focused references for procedure details that do not belong inline her
 
 ## Ad Hoc Implementation Delegation
 
-Ad hoc implementation is implementation work not already governed by an active plan. For this work, use one subagent for planning and a separate subagent for implementation. This repository rule pre-authorizes those subagents; agents must not ask again before using them.
+Ad hoc implementation is implementation work not already governed by an active plan. Use one planning subagent and a separate implementation subagent; this repository rule pre-authorizes those subagents. Roadmap-only documentation edits are governed by `.agents/references/roadmap.md` and do not require subagents unless the user explicitly asks for delegation.
 
-Roadmap-only documentation edits are governed by `.agents/references/roadmap.md`; they do not require subagents unless the user explicitly asks for delegation.
-
-Do not spawn subagents with full thread history. Keep `fork_context` disabled or omitted, and write a complete scoped prompt. Use `.agents/references/workflow.md` for worker roles, prompt shape, read sets, and handoff requirements.
-
-Planning subagents must return a handoff with objective, relevant rules or source documents, proposed file ownership, implementation steps, required validation, and risks, open questions, or explicit non-goals.
-
-Implementation subagent prompts must include the planning handoff or state the orchestrator's explicit deltas from it. Implementation subagents must return changed files, validation run, skipped validation with reasons, and remaining risks.
-
-Backend contract, validation, git, and smallest-coherent-change rules still apply.
+Use `.agents/references/workflow.md` for coordinator, planner, worker, reviewer, verifier, prompt-scope, read-set, and handoff requirements. Backend contract, validation, git, dirty-worktree, and smallest-coherent-change rules still apply.
 
 ## Plan Execution Rules
 
 When the user asks to implement an active plan, the plan is the execution contract.
 
-- The orchestrator only orchestrates. It may update coordinator-owned plan/status documents, assign workers, review worker output, run validation, resolve integration, and create required commits, but it must not implement milestone or spec tasks itself.
-- Milestone and spec implementation must be delegated to workers with explicit file ownership and scoped validation requirements.
-- Execute plans in dependency order. The selected executable scope is the next `Ready` milestone/spec slice plus any dependent slices that become `Ready` after a predecessor is implemented, committed, and validated. Do not treat later roadmap dependencies, missing future specs, or future review gates as blockers for a currently `Ready` slice.
-- Use plan status terms consistently: `Ready` means assignable now, `Waiting` means normal predecessor dependency, and `Blocked` means unresolved product choice, backend contract conflict, required credential, explicit user acceptance gate, or external state that cannot be produced by the plan.
-- Stop before implementation only when the next `Ready` slice is actually `Blocked` by a decision or external condition that cannot be resolved from the current user request, backend contract, executable tests, or owned project documents.
-- Once a plan run is started, keep executing through the plan until it is complete. Do not stop for status-only handoffs, optional review points, routine validation failures, or work that can be delegated, fixed, or decided from existing project rules.
-- A spec or review step inside the plan is work to perform, not a blocker for earlier milestones. Coordinator review may unlock follow-on implementation unless the current task explicitly requires separate user acceptance.
+The orchestrator coordinates plan execution and delegates milestone or spec implementation to workers with explicit file ownership and scoped validation. Execute the next eligible `Ready` slice in dependency order, use plan status terms consistently, and treat plan review or spec steps as work to perform unless the current task requires separate user acceptance.
 
-Use `.agents/references/plan-execution.md` for detailed dependency handling, coordinator ownership, commit checkpoints, stop/replan triggers, and final handoff requirements.
+Use `.agents/references/plan-execution.md` for coordinator ownership, dependency handling, status meanings, commit checkpoints, stop/replan triggers, and final handoff requirements.
 
 ## Change Routing
 

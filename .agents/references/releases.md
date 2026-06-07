@@ -17,15 +17,9 @@ Before preparing a release, confirm:
 - selected M13 hardening checks have passed when they exist, or each exception has an owner and release decision
 - browser smoke evidence is recorded, or unavailable authenticated smoke is called out with the reason
 
-## M13 Hardening Evidence
+## Hardening Evidence
 
-After M13-B lands, release preparation must capture:
-
-- the full validation baseline for the exact release candidate
-- `npm run audit:security` passing at the selected high-or-critical advisory threshold
-- successful CI-owned CodeQL and dependency-review signals for the release-candidate commit, or a documented reason a CI-only signal was advisory-only or unavailable
-- current workflow configuration showing explicit permissions and concurrency
-- any scoped exception with the finding/advisory, affected package or path, owner, mitigation or planned fix, expiration or revisit trigger, and release decision
+Use `.agents/references/testing.md` for release validation selection and `docs/LOCAL_DEVELOPMENT.md` for current hardening command procedures. Release preparation must capture selected M13 evidence for the exact release candidate, including full baseline validation, `npm run audit:security`, CI-owned CodeQL and dependency-review signals when available, current workflow permission and concurrency evidence, and any scoped exception with the finding/advisory, affected package or path, owner, mitigation or planned fix, expiration or revisit trigger, and release decision.
 
 Dependabot configuration is release-readiness evidence that dependency maintenance is owned. Dependabot PR creation is not itself a release-blocking command, but a high-or-critical security update tied to a selected audit/dependency-review failure must be resolved or explicitly excepted before release.
 

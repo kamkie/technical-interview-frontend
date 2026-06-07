@@ -46,16 +46,15 @@ This file owns AI-facing validation failure triage and local problem-solving rou
 
 ## Smoke Evidence Limits
 
-- Browser smoke evidence must record the frontend URL, backend profile when used, covered flow, validation date, and skipped authenticated steps with reasons.
-- Anonymous smoke can cover shell and public catalog paths when selected. Authenticated smoke remains limited unless the repository has agreed local credentials, identity seeding, and a canonical command.
-- A manual screenshot or observed browser run is useful context but does not replace a selected repeatable smoke command unless the owner document or roadmap row accepts it.
-- Do not promote a smoke gap into a release-blocking quality gate until `ROADMAP.md` or the relevant owner selects the command, threshold, evidence path, and failure owner.
+Use `.agents/references/testing.md` for browser smoke evidence fields and `docs/LOCAL_DEVELOPMENT.md` for current local procedure. Anonymous smoke can cover shell and public catalog paths when selected. Authenticated smoke remains limited unless the repository has agreed local credentials, identity seeding, and a canonical command.
+
+A manual screenshot or observed browser run is useful context but does not replace a selected repeatable smoke command unless the owner document or roadmap row accepts it. Do not promote a smoke gap into a release-blocking quality gate until `ROADMAP.md` or the relevant owner selects the command, threshold, evidence path, and failure owner.
 
 ## Hardening And Advisory Checks
 
-- Hardening commands and advisory behavior are selected in `.agents/references/testing.md`; do not make advisory findings release-blocking without a roadmap or release decision.
-- Tool unavailability, rendering failures, and configuration failures should be fixed when in scope or reported as unavailable. Vulnerability and posture findings should be triaged according to the selected threshold state.
-- For dependency, workflow permission, CodeQL, dependency-review, and npm audit findings, use `.agents/references/reviews.md` for security-review triggers and exception expectations.
+Hardening commands and advisory behavior are selected in `.agents/references/testing.md`, with command procedures in `docs/LOCAL_DEVELOPMENT.md`. Do not make advisory findings release-blocking without a roadmap or release decision.
+
+Tool unavailability, rendering failures, and configuration failures should be fixed when in scope or reported as unavailable. Triage vulnerability, posture, dependency, workflow permission, CodeQL, dependency-review, and npm audit findings with `.agents/references/reviews.md`.
 
 ## When To Consult Owner Docs
 
