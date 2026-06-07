@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/kamkie/technical-interview-frontend/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kamkie/technical-interview-frontend/actions/workflows/ci.yml)
 [![Codecov](https://codecov.io/gh/kamkie/technical-interview-frontend/graph/badge.svg)](https://codecov.io/gh/kamkie/technical-interview-frontend)
-[![Latest release](https://img.shields.io/badge/release-v0.2.0-blue)](https://github.com/kamkie/technical-interview-frontend/releases/tag/v0.2.0)
+[![Latest release](https://img.shields.io/github/v/release/kamkie/technical-interview-frontend?sort=semver)](https://github.com/kamkie/technical-interview-frontend/releases)
 [![Node.js](https://img.shields.io/badge/node.js-24.x-blue)](package.json)
 
 Technical Interview Frontend is the first-party browser UI for the sibling
