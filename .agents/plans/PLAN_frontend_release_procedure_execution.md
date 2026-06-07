@@ -92,7 +92,7 @@ Out of scope:
 | Roadmap | `ROADMAP.md` | Milestone source, release state, deferred scope, and post-release cleanup owner | Current |
 | Prior plan | `.agents/plans/PLAN_frontend_roadmap_execution.md` | Completed M0-M11 precedent and plan format | Complete |
 | Changelog | `CHANGELOG.md` | Released history and `0.1.0` changelog promotion owner | Candidate `0.1.0` entries under `Unreleased` |
-| Package metadata | `package.json`, `package-lock.json` | Package name, version, runtime, scripts, and dependency baseline | Version is `0.1.0` |
+| Package metadata | `package.json`, `package-lock.json` | Package name, version, runtime, scripts, and dependency baseline | Version is `0.1.0`; package manager is `npm@11.14.1`; engines require Node.js `>=24 <25` and npm `>=11 <12` |
 | CI workflow | `.github/workflows/ci.yml` | Current validation gate and target for M13 hardening | Baseline CI exists |
 | Human setup docs | `README.md`, `SETUP.md`, `CONTRIBUTING.md` | Existing public entry points that should link to M14 owners | Current but pre-M14 |
 | AI rules | `AGENTS.md` | Current AI rule owner; should point to M15 focused references | Current but pre-M15 |
@@ -105,8 +105,10 @@ Out of scope:
 - The app is a Vite, React, and TypeScript frontend using Node.js 24.x and npm 11.x.
 - Browser traffic targets same-origin `/api/**`.
 - `package.json` is already versioned as `0.1.0`.
+- `package-lock.json` root metadata is also versioned as `0.1.0`.
 - `CHANGELOG.md` has candidate `0.1.0` content under `## [Unreleased]`.
-- CI runs lint, typecheck, tests, build, and `git diff --check`.
+- CI runs `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`,
+  `npm run build`, and `git diff --check`.
 - No frontend release tag is recorded in `ROADMAP.md`.
 
 ## Phase Map
@@ -204,6 +206,28 @@ M12-A implementation notes:
 - Do not tag until M12-B.
 - If validation fails, fix only release-readiness inconsistencies or return to the
   coordinator with a concrete blocker.
+
+M12-A release-readiness audit notes:
+
+- `package.json` and `package-lock.json` agree on version `0.1.0`; `package.json`
+  pins `packageManager` to `npm@11.14.1` and constrains engines to Node.js
+  `>=24 <25` and npm `>=11 <12`.
+- `README.md`, `SETUP.md`, `CONTRIBUTING.md`, `ROADMAP.md`, and `CHANGELOG.md` now
+  describe the same pre-tag `0.1.0` release candidate and the same full validation
+  baseline used by CI.
+- `CHANGELOG.md` remains under `## [Unreleased]` for the `0.1.0` candidate; no
+  changelog promotion, annotated tag, push, or remote publication happens in M12-A.
+- M12-B must run from synced local `main` at the exact release-candidate state,
+  after M14, M15, and selected M13 hardening have landed, with no unrelated dirty
+  work included in the release metadata commit.
+- M12-B should produce final validation evidence with Node.js 24.x and npm 11.x
+  matching `packageManager`/`engines`. During this audit, the local shell reported
+  Node.js `v24.16.0` and npm `8.5.2`; Corepack is available if the maintainer needs
+  to activate the canonical npm version.
+- Authenticated browser smoke remains skipped for automated release gating because
+  the repository still lacks agreed local credentials, identity seeding rules, and a
+  canonical smoke command. M12-B must record either manual smoke evidence for the
+  exact candidate or this skipped-smoke rationale.
 
 ## Phase 2: M14 Human Procedure Documentation
 

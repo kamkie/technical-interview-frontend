@@ -1,7 +1,7 @@
 # Changelog
 
-This project follows Keep a Changelog style. Versioning will be finalized before the
-first frontend release.
+This project follows Keep a Changelog style. Release entries stay under `Unreleased`
+until the first frontend tag is cut.
 
 ## [Unreleased]
 

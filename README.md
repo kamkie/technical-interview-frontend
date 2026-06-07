@@ -8,10 +8,11 @@ published OpenAPI contract.
 ## Status
 
 The repository contains a Vite, React, and TypeScript app for the selected `0.1.0`
-surface. The app bootstraps browser session state from the backend session contract,
-renders metadata-driven login/logout controls, supports the public catalog, account
-profile and language preference flows, and implements the selected admin and operator
-surfaces.
+release candidate. Package metadata is already versioned as `0.1.0`, but no
+frontend release tag has been cut yet. The app bootstraps browser session state from
+the backend session contract, renders metadata-driven login/logout controls,
+supports the public catalog, account profile and language preference flows, and
+implements the selected admin and operator surfaces.
 
 Current useful artifacts:
 
@@ -76,7 +77,7 @@ Out of scope unless explicitly planned:
 Prerequisites:
 
 - Node.js 24.x
-- npm 11.x
+- npm 11.x; `package.json` pins the canonical package manager to `npm@11.14.1`
 
 Install dependencies:
 

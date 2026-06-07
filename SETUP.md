@@ -1,14 +1,16 @@
 # Setup
 
 This repository uses Vite, React, TypeScript, Node.js 24.x, and npm for the first-party
-browser frontend.
+browser frontend. The current release candidate is package version `0.1.0`; the
+canonical package manager is `npm@11.14.1`, with engines constrained to Node.js
+`>=24 <25` and npm `>=11 <12`.
 
 ## Prerequisites
 
 - PowerShell 7 or Windows PowerShell
 - Git
 - Node.js 24.x
-- npm 11.x
+- npm 11.x, matching the `packageManager` and `engines` fields in `package.json`
 - Local sibling checkout of `technical-interview-demo` at `..\technical-interview-demo`
   when refreshing backend contract artifacts or defining local smoke coverage
 
@@ -83,7 +85,8 @@ limits.
 
 ## Validation Expectations
 
-For app, tooling, or documentation changes, run the smallest applicable set from:
+For app or tooling changes, and for release-readiness checks, run the same validation
+baseline used by CI:
 
 ```powershell
 npm run lint
@@ -96,5 +99,8 @@ git diff --check
 `npm run typecheck` also verifies that the generated API types are current with
 `docs/backend/approved-openapi.json`.
 
-Session/auth browser smoke or e2e coverage should be added when those flows are
-implemented. Until then there is no canonical browser smoke command.
+Docs or guidance-only changes may use `git diff --check` unless a plan or user
+request explicitly requires the full baseline.
+
+Session/auth browser smoke or e2e coverage remains manual until the repository has
+agreed local credentials, identity seeding rules, and a canonical command.

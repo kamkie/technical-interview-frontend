@@ -11,6 +11,7 @@ This roadmap tracks the planned first-party browser frontend for the sibling
 | Next target version | `0.1.0` release hardening                                                                  |
 | Frontend stack      | Vite + React + TypeScript                                                                  |
 | Runtime             | Node.js 24.x, npm 11.x                                                                     |
+| Package metadata    | `package.json` and `package-lock.json` version `0.1.0`; `packageManager` `npm@11.14.1`      |
 | Routing target      | React Router                                                                               |
 | CI target           | GitHub Actions                                                                             |
 | Breaking policy     | Breaking user-facing or backend-contract integration changes require a selected roadmap row |
@@ -74,8 +75,8 @@ hardening and any newly selected backend-supported scope.
    documentation navigation have clear owner docs before release.
 3. Execute M15 so AI-facing documentation, validation, review, and release procedure
    rules move out of roadmap prose into focused owner references.
-4. Decide whether M13 is a `0.1.0` release blocker or the first post-`0.1.0`
-   maintenance slice, then select the minimum tool set for this frontend.
+4. Execute M13 as `0.1.0` release hardening by selecting the minimum repeatable tool
+   set for this frontend.
 5. Add a canonical browser smoke or e2e command for same-origin session/auth flows
    once the repository has agreed local credentials, backend profile, and identity
    seeding rules.
@@ -104,8 +105,8 @@ hardening and any newly selected backend-supported scope.
 - New M12+ implementation plans should identify the owner document, backend contract
   source, tests, and validation before implementation starts.
 - M1 CI lives at `.github/workflows/ci.yml`, triggers on pull requests and pushes to
-  `main`, uses Node.js 24.x with `npm ci`, and runs lint, typecheck, tests, build, and
-  `git diff --check`.
+  `main`, uses Node.js 24.x with `npm ci`, and runs `npm run lint`,
+  `npm run typecheck`, `npm test`, `npm run build`, and `git diff --check`.
 - M2 table columns are title, author, publication year, ISBN, and categories.
   M3 adds URL-synced filters, sorting, page-size controls, and browser history
   behavior.

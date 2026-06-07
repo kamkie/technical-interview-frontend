@@ -24,9 +24,10 @@ Do not invent backend endpoints, fields, auth flows, or browser integration beha
 
 ## Validation
 
-Current validation follows `AGENTS.md` and `SETUP.md`:
+Current validation follows `AGENTS.md` and `SETUP.md`.
 
-App or tooling changes:
+For app or tooling changes, the CI and release-readiness baseline for the `0.1.0`
+candidate uses Node.js 24.x, `npm ci`, and:
 
 ```powershell
 npm run lint
