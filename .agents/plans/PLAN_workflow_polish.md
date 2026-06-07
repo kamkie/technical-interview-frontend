@@ -6,6 +6,8 @@ Status: Complete
 
 Workers: 1
 
+Clean verifier: Not used for completed P4-P6 evidence; reusable rules live in the plan template and focused references.
+
 Filename: `.agents/plans/PLAN_workflow_polish.md`
 
 ## Readiness
@@ -27,6 +29,7 @@ Use this plan after `M-UI-001` lands and the predecessor readiness packet confir
 - 2026-06-08T00:10:01+02:00: P1 complete by Worker 1; shared state semantics implemented and P2 promoted to `Ready`.
 - 2026-06-08T00:19:27+02:00: P2 complete by Worker 2; page hierarchy and action placement polished and P3 promoted to `Ready`.
 - 2026-06-08T00:26:27+02:00: P3 complete by Worker 3; public and admin catalog workflow polish landed and P4 promoted to `Ready`.
+- 2026-06-08T00:28:00+02:00: clean verifier model drafted on `codex/clean-verifier-plan-execution`; final P4-P6 evidence remained coordinator and worker evidence on `main`.
 - 2026-06-08T00:35:32+02:00: P4 complete by Worker 4; admin/operator workflow grouping landed and P5 promoted to `Ready`.
 - 2026-06-08T00:48:20+02:00: P5 complete by Worker 5; account/session copy clarified and P6 promoted to `Ready`.
 - 2026-06-08T00:53:32+02:00: P6 complete by Codex; roadmap statuses reconciled and `M-SMOKE-001` promoted to current ready priority.
@@ -50,7 +53,7 @@ Polish daily catalog, account, admin, and operator workflows after the productio
 - Roadmap refs: `ROADMAP.md` `M-WORKFLOW-001`, `E-STATE-001`, `E-WORKFLOW-001`, `E-CATALOG-001`, `E-OPS-001`, and `E-AUTH-001`.
 - Design/spec refs: `docs/DESIGN.md`, `docs/specs/SPEC_public_catalog_workflow_polish.md`, `docs/specs/SPEC_admin_catalog_management.md`, `docs/specs/SPEC_admin_localization_management.md`, `docs/specs/SPEC_admin_user_management.md`, and `docs/specs/SPEC_operator_audit_surface.md`.
 - Backend contract refs: `docs/backend/` for API behavior, auth, CSRF, localization, pagination, repeated filters, and update rules.
-- Focused references: `AGENTS.md`, `.agents/references/planning.md`, `.agents/references/plan-execution.md`, `.agents/references/documentation.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, `.agents/references/architecture.md`, and `.agents/references/code-style.md`.
+- Focused references: `AGENTS.md`, `.agents/references/planning.md`, `.agents/references/plan-execution.md`, `.agents/references/workflow.md`, `.agents/references/documentation.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, `.agents/references/architecture.md`, and `.agents/references/code-style.md`.
 - Source files or tests: `src/App.tsx`, `src/index.css`, `src/ui/`, `src/catalog/`, `src/account/`, `src/admin/`, `src/operator/`, `src/api/`, and affected route/component/API tests.
 
 Load only the artifacts needed for the assigned packet. Do not bulk-load generated contract files, source trees, archived plans, or roadmap archives unless a packet names them or an escalation trigger fires.
@@ -90,6 +93,12 @@ Load only the artifacts needed for the assigned packet. Do not bulk-load generat
 - Assign explicit write scopes to workers and keep unrelated user or parallel-worker changes intact.
 - Commit only when the current request and plan checkpoint authorize it, and keep unrelated files out of the checkpoint commit.
 
+## Clean Verifier
+
+- Declared verifier: none used for completed P4-P6 evidence on `main`.
+- Merge note: `codex/clean-verifier-plan-execution` introduced the reusable clean-verifier model after P3, but this plan completed P4-P6 before that branch was merged.
+- Current owner: reusable clean-verifier procedure now lives in `.agents/plans/PLAN_TEMPLATE.md`, `.agents/references/plan-execution.md`, and `.agents/references/workflow.md`.
+
 ## Progress Tracker
 
 | Packet                          | Status   | Owner       | Depends On            | Last Updated | Notes                                                                    |
@@ -102,7 +111,7 @@ Load only the artifacts needed for the assigned packet. Do not bulk-load generat
 | P5-account-session-copy         | Complete | Worker      | P4                    | 2026-06-08   | Covers `E-AUTH-001`; account/session copy clarified                      |
 | P6-final-review-milestone-close | Complete | Coordinator | P5                    | 2026-06-08   | Roadmap closeout and owner alignment complete                            |
 
-Use `Waiting` for these packets until `M-UI-001` is complete and predecessor readiness has been recorded. Do not promote downstream packets to `Ready` until their predecessor lands, validates, and any required checkpoint is complete.
+Use `Waiting` until the predecessor lands, validates, records clean verifier evidence when required, and completes any required checkpoint. Do not promote downstream packets to `Ready` before those gates are complete.
 
 ## Task Packets
 
@@ -241,12 +250,13 @@ Result summary:
 - Changed files or reviewed diff: Added `src/ui/StateBlock.tsx`; updated `src/ui/MutationFeedback.tsx`, `src/ui/asyncState.ts`, focused `src/index.css` state selectors, public catalog/category, account, admin catalog, admin localization, admin users, operator route components, and affected route/component tests.
 - Validation evidence from `.agents/references/testing.md`: Worker passed targeted route/component tests for account, catalog, admin catalog, admin localization, admin users, and operator; passed `npm run lint`; passed `npm run typecheck`; passed `npm test`; passed `npm run build`; passed `git diff --check`. Coordinator reran `npm run lint` and `git diff --check`.
 - Self-review evidence from `.agents/references/reviews.md`: Reviewed shared state helper use, localized backend messages as display content, no API/generated-type/request/CSRF/auth changes, focused CSS state selectors, and route/component coverage. No owner-doc update needed.
+- Clean verifier evidence: Not used; the reusable clean-verifier model was drafted after this checkpoint and was not part of the final mainline closeout.
 - Commit: `e4a2165` (`Normalize route state semantics`).
 - Coordinator reconciliation: P1 deliverables match `E-STATE-001`; P2 can start after the checkpoint commit.
 - Changelog/docs/spec/roadmap updates: No `ROADMAP.md`, changelog, spec, or owner-doc update needed for P1.
 - Blockers: None.
 - Review risks: No manual browser smoke for state styling; P2 includes layout/browser review when materially changed layouts are available.
-- Handoff notes and next action: Create the P1 checkpoint commit, then dispatch P2-visual-hierarchy to a fresh implementation worker.
+- Handoff notes and next action: P2 completed after the P1 checkpoint.
 
 ### Task Packet: P2-visual-hierarchy
 
@@ -315,12 +325,13 @@ Result summary:
 - Validation evidence from `.agents/references/testing.md`: Worker passed targeted route/component tests for app, catalog, account, admin catalog, admin localization, admin users, and operator; passed `npm run lint`; passed `npm run typecheck`; passed `npm test`; passed `npm run build`; passed `git diff --check`. Coordinator reran `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, and `git diff --check`.
 - Browser review evidence: Worker reviewed `http://127.0.0.1:4173/` with `npm run dev:mock -- --port 4173` on `/catalog`, `/account`, `/admin/catalog`, `/admin/localizations`, `/admin/users`, and `/operator` at desktop `1280x720` and mobile `390x844`. Coordinator reran the same mock URL after the account-panel CSS fix; document widths stayed within viewport, route panels were unframed grids, and the only console issue was the Vite `/favicon.ico` 404.
 - Self-review evidence from `.agents/references/reviews.md`: Reviewed CSS hierarchy, account panel layout, section action wrappers, route guard/session preservation, no API/generated-type/request/auth/CSRF changes, and no owner-doc drift.
+- Clean verifier evidence: Not used; the reusable clean-verifier model was drafted after this checkpoint and was not part of the final mainline closeout.
 - Commit: `1dd5ac8` (`Polish route visual hierarchy`).
 - Coordinator reconciliation: P2 deliverables match `E-WORKFLOW-001`; P3 can start after the checkpoint commit.
 - Changelog/docs/spec/roadmap updates: No `ROADMAP.md`, changelog, spec, or owner-doc update needed for P2.
 - Blockers: None.
 - Review risks: Browser review used the mock API, not live sibling-backend smoke; wide tables rely on existing horizontal scroll behavior on mobile.
-- Handoff notes and next action: Create the P2 checkpoint commit, then dispatch P3-catalog-workflows to a fresh implementation worker.
+- Handoff notes and next action: P3 completed after the P2 checkpoint.
 
 ### Task Packet: P3-catalog-workflows
 
@@ -390,12 +401,13 @@ Result summary:
 - Validation evidence from `.agents/references/testing.md`: Worker passed targeted catalog/admin route tests; passed `npm run lint`; passed `npm run typecheck`; passed `npm test`; passed `npm run build`; passed `git diff --check`. Coordinator reran `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, and `git diff --check`.
 - Browser review evidence: Worker reviewed `http://127.0.0.1:4173/` with `npm run dev:mock -- --port 4173 --host 127.0.0.1` on `/catalog` and `/admin/catalog` at desktop `1280x720` and mobile `390x844`; no page-level overflow, table overflow stayed inside scroll containers, summaries rendered, and no console errors were reported.
 - Self-review evidence from `.agents/references/reviews.md`: Reviewed catalog query canonicalization, repeated `category`, repeated `sort`, Spring `page`/`size`, admin version display and update coverage, no API/generated-type/auth/CSRF changes, localized messages as display content, and focused CSS table/form changes.
+- Clean verifier evidence: Not used; the reusable clean-verifier model was drafted after this checkpoint and was not part of the final mainline closeout.
 - Commit: `5a2cace` (`Polish catalog workflows`).
 - Coordinator reconciliation: P3 deliverables match `E-CATALOG-001`; P4 can start after the checkpoint commit.
 - Changelog/docs/spec/roadmap updates: No `ROADMAP.md`, changelog, spec, or owner-doc update needed for P3.
 - Blockers: None.
 - Review risks: Browser review used the mock API, not live sibling-backend smoke; wide tables continue to depend on existing horizontal scroll on mobile.
-- Handoff notes and next action: Create the P3 checkpoint commit, then dispatch P4-admin-operator-workflows to a fresh implementation worker.
+- Handoff notes and next action: P4 completed after the P3 checkpoint.
 
 ### Task Packet: P4-admin-operator-workflows
 
@@ -411,7 +423,7 @@ Initial context budget:
 
 - Read first:
   - Plan header, `## Readiness`, `## Progress Tracker`, `## Execution Model`, this task packet, and this packet's `Result summary`.
-  - `AGENTS.md`, `ROADMAP.md` `E-OPS-001`, `docs/DESIGN.md`, `docs/specs/SPEC_admin_localization_management.md`, `docs/specs/SPEC_admin_user_management.md`, `docs/specs/SPEC_operator_audit_surface.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and P1/P2 result summaries.
+  - `AGENTS.md`, `ROADMAP.md` `E-OPS-001`, `docs/DESIGN.md`, `docs/specs/SPEC_admin_localization_management.md`, `docs/specs/SPEC_admin_user_management.md`, `docs/specs/SPEC_operator_audit_surface.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and P1-P3 result summaries.
 - Escalate to:
   - `docs/backend/`, `src/admin/AdminLocalizationPage.tsx`, `src/admin/AdminUsersPage.tsx`, `src/operator/OperatorPage.tsx`, matching tests, and focused CSS selectors.
 
@@ -465,6 +477,7 @@ Result summary:
 - Validation evidence from `.agents/references/testing.md`: Worker fixed an initial targeted-test assertion issue, then passed targeted admin/operator tests; passed `npm run lint`; passed `npm run typecheck`; passed `npm test`; passed `npm run build`; passed `git diff --check`. Coordinator reran `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, and `git diff --check`.
 - Browser review evidence: Worker reviewed `http://127.0.0.1:4173/` with mock dev server on `/admin/localizations`, `/admin/users`, `/admin/users/2`, and `/operator` at desktop `1280x720` and mobile `390x844`; no page-level horizontal overflow and table overflow stayed inside scroll wrappers.
 - Self-review evidence from `.agents/references/reviews.md`: Reviewed role/access preservation, localization stable fields, audit query serialization, role replacement, CSRF behavior, operator read-only behavior, localized messages as display content, and focused workflow CSS.
+- Clean verifier evidence: Not used; P4 completed on `main` before `codex/clean-verifier-plan-execution` was merged.
 - Commit: `a66048c` (`Group admin and operator workflows`).
 - Coordinator reconciliation: P4 deliverables match `E-OPS-001`; P5 can start after the checkpoint commit.
 - Changelog/docs/spec/roadmap updates: No `ROADMAP.md`, changelog, spec, or owner-doc update needed for P4.
@@ -541,6 +554,7 @@ Result summary:
 - Changed files or reviewed diff: Updated `src/App.tsx`, `src/App.test.tsx`, `src/account/AccountProfile.tsx`, `src/account/AccountProfile.test.tsx`, `src/api/session.ts`, `src/api/session.test.ts`, `src/auth/RequireAuthenticated.tsx`, and focused `src/index.css` session/account selectors.
 - Validation evidence from `.agents/references/testing.md`: Worker passed targeted app/account/session tests; passed `npm run lint`; passed `npm run typecheck`; passed `npm test`; passed `npm run build`; passed `git diff --check`. Coordinator reran `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, and `git diff --check`.
 - Self-review evidence from `.agents/references/reviews.md`: Reviewed metadata-driven login provider rendering, shared header and route-guard filtering, same-origin `/api/**` login paths, no hard-coded provider paths or provider-specific OAuth behavior, account preference request preservation, logout metadata preservation, CSRF display preservation, and no backend contract/generated-type edits.
+- Clean verifier evidence: Not used; P5 completed on `main` before `codex/clean-verifier-plan-execution` was merged.
 - Commit: `b6f7814` (`Clarify account and session copy`).
 - Coordinator reconciliation: P5 deliverables match `E-AUTH-001`; P6 can start.
 - Changelog/docs/spec/roadmap updates: No `ROADMAP.md`, changelog, spec, or owner-doc update needed for P5.
@@ -610,6 +624,7 @@ Result summary:
 - Changed files or reviewed diff: Reviewed P1 through P5 result summaries, commits, roadmap rows, `docs/DESIGN.md`, route specs, validation references, and smoke/local-development owners; updated this plan, `ROADMAP.md`, `.agents/plans/PLAN_responsive_layout_smoke_evidence.md`, `docs/LOCAL_DEVELOPMENT.md`, `scripts/smoke-anonymous.mjs`, and `scripts/smoke-authenticated-mock.mjs`.
 - Validation evidence from `.agents/references/testing.md`: Coordinator reran `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npm run lint:markdown`, and `git diff --check`; `npm run smoke:authenticated` passed against the internal mock API.
 - Self-review evidence from `.agents/references/reviews.md`: Checked roadmap/design/spec alignment, source packet evidence, backend contract invariants, metadata-driven auth/session behavior, no generated-type edits, no changelog or archive routing, and smoke evidence ownership.
+- Clean verifier evidence: Not used; P6 closeout completed on `main` before `codex/clean-verifier-plan-execution` was merged.
 - Commit: P6 checkpoint commit created after validation.
 - Coordinator reconciliation: `M-WORKFLOW-001`, `E-STATE-001`, `E-WORKFLOW-001`, `E-CATALOG-001`, `E-OPS-001`, and `E-AUTH-001` are complete; `M-SMOKE-001` is the next ready milestone after the workflow dependency landed.
 - Changelog/docs/spec/roadmap updates: `ROADMAP.md` marks workflow rows done, promotes `M-SMOKE-001` to ready/current priority, and keeps smoke-gap promotion blocked until a repeatable failure is documented; the smoke plan readiness is unblocked; `docs/LOCAL_DEVELOPMENT.md`, `scripts/smoke-anonymous.mjs`, and `scripts/smoke-authenticated-mock.mjs` remain aligned with the canonical smoke commands.
@@ -640,7 +655,7 @@ Use this checkpoint before starting each dependent packet, before a pause or han
 - Plan status and readiness: `Complete`; P0 through P6 complete.
 - Validation and self-review state: P0 docs-only validation passed; P1 through P6 validation passed.
 - Coordinator reconciliation state: P0 through P6 reconciliation complete.
-- Changelog, docs, spec, roadmap, or plan updates: this plan migrated to task-packet template on 2026-06-07; P0 through P6 status updated on 2026-06-08; `ROADMAP.md` now marks `M-WORKFLOW-001` done and `M-SMOKE-001` ready.
+- Changelog, docs, spec, roadmap, or plan updates: this plan migrated to task-packet template on 2026-06-07; P0 through P6 status updated on 2026-06-08; `ROADMAP.md` now marks `M-WORKFLOW-001` done and `M-SMOKE-001` ready; reusable clean-verifier rules moved to the template and focused references after plan closeout.
 - Blockers or open questions: none.
 - Next action: start `PLAN-responsive-layout-smoke-evidence` P0 only on an explicit implementation request.
 - Context handoff notes: do not start P2 until P1 lands, validates, and any required checkpoint is complete.
@@ -720,6 +735,7 @@ sequenceDiagram
 
 - P0 confirmed `M-UI-001` has landed; P1 implemented shared state semantics, P2 polished page hierarchy, P3 polished catalog workflows, P4 grouped admin/operator workflows, and P5 clarified account/session copy.
 - P6 closed `M-WORKFLOW-001` in `ROADMAP.md` and promoted `M-SMOKE-001` to the next ready milestone.
+- Reusable clean-verifier rules are now available in `.agents/plans/PLAN_TEMPLATE.md`, `.agents/references/plan-execution.md`, and `.agents/references/workflow.md`; this completed plan did not use them for P4-P6 evidence.
 - Original plan authoring validation from 2026-06-07 passed `npm run lint:markdown` and `git diff --check`.
 - This migration preserves task order and scope while replacing the legacy plan-task tables with task packets.
 - Do not mark `M-WORKFLOW-001` done until implementation packets and required validation have landed.

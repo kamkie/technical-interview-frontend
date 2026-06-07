@@ -8,6 +8,8 @@ Status: Draft
 
 Workers: 1
 
+Clean verifier: None declared.
+
 Filename: `.agents/plans/PLAN-<short-kebab-slug>.md`
 
 ## Readiness
@@ -68,6 +70,15 @@ Load only the artifacts needed for this plan. Do not bulk-load generated contrac
 - Run `git status --short` before edits and treat existing or unexpected changes as user-owned.
 - Assign explicit write scopes to workers and keep unrelated user or parallel-worker changes intact.
 - Commit only when the current request and plan checkpoint authorize it, and keep unrelated files out of the checkpoint commit.
+
+## Clean Verifier
+
+- Declared verifier: none by default.
+- Scope: if used, one dedicated clean verifier may cover review, tests, and verification evidence for this plan execution.
+- Context: start without full thread history or forked conversation context; send compact prompts with the current ref, worktree state, diff scope, commands, review scope, stop conditions, and output format.
+- Write scope: `read-only` unless this plan explicitly assigns artifact write scope.
+- Stale-state guard: before reporting evidence, the verifier must confirm the current worktree state, ref or commit, and diff it can see. Do not use verifier evidence when it cannot see the current integrated state.
+- Coordinator authority: the coordinator owns dispatch, dirty-worktree protection, shared-file sequencing, resolving findings, integration acceptance, plan/status/roadmap edits, checkpoint commits, and final handoff.
 
 ## Progress Tracker
 
@@ -130,6 +141,7 @@ Expected output:
 - Changed files or reviewed diff.
 - Validation evidence from `.agents/references/testing.md`.
 - Self-review evidence from `.agents/references/reviews.md`.
+- Clean verifier evidence, when this plan declares one.
 - Commit identifier when a commit checkpoint is authorized and completed.
 - Coordinator reconciliation note comparing worker claims with the final diff, validation output, and governing artifact.
 - Blockers.
@@ -143,6 +155,7 @@ Result summary:
 - Changed files or reviewed diff:
 - Validation evidence from `.agents/references/testing.md`:
 - Self-review evidence from `.agents/references/reviews.md`:
+- Clean verifier evidence:
 - Commit:
 - Coordinator reconciliation:
 - Changelog/docs/spec/roadmap updates:
@@ -155,6 +168,7 @@ Result summary:
 - `Workers: 1` for sequential execution, or `Workers: N (parallel, tasks: <task refs or labels>)` when the approved plan marks those tasks independent with disjoint write scopes.
 - Active-plan implementation uses a coordinator plus one fresh implementation worker subagent per repository-changing task packet.
 - Research, exploration, planning, testing, and review subagents are optional unless this plan makes a packet mandatory.
+- A plan may declare one dedicated clean verifier for the plan execution. The verifier is read-only by default, confirms current worktree/ref/diff before evidence, and reports compact commands, results, skips, findings, and risks.
 - If required implementation worker subagents are unavailable, unauthorized by the active tool contract, or explicitly forbidden, stop before implementation and report the blocker instead of running the task locally.
 - Dispatch only the plan header or readiness summary, execution graph, assigned task packet, and explicitly named governing artifacts or source files. Do not dispatch the full approved plan by default.
 - Record any task that is safe to run in parallel only when it has a disjoint write scope.

@@ -4,17 +4,26 @@ This file owns delegation mechanics and role expectations for AI work in this fr
 
 ## Role Model
 
-- Coordinator: owns the user request, repository-state checks, task scoping, worker prompts, shared-file sequencing, final validation, and final handoff.
+- Coordinator: owns the user request, repository-state checks, task scoping, worker prompts, shared-file sequencing, integration acceptance, status and checkpoint updates, and final handoff.
 - Planning worker: converts a requested change into a narrow handoff with objective, source documents, proposed file ownership, implementation steps, validation, risks, open questions, and non-goals.
 - Implementation worker: edits only the assigned files, preserves user-owned changes, runs scoped validation, and returns changed files, validation, skipped checks, and remaining risks.
 - Reviewer: checks the completed diff for bugs, owner drift, contract drift, documentation drift, security risk, missing validation, and unhandled handoff obligations.
-- Verifier: runs or confirms the assigned validation and reports exact commands, results, environment limits, and residual smoke or contract risk.
+- Verifier: runs or confirms assigned validation and reports exact commands, results, environment limits, skipped checks, findings, and residual smoke or contract risk.
 
 Research, exploration, and planning subagents are optional for ad hoc work. Use them when the coordinator needs clearer ownership, source review, implementation steps, or risk discovery before assignment.
 
 Repository-changing implementation must be assigned to a separate implementation worker subagent with exact write scope, scoped validation, stop conditions, and handoff requirements. The coordinator may perform read-only coordination, research, planning, review, and final validation directly when the task allows it.
 
 Active-plan work follows `.agents/references/plan-execution.md`; this reference applies only where it does not conflict with the active plan execution contract.
+
+## Clean Verifier Rules
+
+- Active plans may declare one dedicated clean verifier for one plan execution. Do not use more than one clean verifier for the same plan execution.
+- Start the clean verifier without full thread history or forked conversation context. Send compact scoped prompts with repository path, current ref or commit, expected diff scope, assigned commands, review scope, stop conditions, and output format.
+- Default clean verifier write scope is `read-only`. Assign artifact write scope only when the plan explicitly names it.
+- Before review or validation, the verifier must confirm the current worktree state, ref or commit, and diff it can see. Do not use verifier evidence when the verifier cannot see the current integrated state.
+- The verifier may run or confirm validation and review diffs for bugs, owner drift, contract drift, documentation drift, security-review triggers, and scope leaks.
+- The coordinator still owns dispatch, dirty-worktree protection, shared-file sequencing, resolving findings, integration acceptance, status, plan, roadmap, or owner-document edits, checkpoint commits, and final handoff.
 
 ## Delegation Rules
 
@@ -39,6 +48,7 @@ Coordinator prompts should include only the context needed for the slice:
 - Review work: `.agents/references/reviews.md`.
 - Roadmap work: `.agents/references/roadmap.md`.
 - Active-plan work: the plan file and `.agents/references/plan-execution.md`.
+- Active-plan clean verification: the plan file, current status/ref/diff, `.agents/references/plan-execution.md`, `.agents/references/testing.md`, and `.agents/references/reviews.md`.
 
 Do not bulk-load AI guidance, generated contracts, source trees, archives, or unrelated reference files unless exact schema, code placement, owner detail, broad-audit scope, cross-document consistency, or validation failure triage requires it.
 
@@ -46,7 +56,7 @@ After compaction, resume, or summarized worker handoff, reload only the latest u
 
 ## Worker Handoff Requirements
 
-Every worker handoff should include:
+Every worker or verifier handoff should include:
 
 - changed files
 - confirmation that files outside the assigned write scope were not edited
@@ -54,6 +64,8 @@ Every worker handoff should include:
 - skipped validation with reasons
 - any unexpected dirty-worktree observations and how they were handled
 - remaining risks, contradictions, or owner-drift concerns
+
+Clean verifier handoffs must also confirm the exact worktree state, ref or commit, and diff reviewed before reporting evidence.
 
 ## Coordination Boundaries
 
