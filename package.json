@@ -10,6 +10,7 @@
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
+    "dev:mock": "vite --host 127.0.0.1 --mode mock",
     "build": "tsc -b && vite build",
     "docker:build": "docker build -t technical-interview-frontend .",
     "preview": "vite preview --host 127.0.0.1",

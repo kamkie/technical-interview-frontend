@@ -10,6 +10,7 @@ import react from '@vitejs/plugin-react'
 import path from 'node:path'
 import type { Plugin, ProxyOptions } from 'vite'
 import { defineConfig } from 'vitest/config'
+import { mockApiPlugin } from './src/mock-api/vite'
 
 const apiProxy = {
   '^/api(?:$|/(?!.*\\.(?:ts|tsx|js|jsx|css|map)(?:\\?|$)).*)': {
@@ -143,40 +144,48 @@ function codecovBundleAnalysisPlugin(): Plugin | false {
   }
 }
 
-export default defineConfig({
-  root: 'src',
-  cacheDir: '../node_modules/.vite',
-  plugins: [react(), codecovBundleAnalysisPlugin()],
-  build: {
-    emptyOutDir: true,
-    outDir: '../dist',
-  },
-  server: {
-    host: '127.0.0.1',
-    port: 5173,
-    proxy: apiProxy,
-  },
-  preview: {
-    host: '127.0.0.1',
-    port: 4173,
-    proxy: apiProxy,
-  },
-  test: {
-    css: true,
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'lcov'],
-      reportsDirectory: '../coverage',
-      include: ['**/*.{ts,tsx}'],
-      exclude: [
-        '**/*.test.{ts,tsx}',
-        '**/generated/**',
-        '**/test/**',
-        'main.tsx',
-        'vite-env.d.ts',
-      ],
+export default defineConfig(({ mode }) => {
+  const mockApiEnabled = mode === 'mock'
+
+  return {
+    root: 'src',
+    cacheDir: '../node_modules/.vite',
+    plugins: [
+      react(),
+      mockApiEnabled && mockApiPlugin(process.env),
+      codecovBundleAnalysisPlugin(),
+    ],
+    build: {
+      emptyOutDir: true,
+      outDir: '../dist',
     },
-    environment: 'jsdom',
-    setupFiles: './test/setup.ts',
-  },
+    server: {
+      host: '127.0.0.1',
+      port: 5173,
+      proxy: mockApiEnabled ? undefined : apiProxy,
+    },
+    preview: {
+      host: '127.0.0.1',
+      port: 4173,
+      proxy: mockApiEnabled ? undefined : apiProxy,
+    },
+    test: {
+      css: true,
+      coverage: {
+        provider: 'v8',
+        reporter: ['text', 'lcov'],
+        reportsDirectory: '../coverage',
+        include: ['**/*.{ts,tsx}'],
+        exclude: [
+          '**/*.test.{ts,tsx}',
+          '**/generated/**',
+          '**/test/**',
+          'main.tsx',
+          'vite-env.d.ts',
+        ],
+      },
+      environment: 'jsdom',
+      setupFiles: './test/setup.ts',
+    },
+  }
 })

@@ -7,6 +7,9 @@ until they are promoted for a release tag.
 
 ### Added
 
+- Added `npm run dev:mock`, an opt-in same-origin `/api/**` Vite mock API mode
+  backed by generated OpenAPI types for frontend-only development without the
+  sibling backend.
 - Added app-level light, dark, and system theme support with a visible persisted
   preference control across public, account, admin, and operator routes.
 

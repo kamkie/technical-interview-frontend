@@ -14,7 +14,8 @@ npm install
 npm run dev
 ```
 
-The dev server binds to `http://127.0.0.1:5173/`.
+The dev server binds to `http://127.0.0.1:5173/`. Use `npm run dev:mock` only for
+frontend-only development against the same-origin contract-backed mock API.
 Docker is optional for ordinary development and required only when building or
 validating the production container image.
 

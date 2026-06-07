@@ -44,8 +44,9 @@ query-state summaries, accessible sort affordances, the selected M23
 light/dark/system theme preference, and the completed M24 browser session
 surface cleanup. Remaining roadmap work starts with the selected M25 public
 catalog and app shell visual pass before selecting the next product, visual, or
-automation slice. A follow-up tooling slice should add a contract-backed mock API
-so frontend-only UI work can run without starting the sibling backend.
+automation slice. M26 is complete by explicit request and added a
+contract-backed mock API so frontend-only UI work can run without starting the
+sibling backend.
 
 ## Product Direction
 
@@ -84,21 +85,18 @@ Status terms:
 | M23 - Dark Mode Support | Done | Added app-level dark mode support for implemented public catalog, account, admin, and operator flows without backend/API behavior changes. The app respects the user's OS color-scheme preference on first visit, provides a visible light/dark/system preference control, persists explicit preference locally, and keeps existing session, routing, and localization behavior unchanged. | Light, dark, and system theme selection renders consistently across implemented routes, survives reloads when explicitly selected, preserves keyboard focus visibility and accessible contrast, and has focused component/route coverage plus browser evidence on representative public and authenticated shells. | Relevant tests, browser screenshots or smoke for changed flows, and full baseline for app changes. |
 | M24 - Browser Session Surface Cleanup | Done | Moved the Browser Session status and session metadata out of the main page content into a hidden-by-default Session details surface in the app chrome. Account, logout, session cookie, and CSRF metadata remain available for troubleshooting without making session diagnostics a primary page section. | Primary implemented pages no longer show the Browser Session panel by default, session diagnostics remain reachable through an explicit control with accessible naming and keyboard support, and session bootstrap/login/logout behavior remains unchanged. | Focused App tests cover the disclosure behavior and metadata-driven sign-in links; browser evidence covers the main page and opened session surface. |
 | M25 - Public Catalog And App Shell Visual Design Pass | Ready | Polish the implemented anonymous `/catalog` flow and shared app shell now that the Browser Session surface cleanup has landed. Scope includes header/action layout, intro hierarchy, catalog filters, category chips, query summary, table readability, pagination, focus-visible styling, and responsive behavior across light/dark/system themes without backend/API, auth, route, query-string, sorting, filtering, pagination, or localization behavior changes. | The catalog and shell are easier to scan on desktop and mobile, preserve existing route/query/session behavior, keep keyboard focus visible, and have explicit browser evidence for representative light and dark catalog states. | Focused App/catalog tests, browser screenshots or smoke for `/catalog` at desktop and mobile widths in light and dark modes, and full baseline for app changes. |
-| M26 - Contract-Backed Mock API Development Mode | Waiting: after M25 | Add an opt-in development/test mock API so frontend-only work can run without the sibling backend. Serve the same-origin `/api/**` shape, derive handlers and fixtures from `docs/backend/approved-openapi.json` plus `docs/backend/FRONTEND_AI_CONTRACT.md`, and keep session-cookie, login-provider metadata, logout, CSRF, localization, pagination, filters, and representative error behavior aligned with the backend contract. | Developers have a documented npm command or dev-server mode for running the frontend against the mock API, implemented public/account/admin/operator routes have representative success, empty, loading, and error states, generated OpenAPI types remain the source of API shape, and live backend smoke remains the contract-confidence path. | Mock handler tests or route tests for representative states, `npm run api:types:check` if API tooling is touched, targeted browser smoke against the mock mode, and full baseline for app/tooling changes. |
+| M26 - Contract-Backed Mock API Development Mode | Done | Added an opt-in Vite mock API development mode so frontend-only work can run without the sibling backend. The mock serves same-origin `/api/**`, uses generated OpenAPI types for fixtures and route shapes, and keeps session-cookie metadata, login-provider metadata, logout, CSRF, localization, pagination, repeated filters, and representative error behavior aligned with the backend contract. | `npm run dev:mock` runs the frontend against mock middleware instead of the local backend proxy, supports admin/user/anonymous sessions plus success/empty/error scenarios, keeps in-memory mutations for development, and documents that live backend smoke remains the contract-confidence path. | Mock handler tests cover OpenAPI path coverage, session metadata and cookies, CSRF enforcement, repeated category filtering, pagination, version increments, empty/error scenarios, and login/logout state. |
 
 ## Near-Term Backlog
 
 1. Implement the selected M25 public catalog and app shell visual pass.
-2. Add the contract-backed mock API development mode after M25 so frontend-only
-   work can run without the sibling backend while preserving same-origin `/api/**`
-   semantics.
-3. Keep backend surface expansion unselected unless a future backend contract
+2. Keep backend surface expansion unselected unless a future backend contract
    refresh or product decision introduces an approved operation gap.
-4. Turn the M18 fake-OAuth readiness contract into an executable authenticated smoke
+3. Turn the M18 fake-OAuth readiness contract into an executable authenticated smoke
    command when that automation slice is selected.
-5. Exercise the documented local auth smoke workflow against the sibling backend and
+4. Exercise the documented local auth smoke workflow against the sibling backend and
    move repeatable gaps into tests or owner docs.
-6. For future releases, push `main` and the annotated tag, then monitor the Release
+5. For future releases, push `main` and the annotated tag, then monitor the Release
    workflow and verify the GHCR package, signature/provenance evidence, and
    published release notes against `CHANGELOG.md`.
 

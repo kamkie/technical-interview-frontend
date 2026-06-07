@@ -42,6 +42,34 @@ npm run dev
 The dev server binds to `http://127.0.0.1:5173/` and proxies `/api/**` requests to
 the local backend during development.
 
+Start the Vite development server with the contract-backed mock API:
+
+```powershell
+npm run dev:mock
+```
+
+Mock mode binds to the same `http://127.0.0.1:5173/` origin, but installs Vite
+middleware for same-origin `/api/**` instead of proxying to
+`http://localhost:8080`. This mode is only for frontend-only development when the
+sibling backend is unavailable; live backend smoke remains the contract-confidence
+path.
+
+Mock scenario controls:
+
+| Variable | Values | Default | Effect |
+| --- | --- | --- | --- |
+| `FRONTEND_MOCK_SESSION` | `admin`, `user`, `anonymous` | `admin` | Selects the initial mock session. `admin` exposes account, admin, and operator routes. |
+| `FRONTEND_MOCK_API_SCENARIO` | `success`, `empty`, `error` | `success` | Selects normal fixtures, empty list/page data, or representative localized read failures while keeping `GET /api/session` available. |
+| `FRONTEND_MOCK_API_DELAY_MS` | positive integer | none | Adds an artificial delay to mock `/api/**` responses. |
+
+The mock keeps the browser boundary contract intact: browser traffic still uses
+same-origin `/api/**`; login links come from `GET /api/session` metadata; logout,
+account path, session cookie, and CSRF names come from session metadata; unsafe
+authenticated writes must mirror the readable CSRF cookie into the configured
+header; and catalog queries preserve Spring `page`, `size`, repeated `sort`, and
+repeated `category` filters. Do not use mock mode to introduce CORS, JWT, bearer
+token, hard-coded provider paths, or contract fields that the backend does not own.
+
 Preview a production build locally:
 
 ```powershell
@@ -99,6 +127,7 @@ promotion belong in deployment-owned overlays or platform policy.
 | --- | --- |
 | Install dependencies | `npm install` |
 | Run local dev server | `npm run dev` |
+| Run local dev server with mock API | `npm run dev:mock` |
 | Run production preview | `npm run preview` |
 | Lint | `npm run lint` |
 | Typecheck and API type freshness check | `npm run typecheck` |
