@@ -103,22 +103,3 @@ summary.
 - No stale-contract signal was found in this audit: the parsed operation count
   matches `docs/backend/FRONTEND_AI_CONTRACT.md`, and every approved path template
   is present in `src/api/generated/openapi.ts`.
-
-## M16-Time Recommendation
-
-Recommended next promotion after the M16 audit:
-
-1. Promote M17, anonymous browser smoke automation. Since no approved API surface
-   is missing, the highest-value dependent follow-up is live same-origin coverage
-   for anonymous session bootstrap, public categories/books, filters, pagination,
-   repeated sort, and localized public-read failures.
-2. Promote M21 in parallel or immediately after M17. Session and logout operations
-   are implemented, but the planned metadata guardrail should still audit source,
-   tests, docs, and specs for provider path constants outside backend-contract
-   examples and fixtures.
-
-At M16 audit time, M22 was not promoted for backend surface expansion because
-there were no uncovered approved operations to select. M17 and M21 later shipped,
-M19 and M23 were later selected and completed from explicit UI scope, and M22
-remains unnecessary unless a future backend contract refresh introduces an
-approved operation gap.
