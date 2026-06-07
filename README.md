@@ -1,28 +1,34 @@
 # Technical Interview Frontend
 
-Technical Interview Frontend is the planned first-party browser UI for the sibling
-`technical-interview-demo` backend. It will consume the backend's compact `/api/**`
+Technical Interview Frontend is the first-party browser UI for the sibling
+`technical-interview-demo` backend. It consumes the backend's compact `/api/**`
 surface, session-cookie authentication, CSRF metadata, localization behavior, and
 published OpenAPI contract.
 
 ## Status
 
-The repository has an initial Vite app scaffold for the first-party browser UI. The
-app bootstraps browser session state from the backend session contract and renders the
-first public books/categories read flow. The selected stack is React, TypeScript,
-Vite, Node.js 24.x, and npm.
+The repository contains a Vite, React, and TypeScript app for the selected `0.1.0`
+surface. The app bootstraps browser session state from the backend session contract,
+renders metadata-driven login/logout controls, supports the public catalog, account
+profile and language preference flows, and implements the selected admin and operator
+surfaces.
 
 Current useful artifacts:
 
 - `AGENTS.md` - AI rules for frontend/backend contract work
 - `package.json` and `package-lock.json` - canonical npm project metadata
-- `src/` - initial React app shell and component test
+- `src/` - React routes, API clients, components, and focused tests
 - `src/api/session.ts` - typed session bootstrap client and CSRF header helper
-- `src/api/catalog.ts` - typed public books/categories read client
+- `src/api/catalog.ts` - typed books/categories read and write client
+- `src/api/account.ts` - typed account profile and language preference client
+- `src/api/localizations.ts` - typed localization management client
+- `src/api/adminUsers.ts` - typed admin user management client
+- `src/api/operator.ts` - typed operator overview and audit-log client
 - `src/api/generated/openapi.ts` - generated TypeScript API types from the imported
   OpenAPI contract
 - `docs/backend/` - imported backend contract artifacts for frontend agents
-- `ROADMAP.md` - next implementation steps
+- `docs/specs/` - selected admin/operator behavior specs
+- `ROADMAP.md` - current implementation status and next release-hardening work
 - `SETUP.md` - current local setup notes
 
 ## Backend Contract
@@ -50,11 +56,12 @@ npm run api:types
 
 ## Supported Scope
 
-Planned scope:
+Implemented or selected scope:
 
 - browser UI for public book, category, localization, and session flows
-- authenticated account-oriented UI
-- admin/operator surfaces for backend-supported admin APIs, once selected
+- authenticated account profile, language preference, and logout flows
+- admin catalog, localization, and user-management surfaces
+- operator overview and audit-log surface
 - same-origin deployment against `technical-interview-demo`
 
 Out of scope unless explicitly planned:

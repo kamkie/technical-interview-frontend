@@ -65,6 +65,24 @@ describe('AdminCatalogPage', () => {
     )
   })
 
+  it('derives admin pagination button state from page numbers when flags are absent', async () => {
+    mockAdminFetch({
+      books: createBookPage({
+        first: undefined,
+        last: undefined,
+        number: 2,
+        totalPages: 3,
+      }),
+    })
+
+    renderAdminCatalog(`${ADMIN_CATALOG_ROUTE_PATH}?page=2`)
+
+    expect(await screen.findByText('Effective Java')).toBeInTheDocument()
+    expect(screen.getByText(/Page 3\s+of 3/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Previous' })).not.toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled()
+  })
+
   it('keeps authenticated non-admin users away from mutation controls', async () => {
     const fetchMock = mockAdminFetch({
       account: createAccount({
@@ -231,6 +249,30 @@ describe('AdminCatalogPage', () => {
       await screen.findByText('Effective Java, Third Edition'),
     ).toBeInTheDocument()
     expect(screen.getByText('Book updated.')).toBeInTheDocument()
+  })
+
+  it('does not open book editing without the backend current version', async () => {
+    const fetchMock = mockAdminFetch({
+      bookById: createBook({
+        id: 1,
+        version: undefined,
+      }),
+    })
+
+    renderAdminCatalog()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit Effective Java' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Book cannot be edited until the backend returns its current version.',
+    )
+    expect(screen.getByRole('form', { name: 'Create book' })).toBeInTheDocument()
+    expect(
+      fetchMock.mock.calls.some(
+        ([input, init]) =>
+          String(input) === getBookPath(1) && init?.method === 'PUT',
+      ),
+    ).toBe(false)
   })
 
   it('keeps stale-version update failures open with a reload path', async () => {

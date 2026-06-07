@@ -5,18 +5,22 @@ This roadmap tracks the planned first-party browser frontend for the sibling
 
 ## Current Baseline
 
-| Field               | Current                                                                                   |
-|---------------------|-------------------------------------------------------------------------------------------|
-| Release phase       | Pre-release `0.1.0` feature-complete stabilization                                        |
-| Next target version | `0.1.0` release hardening                                                                 |
-| Frontend stack      | Vite + React + TypeScript                                                                 |
-| Runtime             | Node.js 24.x, npm 11.x                                                                    |
-| Routing target      | React Router                                                                              |
-| CI target           | GitHub Actions                                                                            |
-| Backend integration | Same-origin `/api/**` browser traffic                                                     |
-| Contract source     | `docs/backend/approved-openapi.json` and `docs/backend/FRONTEND_AI_CONTRACT.md`           |
+| Field               | Current                                                                                    |
+|---------------------|--------------------------------------------------------------------------------------------|
+| Release phase       | Pre-release `0.1.0` feature-complete stabilization                                         |
+| Next target version | `0.1.0` release hardening                                                                  |
+| Frontend stack      | Vite + React + TypeScript                                                                  |
+| Runtime             | Node.js 24.x, npm 11.x                                                                     |
+| Routing target      | React Router                                                                               |
+| CI target           | GitHub Actions                                                                             |
+| Breaking policy     | Breaking user-facing or backend-contract integration changes require a selected roadmap row |
+| Backend integration | Same-origin `/api/**` browser traffic                                                      |
+| Contract source     | `docs/backend/approved-openapi.json` and `docs/backend/FRONTEND_AI_CONTRACT.md`            |
 | Implemented surface | Session, public catalog, account, admin catalog, admin localization, admin users, operator |
-| Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`      |
+| Hardening baseline  | ESLint, TypeScript, Vitest, API type freshness, build, and whitespace checks               |
+| Latest release      | No tagged frontend release yet                                                             |
+| Immediate action    | Prepare the first `0.1.0` release procedure and hardening pass                             |
+| Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`       |
 
 The app currently bootstraps browser session state with `GET /api/session`, renders
 login options from session metadata, generates checked OpenAPI TypeScript types,
@@ -37,35 +41,41 @@ hardening and any newly selected backend-supported scope.
 - Add tests at the smallest useful layer for each user-visible behavior.
 - Treat backend contract artifacts as the owner for endpoint shape and durable API
   rules.
+- Prefer CI-owned hardening tools with reproducible local commands before treating a
+  security or quality signal as release-blocking.
 
 ## Milestones
 
-| Milestone                         | Status      | Scope                                                                                                    | Done when                                                                                                                                                 |
-|-----------------------------------|-------------|----------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| M0 - Foundation                   | Complete    | Project scaffold, generated API types, session bootstrap, public catalog reads                           | Existing validation baseline passes and the app can render session plus catalog states from `/api/session`, `/api/books`, and `/api/categories`           |
-| M1 - CI and Quality Gate          | Complete    | GitHub Actions workflow for canonical npm validation commands                                            | CI runs lint, typecheck, tests, build, and whitespace checks on pull requests or the selected branch workflow                                             |
-| M2 - Simple Public Catalog UX     | Complete    | Basic table layout with read-only search, filters, pagination, loading, empty, localized errors, and mock/test fixtures for each visible state | Users can scan and filter public books without relying on implementation placeholders; component tests cover fixture-backed visible states                |
-| M3 - Advanced Catalog Controls    | Complete    | React Router route-level navigation with browser history expectations, richer table controls, URL-synced filters, sorting UI, and deeper catalog state handling | Users can share filtered catalog URLs, adjust sorting through the UI, navigate with browser back/forward controls, and use richer table controls with tests covering route/query-state synchronization |
-| M4 - Local Auth Workflow Docs     | Complete    | Document repeatable local same-origin auth against `..\technical-interview-demo`, including backend startup, Vite `/api` proxy wiring, OAuth setup, manual smoke steps, and automation limits | `SETUP.md` links to a local auth smoke doc covering `local,oauth` startup, provider credentials, admin identity seeding, session/account/logout checks, CSRF handling, and anonymous-vs-authenticated automation policy |
-| M5 - Authenticated Session UX     | Complete    | Account-aware header/state, logout flow, and route guarding for authenticated-only areas                 | UI refreshes session after login/logout paths, mirrors CSRF metadata for unsafe authenticated writes, and has smoke or e2e coverage based on the documented local workflow |
-| M6 - Account Profile Surface      | Complete    | Read-only account profile page plus account-aware menu/header                                            | Account UI only appears after session bootstrap establishes the current user and tests cover unauthenticated and authenticated states                     |
-| M7 - Account Language Preference  | Complete    | Account self-service flow for reading, updating, and clearing the current user's preferred language      | Users can update or clear the contract-backed account language preference with CSRF handling and tests for loading, success, validation/error, unauthenticated, and missing-CSRF states |
-| M8 - Admin Catalog Management     | Complete    | Combined backend-supported admin book and category management                                            | Combined book/category admin scope is selected from the imported backend contract, split into a small spec, and covered by tests for list, create, update, delete, and error states |
-| M9 - Admin Localization Management | Complete   | Backend-supported localization message-key editing plus locale coverage/status                           | Localization admin scope is selected from the imported backend contract, split into a small spec, and covered by tests for supported locales, message edits, coverage/status states, and localized failures |
-| M10 - Operator Audit Surface      | Complete    | Read-only operator overview plus pageable audit log with filters for target type, action, and actor      | Operators can inspect runtime/status summaries, recent audit entries, filtered pageable audit rows, and audit details with tests for access, loading, empty, filtered, paginated, localized error, and partial-payload states |
-| M11 - Admin User Management       | Complete    | Admin user list/detail with contract-backed role management                                              | Admins can review user profiles, roles, and role-grant provenance, then replace managed roles with CSRF handling and tests for access, empty, success, validation, localized error, and missing-CSRF states |
+| Milestone                          | Status   | Scope                                                                                                                                                                                         | Done when                                                                                                                                                                                                                     |
+|------------------------------------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| M0 - Foundation                    | Complete | Project scaffold, generated API types, session bootstrap, public catalog reads                                                                                                                | Existing validation baseline passes and the app can render session plus catalog states from `/api/session`, `/api/books`, and `/api/categories`                                                                               |
+| M1 - CI and Quality Gate           | Complete | GitHub Actions workflow for canonical npm validation commands                                                                                                                                 | CI runs lint, typecheck, tests, build, and whitespace checks on pull requests or the selected branch workflow                                                                                                                 |
+| M2 - Simple Public Catalog UX      | Complete | Basic table layout with read-only search, filters, pagination, loading, empty, localized errors, and mock/test fixtures for each visible state                                                | Users can scan and filter public books without relying on implementation placeholders; component tests cover fixture-backed visible states                                                                                    |
+| M3 - Advanced Catalog Controls     | Complete | React Router route-level navigation with browser history expectations, richer table controls, URL-synced filters, sorting UI, and deeper catalog state handling                               | Users can share filtered catalog URLs, adjust sorting through the UI, navigate with browser back/forward controls, and use richer table controls with tests covering route/query-state synchronization                        |
+| M4 - Local Auth Workflow Docs      | Complete | Document repeatable local same-origin auth against `..\technical-interview-demo`, including backend startup, Vite `/api` proxy wiring, OAuth setup, manual smoke steps, and automation limits | `SETUP.md` links to a local auth smoke doc covering `local,oauth` startup, provider credentials, admin identity seeding, session/account/logout checks, CSRF handling, and anonymous-vs-authenticated automation policy       |
+| M5 - Authenticated Session UX      | Complete | Account-aware header/state, logout flow, and route guarding for authenticated-only areas                                                                                                      | UI refreshes session after login/logout paths, mirrors CSRF metadata for unsafe authenticated writes, and has smoke or e2e coverage based on the documented local workflow                                                    |
+| M6 - Account Profile Surface       | Complete | Read-only account profile page plus account-aware menu/header                                                                                                                                 | Account UI only appears after session bootstrap establishes the current user and tests cover unauthenticated and authenticated states                                                                                         |
+| M7 - Account Language Preference   | Complete | Account self-service flow for reading, updating, and clearing the current user's preferred language                                                                                           | Users can update or clear the contract-backed account language preference with CSRF handling and tests for loading, success, validation/error, unauthenticated, and missing-CSRF states                                       |
+| M8 - Admin Catalog Management      | Complete | Combined backend-supported admin book and category management                                                                                                                                 | Combined book/category admin scope is selected from the imported backend contract, split into a small spec, and covered by tests for list, create, update, delete, and error states                                           |
+| M9 - Admin Localization Management | Complete | Backend-supported localization message-key editing plus locale coverage/status                                                                                                                | Localization admin scope is selected from the imported backend contract, split into a small spec, and covered by tests for supported locales, message edits, coverage/status states, and localized failures                   |
+| M10 - Operator Audit Surface       | Complete | Read-only operator overview plus pageable audit log with filters for target type, action, and actor                                                                                           | Operators can inspect runtime/status summaries, recent audit entries, filtered pageable audit rows, and audit details with tests for access, loading, empty, filtered, paginated, localized error, and partial-payload states |
+| M11 - Admin User Management        | Complete | Admin user list/detail with contract-backed role management                                                                                                                                   | Admins can review user profiles, roles, and role-grant provenance, then replace managed roles with CSRF handling and tests for access, empty, success, validation, localized error, and missing-CSRF states                   |
+| M12 - Release Procedure And `0.1.0` Hardening | Ready | Backend-style release preparation adapted to the frontend repo: version selection, changelog promotion, validation, annotated tag, publication checks, and post-release roadmap cleanup | Maintainers can cut the first frontend release from `main` using a documented procedure; `CHANGELOG.md`, `ROADMAP.md`, package metadata, validation evidence, and tag state agree |
+| M13 - Static Analysis And Hardening Tooling | Planned | Frontend hardening gates modeled after the backend repo: CodeQL, dependency/security scanning, SBOM or license reporting, accessibility/smoke checks, report artifacts, and documented triage rules | CI and local scripts expose the selected checks; release preconditions name required hardening evidence; docs explain false-positive handling, skip policy, and artifact locations |
 
 ## Near-Term Backlog
 
-1. Run a `0.1.0` release-hardening pass: reconcile stale public docs with the
-   implemented surface, decide whether release history starts in `CHANGELOG.md`, and
-   verify package metadata before tagging.
-2. Add a canonical browser smoke or e2e command for same-origin session/auth flows
+1. Execute M12: reconcile stale public docs with the implemented surface, promote the
+   candidate `0.1.0` changelog section when tagging, verify package metadata, and
+   follow the release procedure below.
+2. Decide whether M13 is a `0.1.0` release blocker or the first post-`0.1.0`
+   maintenance slice, then select the minimum tool set for this frontend.
+3. Add a canonical browser smoke or e2e command for same-origin session/auth flows
    once the repository has agreed local credentials, backend profile, and identity
    seeding rules.
-3. Exercise the documented local auth smoke workflow against the sibling backend and
+4. Exercise the documented local auth smoke workflow against the sibling backend and
    move repeatable gaps into tests or owner docs.
-4. Add M12+ roadmap rows only when a new backend-supported surface, UX polish slice,
+5. Add M14+ roadmap rows only when a new backend-supported surface, UX polish slice,
    or release workflow is selected clearly enough to test or document.
 
 ## Pragmatic Smoke Split
@@ -102,6 +112,112 @@ hardening and any newly selected backend-supported scope.
   `http://localhost:8080` for the backend running from `..\technical-interview-demo`.
 - M8-M11 admin/operator scope is specified under `docs/specs/`; future admin/operator
   expansion should update or add specs before implementation.
+- M13 hardening should add package scripts and CI steps only for checks with a
+  repeatable local command and a documented owner for failures.
+
+## Hardening Tooling Candidates
+
+M13 should choose the smallest useful set from this list and document any deferred
+tools with a trigger:
+
+- CodeQL for TypeScript/JavaScript source and GitHub workflow analysis.
+- Dependency-review and lockfile checks for pull requests.
+- `npm audit` or another npm-compatible software composition analysis gate, with a
+  severity threshold and documented exception process.
+- Dependabot or equivalent dependency-update automation, including grouping and
+  reviewer expectations.
+- SBOM and license reporting for the production frontend package when a release or
+  deployment artifact exists.
+- Static checks for browser security footguns, such as unsafe URL handling,
+  unescaped HTML insertion, secret leakage in built assets, and overly broad workflow
+  permissions.
+- Accessibility and browser smoke coverage for critical routes, including anonymous
+  catalog flow and authenticated session routes when credentials are available.
+- Bundle-size or asset-budget checks if production build output grows beyond a
+  reviewed threshold.
+- CI artifact upload for hardening reports so failures can be inspected after the
+  workflow ends.
+
+Do not add backend-only hardening gates, container image scans, deployment scans, or
+runtime infrastructure checks until the frontend repository owns a corresponding
+artifact or deployment workflow.
+
+## Release Procedure
+
+This section mirrors the backend repository's release model, adapted for a
+frontend-only Vite/npm package. Release work is maintainer-owned and starts only
+after the intended implementation scope is complete, reviewed, and integrated on
+`main`.
+
+### Versioning And Release Rules
+
+- Use semantic version tags in the form `vMAJOR.MINOR.PATCH` for stable releases or
+  `vMAJOR.MINOR.PATCH-PRERELEASE` for prereleases.
+- Keep version numbers increasing in `git log --first-parent` order.
+- Cut releases only from `main` after all intended changes are integrated there.
+- Use annotated tags for intentional releases.
+- Keep `CHANGELOG.md` aligned with the release tag.
+- Update `ROADMAP.md` after each release so completed work leaves the active roadmap,
+  only active or deferred work remains, and the current baseline reflects the new
+  release phase, breaking policy, next target version, and latest release.
+- Do not create another durable released-history file; released human history belongs
+  in `CHANGELOG.md`.
+
+### Release Preconditions
+
+Do not start release preparation until all of these are true:
+
+- The target implementation plan or ad hoc release scope is complete and validation
+  evidence is current.
+- Local `main` is synced to the exact release-candidate state.
+- Required backend contract artifacts and generated API types are current, or any
+  intentional backend-contract refresh is already reviewed.
+- `CHANGELOG.md`, `ROADMAP.md`, `README.md`, `SETUP.md`, and package metadata agree
+  with the release candidate's user-visible surface.
+- The full frontend validation baseline has passed for the exact candidate:
+  `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, and
+  `git diff --check`.
+- If M13 lands before the release, all selected static-analysis and hardening checks
+  have passed for the exact candidate, or each exception has a documented owner and
+  release decision.
+- Any required browser smoke or e2e evidence has either passed or is explicitly
+  recorded as unavailable with the reason.
+
+### Preparing A Release
+
+1. Inspect existing tags with `git tag --sort=v:refname` and first-parent history
+   with `git log --first-parent --decorate --oneline`.
+2. Choose the next semantic version. Use `PATCH` for compatible fixes or cleanup,
+   `MINOR` for backward-compatible frontend feature expansion, and `MAJOR` only for
+   an explicitly selected breaking-change plan.
+3. Move the release-relevant `CHANGELOG.md` entries from `## [Unreleased]` into a
+   new version section dated `YYYY-MM-DD`, leaving a fresh `## [Unreleased]`.
+4. Update `ROADMAP.md` so the current baseline names the release phase, latest
+   release, next target version, and immediate next action after the release.
+5. Archive or close completed concrete plan files only when release cleanup explicitly
+   adopts that backend-style plan archive step; do not archive templates or active
+   plans.
+6. Re-run validation if release metadata edits made earlier evidence stale.
+7. Commit the release metadata change with `Prepare vMAJOR.MINOR.PATCH[-PRERELEASE]
+   release`.
+8. Create an annotated tag named `vMAJOR.MINOR.PATCH[-PRERELEASE]` with a concise
+   annotation such as `Release vMAJOR.MINOR.PATCH[-PRERELEASE]`.
+9. Verify locally that the tag points at the release commit and that `git status`,
+   `CHANGELOG.md`, `ROADMAP.md`, package metadata, and validation evidence all
+   describe the same release candidate.
+
+### Publishing And Verification
+
+- Push `main` and the annotated tag only when the release task explicitly includes
+  remote publication.
+- Monitor any tag-triggered CI or release workflow until it finishes; if no release
+  workflow exists yet, create the GitHub Release manually from the annotated tag and
+  `CHANGELOG.md` section.
+- Verify the published release notes match the released changelog section.
+- If a packaged frontend artifact or deployment workflow is later added, extend this
+  procedure with artifact checks before cutting that release.
+- After publication, update `ROADMAP.md` again only if publication changes the
+  active release phase, next target version, or deferred release automation scope.
 
 ## Deferred Scope
 
@@ -109,7 +225,10 @@ hardening and any newly selected backend-supported scope.
 - Hard-coded OAuth provider paths outside the session bootstrap response.
 - New backend surfaces not yet selected in a roadmap row or spec.
 - Broad visual design work that is not tied to an implemented user flow.
-- Release automation or deployment workflow until explicitly selected.
+- Release automation, packaged artifacts, or deployment workflow beyond the manual
+  annotated-tag/GitHub Release procedure until explicitly selected.
+- Container image scanning, deployment posture checks, and runtime infrastructure
+  hardening until the frontend owns a container, deployment target, or hosted runtime.
 
 ## Roadmap Rules
 

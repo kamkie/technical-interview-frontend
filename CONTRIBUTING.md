@@ -1,7 +1,9 @@
 # Contributing
 
-This repository is not yet scaffolded as an application. Until it is, most changes are
-documentation, backend-contract import, or project setup work.
+This repository is a Vite, React, and TypeScript frontend for the sibling
+`technical-interview-demo` backend. Most changes should stay contract-first: update
+the owning spec, doc, or test alongside implementation when user-visible behavior or
+repository rules change.
 
 ## Before You Start
 
@@ -22,14 +24,23 @@ Do not invent backend endpoints, fields, auth flows, or browser integration beha
 
 ## Validation
 
-Current minimum validation for docs and guidance changes:
+Current validation follows `AGENTS.md` and `SETUP.md`:
+
+App or tooling changes:
+
+```powershell
+npm run lint
+npm run typecheck
+npm test
+npm run build
+git diff --check
+```
+
+Docs or guidance-only changes:
 
 ```powershell
 git diff --check
 ```
-
-After the app scaffold exists, contributors must use the package scripts documented in
-`SETUP.md` and `AGENTS.md`.
 
 ## Commit Messages
 

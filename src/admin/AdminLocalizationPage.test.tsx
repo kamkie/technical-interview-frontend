@@ -90,23 +90,42 @@ describe('AdminLocalizationPage', () => {
     ).toBe(false)
   })
 
-  it('creates a missing locale row and patches visible coverage', async () => {
+  it('creates a missing locale row and refreshes visible coverage', async () => {
     document.cookie = 'XSRF-TOKEN=token%201'
+    let localizationReads = 0
     const fetchMock = mockAdminLocalizationFetch({
       createLocalizationResponse: createLocalizationRow({
         id: 3,
         language: 'de',
         messageText: 'Konto',
       }),
-      localizations: createLocalizationPage({
-        content: [
-          createLocalizationRow({
-            id: 1,
-            language: 'en',
-            messageText: 'Account',
-          }),
-        ],
-      }),
+      localizations: () => {
+        localizationReads += 1
+
+        return createLocalizationPage({
+          content:
+            localizationReads === 1
+              ? [
+                  createLocalizationRow({
+                    id: 1,
+                    language: 'en',
+                    messageText: 'Account',
+                  }),
+                ]
+              : [
+                  createLocalizationRow({
+                    id: 1,
+                    language: 'en',
+                    messageText: 'Account',
+                  }),
+                  createLocalizationRow({
+                    id: 3,
+                    language: 'de',
+                    messageText: 'Konto',
+                  }),
+                ],
+        })
+      },
     })
 
     renderAdminLocalization(`${ADMIN_LOCALIZATION_ROUTE_PATH}?messageKey=account.title`)
@@ -138,11 +157,13 @@ describe('AdminLocalizationPage', () => {
       })
     })
     expect(await screen.findByText('Localization created.')).toBeInTheDocument()
-    expect(screen.getByText('Konto')).toBeInTheDocument()
+    expect(await screen.findByText('Konto')).toBeInTheDocument()
+    expect(localizationReads).toBeGreaterThanOrEqual(2)
   })
 
-  it('updates existing rows through a fresh row read and visible patch', async () => {
+  it('updates existing rows through a fresh row read and list refresh', async () => {
     document.cookie = 'XSRF-TOKEN=token'
+    let localizationReads = 0
     const fetchMock = mockAdminLocalizationFetch({
       localizationById: createLocalizationRow({
         id: 1,
@@ -154,6 +175,25 @@ describe('AdminLocalizationPage', () => {
         language: 'en',
         messageText: 'Account settings',
       }),
+      localizations: () => {
+        localizationReads += 1
+
+        return createLocalizationPage({
+          content: [
+            createLocalizationRow({
+              id: 1,
+              language: 'en',
+              messageText:
+                localizationReads === 1 ? 'Account' : 'Account settings',
+            }),
+            createLocalizationRow({
+              id: 2,
+              language: 'pl',
+              messageText: 'Konto',
+            }),
+          ],
+        })
+      },
     })
 
     renderAdminLocalization()
@@ -186,13 +226,43 @@ describe('AdminLocalizationPage', () => {
       })
     })
     expect(screen.getByText('Localization updated.')).toBeInTheDocument()
-    expect(screen.getAllByText('Account settings').length).toBeGreaterThan(0)
+    expect(await screen.findAllByText('Account settings')).not.toHaveLength(0)
+    expect(localizationReads).toBeGreaterThanOrEqual(2)
   })
 
-  it('confirms and removes deleted rows from the current results', async () => {
+  it('confirms, deletes, and refreshes rows from the current results', async () => {
     document.cookie = 'XSRF-TOKEN=token'
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
-    const fetchMock = mockAdminLocalizationFetch()
+    let localizationReads = 0
+    const fetchMock = mockAdminLocalizationFetch({
+      localizations: () => {
+        localizationReads += 1
+
+        return createLocalizationPage({
+          content:
+            localizationReads === 1
+              ? [
+                  createLocalizationRow({
+                    id: 1,
+                    language: 'en',
+                    messageText: 'Account',
+                  }),
+                  createLocalizationRow({
+                    id: 2,
+                    language: 'pl',
+                    messageText: 'Konto',
+                  }),
+                ]
+              : [
+                  createLocalizationRow({
+                    id: 2,
+                    language: 'pl',
+                    messageText: 'Konto',
+                  }),
+                ],
+        })
+      },
+    })
 
     renderAdminLocalization()
 
@@ -213,9 +283,12 @@ describe('AdminLocalizationPage', () => {
     })
     expect(confirmSpy).toHaveBeenCalledWith('Delete account.title en?')
     expect(screen.getByText('Localization deleted.')).toBeInTheDocument()
-    expect(
-      screen.queryByRole('button', { name: 'Delete account.title en' }),
-    ).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('button', { name: 'Delete account.title en' }),
+      ).not.toBeInTheDocument()
+    })
+    expect(localizationReads).toBeGreaterThanOrEqual(2)
   })
 
   it('lets the backend report missing CSRF write failures', async () => {

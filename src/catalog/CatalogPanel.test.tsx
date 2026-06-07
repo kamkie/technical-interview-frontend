@@ -133,6 +133,25 @@ describe('CatalogPanel', () => {
     })
   })
 
+  it('derives pagination button state from page numbers when flags are absent', async () => {
+    mockCatalogFetch({
+      books: {
+        ...paginatedBookPage,
+        first: undefined,
+        last: undefined,
+        number: 2,
+        totalPages: 3,
+      },
+    })
+
+    renderCatalogRoute(`${CATALOG_ROUTE_PATH}?page=2`)
+
+    expect(await screen.findByText('Refactoring')).toBeInTheDocument()
+    expect(screen.getByText(/Page 3\s+of 3/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Previous' })).not.toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled()
+  })
+
   it('renders localized backend book error messages', async () => {
     vi.stubGlobal(
       'fetch',

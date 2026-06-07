@@ -410,7 +410,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
       setBookFormMode({
         type: 'edit',
         bookId: book.id,
-        version: currentBook.version ?? 0,
+        version: getEditableBookVersion(currentBook),
       })
       setBookMutationState({ status: 'idle' })
     } catch (error: unknown) {
@@ -435,7 +435,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
       setBookFormMode({
         type: 'edit',
         bookId: bookFormMode.bookId,
-        version: currentBook.version ?? 0,
+        version: getEditableBookVersion(currentBook),
       })
       setBookMutationState({
         status: 'success',
@@ -1060,6 +1060,9 @@ function AdminBookResults({
   const pageNumber = page.number ?? query.page
   const pageSize = page.size ?? query.size
   const totalPages = page.totalPages ?? 0
+  const first = page.first === true || pageNumber <= 0
+  const last =
+    page.last === true || (totalPages > 0 && pageNumber >= totalPages - 1)
 
   if (books.length === 0) {
     return (
@@ -1070,8 +1073,8 @@ function AdminBookResults({
           pageSize={pageSize}
           querySize={query.size}
           totalPages={totalPages}
-          first={page.first === true}
-          last={page.last === true}
+          first={first}
+          last={last}
           onNextPage={onNextPage}
           onPageSizeChange={onPageSizeChange}
           onPreviousPage={onPreviousPage}
@@ -1137,8 +1140,8 @@ function AdminBookResults({
         pageSize={pageSize}
         querySize={query.size}
         totalPages={totalPages}
-        first={page.first === true}
-        last={page.last === true}
+        first={first}
+        last={last}
         onNextPage={onNextPage}
         onPageSizeChange={onPageSizeChange}
         onPreviousPage={onPreviousPage}
@@ -1423,6 +1426,16 @@ function parsePublicationYear(value: string) {
   const parsed = Number(value)
 
   return Number.isFinite(parsed) ? parsed : 0
+}
+
+function getEditableBookVersion(book: Book) {
+  if (book.version === undefined || !Number.isFinite(book.version)) {
+    throw new Error(
+      'Book cannot be edited until the backend returns its current version.',
+    )
+  }
+
+  return book.version
 }
 
 function replaceBookInPage(page: BookPage, updatedBook: Book): BookPage {

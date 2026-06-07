@@ -347,16 +347,15 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
           request,
         )
 
-        patchVisibleLocalizations(updatedLocalization)
         setFormDraft(createLocalizationDraft(updatedLocalization))
         setMutationState({
           status: 'success',
           message: 'Localization updated.',
         })
+        refreshLocalizations()
       } else {
-        const createdLocalization = await createLocalization(session, request)
+        await createLocalization(session, request)
 
-        patchVisibleLocalizations(createdLocalization)
         setFormDraft(
           createEmptyLocalizationDraft({
             language: formDraft.language,
@@ -367,6 +366,7 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
           status: 'success',
           message: 'Localization created.',
         })
+        refreshLocalizations()
       }
     } catch (error: unknown) {
       setMutationState({
@@ -391,7 +391,6 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
 
     try {
       await deleteLocalization(session, row.id)
-      removeVisibleLocalization(row.id)
 
       if (formMode.type === 'edit' && formMode.id === row.id) {
         cancelEdit()
@@ -401,43 +400,13 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
         status: 'success',
         message: 'Localization deleted.',
       })
+      refreshLocalizations()
     } catch (error: unknown) {
       setMutationState({
         status: 'error',
         message: getDisplayMessage(error, 'Localization row could not be deleted.'),
       })
     }
-  }
-
-  function patchVisibleLocalizations(row: LocalizationResponse) {
-    setLocalizationsState((current) => {
-      if (current.status !== 'ready') {
-        return current
-      }
-
-      if (!matchesLocalizationQuery(row, query)) {
-        return {
-          status: 'ready',
-          value: removeLocalizationFromPage(current.value, row.id),
-        }
-      }
-
-      return {
-        status: 'ready',
-        value: upsertLocalizationInPage(current.value, row),
-      }
-    })
-  }
-
-  function removeVisibleLocalization(id: number) {
-    setLocalizationsState((current) =>
-      current.status === 'ready'
-        ? {
-            status: 'ready',
-            value: removeLocalizationFromPage(current.value, id),
-          }
-        : current,
-    )
   }
 
   function updateDraft(update: Partial<LocalizationFormDraft>) {
@@ -1029,63 +998,6 @@ function createLocalizationRequest(
     messageText: draft.messageText.trim(),
     description: draft.description.trim() || undefined,
   }
-}
-
-function upsertLocalizationInPage(
-  page: LocalizationPage,
-  row: LocalizationResponse,
-): LocalizationPage {
-  const content = page.content ?? []
-  const existing = row.id !== undefined && content.some((item) => item.id === row.id)
-  const nextContent = existing
-    ? content.map((item) => (item.id === row.id ? row : item))
-    : [...content, row]
-
-  return {
-    ...page,
-    content: nextContent,
-    numberOfElements: nextContent.length,
-    totalElements: existing ? page.totalElements : (page.totalElements ?? content.length) + 1,
-  }
-}
-
-function removeLocalizationFromPage(
-  page: LocalizationPage,
-  id: number | undefined,
-): LocalizationPage {
-  if (id === undefined) {
-    return page
-  }
-
-  const content = (page.content ?? []).filter((row) => row.id !== id)
-  const removed = content.length !== (page.content ?? []).length
-
-  return {
-    ...page,
-    content,
-    numberOfElements: content.length,
-    totalElements: removed
-      ? Math.max(0, (page.totalElements ?? content.length) - 1)
-      : page.totalElements,
-  }
-}
-
-function matchesLocalizationQuery(
-  row: LocalizationResponse,
-  query: LocalizationQueryState,
-) {
-  const messageKey = row.messageKey?.trim()
-  const language = row.language?.trim().toLowerCase()
-
-  if (query.messageKey && messageKey !== query.messageKey) {
-    return false
-  }
-
-  if (query.language && language !== query.language) {
-    return false
-  }
-
-  return true
 }
 
 function formatMissingLocales(group: LocalizationKeyCoverage) {

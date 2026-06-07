@@ -370,6 +370,9 @@ function BookResults({
   const pageNumber = page.number ?? query.page
   const pageSize = page.size ?? query.size
   const totalPages = page.totalPages ?? 0
+  const first = page.first === true || pageNumber <= 0
+  const last =
+    page.last === true || (totalPages > 0 && pageNumber >= totalPages - 1)
 
   if (books.length === 0) {
     return (
@@ -380,8 +383,8 @@ function BookResults({
           pageSize={pageSize}
           querySize={query.size}
           totalPages={totalPages}
-          first={page.first === true}
-          last={page.last === true}
+          first={first}
+          last={last}
           onNextPage={onNextPage}
           onPageSizeChange={onPageSizeChange}
           onPreviousPage={onPreviousPage}
@@ -442,8 +445,8 @@ function BookResults({
         pageSize={pageSize}
         querySize={query.size}
         totalPages={totalPages}
-        first={page.first === true}
-        last={page.last === true}
+        first={first}
+        last={last}
         onNextPage={onNextPage}
         onPageSizeChange={onPageSizeChange}
         onPreviousPage={onPreviousPage}
