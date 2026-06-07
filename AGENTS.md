@@ -113,6 +113,15 @@ Use these focused references for procedure details that do not belong inline her
   annotated tags, changelog promotion, package checks, GHCR package publication,
   GitHub Release verification, and post-release roadmap cleanup.
 
+## Ad Hoc Implementation Delegation
+
+Ad hoc implementation is implementation work not already governed by an active plan.
+For this work, use one subagent for planning and a separate subagent for
+implementation. This repository rule pre-authorizes those subagents; agents must not
+ask again before using them.
+
+Backend contract, validation, git, and smallest-coherent-change rules still apply.
+
 ## Plan Execution Rules
 
 When the user asks to implement an active plan, the plan is the execution contract.
