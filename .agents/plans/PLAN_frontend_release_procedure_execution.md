@@ -13,8 +13,8 @@
 
 | Status | Current |
 | --- | --- |
-| Phase | M13-A Hardening Selection |
-| Status | Ready For M13-A Hardening Selection |
+| Phase | M13-B Hardening Tooling Implementation |
+| Status | Ready For M13-B Hardening Implementation |
 | Last Updated | 2026-06-07 |
 
 ## Planning Readiness
@@ -24,7 +24,7 @@
 | Decision Complete | Yes for M12 release-readiness, M14 human docs, M15 AI references, and M13 selection-first hardening |
 | Blocking Open Questions | None for the next ready slice |
 | Accepted Fallbacks | Authenticated browser smoke remains manual until credentials and a canonical command exist; remote release publication requires an explicit current user request |
-| Ready For Execution | M13-A hardening selection and triage rules |
+| Ready For Execution | M13-B selected hardening tooling implementation |
 
 ## Summary
 
@@ -119,8 +119,8 @@ Out of scope:
 | 1 | M12-A Release-readiness audit and reconciliation | Done | No release tag was created in this slice |
 | 2 | M14 Human procedure documentation | Done | M12-A commit landed and validation passed |
 | 3 | M15 AI procedure reference layer | Done | M14 commit landed and validation passed |
-| 4 | M13-A Hardening selection and triage rules | Ready | M14/M15 owners exist |
-| 5 | M13-B Selected hardening tooling implementation | Waiting | M13-A selection is committed and unblocked |
+| 4 | M13-A Hardening selection and triage rules | Done | M14/M15 owners exist |
+| 5 | M13-B Selected hardening tooling implementation | Ready | M13-A selection is committed and unblocked |
 | 6 | M12-B Final release cut and post-release cleanup | Waiting | M13-B, M14, and M15 are complete; local `main` is at the release-candidate state |
 
 ## Requirement Gaps And Open Questions
@@ -180,8 +180,8 @@ Status model:
 | 1: M12-A Release-readiness audit | Done | M12 worker | `7479a43` | Passed by worker and coordinator | No tag creation in this slice; auth smoke remains manual without credentials or a canonical command |
 | 2: M14 Human procedure docs | Done | M14 worker | `c34a9fd` | Passed by worker and coordinator | Human procedure owners and entry-point links landed |
 | 3: M15 AI procedure references | Done | M15 worker | `40478d4` | Passed by worker and coordinator | AI procedure references landed |
-| 4: M13-A Hardening selection | Ready | M13 worker | Pending | `git diff --check`; full baseline if package/workflow files change | Selection output documented; coordinator commit pending |
-| 5: M13-B Hardening implementation | Waiting | M13 worker | Pending | Selected hardening commands plus full baseline | Waits for M13-A |
+| 4: M13-A Hardening selection | Done | M13 worker | `d469976` | Passed by worker and coordinator | Selected hardening gates, deferrals, and triage rules documented |
+| 5: M13-B Hardening implementation | Ready | M13 worker | Pending | Selected hardening commands plus full baseline | M13-A selection landed |
 | 6: M12-B Release cut | Waiting | M12 worker for metadata edits; coordinator for validation, commit, tag, and plan recording | Pending | Full baseline, tag verification, clean git status | Waits for M13-B and synced `main` |
 
 ## Phase 1: M12-A Release-Readiness Audit
@@ -281,7 +281,7 @@ M15 implementation notes:
 
 | Field | Value |
 | --- | --- |
-| Status | Ready |
+| Status | Done |
 | Goal | Select the minimum M13 hardening checks that are useful, repeatable, and owned before adding tooling |
 | Owned Files Or Packages | `ROADMAP.md`, `docs/LOCAL_DEVELOPMENT.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, `.agents/references/releases.md`, this plan |
 | Context Required | M14/M15 procedure owners, `ROADMAP.md` hardening candidates, current CI workflow and package scripts |
@@ -342,7 +342,7 @@ M13-A triage and exception rules for M13-B:
 
 | Field | Value |
 | --- | --- |
-| Status | Waiting |
+| Status | Ready |
 | Goal | Implement the M13-A selected hardening tool set in CI, package scripts, and owner docs |
 | Owned Files Or Packages | `.github/workflows/`, `.github/dependabot.yml`, `package.json`, `package-lock.json`, `docs/LOCAL_DEVELOPMENT.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, `ROADMAP.md` |
 | Context Required | M13-A selection output and current CI validation workflow |
