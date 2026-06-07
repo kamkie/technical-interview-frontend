@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
+import {
+  matchPath,
+  NavLink,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from 'react-router-dom'
 
 import {
   fetchCurrentSession,
@@ -38,6 +45,67 @@ import {
 
 const ACCOUNT_ROUTE_PATH = '/account'
 
+type RouteContext = {
+  area: string
+  description: string
+  path: string
+  title: string
+}
+
+const CATALOG_ROUTE_CONTEXT: RouteContext = {
+  area: 'Public catalog',
+  description:
+    'Search the approved collection and review catalog availability.',
+  path: CATALOG_ROUTE_PATH,
+  title: 'Book catalog',
+}
+
+const ROUTE_CONTEXTS: readonly RouteContext[] = [
+  CATALOG_ROUTE_CONTEXT,
+  {
+    area: 'Account',
+    description:
+      'Review the current profile and manage account preferences for this session.',
+    path: ACCOUNT_ROUTE_PATH,
+    title: 'Account settings',
+  },
+  {
+    area: 'Admin',
+    description:
+      'Manage book records and categories through backend-authorized catalog tools.',
+    path: ADMIN_CATALOG_ROUTE_PATH,
+    title: 'Catalog administration',
+  },
+  {
+    area: 'Admin',
+    description:
+      'Maintain localized messages without treating translated text as program logic.',
+    path: ADMIN_LOCALIZATION_ROUTE_PATH,
+    title: 'Localization administration',
+  },
+  {
+    area: 'Admin',
+    description:
+      'Review application users and role-grant provenance through admin workflows.',
+    path: ADMIN_USERS_ROUTE_PATH,
+    title: 'User administration',
+  },
+  {
+    area: 'Admin',
+    description:
+      'Review application users and role-grant provenance through admin workflows.',
+    path: ADMIN_USER_DETAIL_ROUTE_PATH,
+    title: 'User administration',
+  },
+  {
+    area: 'Operations',
+    description:
+      'Inspect operator-facing health and audit evidence without making diagnostics the primary workflow.',
+    path: OPERATOR_ROUTE_PATH,
+    title: 'Operations console',
+  },
+]
+
 const THEME_LABELS: Record<ThemePreference, string> = {
   dark: 'Dark',
   light: 'Light',
@@ -51,10 +119,14 @@ type LogoutState =
 
 export function App() {
   const { refreshSession, sessionState } = useSessionBootstrap()
+  const routeContext = useRouteContext()
   const { preference, resolvedTheme, setPreference } = useThemePreference()
   const [logoutState, setLogoutState] = useState<LogoutState>({
     status: 'idle',
   })
+  const authenticated =
+    sessionState.status === 'ready' &&
+    sessionState.session.authenticated === true
 
   async function handleLogout(session: SessionResponse) {
     setLogoutState({ status: 'submitting' })
@@ -81,16 +153,7 @@ export function App() {
             </span>
             <span className="brand-name">Library Console</span>
           </div>
-          <nav className="topnav" aria-label="Primary navigation">
-            <NavLink to={CATALOG_ROUTE_PATH}>Catalog</NavLink>
-            {sessionState.status === 'ready' &&
-              sessionState.session.authenticated === true && (
-                <>
-                  <NavLink to={OPERATOR_ROUTE_PATH}>Operations</NavLink>
-                  <AdminMenu />
-                </>
-              )}
-          </nav>
+          <ShellNavigation authenticated={authenticated} />
         </div>
         <div className="topbar-actions">
           <ThemePreferenceControl
@@ -107,14 +170,7 @@ export function App() {
       </header>
 
       <main className="workspace">
-        <section className="intro" aria-labelledby="page-title">
-          <p className="eyebrow">Library operations</p>
-          <h1 id="page-title">Book catalog</h1>
-          <p className="lede">
-            Search the collection, review availability, and manage operational
-            workflows from one focused console.
-          </p>
-        </section>
+        <RouteContextHeader context={routeContext} />
 
         <Routes>
           <Route index element={<Navigate to={CATALOG_ROUTE_PATH} replace />} />
@@ -186,34 +242,66 @@ export function App() {
   )
 }
 
+function ShellNavigation({ authenticated }: { authenticated: boolean }) {
+  return (
+    <nav className="shell-navigation" aria-label="Primary navigation">
+      <div className="nav-section" aria-label="Catalog workflow">
+        <span className="nav-section-label">Catalog</span>
+        <NavLink to={CATALOG_ROUTE_PATH}>Catalog</NavLink>
+      </div>
+      {authenticated && (
+        <div className="nav-section" aria-label="Account and operations workflows">
+          <span className="nav-section-label">Workspace</span>
+          <NavLink to={ACCOUNT_ROUTE_PATH}>Account</NavLink>
+          <NavLink to={OPERATOR_ROUTE_PATH}>Operations</NavLink>
+        </div>
+      )}
+      {authenticated && <AdminMenu />}
+    </nav>
+  )
+}
+
 function AdminMenu() {
   const [open, setOpen] = useState(false)
   const panelId = 'admin-menu-panel'
 
   return (
-    <div className="nav-menu">
-      <button
-        aria-controls={panelId}
-        aria-expanded={open}
-        className="nav-menu-button"
-        id="admin-menu-trigger"
-        type="button"
-        onClick={() => setOpen((current) => !current)}
-      >
-        Admin
-      </button>
-      {open && (
-        <nav
-          aria-labelledby="admin-menu-trigger"
-          className="nav-menu-panel"
-          id={panelId}
+    <div className="nav-section nav-section-admin" aria-label="Admin workflows">
+      <span className="nav-section-label">Admin</span>
+      <div className="nav-menu">
+        <button
+          aria-controls={panelId}
+          aria-expanded={open}
+          className="nav-menu-button"
+          id="admin-menu-trigger"
+          type="button"
+          onClick={() => setOpen((current) => !current)}
         >
-          <NavLink to={ADMIN_CATALOG_ROUTE_PATH}>Catalog admin</NavLink>
-          <NavLink to={ADMIN_LOCALIZATION_ROUTE_PATH}>Localizations</NavLink>
-          <NavLink to={ADMIN_USERS_ROUTE_PATH}>Users</NavLink>
-        </nav>
-      )}
+          Admin
+        </button>
+        {open && (
+          <nav
+            aria-labelledby="admin-menu-trigger"
+            className="nav-menu-panel"
+            id={panelId}
+          >
+            <NavLink to={ADMIN_CATALOG_ROUTE_PATH}>Catalog admin</NavLink>
+            <NavLink to={ADMIN_LOCALIZATION_ROUTE_PATH}>Localizations</NavLink>
+            <NavLink to={ADMIN_USERS_ROUTE_PATH}>Users</NavLink>
+          </nav>
+        )}
+      </div>
     </div>
+  )
+}
+
+function RouteContextHeader({ context }: { context: RouteContext }) {
+  return (
+    <section className="route-context intro" aria-labelledby="page-title">
+      <p className="eyebrow">{context.area}</p>
+      <h1 id="page-title">{context.title}</h1>
+      <p className="lede">{context.description}</p>
+    </section>
   )
 }
 
@@ -364,7 +452,22 @@ function SessionAccountMenu({
             id={panelId}
             role="region"
           >
-            <SessionDetails session={state.session} />
+            <SessionLoginActions session={state.session} />
+            <SessionStatusSummary session={state.session} />
+            <button
+              aria-controls={detailsId}
+              aria-expanded={showDetails}
+              className="connection-details-button"
+              type="button"
+              onClick={() => setShowDetails((current) => !current)}
+            >
+              Connection details
+            </button>
+            {showDetails && (
+              <div id={detailsId}>
+                <SessionDetails session={state.session} showStatus={false} />
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -430,6 +533,16 @@ function SessionAccountMenu({
   )
 }
 
+function useRouteContext() {
+  const { pathname } = useLocation()
+
+  return (
+    ROUTE_CONTEXTS.find((context) =>
+      matchPath({ path: context.path, end: true }, pathname),
+    ) ?? CATALOG_ROUTE_CONTEXT
+  )
+}
+
 function SessionBootstrapPanel({ state }: { state: SessionState }) {
   return (
     <section className="session-panel" aria-labelledby="session-title">
@@ -455,11 +568,14 @@ function SessionBootstrapPanel({ state }: { state: SessionState }) {
   )
 }
 
-function SessionDetails({ session }: { session: SessionResponse }) {
-  const loginProviders = getLoginProviders(session).filter(hasAuthorizationPath)
+function SessionDetails({
+  session,
+  showStatus = true,
+}: {
+  session: SessionResponse
+  showStatus?: boolean
+}) {
   const csrf = session.csrf
-  const statusLabel =
-    session.authenticated === true ? 'Signed in' : 'Signed out'
   const csrfLabel =
     csrf?.enabled === true
       ? `${csrf.cookieName ?? 'CSRF cookie'} -> ${csrf.headerName ?? 'CSRF header'}`
@@ -467,33 +583,7 @@ function SessionDetails({ session }: { session: SessionResponse }) {
 
   return (
     <div className="session-details">
-      {session.authenticated !== true && loginProviders.length > 0 && (
-        <nav className="login-actions" aria-label="Login providers">
-          {loginProviders.map((provider) => (
-            <a
-              className="login-link"
-              href={provider.authorizationPath}
-              key={provider.registrationId ?? provider.authorizationPath}
-            >
-              Sign in with {provider.clientName ?? provider.registrationId}
-            </a>
-          ))}
-        </nav>
-      )}
-
-      {session.authenticated !== true && loginProviders.length === 0 && (
-        <p className="session-message muted">No login providers available.</p>
-      )}
-
-      <div className="session-summary">
-        <span
-          className={`status-pill ${
-            session.authenticated === true ? 'authenticated' : 'anonymous'
-          }`}
-        >
-          {statusLabel}
-        </span>
-      </div>
+      {showStatus && <SessionStatusSummary session={session} />}
 
       <dl className="session-metadata">
         <div>
@@ -517,6 +607,47 @@ function SessionDetails({ session }: { session: SessionResponse }) {
           <dd>{csrfLabel}</dd>
         </div>
       </dl>
+    </div>
+  )
+}
+
+function SessionLoginActions({ session }: { session: SessionResponse }) {
+  const loginProviders = getLoginProviders(session).filter(hasAuthorizationPath)
+
+  if (loginProviders.length === 0) {
+    return (
+      <p className="session-message muted">No login providers available.</p>
+    )
+  }
+
+  return (
+    <nav className="login-actions" aria-label="Login providers">
+      {loginProviders.map((provider) => (
+        <a
+          className="login-link"
+          href={provider.authorizationPath}
+          key={provider.registrationId ?? provider.authorizationPath}
+        >
+          Sign in with {provider.clientName ?? provider.registrationId}
+        </a>
+      ))}
+    </nav>
+  )
+}
+
+function SessionStatusSummary({ session }: { session: SessionResponse }) {
+  const statusLabel =
+    session.authenticated === true ? 'Signed in' : 'Signed out'
+
+  return (
+    <div className="session-summary">
+      <span
+        className={`status-pill ${
+          session.authenticated === true ? 'authenticated' : 'anonymous'
+        }`}
+      >
+        {statusLabel}
+      </span>
     </div>
   )
 }

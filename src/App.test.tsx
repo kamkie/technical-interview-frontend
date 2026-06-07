@@ -138,10 +138,21 @@ describe('App', () => {
       }),
     ).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Books' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Catalog' })).toHaveAttribute(
+    const primaryNavigation = screen.getByRole('navigation', {
+      name: 'Primary navigation',
+    })
+    expect(
+      within(primaryNavigation).getByRole('link', { name: 'Catalog' }),
+    ).toHaveAttribute(
       'href',
       '/catalog',
     )
+    expect(
+      within(primaryNavigation).queryByText('Workspace'),
+    ).not.toBeInTheDocument()
+    expect(
+      within(primaryNavigation).queryByRole('button', { name: 'Admin' }),
+    ).not.toBeInTheDocument()
 
     expect(fetchMock).toHaveBeenCalledWith(SESSION_PATH, {
       method: 'GET',
@@ -199,6 +210,15 @@ describe('App', () => {
     expect(
       within(signInMenu).getByText('Signed out'),
     ).toBeInTheDocument()
+    expect(
+      within(signInMenu).queryByText('XSRF-TOKEN -> X-XSRF-TOKEN'),
+    ).not.toBeInTheDocument()
+    const connectionDetailsButton = within(signInMenu).getByRole('button', {
+      name: 'Connection details',
+    })
+    expect(connectionDetailsButton).toHaveAttribute('aria-expanded', 'false')
+    fireEvent.click(connectionDetailsButton)
+    expect(connectionDetailsButton).toHaveAttribute('aria-expanded', 'true')
     expect(
       within(signInMenu).getByText('XSRF-TOKEN -> X-XSRF-TOKEN'),
     ).toBeInTheDocument()
@@ -273,6 +293,18 @@ describe('App', () => {
     const accountButton = await screen.findByRole('button', { name: 'Account' })
     fireEvent.click(accountButton)
 
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Account settings' }),
+    ).toBeInTheDocument()
+    const primaryNavigation = screen.getByRole('navigation', {
+      name: 'Primary navigation',
+    })
+    expect(
+      within(primaryNavigation).getByRole('link', { name: 'Account' }),
+    ).toHaveAttribute('href', '/account')
+    expect(
+      within(primaryNavigation).getByRole('link', { name: 'Operations' }),
+    ).toHaveAttribute('href', '/operator')
     const accountMenu = screen.getByRole('region', { name: 'Account menu' })
     expect(
       within(accountMenu).getByRole('link', { name: 'Account settings' }),
@@ -286,23 +318,21 @@ describe('App', () => {
     expect(
       screen.queryByRole('link', { name: 'Localizations' }),
     ).not.toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Admin' }))
-    expect(screen.getByRole('link', { name: 'Catalog admin' })).toHaveAttribute(
+    fireEvent.click(
+      within(primaryNavigation).getByRole('button', { name: 'Admin' }),
+    )
+    expect(
+      within(primaryNavigation).getByRole('link', { name: 'Catalog admin' }),
+    ).toHaveAttribute(
       'href',
       '/admin/catalog',
     )
-    expect(screen.getByRole('link', { name: 'Localizations' })).toHaveAttribute(
-      'href',
-      '/admin/localizations',
-    )
-    expect(screen.getByRole('link', { name: 'Users' })).toHaveAttribute(
-      'href',
-      '/admin/users',
-    )
-    expect(screen.getByRole('link', { name: 'Operations' })).toHaveAttribute(
-      'href',
-      '/operator',
-    )
+    expect(
+      within(primaryNavigation).getByRole('link', { name: 'Localizations' }),
+    ).toHaveAttribute('href', '/admin/localizations')
+    expect(
+      within(primaryNavigation).getByRole('link', { name: 'Users' }),
+    ).toHaveAttribute('href', '/admin/users')
     expect(await screen.findByText('Kamil Kiewisz')).toBeInTheDocument()
     expect(screen.getByText('kamkie')).toBeInTheDocument()
     expect(screen.getByText('kamil@example.test')).toBeInTheDocument()

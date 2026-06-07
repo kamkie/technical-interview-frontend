@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-production-ui-foundation
 
-Status: Draft
+Status: Approved
 
 Workers: 1
 
@@ -11,16 +11,17 @@ Filename: `.agents/plans/PLAN_production_ui_foundation.md`
 ## Readiness
 
 - Plan readiness: Ready for review; not approved for implementation until the user explicitly approves this plan or asks to implement it.
-- Approved by:
-- Approved at:
+- Approved by: Current user request to implement `PLAN_production_ui_foundation.md`.
+- Approved at: 2026-06-07T23:05:20+02:00
 - Open questions: No blocking product questions identified from current owners.
-- Implementation progress: Not started.
+- Implementation progress: P1-shell-navigation selected for worker dispatch.
 
 Use `Status: Draft` while shaping the plan. Use `Status: Approved` only after explicit user approval is recorded. Creating or updating this plan is not implementation approval.
 
 ## Status History
 
 - 2026-06-07T22:57:00+02:00: none -> Draft by Codex; plan created for `M-UI-001`.
+- 2026-06-07T23:05:20+02:00: Draft -> Approved by Codex; current user request explicitly asked to implement this plan.
 
 ## Goal
 
@@ -83,12 +84,12 @@ Load only the artifacts needed for the current packet. Do not bulk-load generate
 
 ## Progress Tracker
 
-| Packet                 | Status  | Owner       | Depends On | Last Updated | Notes                                                     |
-| ---------------------- | ------- | ----------- | ---------- | ------------ | --------------------------------------------------------- |
-| P1-shell-navigation    | Ready   | worker      | None       | 2026-06-07   | Shell, navigation, admin separation, and session controls |
-| P2-route-context-state | Waiting | worker      | P1         | 2026-06-07   | Route context and basic loading, empty, and error states  |
-| P3-coverage-hardening  | Waiting | worker      | P2         | 2026-06-07   | Focused test coverage and visual/state regression cleanup |
-| P4-final-validation    | Waiting | Coordinator | P3         | 2026-06-07   | Full validation, review, and milestone handoff            |
+| Packet                 | Status   | Owner       | Depends On | Last Updated | Notes                                                     |
+| ---------------------- | -------- | ----------- | ---------- | ------------ | --------------------------------------------------------- |
+| P1-shell-navigation    | Complete | worker      | None       | 2026-06-07   | Shell, navigation, admin separation, and session controls |
+| P2-route-context-state | Waiting  | worker      | P1         | 2026-06-07   | Route context and basic loading, empty, and error states  |
+| P3-coverage-hardening  | Waiting  | worker      | P2         | 2026-06-07   | Focused test coverage and visual/state regression cleanup |
+| P4-final-validation    | Waiting  | Coordinator | P3         | 2026-06-07   | Full validation, review, and milestone handoff            |
 
 Use `Ready` only when the packet can be assigned from the current repository state. Use `Waiting` for normal predecessor dependency. Use `Blocked` only for unresolved product choices, backend contract conflicts, credentials, selected thresholds, failure owners, explicit user acceptance gates, or external state the plan cannot produce.
 
@@ -170,17 +171,17 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence from `.agents/references/testing.md`:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Commit:
-- Coordinator reconciliation:
-- Changelog/docs/spec/roadmap updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: complete; checkpoint commit pending.
+- Worker: Codex implementation worker.
+- Changed files or reviewed diff: `src/App.tsx`, `src/App.test.tsx`, `src/index.css`; this P1 result summary.
+- Validation evidence from `.agents/references/testing.md`: coordinator reran `npm test -- src/App.test.tsx` (23 tests), `npm run lint`, `npm run typecheck` with API type freshness check, `npm test` (14 files, 146 tests), `npm run build`, and `git diff --check`; all passed. Worker also reported authenticated mock browser smoke with `npm run dev:mock -- --port 5180 --strictPort` on 2026-06-07 covering shell grouping, admin links, account actions, and secondary connection details disclosure.
+- Self-review evidence from `.agents/references/reviews.md`: coordinator reviewed session/auth/logout/CSRF, route guard, localization-display, documentation-drift, and scope triggers; no actionable issues found. Login providers remain metadata-driven, logout still uses session `logoutPath` and CSRF metadata through the existing API helper, route guards still gate protected routes by session state, diagnostics moved behind connection details, and no role semantics were added.
+- Commit: pending coordinator checkpoint.
+- Coordinator reconciliation: accepted. The scoped diff matches P1: primary navigation is grouped into catalog, account/operations, and admin sections; admin remains discoverable to authenticated users without invented role gating; sign-in and account menus keep provider/logout metadata behavior while demoting raw connection details; route guards and API request behavior are unchanged by tests.
+- Changelog/docs/spec/roadmap updates: no changelog, spec, docs, or roadmap updates by this worker; only this P1 summary was updated.
+- Blockers: none for P1.
+- Review risks: browser smoke used a mock authenticated session only; anonymous sign-in/provider and metadata diagnostics behavior is covered by `src/App.test.tsx`, not by authenticated real-backend smoke.
+- Handoff notes and next action: create the P1 checkpoint commit, record its identifier, promote P2 to `Ready`, and dispatch P2.
 
 ### Task Packet: P2-route-context-state
 
@@ -461,14 +462,14 @@ Use this checkpoint before starting each dependent task, before a pause or hando
 
 - Resume docs reread:
   - After context compaction, interruption, resume, or handoff, reread the latest user request, `AGENTS.md`, this plan's header, `## Readiness`, `## Long-Run Continuity`, `## Execution Model`, the current task packet and result summary, `.agents/references/plan-execution.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and the next action's exact owner docs or source files.
-- Current task or wave: none; plan is waiting for approval.
+- Current task or wave: `P1-shell-navigation`; ready for implementation worker dispatch.
 - Completed commits:
-- Plan status and readiness: `Draft`; ready for review but not approved for implementation.
+- Plan status and readiness: `Approved`; current user request explicitly authorized implementation.
 - Validation and self-review state: plan-authoring validation pending.
 - Coordinator reconciliation state: initial plan created from `ROADMAP.md`, `docs/DESIGN.md`, imported backend contract summary, existing specs, and current app shell/page files.
 - Changelog, docs, spec, roadmap, or plan updates: `ROADMAP.md` should reference `PLAN-production-ui-foundation` while the milestone remains active.
 - Blockers or open questions: implementation approval not yet recorded.
-- Next action: approve the plan or request edits; after approval, start P1.
+- Next action: dispatch the P1 implementation worker, review output, validate, update this plan, and checkpoint if authorized.
 - Context handoff notes: `PLAN_workflow_polish.md` is downstream and waits for `M-UI-001`; do not promote it until this milestone lands and predecessor readiness is recorded.
 
 ## Execution Graph
