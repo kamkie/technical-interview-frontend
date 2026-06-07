@@ -1,19 +1,26 @@
 # Roadmap
 
-This roadmap tracks selected, planned, blocked, and rejected first-party browser
+This roadmap tracks selected, planned, blocked, and non-goal first-party browser
 frontend work for the sibling `technical-interview-demo` backend. Roadmap editing
 rules are owned by `.agents/references/roadmap.md`.
 
-Roadmap items are goal-first. Backend contract details, validation selection, and
-AI procedure rules stay in their owner documents instead of being repeated on every
-item.
+Roadmap hierarchy:
+
+- Milestone: delivery slice with an outcome and order.
+- Epic: product or workflow area inside a milestone.
+- Task: actionable unit inside an epic.
+
+Labels use `milestone:*`, `epic:*`, and `status:*` so the hierarchy stays
+searchable without turning the roadmap into a table. Backend contract details,
+validation selection, and AI procedure rules stay in their owner documents instead
+of being repeated on every item.
 
 ## Release Context
 
 - Release phase: Post-`0.2.0` maintenance.
 - Next target version: Future maintenance release; final scope and version
   selected before release prep.
-- Current priority: Production UI redesign foundation.
+- Current priority: M1 Production UI Foundation.
 - Selection policy: Breaking user-facing or backend-contract integration changes
   require a selected roadmap item.
 
@@ -32,325 +39,274 @@ item.
   roadmap or owner document defines the command, evidence, threshold, and failure
   owner.
 
-## Current Priority
+## Milestones
 
-### Production UI Redesign Foundation
+### M1 Production UI Foundation
 
-Status: Ready
+Labels: `milestone:M1-production-ui`, `status:ready`
 
 Goal: Make the existing frontend read as a production work tool rather than a
 technical demo.
 
-Scope:
+#### Epic: Shell And Navigation
 
-- Rework the shell so primary navigation serves catalog, account, and operator
-  workflows.
+Labels: `milestone:M1-production-ui`, `epic:shell-navigation`, `status:ready`
+
+Tasks:
+
+- Rework primary navigation around catalog, account, and operator workflows.
 - Move admin workflows into a distinct menu or section.
-- Make authentication and session controls user-facing first, with diagnostics
-  secondary.
+- Make authentication and session controls user-facing first.
+- Keep diagnostics secondary to everyday user actions.
+
+Acceptance Criteria:
+
+- Primary navigation no longer mixes admin and user workflows.
+- Admin routes remain discoverable for authorized users.
+- Backend-backed session, login/logout, and route guard behavior is unchanged.
+- Route/component coverage protects the redesigned shell.
+
+#### Epic: Route Context And State Basics
+
+Labels: `milestone:M1-production-ui`, `epic:route-context`, `status:ready`
+
+Tasks:
+
 - Add route context so each work area has clear location, state, and available
   actions.
+- Reduce exposed refresh and control clutter where automatic state or route context
+  can carry the interaction.
 - Improve empty, loading, and error states without branching on localized English
   display messages.
 
-Done when:
+Acceptance Criteria:
 
-- Main catalog, account, admin, and operator routes have production-shaped layout
-  and navigation.
-- Admin links no longer compete with primary user navigation.
-- Backend-backed session, login/logout, catalog, account, admin, and operator flows
-  keep their existing contract behavior.
-- Route/component coverage protects the redesigned shell and unchanged flows.
+- Catalog, account, admin, and operator routes explain their current context.
+- Primary actions are visible without overwhelming the page.
+- State handling uses stable fields such as status, `messageKey`, and endpoint
+  context.
 
-## Planned Roadmap
+### M2 Workflow Polish
 
-Items are listed in priority order. They stay Waiting until predecessor work lands
-or a future roadmap update selects them as the current priority.
+Labels: `milestone:M2-workflow-polish`, `status:waiting`
 
-### Visual Hierarchy And Page Structure
+Goal: Improve daily catalog, account, admin, and operator workflows after the
+production shell foundation lands.
 
-Status: Waiting
+Depends on: M1 Production UI Foundation.
 
-Goal: Make each route scan like a coherent work area instead of a collection of
-equally weighted panels.
+#### Epic: Visual Hierarchy
 
-Scope:
+Labels: `milestone:M2-workflow-polish`, `epic:visual-hierarchy`, `status:waiting`
+
+Tasks:
 
 - Establish consistent page headers, content bands, and action placement.
 - Reduce nested cards and competing visual weight.
-- Keep state and primary actions visible without adding new backend behavior.
+- Keep state and primary actions visible without adding backend behavior.
 
-Done when:
+Acceptance Criteria:
 
 - Main catalog, account, admin, and operator pages have clear visual hierarchy.
 - Route/component coverage protects unchanged backend-backed flows.
 
-Depends on: Production UI redesign foundation.
+#### Epic: State Semantics
 
-### Status And State Semantics
+Labels: `milestone:M2-workflow-polish`, `epic:state-semantics`, `status:waiting`
 
-Status: Waiting
+Tasks:
 
-Goal: Make loading, empty, success, and error states consistent across user,
-admin, and operator workflows.
-
-Scope:
-
-- Normalize state presentation across catalog, account, admin, and operator routes.
-- Branch on stable fields such as status, `messageKey`, endpoint context, and route
-  context rather than localized English text.
+- Normalize loading, empty, success, and error state presentation across routes.
 - Keep localized messages as display content.
+- Branch on stable fields and route context instead of English display text.
 
-Done when:
+Acceptance Criteria:
 
-- Shared state patterns are predictable across routes.
-- Tests cover state handling without depending on English display messages.
+- Shared state patterns are predictable across user, admin, and operator surfaces.
+- Tests cover state handling without depending on localized English strings.
 
-Depends on: Production UI redesign foundation.
+#### Epic: Catalog Workflows
 
-### Catalog/Table/Form Action Hierarchy
+Labels: `milestone:M2-workflow-polish`, `epic:catalog-workflows`, `status:waiting`
 
-Status: Waiting
-
-Goal: Make catalog and admin catalog workflows easier to scan, filter, edit, and
-complete.
-
-Scope:
+Tasks:
 
 - Improve table scanning, pagination, sorting, and repeated filter interactions.
 - Clarify form prominence and action hierarchy.
 - Preserve update flows that require book `version` values.
 
-Done when:
+Acceptance Criteria:
 
 - Catalog and admin catalog tables are efficient to scan and operate.
 - Form actions and table actions have clear relative priority.
 - Tests cover pagination, sorting, repeated filters, and versioned updates.
 
-Depends on: Status and state semantics.
+#### Epic: Admin And Operator Workflows
 
-### Admin/Operator Operational Workflow Density
+Labels: `milestone:M2-workflow-polish`, `epic:admin-operator`, `status:waiting`
 
-Status: Waiting
-
-Goal: Make admin and operator pages efficient for repeated operational use.
-
-Scope:
+Tasks:
 
 - Group controls by workflow rather than API surface.
 - Improve dense scanning of admin catalog, user, and operator states.
 - Preserve existing admin and operator backend operations.
 
-Done when:
+Acceptance Criteria:
 
 - Admin and operator pages support fast scanning and repeated actions.
 - Tests cover grouped controls, state handling, and unchanged operations.
 
-Depends on: Catalog/table/form action hierarchy.
+#### Epic: Account And Session Copy
 
-### Responsive Layout And Table Scanning
+Labels: `milestone:M2-workflow-polish`, `epic:account-session`, `status:waiting`
 
-Status: Waiting
-
-Goal: Keep the shell, filters, action groups, and tables usable across narrow and
-wide viewports.
-
-Scope:
-
-- Make responsive behavior deliberate instead of simple vertical stacking.
-- Keep table state and row actions discoverable on small screens.
-- Verify auth controls and primary navigation remain usable.
-
-Done when:
-
-- Responsive route/component or browser coverage protects the selected layouts.
-- Tables, filters, action groups, and auth controls remain coherent on mobile and
-  desktop widths.
-
-Depends on: Catalog/table/form action hierarchy and admin/operator workflow
-density.
-
-### Account/Session And Product Copy
-
-Status: Waiting
-
-Goal: Make account, session, and authentication copy feel product-facing while
-preserving metadata-driven auth behavior.
-
-Scope:
+Tasks:
 
 - Render login options from session metadata without hard-coded provider paths.
 - Keep logout and account preference flows visible and understandable.
 - Reduce technical labels, raw identifiers, and diagnostics in primary UI.
 
-Done when:
+Acceptance Criteria:
 
 - Session controls, login provider rendering, logout, and preference updates are
   covered by route/component tests.
 - User-facing copy is clearer without changing stable backend behavior.
 
-Depends on: Status and state semantics.
+### M3 Responsive Layout And Smoke Evidence
 
-### Authenticated Browser Smoke
+Labels: `milestone:M3-responsive-smoke`, `status:waiting`
 
-Status: Waiting
+Goal: Keep redesigned workflows usable across viewports and add repeatable browser
+smoke evidence for the most important routes.
 
-Goal: Add repeatable smoke evidence for session bootstrap, authenticated route
-access, and logout.
+Depends on: M2 Workflow Polish.
 
-Scope:
+#### Epic: Responsive Layout
 
+Labels: `milestone:M3-responsive-smoke`, `epic:responsive-layout`, `status:waiting`
+
+Tasks:
+
+- Make responsive behavior deliberate instead of simple vertical stacking.
+- Keep table state and row actions discoverable on small screens.
+- Verify auth controls and primary navigation remain usable.
+
+Acceptance Criteria:
+
+- Responsive route/component or browser coverage protects selected layouts.
+- Tables, filters, action groups, and auth controls remain coherent on mobile and
+  desktop widths.
+
+#### Epic: Authenticated Browser Smoke
+
+Labels: `milestone:M3-responsive-smoke`, `epic:smoke-auth`, `status:waiting`
+
+Tasks:
+
+- Add repeatable smoke evidence for session bootstrap, authenticated route access,
+  and logout.
 - Extend beyond fake-OAuth readiness only where local procedure owners can support
   repeatable evidence.
 - Record the frontend URL, backend profile, flow covered, and any skipped
   authenticated steps.
 
-Done when:
+Acceptance Criteria:
 
 - A documented smoke command or procedure covers the selected authenticated flow.
 - Failures point to an owned workflow, route, or backend-contract issue.
 
-Depends on: Production UI redesign foundation.
+#### Epic: Anonymous Browser Smoke
 
-### Anonymous Browser Smoke
+Labels: `milestone:M3-responsive-smoke`, `epic:smoke-anonymous`, `status:waiting`
 
-Status: Waiting
+Tasks:
 
-Goal: Add repeatable smoke evidence for anonymous shell and public catalog paths.
-
-Scope:
-
+- Add repeatable smoke evidence for anonymous shell and public catalog paths.
 - Select the anonymous routes that carry the most user-visible risk.
 - Keep smoke traffic same-origin and `/api/**` shaped.
 
-Done when:
+Acceptance Criteria:
 
 - A documented smoke command or procedure covers the selected anonymous flow.
 - The smoke result identifies the frontend URL and route coverage.
-
-Depends on: Production UI redesign foundation.
 
 ## Blocked Backlog
 
 Blocked items are planned work, but they need a product choice, stable threshold,
 credential, owner, or repeatable failure before implementation can start.
 
-### Accessibility Automation
+### M4 Quality Gates
 
-Status: Blocked
+Labels: `milestone:M4-quality-gates`, `status:blocked`
 
-Goal: Add automated accessibility evidence with a stable threshold and failure
-owner.
+Goal: Add enforceable accessibility, smoke, and hardening evidence only after the
+repository has selected thresholds, owners, and failure behavior.
+
+#### Epic: Accessibility Automation
+
+Labels: `milestone:M4-quality-gates`, `epic:accessibility`, `status:blocked`
 
 Blocked by: Accessibility thresholds and failure ownership are not selected.
 
-Done when unblocked:
+Tasks:
+
+- Select the accessibility command, threshold, skip rules, and failure owner.
+- Decide whether the check runs locally, in CI, or both.
+- Add the check only after results are actionable.
+
+Acceptance Criteria:
 
 - The selected command, threshold, skip rules, and failure owner are documented.
 - The check can run locally or in CI with actionable results.
 
-### Promote Repeatable Local Smoke Gaps Into Tests
+#### Epic: Smoke Gap Promotion
 
-Status: Blocked
-
-Goal: Turn repeatable smoke failures into durable component, route, or browser
-coverage.
+Labels: `milestone:M4-quality-gates`, `epic:smoke`, `status:blocked`
 
 Blocked by: No repeatable local smoke gap is currently documented.
 
-Done when unblocked:
+Tasks:
 
-- The gap identifies the affected route, component, workflow, or owner document.
+- Identify the affected route, component, workflow, or owner document.
+- Turn the repeatable failure into component, route, browser, or procedure
+  coverage.
+
+Acceptance Criteria:
+
+- The gap identifies a clear owner.
 - A targeted test or procedure covers the repeatable failure.
 
-### Container Vulnerability And Runtime Posture Thresholds
+#### Epic: Hardening Thresholds
 
-Status: Blocked
+Labels: `milestone:M4-quality-gates`, `epic:hardening`, `status:blocked`
 
-Goal: Decide when container vulnerability, deployment posture, and runtime
-hardening findings should fail release work.
+Blocked by: Hardening thresholds, owners, report formats, and exception rules are
+not selected.
 
-Blocked by: Stable thresholds, owners, and exception rules are not selected.
+Tasks:
 
-Done when unblocked:
+- Decide when container vulnerability, deployment posture, and runtime hardening
+  findings should fail release work.
+- Select SBOM and license inventory format, publication path, and triage
+  expectations.
+- Define any bundle-size or asset-budget thresholds and exception process.
+- Decide whether GitHub Actions SHA pinning is required and how pinned versions
+  stay current.
+- Add custom frontend security lint rules only for repeated issue patterns not
+  covered by selected tools.
+- Upload CI hardening artifacts only after reports are stable enough to retain.
 
-- Thresholds and exception rules are documented.
-- The selected hardening command produces actionable local or CI evidence.
+Acceptance Criteria:
 
-### SBOM And License Reporting
+- Thresholds, owners, exception rules, and report paths are documented before checks
+  become release-blocking.
+- Selected commands produce actionable local or CI evidence.
+- Advisory findings do not accidentally become release-blocking before thresholds
+  are selected.
 
-Status: Blocked
+## Product Non-Goals
 
-Goal: Produce dependency and license inventory evidence for the published container
-package.
-
-Blocked by: Inventory format, publication path, and triage expectations are not
-selected.
-
-Done when unblocked:
-
-- The selected SBOM/license command and output location are documented.
-- Package or workflow changes are covered by the standard validation baseline.
-
-### Bundle-Size Or Asset-Budget Checks
-
-Status: Blocked
-
-Goal: Keep production bundle and asset growth visible before it becomes a review
-problem.
-
-Blocked by: No reviewed threshold exists, and production `dist/` growth has not
-become a repeated issue.
-
-Done when unblocked:
-
-- The selected threshold and exception process are documented.
-- The selected check runs locally or in CI with actionable output.
-
-### GitHub Actions SHA Pinning
-
-Status: Blocked
-
-Goal: Tighten workflow supply-chain posture without creating unmaintained pinned
-versions.
-
-Blocked by: A stricter supply-chain policy or SHA update mechanism is not selected.
-
-Done when unblocked:
-
-- The pinning policy and update mechanism are documented.
-- Workflow validation confirms the pinned actions still run.
-
-### Custom Frontend Security Lint Rules
-
-Status: Blocked
-
-Goal: Catch repeated frontend security issues that selected tools do not cover.
-
-Blocked by: No repeated issue pattern has been identified outside CodeQL, ESLint,
-and existing checks.
-
-Done when unblocked:
-
-- The issue pattern and selected lint behavior are documented.
-- The lint rule has targeted coverage and runs in the standard validation path.
-
-### CI Artifact Upload For Hardening Reports
-
-Status: Blocked
-
-Goal: Preserve useful hardening evidence beyond workflow logs when reports become
-stable enough to keep.
-
-Blocked by: Selected checks do not yet write stable report files worth retaining.
-
-Done when unblocked:
-
-- Report paths, retention expectations, and failure ownership are documented.
-- CI uploads the selected reports without making advisory findings release-blocking
-  by accident.
-
-## Rejected Scope
+These are deliberate product and integration boundaries for the current roadmap.
 
 - Alternate API transports, cross-origin browser support, JWT, and bearer-token
   auth.
