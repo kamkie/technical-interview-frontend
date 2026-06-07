@@ -28,6 +28,12 @@ jobs:
           node-version: 24.x
           cache: npm
 
+      - name: Setup npm
+        shell: bash
+        run: |
+          package_manager=$(node -p "require('./package.json').packageManager")
+          npm install -g "${package_manager}"
+
       - name: Install dependencies
         run: npm ci
 

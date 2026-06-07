@@ -10,12 +10,13 @@ skipped check with the reason.
 | --- | --- |
 | Docs or AI guidance only | `git diff --check` |
 | App source, tests, package scripts, tool config, or workflow behavior | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check` |
+| Dockerfile, Nginx runtime config, or container release workflow | Full baseline, `npm run docker:build`, and a container smoke check when runtime behavior changes; record Docker unavailability explicitly |
 | Backend contract refresh | `./scripts/sync-backend-contract.ps1`, regenerate with `npm run api:types`, then `git diff --check` |
 | API type workflow changes without a contract refresh | `npm run api:types:check`, plus the full baseline if scripts or executable files changed |
 | Backend API integration behavior | Contract artifacts are current, generated types are current, affected tests pass, and the full baseline passes |
 | Session, auth, CSRF, or logout behavior | Relevant tests or smoke evidence for the changed flow, plus the full baseline for executable changes |
 | Browser smoke evidence | Record frontend URL, backend profile when used, flow covered, validation date, and skipped authenticated steps with reasons |
-| Release metadata or release-readiness work | Full baseline for release candidate changes; docs-only release references may use `git diff --check` |
+| Release metadata or release-readiness work | Full baseline plus `npm run docker:build` for release candidate changes; docs-only release references may use `git diff --check` |
 | M13-A hardening selection docs | `git diff --check` |
 | M13 hardening tooling or release validation after M13-B | Full baseline plus `npm run audit:security`; document CodeQL, dependency-review, and Dependabot as CI-owned signals |
 
@@ -51,8 +52,8 @@ After M13-B, hardening validation is:
   dependency graph and GitHub Advanced Security support run in advisory mode and
   should be paired with `npm run audit:security`; the workflow warning names the
   maintainer-side features needed for enforcement
-- Dependabot configuration review for grouped npm runtime, npm tooling/test, and
-  GitHub Actions updates
+- Dependabot configuration review for grouped npm runtime, npm tooling/test,
+  GitHub Actions, and Docker base-image updates
 
 Dependabot PR creation is an operational maintenance signal, not a blocking command
 for every local validation run. A Dependabot security update tied to a high or

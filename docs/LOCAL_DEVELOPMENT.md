@@ -10,6 +10,7 @@ CI-owned hardening signals for the frontend repository.
 - Git
 - Node.js 24.x
 - npm 11.x, matching `package.json` `packageManager` and `engines`
+- Docker, only when building or validating the production container image
 - Optional sibling backend checkout at `..\technical-interview-demo` for contract
   refreshes and local browser smoke
 
@@ -44,6 +45,27 @@ Preview a production build locally:
 npm run preview
 ```
 
+Build the production container image:
+
+```powershell
+npm run docker:build
+```
+
+Run the container locally with same-origin `/api/**` proxying to a backend on the
+host:
+
+```powershell
+docker run --rm -p 8080:8080 `
+  -e FRONTEND_API_UPSTREAM=http://host.docker.internal:8080 `
+  technical-interview-frontend
+```
+
+The container serves the app on `http://127.0.0.1:8080/` and exposes
+`/healthz`. Keep `FRONTEND_API_UPSTREAM` pointed at the sibling backend origin
+without adding browser CORS or token assumptions. On Linux hosts that do not resolve
+`host.docker.internal`, add Docker's host-gateway mapping or use a backend reachable
+from the container network.
+
 ## Canonical Commands
 
 | Task | Command |
@@ -56,6 +78,7 @@ npm run preview
 | Run tests once | `npm test` |
 | Run tests in watch mode | `npm run test:watch` |
 | Build | `npm run build` |
+| Build production container image | `npm run docker:build` |
 | Audit high-or-critical dependency advisories | `npm run audit:security` |
 | Generate API types | `npm run api:types` |
 | Verify API types without rewriting | `npm run api:types:check` |
@@ -100,6 +123,16 @@ git diff --check
 
 Run broader validation when a docs change also modifies package scripts, generated
 files, workflows, source code, or test behavior.
+
+For Dockerfile, Nginx runtime configuration, or release image workflow changes, also
+run:
+
+```powershell
+npm run docker:build
+```
+
+If Docker is unavailable locally, record that explicitly and rely on the tag-driven
+release workflow only after maintainers accept the environment limitation.
 
 ## Backend Contract Refresh
 
@@ -166,16 +199,36 @@ Implemented M13 checks:
   graph, including development dependencies because they participate in build,
   test, and release validation. Failures appear in local command output and CI
   workflow logs.
-- `.github/dependabot.yml` checks npm and GitHub Actions dependencies weekly. It
-  groups npm runtime dependencies, npm tooling/test dependencies, and Actions
-  updates separately. Until the repository owns a stable reviewer team or
+- `.github/dependabot.yml` checks npm, GitHub Actions, and Docker base-image
+  dependencies weekly. It groups npm runtime dependencies, npm tooling/test
+  dependencies, Actions updates, and Docker base-image updates separately. Until
+  the repository owns a stable reviewer team or
   `CODEOWNERS`, review uses the normal maintainer path instead of named reviewers.
+
+## Release And Container Publication
+
+The production image is a static Vite build served by unprivileged Nginx on port
+8080. Runtime browser traffic still targets same-origin `/api/**`; Nginx proxies
+those paths to `FRONTEND_API_UPSTREAM`, which defaults to
+`http://host.docker.internal:8080` for local Docker Desktop use.
+
+The tag-driven `Release` workflow runs for semantic tags matching `v*.*.*` when the
+tagged commit contains `.github/workflows/release.yml`. It runs the full frontend
+validation baseline plus `npm run audit:security`, builds and smoke-tests the
+container image, publishes both `vMAJOR.MINOR.PATCH[-PRERELEASE]` and
+`sha-<12-char-commit>` tags to GitHub Container Registry, signs the immutable digest
+with Cosign, publishes a GitHub provenance attestation, and creates the GitHub
+Release from `CHANGELOG.md` with container package links.
+
+Remote publication is still explicit maintainer work: push `main` and the annotated
+tag only when the release task asks for remote publication. Use the immutable digest
+from the workflow summary for package verification, not a mutable GHCR tag alone.
 
 Deferred hardening candidates:
 
-- SBOM and license reporting: revisit when the frontend publishes a package,
-  deployable artifact, or release process that needs a durable dependency/license
-  inventory.
+- SBOM and license reporting: revisit when maintainers select a durable
+  dependency/license inventory requirement for the published container package
+  beyond the signed image itself.
 - Bundle-size and asset budgets: revisit when the project owns a reviewed size
   threshold or production `dist/` growth becomes a repeated review concern.
 - Authenticated browser smoke automation: revisit when the repository has agreed
@@ -186,6 +239,9 @@ Deferred hardening candidates:
 - CI artifact upload for hardening reports: revisit when a selected check writes a
   stable report file. Until then, use GitHub code scanning, pull-request check
   annotations, and workflow logs as the report locations.
+- Container image vulnerability scanning: revisit now that the repository owns a
+  container artifact, but make it release-blocking only after a stable scanner,
+  report location, triage owner, and exception path are selected.
 - GitHub Actions SHA pinning: revisit when maintainers select a stricter
   supply-chain policy or add automation that keeps pinned SHAs current. M13-B should
   keep trusted versioned actions, explicit permissions, and Dependabot action

@@ -15,6 +15,8 @@ npm run dev
 ```
 
 The dev server binds to `http://127.0.0.1:5173/`.
+Docker is optional for ordinary development and required only when building or
+validating the production container image.
 
 ## Related Workflows
 

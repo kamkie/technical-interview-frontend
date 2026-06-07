@@ -7,9 +7,8 @@ published OpenAPI contract.
 
 ## Status
 
-The repository contains a Vite, React, and TypeScript app for the selected `0.1.0`
-release candidate. Package metadata is already versioned as `0.1.0`, but no
-frontend release tag has been cut yet.
+The repository contains a Vite, React, and TypeScript app for the local `v0.1.0`
+release. The tag has been cut locally but has not been published remotely.
 
 Implemented surface includes session bootstrap, metadata-driven login/logout
 controls, public catalog flows, account profile and language preference flows, admin
@@ -49,6 +48,13 @@ npm run dev
 
 The dev server binds to `http://127.0.0.1:5173/`. Full local workflow and validation
 commands live in [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md).
+
+Build the production container image when validating Docker or release workflow
+changes:
+
+```powershell
+npm run docker:build
+```
 
 ## Backend Contract
 

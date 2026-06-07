@@ -12,14 +12,16 @@ archived in `docs/ROADMAP_ARCHIVE.md`. Released history belongs in `CHANGELOG.md
 | Next target version | Proposed post-`0.1.0` roadmap slice; final version selected before release prep             |
 | Frontend stack      | Vite + React + TypeScript                                                                  |
 | Runtime             | Node.js 24.x, npm 11.x                                                                     |
-| Package metadata    | `package.json` and `package-lock.json` version `0.1.0`; `packageManager` `npm@11.14.1`      |
+| Package metadata    | `package.json` and `package-lock.json` version `0.1.0`; `packageManager` `npm@11.16.0`      |
 | Routing target      | React Router                                                                               |
 | CI target           | GitHub Actions                                                                             |
+| Container artifact  | Docker image built from `Dockerfile`, serving the Vite build through unprivileged Nginx on port 8080 |
+| Release automation  | Tag-driven GitHub Release workflow publishes the GHCR container package, signature, and provenance for future tags that include the workflow |
 | Breaking policy     | Breaking user-facing or backend-contract integration changes require a selected roadmap row |
 | Backend integration | Same-origin `/api/**` browser traffic                                                      |
 | Contract source     | `docs/backend/approved-openapi.json` and `docs/backend/FRONTEND_AI_CONTRACT.md`            |
 | Implemented surface | Session, public catalog, account, admin catalog, admin localization, admin users, operator |
-| Hardening baseline  | ESLint, TypeScript, Vitest, API type freshness, build, whitespace, npm audit, CodeQL, dependency-review, and Dependabot |
+| Hardening baseline  | ESLint, TypeScript, Vitest, API type freshness, build, Docker build, whitespace, npm audit, CodeQL, dependency-review, Dependabot, and release image signing/provenance |
 | Latest release      | Local `v0.1.0` release cut on 2026-06-07; not published remotely                           |
 | Immediate action    | Start M16 contract coverage and post-`0.1.0` scope audit                                    |
 | Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`       |
@@ -29,8 +31,9 @@ login options from session metadata, generates checked OpenAPI TypeScript types,
 routes public catalog state through React Router query strings, supports
 authenticated session/logout and route guards, exposes account profile and language
 preference flows, and implements the selected admin/operator surfaces. Local
-same-origin auth smoke steps, the canonical validation baseline, and selected
-hardening evidence are documented. Completed M0-M15 work and plan records are
+same-origin auth smoke steps, the canonical validation baseline, Docker image build,
+tag-driven GHCR package publication, and selected hardening evidence are documented.
+Completed M0-M15 work and plan records are
 archived in `docs/ROADMAP_ARCHIVE.md`; the next roadmap work starts with M16 and
 then promotes smoke automation or focused UX polish based on that audit.
 
@@ -75,8 +78,11 @@ Status terms:
    agreed, then turn the readiness contract into an executable smoke command.
 4. Exercise the documented local auth smoke workflow against the sibling backend and
    move repeatable gaps into tests or owner docs.
-5. If remote publication is later requested, push `main` and the annotated
-   `v0.1.0` tag, then verify published release notes against `CHANGELOG.md`.
+5. If remote publication of the existing local `v0.1.0` tag is requested, treat it
+   as legacy/manual publication because that tag predates the Release workflow. For
+   future release tags, push `main` and the annotated tag, then monitor the Release
+   workflow and verify the GHCR package, signature/provenance evidence, and
+   published release notes against `CHANGELOG.md`.
 
 ## Pragmatic Smoke Split
 
@@ -126,10 +132,11 @@ Keep deferred:
 
 - Backend operations and deployment runbooks until this frontend owns a deployment
   target or runtime operations responsibility.
-- Backend-specific Gradle, REST Docs, Flyway, restore-drill, image-signing, GHCR,
-  Helm, Kubernetes, and post-deploy smoke procedures.
-- Container image scanning, deployment posture checks, and runtime infrastructure
-  hardening until the frontend has a corresponding artifact or environment.
+- Backend-specific Gradle, REST Docs, Flyway, restore-drill, Helm, Kubernetes, and
+  post-deploy smoke procedures.
+- Container image vulnerability scanning, deployment posture checks, and runtime
+  infrastructure hardening until the frontend has a selected scanner, deployment
+  target, or hosted runtime.
 
 ## Hardening Candidates
 
@@ -140,8 +147,8 @@ triage and skip rules.
 
 Deferred candidates and revisit triggers:
 
-- SBOM and license reporting: revisit when the frontend publishes a package,
-  deployable artifact, or release process requiring dependency/license inventory.
+- SBOM and license reporting: revisit when maintainers select a durable
+  dependency/license inventory requirement for the published container package.
 - Bundle-size or asset-budget checks: revisit when a reviewed threshold exists or
   production `dist/` growth becomes a repeated review issue.
 - Authenticated browser smoke automation: revisit when agreed local credentials,
@@ -155,17 +162,21 @@ Deferred candidates and revisit triggers:
 - CI artifact upload for hardening reports: revisit when a selected check writes
   stable report files; until then, use code-scanning alerts, pull-request check
   annotations, and workflow logs.
+- Container image vulnerability scanning: revisit now that the repository owns a
+  Docker image, but add it as a release-blocking check only after a stable scanner,
+  report location, triage owner, and exception path are selected.
 
-Do not add backend-only hardening gates, container image scans, deployment scans, or
-runtime infrastructure checks until the frontend repository owns a corresponding
-artifact or deployment workflow.
+Do not add backend-only hardening gates, deployment scans, or runtime infrastructure
+checks until the frontend repository owns the corresponding deployment or hosted
+runtime responsibility. Do not make container image scanning release-blocking until
+the scanner and exception workflow are selected.
 
 ## Release Procedure
 
 This section mirrors the backend repository's release model, adapted for a
-frontend-only Vite/npm package. Release work is maintainer-owned and starts only
-after the intended implementation scope is complete, reviewed, and integrated on
-`main`.
+frontend Vite/npm package with a GHCR container artifact. Release work is
+maintainer-owned and starts only after the intended implementation scope is
+complete, reviewed, and integrated on `main`.
 
 ### Versioning And Release Rules
 
@@ -175,6 +186,11 @@ after the intended implementation scope is complete, reviewed, and integrated on
 - Cut releases only from `main` after all intended changes are integrated there.
 - Use annotated tags for intentional releases.
 - Keep `CHANGELOG.md` aligned with the release tag.
+- A pushed semantic tag whose commit contains `.github/workflows/release.yml`
+  triggers the Release workflow, which validates the candidate, builds and
+  smoke-tests the container image, publishes semantic and short-SHA GHCR tags, signs
+  and attests the immutable digest, and creates the GitHub Release with package
+  links.
 - Update `ROADMAP.md` after each release so completed work leaves the active roadmap,
   only active or deferred work remains, and the current baseline reflects the new
   release phase, breaking policy, next target version, and latest release.
@@ -195,6 +211,9 @@ Do not start release preparation until all of these are true:
 - The full frontend validation baseline has passed for the exact candidate:
   `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, and
   `git diff --check`.
+- The production container image build has passed with `npm run docker:build`, or a
+  documented maintainer decision explains why local Docker validation is unavailable
+  before the tag-driven release workflow supplies that evidence.
 - Selected M13 static-analysis and hardening checks have passed for the exact
   candidate, or each exception has a documented owner and release decision.
 - Any required browser smoke or e2e evidence has either passed or is explicitly
@@ -214,7 +233,8 @@ Do not start release preparation until all of these are true:
 5. Archive or close completed concrete plan files only when release cleanup explicitly
    adopts that backend-style plan archive step; do not archive templates or active
    plans.
-6. Re-run validation if release metadata edits made earlier evidence stale.
+6. Re-run validation, including `npm run docker:build`, if release metadata edits
+   made earlier evidence stale.
 7. Commit the release metadata change with `Prepare vMAJOR.MINOR.PATCH[-PRERELEASE]
    release`.
 8. Create an annotated tag named `vMAJOR.MINOR.PATCH[-PRERELEASE]` with a concise
@@ -227,12 +247,15 @@ Do not start release preparation until all of these are true:
 
 - Push `main` and the annotated tag only when the release task explicitly includes
   remote publication.
-- Monitor any tag-triggered CI or release workflow until it finishes; if no release
-  workflow exists yet, create the GitHub Release manually from the annotated tag and
-  `CHANGELOG.md` section.
-- Verify the published release notes match the released changelog section.
-- If a packaged frontend artifact or deployment workflow is later added, extend this
-  procedure with artifact checks before cutting that release.
+- Monitor the tag-triggered Release workflow until it finishes. It must pass the
+  full validation baseline, `npm run audit:security`, container build/smoke, GHCR
+  publication, signature verification, provenance attestation, and GitHub Release
+  creation before publication is considered complete.
+- Verify that the GHCR semantic tag and `sha-<12-char-commit>` tag resolve to the
+  same immutable digest, and use that digest rather than the mutable tag as the
+  authenticity anchor.
+- Verify the published release notes match the released changelog section and include
+  the container image, immutable image, and package page references.
 - After publication, update `ROADMAP.md` again only if publication changes the
   active release phase, next target version, or deferred release automation scope.
 
@@ -242,10 +265,9 @@ Do not start release preparation until all of these are true:
 - Hard-coded OAuth provider paths outside the session bootstrap response.
 - New backend surfaces not yet selected in a roadmap row or spec.
 - Broad visual design work that is not tied to an implemented user flow.
-- Release automation, packaged artifacts, or deployment workflow beyond the manual
-  annotated-tag/GitHub Release procedure until explicitly selected.
-- Container image scanning, deployment posture checks, and runtime infrastructure
-  hardening until the frontend owns a container, deployment target, or hosted runtime.
+- Deployment promotion beyond the GHCR package and GitHub Release workflow.
+- Container image vulnerability scanning, deployment posture checks, and runtime
+  infrastructure hardening until selected as explicit follow-up scope.
 
 ## Roadmap Rules
 

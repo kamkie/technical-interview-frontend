@@ -79,6 +79,7 @@ Canonical npm commands:
 - tests: `npm test`
 - watch tests: `npm run test:watch`
 - production build: `npm run build`
+- container image build: `npm run docker:build`
 - generate API types: `npm run api:types`
 - verify API types: `npm run api:types:check`
 
@@ -109,8 +110,8 @@ Use these focused references for procedure details that do not belong inline her
 - `.agents/references/reviews.md` owns code-review, spec-drift,
   documentation-drift, and security-review triggers.
 - `.agents/references/releases.md` owns release sequencing, version choice,
-  annotated tags, changelog promotion, package checks, and post-release roadmap
-  cleanup.
+  annotated tags, changelog promotion, package checks, GHCR package publication,
+  GitHub Release verification, and post-release roadmap cleanup.
 
 ## Plan Execution Rules
 

@@ -5,11 +5,21 @@ until they are promoted for a release tag.
 
 ## [Unreleased]
 
+### Added
+
+- Added a production Docker image build for the Vite app with an unprivileged Nginx
+  runtime that preserves same-origin `/api/**` proxying.
+- Added a tag-driven GitHub Release workflow that validates the candidate, publishes
+  semantic and immutable GHCR image tags, signs and attests the image digest, and
+  renders release notes with package links from `CHANGELOG.md`.
+
 ### Fixed
 
 - Refreshed the npm 11 lockfile metadata so canonical `npm ci` installs pass in CI.
 - Restored CodeQL and dependency-review workflows with GitHub code-scanning upload
   and high-or-critical dependency-review enforcement.
+- Aligned CI and container builds to install the npm version declared by
+  `package.json` before running clean installs.
 
 ## [0.1.0] - 2026-06-07
 
