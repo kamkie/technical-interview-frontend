@@ -24,7 +24,7 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 
 - Release phase: Post-`0.2.0` maintenance.
 - Next target version: Future maintenance release; final scope and version selected before release prep.
-- Current priority: M-UI-001: Production UI Foundation.
+- Current priority: M-WORKFLOW-001: Workflow Polish.
 - Active product plans: `PLAN-workflow-polish` is checked in for `M-WORKFLOW-001` planning and `PLAN-responsive-layout-smoke-evidence` is checked in for `M-SMOKE-001` planning; execution stays ordered by milestone dependencies.
 - Selection policy: Breaking user-facing or backend-contract integration changes require a selected roadmap item.
 
@@ -41,7 +41,7 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 
 ### M-UI-001: Production UI Foundation
 
-Labels: `type:milestone`, `status:ready`, `plan:PLAN-production-ui-foundation`
+Labels: `type:milestone`, `status:done`, `plan:PLAN-production-ui-foundation`
 
 Plan ID: `PLAN-production-ui-foundation`
 
@@ -49,7 +49,7 @@ Goal: Make the existing frontend read as a production work tool rather than a te
 
 #### E-UI-001: Shell And Navigation
 
-Labels: `type:epic`, `milestone:M-UI-001`, `status:ready`
+Labels: `type:epic`, `milestone:M-UI-001`, `status:done`
 
 Tasks:
 
@@ -67,7 +67,7 @@ Acceptance Criteria:
 
 #### E-UI-002: Route Context And State Basics
 
-Labels: `type:epic`, `milestone:M-UI-001`, `status:ready`
+Labels: `type:epic`, `milestone:M-UI-001`, `status:done`
 
 Tasks:
 
@@ -83,7 +83,7 @@ Acceptance Criteria:
 
 ### M-WORKFLOW-001: Workflow Polish
 
-Labels: `type:milestone`, `status:waiting`, `plan:PLAN-workflow-polish`
+Labels: `type:milestone`, `status:ready`, `plan:PLAN-workflow-polish`
 
 Plan ID: `PLAN-workflow-polish`
 

@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-production-ui-foundation
 
-Status: Approved
+Status: Complete
 
 Workers: 1
 
@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN_production_ui_foundation.md`
 - Approved by: Current user request to implement `PLAN_production_ui_foundation.md`.
 - Approved at: 2026-06-07T23:05:20+02:00
 - Open questions: No blocking product questions identified from current owners.
-- Implementation progress: P1-shell-navigation and P2-route-context-state checkpointed; P3-coverage-hardening complete and pending checkpoint.
+- Implementation progress: Complete; `M-UI-001` implemented, validated, and reconciled.
 
 Use `Status: Draft` while shaping the plan. Use `Status: Approved` only after explicit user approval is recorded. Creating or updating this plan is not implementation approval.
 
@@ -24,6 +24,8 @@ Use `Status: Draft` while shaping the plan. Use `Status: Approved` only after ex
 - 2026-06-07T23:05:20+02:00: Draft -> Approved by Codex; current user request explicitly asked to implement this plan.
 - 2026-06-07T23:18:30+02:00: P1-shell-navigation completed and checkpointed in `598d68c`.
 - 2026-06-07T23:28:42+02:00: P2-route-context-state completed and checkpointed in `d23f676`.
+- 2026-06-07T23:36:14+02:00: P3-coverage-hardening completed and checkpointed in `252d3d5`.
+- 2026-06-07T23:38:14+02:00: P4-final-validation completed; `ROADMAP.md` moved current priority to `M-WORKFLOW-001` and `PLAN_workflow_polish.md` predecessor readiness was unblocked.
 
 ## Goal
 
@@ -91,7 +93,7 @@ Load only the artifacts needed for the current packet. Do not bulk-load generate
 | P1-shell-navigation    | Complete | worker      | None       | 2026-06-07   | Shell, navigation, admin separation, and session controls |
 | P2-route-context-state | Complete | worker      | P1         | 2026-06-07   | Route context and basic loading, empty, and error states  |
 | P3-coverage-hardening  | Complete | worker      | P2         | 2026-06-07   | Focused test coverage and visual/state regression cleanup |
-| P4-final-validation    | Waiting  | Coordinator | P3         | 2026-06-07   | Full validation, review, and milestone handoff            |
+| P4-final-validation    | Complete | Coordinator | P3         | 2026-06-07   | Full validation, review, and milestone handoff            |
 
 Use `Ready` only when the packet can be assigned from the current repository state. Use `Waiting` for normal predecessor dependency. Use `Blocked` only for unresolved product choices, backend contract conflicts, credentials, selected thresholds, failure owners, explicit user acceptance gates, or external state the plan cannot produce.
 
@@ -350,17 +352,17 @@ Expected output:
 
 Result summary:
 
-- Status: complete; checkpoint commit pending.
+- Status: complete.
 - Worker: Codex implementation worker.
 - Changed files or reviewed diff: `src/account/AccountProfile.test.tsx`, `src/catalog/CatalogPanel.test.tsx`, `src/admin/AdminCatalogPage.test.tsx`, `src/admin/AdminLocalizationPage.test.tsx`, `src/admin/AdminUsersPage.test.tsx`, `src/operator/OperatorPage.test.tsx`; this P3 result summary.
 - Validation evidence from `.agents/references/testing.md`: coordinator reran `npm test -- src/account/AccountProfile.test.tsx src/catalog/CatalogPanel.test.tsx src/admin/AdminCatalogPage.test.tsx src/admin/AdminLocalizationPage.test.tsx src/admin/AdminUsersPage.test.tsx src/operator/OperatorPage.test.tsx` (6 files, 54 tests), `npm run lint`, `npm run typecheck` with API type freshness check, `npm test` (15 files, 149 tests), `npm run build`, and `git diff --check`; all passed.
 - Self-review evidence from `.agents/references/reviews.md`: coordinator reviewed test gaps, owner drift, route/query state, admin/operator/account flows, localization branching, and security triggers. P3 added focused coverage for the previously unowned account profile component plus route status summaries and structured empty/error/loading labels; no source, CSS, API client, route guard, generated type, package script, roadmap, or spec edits were made. Assertions preserve API calls, repeated query behavior, CSRF metadata, and localized backend message display without using English backend messages as control-flow rules.
-- Commit: pending coordinator checkpoint; worker did not commit.
+- Commit: `252d3d5` (`test(ui): cover production route states`).
 - Coordinator reconciliation: accepted. The scoped diff is test-only plus this P3 summary, closes the account component coverage gap, and protects P1/P2 visible shell/state behavior without expanding into workflow polish, smoke, accessibility threshold, or responsive-hardening scope.
 - Changelog/docs/spec/roadmap updates: no changelog, spec, docs, or roadmap updates by this worker; only this P3 result summary was updated.
 - Blockers: none.
 - Review risks: browser smoke was not run because P3 changed component tests only and no responsive or visual regression required a local frontend URL. Account component coverage is focused on state presentation, profile rendering, CSRF-backed language updates, and localized error display; broader workflow polish remains out of scope.
-- Handoff notes and next action: create the P3 checkpoint commit, record its identifier, promote P4 to `Ready`, and run final validation.
+- Handoff notes and next action: P4 is ready for final coordinator validation.
 
 ### Task Packet: P4-final-validation
 
@@ -434,17 +436,17 @@ Expected output:
 
 Result summary:
 
-- Status: pending
+- Status: complete.
 - Worker: Coordinator
-- Changed files or reviewed diff:
-- Validation evidence from `.agents/references/testing.md`:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Commit:
-- Coordinator reconciliation:
-- Changelog/docs/spec/roadmap updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Changed files or reviewed diff: `ROADMAP.md`, `.agents/plans/PLAN_workflow_polish.md`, this P4 result summary, P1-P3 checkpoint commits, and final `HEAD~3..HEAD` milestone diff.
+- Validation evidence from `.agents/references/testing.md`: coordinator ran final baseline after roadmap/downstream readiness updates: `npm run lint`, `npm run typecheck` with API type freshness check, `npm test` (15 files, 149 tests), `npm run build`, and `git diff --check`; all passed.
+- Self-review evidence from `.agents/references/reviews.md`: reviewed code risk, spec drift, documentation drift, and security triggers. The completed milestone preserves same-origin `/api/**`, session-cookie auth, metadata-driven login/logout, CSRF, route guards, localized display behavior, pagination, repeated filters/sort, and versioned book updates. No actionable issues remain.
+- Commit: status-doc checkpoint `docs(plans): close production UI foundation`; final handoff records the commit hash.
+- Coordinator reconciliation: accepted. `M-UI-001` acceptance criteria are met: navigation separates catalog/account/operator/admin workflows, admin remains discoverable without invented role gating, session controls stay metadata-driven, diagnostics are secondary, route/page context and structured loading/empty/error states are present, and route/component coverage protects the changed behavior.
+- Changelog/docs/spec/roadmap updates: `ROADMAP.md` marks `M-UI-001`, `E-UI-001`, and `E-UI-002` done and makes `M-WORKFLOW-001` the current ready priority; `.agents/plans/PLAN_workflow_polish.md` records that `M-UI-001` landed and promotes only P0-predecessor-readiness to `Ready`. No changelog or spec updates were needed.
+- Blockers: none.
+- Review risks: browser smoke was skipped because this milestone did not change smoke scripts or canonical smoke procedure; authenticated smoke remains manual because repository owners have not selected repeatable credentials and procedure. `M-UI-001` remains in `ROADMAP.md` as a done item; archive movement can be handled in a later roadmap cleanup if maintainers want completed rows removed from the active roadmap.
+- Handoff notes and next action: hand off the completed `PLAN-production-ui-foundation`; `PLAN_workflow_polish.md` is ready for an explicit future implementation request.
 
 ## Execution Model
 
@@ -464,15 +466,15 @@ Use this checkpoint before starting each dependent task, before a pause or hando
 
 - Resume docs reread:
   - After context compaction, interruption, resume, or handoff, reread the latest user request, `AGENTS.md`, this plan's header, `## Readiness`, `## Long-Run Continuity`, `## Execution Model`, the current task packet and result summary, `.agents/references/plan-execution.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and the next action's exact owner docs or source files.
-- Current task or wave: `P3-coverage-hardening`; checkpoint pending.
-- Completed commits: `598d68c` for P1-shell-navigation; `d23f676` for P2-route-context-state.
-- Plan status and readiness: `Approved`; current user request explicitly authorized implementation.
-- Validation and self-review state: P1 and P2 complete; P3 validation and self-review complete.
-- Coordinator reconciliation state: P1 and P2 scoped diffs accepted and checkpointed; P3 scoped diff accepted and pending checkpoint.
-- Changelog, docs, spec, roadmap, or plan updates: `ROADMAP.md` should reference `PLAN-production-ui-foundation` while the milestone remains active.
-- Blockers or open questions: none currently blocking the P3 checkpoint.
-- Next action: create the P3 checkpoint commit, record it, promote P4 to `Ready`, and run final validation.
-- Context handoff notes: `PLAN_workflow_polish.md` is downstream and waits for `M-UI-001`; do not promote it until this milestone lands and predecessor readiness is recorded.
+- Current task or wave: none; plan completed.
+- Completed commits: `598d68c` for P1-shell-navigation; `d23f676` for P2-route-context-state; `252d3d5` for P3-coverage-hardening.
+- Plan status and readiness: `Complete`; current user request implemented the active plan.
+- Validation and self-review state: P1, P2, P3, and P4 validation and self-review complete.
+- Coordinator reconciliation state: P1, P2, and P3 scoped diffs accepted and checkpointed; P4 final validation accepted and status-doc checkpoint created.
+- Changelog, docs, spec, roadmap, or plan updates: `ROADMAP.md` marks `M-UI-001` done and `M-WORKFLOW-001` ready; `PLAN_workflow_polish.md` P0 is ready for a future explicit implementation request.
+- Blockers or open questions: none.
+- Next action: hand off the completed plan after the P4 status-doc checkpoint.
+- Context handoff notes: `PLAN_workflow_polish.md` remains Draft and should not start P1 until P0 lands under a future explicit implementation request.
 
 ## Execution Graph
 

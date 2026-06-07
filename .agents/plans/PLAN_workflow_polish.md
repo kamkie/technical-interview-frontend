@@ -10,11 +10,11 @@ Filename: `.agents/plans/PLAN_workflow_polish.md`
 
 ## Readiness
 
-- Plan readiness: Not ready for execution; `M-WORKFLOW-001` depends on `M-UI-001`.
+- Plan readiness: Ready for an explicit implementation request; `M-UI-001` is complete and the predecessor-readiness packet is ready.
 - Approved by:
 - Approved at:
 - Open questions: No.
-- Implementation progress: Not started; all task packets remain `Waiting`.
+- Implementation progress: Not started; P0-predecessor-readiness is `Ready` and implementation packets remain `Waiting`.
 
 Use this plan after `M-UI-001` lands and the predecessor readiness packet confirms shell navigation, route context, and session-control behavior are stable enough for workflow polish. Creating or updating this plan is not implementation approval.
 
@@ -22,6 +22,7 @@ Use this plan after `M-UI-001` lands and the predecessor readiness packet confir
 
 - 2026-06-07T00:00:00+02:00: none -> Draft by Codex; initial active workflow polish plan created from `M-WORKFLOW-001`.
 - 2026-06-07T22:53:57+02:00: legacy Waiting -> Draft by Codex; migrated to task-packet template and preserved the `M-UI-001` dependency.
+- 2026-06-07T23:36:14+02:00: predecessor `M-UI-001` completed by `PLAN-production-ui-foundation`; P0 promoted to `Ready`.
 
 ## Goal
 
@@ -86,7 +87,7 @@ Load only the artifacts needed for the assigned packet. Do not bulk-load generat
 
 | Packet                          | Status  | Owner       | Depends On            | Last Updated | Notes                                                                  |
 | ------------------------------- | ------- | ----------- | --------------------- | ------------ | ---------------------------------------------------------------------- |
-| P0-predecessor-readiness        | Waiting | Coordinator | `M-UI-001` completion | 2026-06-07   | Confirm shell/navigation and route context are stable before execution |
+| P0-predecessor-readiness        | Ready   | Coordinator | `M-UI-001` completion | 2026-06-07   | Confirm shell/navigation and route context are stable before execution |
 | P1-state-semantics              | Waiting | Worker      | P0                    | 2026-06-07   | Covers `E-STATE-001`                                                   |
 | P2-visual-hierarchy             | Waiting | Worker      | P1                    | 2026-06-07   | Covers `E-WORKFLOW-001`                                                |
 | P3-catalog-workflows            | Waiting | Worker      | P2                    | 2026-06-07   | Covers `E-CATALOG-001`                                                 |
@@ -623,15 +624,15 @@ Use this checkpoint before starting each dependent packet, before a pause or han
 
 - Resume docs reread:
   - After context compaction, interruption, resume, or handoff, reread the latest user request, `AGENTS.md`, this plan's header, `## Readiness`, `## Long-Run Continuity`, `## Execution Model`, the current task packet and result summary, `.agents/references/plan-execution.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and the next action's exact owner docs or source files.
-- Current task or wave: none; plan is waiting for `M-UI-001`.
+- Current task or wave: none; P0-predecessor-readiness is ready for a future workflow-polish implementation request.
 - Completed commits: none for implementation packets.
-- Plan status and readiness: `Draft`; waiting for `M-UI-001`.
+- Plan status and readiness: `Draft`; ready for an explicit implementation request after `M-UI-001`.
 - Validation and self-review state: authoring validation passed on 2026-06-07; implementation validation not started.
 - Coordinator reconciliation state: not started.
 - Changelog, docs, spec, roadmap, or plan updates: this plan migrated to task-packet template on 2026-06-07.
-- Blockers or open questions: roadmap dependency on `M-UI-001`.
-- Next action: run P0 after `M-UI-001` lands.
-- Context handoff notes: do not start P1 while `M-UI-001` remains the active roadmap priority.
+- Blockers or open questions: none currently blocking P0.
+- Next action: run P0 when the user asks to implement `PLAN_workflow_polish.md`.
+- Context handoff notes: do not start P1 until P0 lands, validates, and any required checkpoint is complete.
 
 ## Execution Graph
 
