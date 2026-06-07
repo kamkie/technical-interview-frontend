@@ -23,6 +23,14 @@ Run `git status --short` before any file edit.
 - If a prior dirty-worktree observation conflicts with the current status, treat the current status as authoritative and reconcile with `git diff`, `git diff --cached`, recent commit history, or reflog only as needed.
 - Do not revert, delete, overwrite, normalize, or clean up user-owned changes unless the user explicitly asks for that exact recovery action.
 
+## Branch And Worktree Requests
+
+When a user names a branch or Git worktree as the work target:
+
+- Do not use `main`, the current branch, or the current worktree by default.
+- Use or create a non-current, non-`main` branch or linked worktree.
+- Use `main`, the current branch, or the current worktree only when the user explicitly asks for that target.
+
 ## Execution Loop
 
 Use this loop for ordinary tasks:
