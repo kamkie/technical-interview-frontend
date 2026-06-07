@@ -2,19 +2,21 @@
 
 Plan-ID: PLAN-responsive-layout-smoke-evidence
 
-Status: Draft
+Status: In Progress
 
-Workers: 1
+Workers: 1 implementation lane
+
+Verifier worker: one dedicated read-only clean verifier for P2-P5 evidence.
 
 Filename: `.agents/plans/PLAN_responsive_layout_smoke_evidence.md`
 
 ## Readiness
 
-- Plan readiness: Ready for an explicit implementation request; `M-WORKFLOW-001` is complete and the predecessor-readiness packet is ready.
+- Plan readiness: In progress; `M-WORKFLOW-001` is complete and P0 confirmed predecessor readiness.
 - Approved by:
 - Approved at:
 - Open questions: No blocking product questions identified from current owners.
-- Implementation progress: Not started; P0-predecessor-readiness is `Ready` and downstream packets remain `Waiting`.
+- Implementation progress: P0-predecessor-readiness is `Complete`; P1-evidence-target-selection is `Ready` and downstream packets remain `Waiting`.
 
 Use this plan after `M-WORKFLOW-001` lands and the predecessor readiness packet confirms workflow layout, route context, table actions, and session controls are stable enough for responsive and smoke evidence work. Creating or updating this plan is not implementation approval.
 
@@ -22,6 +24,8 @@ Use this plan after `M-WORKFLOW-001` lands and the predecessor readiness packet 
 
 - 2026-06-07T23:06:58+02:00: none -> Draft by Codex; plan created for `M-SMOKE-001`.
 - 2026-06-08T00:53:32+02:00: predecessor `M-WORKFLOW-001` completed by `PLAN-workflow-polish`; P0 promoted to `Ready`.
+- 2026-06-08T01:04:56+02:00: Draft -> In Progress by Codex; P0 confirmed predecessor readiness and promoted P1 to `Ready`.
+- 2026-06-08T01:08:20+02:00: verifier worker declared for P2-P5 review, validation, and final evidence.
 
 ## Goal
 
@@ -90,16 +94,25 @@ Load only the artifacts needed for the current packet. Do not bulk-load generate
 - Assign explicit write scopes to workers and keep unrelated user or parallel-worker changes intact.
 - Commit only when the current request and plan checkpoint authorize it, and keep unrelated files out of the checkpoint commit.
 
+## Clean Verifier
+
+- Declared verifier: one dedicated read-only clean verifier for this plan execution.
+- Scope: P2-P4 integrated diff review, responsive/browser evidence review, smoke evidence review, validation confirmation, and P5 final owner-drift and milestone-close evidence.
+- Context: start without full thread history or forked conversation context; send compact prompts with the current ref or commit, worktree state, diff scope, commands, review scope, stop conditions, and output format.
+- Write scope: read-only; the coordinator records compact verifier summaries in this plan and owns any roadmap or owner-document edits.
+- Stale-state guard: before each review or validation pass, the verifier must confirm the current worktree state, ref or commit, and diff it can see. Do not use verifier evidence when it cannot see the current integrated state.
+- Coordinator authority: the coordinator owns dispatch, dirty-worktree protection, shared-file sequencing, resolving verifier findings, integration acceptance, plan/status/roadmap edits, checkpoint commits, and final handoff.
+
 ## Progress Tracker
 
-| Packet                          | Status  | Owner       | Depends On       | Last Updated | Notes                                                           |
-| ------------------------------- | ------- | ----------- | ---------------- | ------------ | --------------------------------------------------------------- |
-| P0-predecessor-readiness        | Ready   | Coordinator | `M-WORKFLOW-001` | 2026-06-08   | Confirm workflow polish is complete before execution            |
-| P1-evidence-target-selection    | Waiting | Coordinator | P0               | 2026-06-07   | Select viewport, route, anonymous smoke, and auth smoke targets |
-| P2-responsive-layout-coverage   | Waiting | Worker      | P1               | 2026-06-07   | Covers `E-RESP-001`                                             |
-| P3-anonymous-smoke-evidence     | Waiting | Worker      | P2               | 2026-06-07   | Covers `E-SMOKE-002`                                            |
-| P4-authenticated-smoke-evidence | Waiting | Worker      | P3               | 2026-06-07   | Covers `E-SMOKE-001`                                            |
-| P5-final-review-milestone-close | Waiting | Coordinator | P4               | 2026-06-07   | Confirm validation, smoke evidence, owner drift, and closeout   |
+| Packet                          | Status   | Owner       | Depends On       | Last Updated | Notes                                                           |
+| ------------------------------- | -------- | ----------- | ---------------- | ------------ | --------------------------------------------------------------- |
+| P0-predecessor-readiness        | Complete | Coordinator | `M-WORKFLOW-001` | 2026-06-08   | Confirmed workflow polish is complete before execution          |
+| P1-evidence-target-selection    | Ready    | Coordinator | P0               | 2026-06-08   | Select viewport, route, anonymous smoke, and auth smoke targets |
+| P2-responsive-layout-coverage   | Waiting  | Worker      | P1               | 2026-06-07   | Covers `E-RESP-001`                                             |
+| P3-anonymous-smoke-evidence     | Waiting  | Worker      | P2               | 2026-06-07   | Covers `E-SMOKE-002`                                            |
+| P4-authenticated-smoke-evidence | Waiting  | Worker      | P3               | 2026-06-07   | Covers `E-SMOKE-001`                                            |
+| P5-final-review-milestone-close | Waiting  | Coordinator | P4               | 2026-06-07   | Confirm validation, smoke evidence, owner drift, and closeout   |
 
 Use `Waiting` for these packets until `M-WORKFLOW-001` is complete and predecessor readiness has been recorded. Do not promote downstream packets to `Ready` until their predecessor lands, validates, and any required checkpoint is complete.
 
@@ -162,17 +175,17 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence from `.agents/references/testing.md`:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Commit:
-- Coordinator reconciliation:
-- Changelog/docs/spec/roadmap updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: complete
+- Worker: Coordinator-owned; no implementation worker required.
+- Changed files or reviewed diff: Reviewed `ROADMAP.md` `M-WORKFLOW-001` and `M-SMOKE-001`, `docs/DESIGN.md` responsive and smoke direction, `PLAN-workflow-polish` current worktree state, and completed closeout commit `3e13dc7`; updated this plan's readiness, progress tracker, P0 summary, execution ledger, and continuity notes.
+- Validation evidence from `.agents/references/testing.md`: Passed `npm run lint:markdown`; passed `git diff --check`.
+- Self-review evidence from `.agents/references/reviews.md`: Checked documentation drift across roadmap, design, and active-plan owners; no backend contract, source, auth, CSRF, session, or smoke behavior changed.
+- Commit: No commit requested or created.
+- Coordinator reconciliation: `M-WORKFLOW-001` is `done` in `ROADMAP.md`, `M-SMOKE-001` is `ready`, and P1 can select responsive and smoke targets.
+- Changelog/docs/spec/roadmap updates: No `ROADMAP.md`, changelog, spec, or owner-doc update needed.
+- Blockers: None for P1 target selection.
+- Review risks: `.agents/plans/PLAN_workflow_polish.md` has a pre-existing unresolved conflict outside this plan's write scope; use `ROADMAP.md` and commit `3e13dc7` as the compact predecessor evidence until that conflict is resolved.
+- Handoff notes and next action: Run P1-evidence-target-selection next; keep P2 through P5 waiting until P1 records selected targets and validation evidence.
 
 ### Task Packet: P1-evidence-target-selection
 
@@ -307,6 +320,7 @@ Expected output:
 - Browser viewport evidence summary with URL, widths, routes, and notable findings.
 - Validation evidence from `.agents/references/testing.md`.
 - Self-review evidence from `.agents/references/reviews.md`.
+- Clean verifier evidence.
 - Commit identifier when a commit checkpoint is authorized and completed.
 - Coordinator reconciliation, blockers, review risks, and next action.
 
@@ -318,6 +332,7 @@ Result summary:
 - Browser responsive evidence:
 - Validation evidence from `.agents/references/testing.md`:
 - Self-review evidence from `.agents/references/reviews.md`:
+- Clean verifier evidence:
 - Commit:
 - Coordinator reconciliation:
 - Changelog/docs/spec/roadmap updates:
@@ -384,6 +399,7 @@ Expected output:
 - Smoke evidence summary with frontend URL, selected routes, backend profile or availability, flow covered, validation date, and skipped steps.
 - Validation evidence from `.agents/references/testing.md`.
 - Self-review evidence from `.agents/references/reviews.md`.
+- Clean verifier evidence.
 - Commit identifier when a commit checkpoint is authorized and completed.
 - Coordinator reconciliation, blockers, review risks, and next action.
 
@@ -395,6 +411,7 @@ Result summary:
 - Anonymous smoke evidence:
 - Validation evidence from `.agents/references/testing.md`:
 - Self-review evidence from `.agents/references/reviews.md`:
+- Clean verifier evidence:
 - Commit:
 - Coordinator reconciliation:
 - Changelog/docs/spec/roadmap updates:
@@ -464,6 +481,7 @@ Expected output:
 - Authenticated evidence summary with frontend URL, backend profile, flow covered, validation date, and skipped steps.
 - Validation evidence from `.agents/references/testing.md`.
 - Self-review evidence from `.agents/references/reviews.md`.
+- Clean verifier evidence.
 - Commit identifier when a commit checkpoint is authorized and completed.
 - Coordinator reconciliation, blockers, review risks, and next action.
 
@@ -475,6 +493,7 @@ Result summary:
 - Authenticated smoke evidence:
 - Validation evidence from `.agents/references/testing.md`:
 - Self-review evidence from `.agents/references/reviews.md`:
+- Clean verifier evidence:
 - Commit:
 - Coordinator reconciliation:
 - Changelog/docs/spec/roadmap updates:
@@ -551,6 +570,7 @@ Result summary:
 - Final validation evidence:
 - Final smoke evidence:
 - Self-review evidence from `.agents/references/reviews.md`:
+- Clean verifier evidence:
 - Commit:
 - Coordinator reconciliation:
 - Changelog/docs/spec/roadmap updates:
@@ -560,14 +580,14 @@ Result summary:
 
 ## Execution Model
 
-- `Workers: 1` for sequential execution.
-- Active-plan implementation uses a coordinator plus one fresh implementation worker subagent per repository-changing task packet.
+- `Workers: 1 implementation lane`; this is a sequential plan with one dedicated read-only verifier worker.
+- Active-plan implementation uses a coordinator plus one fresh implementation worker subagent per repository-changing task packet and a separate clean verifier worker for P2-P5 evidence.
 - Coordinator-owned exploration and review packets may update this plan and authorized status documents directly.
-- If required implementation worker subagents are unavailable, unauthorized by the active tool contract, or explicitly forbidden, stop before implementation and report the blocker instead of running the task locally.
+- If required implementation worker subagents or the declared clean verifier are unavailable, unauthorized by the active tool contract, or explicitly forbidden, stop before implementation or verification and report the blocker instead of running that task locally.
 - Dispatch only the plan header or readiness summary, execution graph, assigned task packet, and explicitly named governing artifacts or source files. Do not dispatch the full approved plan by default.
 - Before write delegation, check current worktree state, reserve explicit write scopes, and keep unrelated user or parallel-worker changes intact.
-- Each repository-changing implementation packet must be implemented, validated through `.agents/references/testing.md`, self-reviewed through `.agents/references/reviews.md`, and committed when the plan checkpoint and current request authorize a commit before the next dependent packet starts.
-- Before starting the next dependent task, confirm every predecessor result summary records implementation status, validation evidence, self-review evidence, and any required commit identifier.
+- Each repository-changing implementation packet must be implemented, validated through `.agents/references/testing.md`, self-reviewed through `.agents/references/reviews.md`, reviewed or validated by the clean verifier, and committed when the plan checkpoint and current request authorize a commit before the next dependent packet starts.
+- Before starting the next dependent task, confirm every predecessor result summary records implementation status, validation evidence, self-review evidence, clean verifier evidence, and any required commit identifier.
 - Keep compact evidence in the plan. Do not paste raw test output, raw worker transcripts, browser logs, screenshots, or bulky run logs.
 
 ## Long-Run Continuity
@@ -576,14 +596,14 @@ Use this checkpoint before starting each dependent task, before a pause or hando
 
 - Resume docs reread:
   - After context compaction, interruption, resume, or handoff, reread the latest user request, `AGENTS.md`, this plan's header, `## Readiness`, `## Long-Run Continuity`, `## Execution Model`, the current task packet and result summary, `.agents/references/plan-execution.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and the next action's exact owner docs or source files.
-- Current task or wave: P0-predecessor-readiness is ready after `M-WORKFLOW-001` completion.
+- Current task or wave: P1-evidence-target-selection is ready after P0 confirmed `M-WORKFLOW-001` completion.
 - Completed commits: none.
-- Plan status and readiness: Draft; ready for an explicit implementation request after `M-WORKFLOW-001`.
-- Validation and self-review state: plan creation should run `npm run lint:markdown` and `git diff --check`.
-- Coordinator reconciliation state: not started.
-- Changelog, docs, spec, roadmap, or plan updates: this plan is the active coordination artifact; `ROADMAP.md` links to `PLAN-responsive-layout-smoke-evidence`.
+- Plan status and readiness: In Progress; P0 complete and P1 ready.
+- Validation and self-review state: P0 coordinator update passed docs-only validation with `npm run lint:markdown` and `git diff --check`; clean verifier is declared but no verifier evidence has been accepted yet.
+- Coordinator reconciliation state: P0 reconciliation complete; P1 target selection is next.
+- Changelog, docs, spec, roadmap, or plan updates: this plan is the active coordination artifact; `ROADMAP.md` links to `PLAN-responsive-layout-smoke-evidence`; no roadmap edit was needed for P0.
 - Blockers or open questions: no blocking product questions.
-- Next action: run P0-predecessor-readiness when implementation is explicitly requested.
+- Next action: run P1-evidence-target-selection.
 - Context handoff notes: keep authenticated smoke metadata-driven from `GET /api/session`; do not promote smoke gaps to quality gates without `M-QUALITY-001` owner decisions.
 
 ## Execution Graph
@@ -595,32 +615,41 @@ sequenceDiagram
     participant W1 as Worker
     participant W2 as Worker
     participant W3 as Worker
+    participant V as Verifier
 
     O-->>O: P0-predecessor-readiness waits on M-WORKFLOW-001 and P1 target selection is coordinator-owned
 
     O->>W1: Planned dispatch P2-responsive-layout-coverage: context, write scope, validation, stop conditions
     W1-->>O: Planned return P2-responsive-layout-coverage: diff, validation, skipped checks, risks
-    O-->>O: Reconcile P2, run validation, update result summary, checkpoint when authorized
+    O->>V: Verify current P2 integration: ref, worktree, diff, browser evidence, validation, review scope
+    V-->>O: Return P2 verifier findings, confirmed commands, skipped checks, and risks
+    O-->>O: Reconcile P2, accept evidence, update result summary, checkpoint when authorized
 
     O->>W2: Planned dispatch P3-anonymous-smoke-evidence: context, write scope, validation, stop conditions
     W2-->>O: Planned return P3-anonymous-smoke-evidence: diff, validation, skipped checks, risks
-    O-->>O: Reconcile P3, run validation, update result summary, checkpoint when authorized
+    O->>V: Verify current P3 integration: ref, worktree, diff, smoke evidence, validation, review scope
+    V-->>O: Return P3 verifier findings, confirmed commands, skipped checks, and risks
+    O-->>O: Reconcile P3, accept evidence, update result summary, checkpoint when authorized
 
     O->>W3: Planned dispatch P4-authenticated-smoke-evidence: context, write scope, validation, stop conditions
     W3-->>O: Planned return P4-authenticated-smoke-evidence: diff, validation, skipped checks, risks
-    O-->>O: Reconcile P4, run validation, update result summary, checkpoint when authorized
+    O->>V: Verify current P4 integration: ref, worktree, diff, auth smoke evidence, validation, review scope
+    V-->>O: Return P4 verifier findings, confirmed commands, skipped checks, and risks
+    O-->>O: Reconcile P4, accept evidence, update result summary, checkpoint when authorized
 
+    O->>V: Verify P5 final integrated state, owner alignment, baseline evidence, smoke evidence, and risks
+    V-->>O: Return P5 final verifier evidence and findings
     O-->>O: Run P5-final-review-milestone-close after P4 lands and checkpoints
 ```
 
-| Packet                          | State   | Dispatch                         | Return  | Orchestrator closeout                     | Checkpoint / next action                  |
-| ------------------------------- | ------- | -------------------------------- | ------- | ----------------------------------------- | ----------------------------------------- |
-| P0-predecessor-readiness        | Ready   | Coordinator-owned; no worker     | N/A     | Pending                                   | Run when implementation is requested      |
-| P1-evidence-target-selection    | Waiting | Coordinator-owned after P0 lands | N/A     | Pending target selection                  | Promote P2 after targets are recorded     |
-| P2-responsive-layout-coverage   | Waiting | Planned to Worker 1 after P1     | Pending | Pending                                   | Checkpoint after validation if allowed    |
-| P3-anonymous-smoke-evidence     | Waiting | Planned to Worker 2 after P2     | Pending | Pending                                   | Checkpoint after validation if allowed    |
-| P4-authenticated-smoke-evidence | Waiting | Planned to Worker 3 after P3     | Pending | Pending                                   | Checkpoint after validation if allowed    |
-| P5-final-review-milestone-close | Waiting | Coordinator-owned after P4 lands | N/A     | Pending final validation and owner review | Close milestone when evidence is complete |
+| Packet                          | State    | Dispatch                         | Return  | Orchestrator closeout                            | Checkpoint / next action                  |
+| ------------------------------- | -------- | -------------------------------- | ------- | ------------------------------------------------ | ----------------------------------------- |
+| P0-predecessor-readiness        | Complete | Coordinator-owned; no worker     | N/A     | Reconciled predecessor readiness                 | No implementation commit needed           |
+| P1-evidence-target-selection    | Ready    | Coordinator-owned after P0 lands | N/A     | Pending target selection                         | Promote P2 after targets are recorded     |
+| P2-responsive-layout-coverage   | Waiting  | Planned to Worker 1 after P1     | Pending | Pending verifier evidence and acceptance         | Checkpoint after validation if allowed    |
+| P3-anonymous-smoke-evidence     | Waiting  | Planned to Worker 2 after P2     | Pending | Pending verifier evidence and acceptance         | Checkpoint after validation if allowed    |
+| P4-authenticated-smoke-evidence | Waiting  | Planned to Worker 3 after P3     | Pending | Pending verifier evidence and acceptance         | Checkpoint after validation if allowed    |
+| P5-final-review-milestone-close | Waiting  | Coordinator-owned after P4 lands | N/A     | Pending final verifier evidence and owner review | Close milestone when evidence is complete |
 
 ## Validation Plan
 
@@ -651,5 +680,6 @@ sequenceDiagram
 
 - Start with P0 only after `M-WORKFLOW-001` is complete.
 - Keep all downstream packets `Waiting` until their dependencies land, validate, and record compact result summaries.
+- Dispatch the dedicated clean verifier after P2, P3, P4, and before P5 closeout; do not accept verifier evidence unless it confirms the current worktree/ref/diff.
 - Use `docs/LOCAL_AUTH_SMOKE.md` as the authenticated smoke owner unless P4 creates a canonical command and updates `docs/LOCAL_DEVELOPMENT.md` accordingly.
 - Keep `M-QUALITY-001` out of scope; this plan produces responsive and smoke evidence but does not set accessibility, hardening, or smoke-gap promotion thresholds.
