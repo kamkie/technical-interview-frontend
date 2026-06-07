@@ -52,8 +52,8 @@ Labels: `type:epic`, `milestone:M-UI-001`, `status:ready`
 Tasks:
 
 - T-UI-001: Rework primary navigation around catalog, account, and operator workflows.
-- T-UI-002: Move admin workflows into a distinct menu or section.
 - T-UI-003: Make authentication and session controls user-facing first.
+- T-UI-002: Move admin workflows into a distinct menu or section.
 - T-UI-004: Keep diagnostics secondary to everyday user actions.
 
 Acceptance Criteria:
@@ -87,21 +87,6 @@ Goal: Improve daily catalog, account, admin, and operator workflows after the pr
 
 Depends on: M-UI-001.
 
-#### E-WORKFLOW-001: Visual Hierarchy
-
-Labels: `type:epic`, `milestone:M-WORKFLOW-001`, `status:waiting`
-
-Tasks:
-
-- T-WORKFLOW-001: Establish consistent page headers, content bands, and action placement.
-- T-WORKFLOW-002: Reduce nested cards and competing visual weight.
-- T-WORKFLOW-003: Keep state and primary actions visible without adding backend behavior.
-
-Acceptance Criteria:
-
-- Main catalog, account, admin, and operator pages have clear visual hierarchy.
-- Route/component coverage protects unchanged backend-backed flows.
-
 #### E-STATE-001: State Semantics
 
 Labels: `type:epic`, `milestone:M-WORKFLOW-001`, `status:waiting`
@@ -116,6 +101,21 @@ Acceptance Criteria:
 
 - Shared state patterns are predictable across user, admin, and operator surfaces.
 - Tests cover state handling without depending on localized English strings.
+
+#### E-WORKFLOW-001: Visual Hierarchy
+
+Labels: `type:epic`, `milestone:M-WORKFLOW-001`, `status:waiting`
+
+Tasks:
+
+- T-WORKFLOW-001: Establish consistent page headers, content bands, and action placement.
+- T-WORKFLOW-002: Reduce nested cards and competing visual weight.
+- T-WORKFLOW-003: Keep state and primary actions visible without adding backend behavior.
+
+Acceptance Criteria:
+
+- Main catalog, account, admin, and operator pages have clear visual hierarchy.
+- Route/component coverage protects unchanged backend-backed flows.
 
 #### E-CATALOG-001: Catalog Workflows
 
@@ -186,21 +186,6 @@ Acceptance Criteria:
 - Responsive route/component or browser coverage protects selected layouts.
 - Tables, filters, action groups, and auth controls remain coherent on mobile and desktop widths.
 
-#### E-SMOKE-001: Authenticated Browser Smoke
-
-Labels: `type:epic`, `milestone:M-SMOKE-001`, `status:waiting`
-
-Tasks:
-
-- T-SMOKE-001: Add repeatable smoke evidence for session bootstrap, authenticated route access, and logout.
-- T-SMOKE-002: Extend beyond fake-OAuth readiness only where local procedure owners can support repeatable evidence.
-- T-SMOKE-003: Record the frontend URL, backend profile, flow covered, and any skipped authenticated steps.
-
-Acceptance Criteria:
-
-- A documented smoke command or procedure covers the selected authenticated flow.
-- Failures point to an owned workflow, route, or backend-contract issue.
-
 #### E-SMOKE-002: Anonymous Browser Smoke
 
 Labels: `type:epic`, `milestone:M-SMOKE-001`, `status:waiting`
@@ -215,6 +200,21 @@ Acceptance Criteria:
 
 - A documented smoke command or procedure covers the selected anonymous flow.
 - The smoke result identifies the frontend URL and route coverage.
+
+#### E-SMOKE-001: Authenticated Browser Smoke
+
+Labels: `type:epic`, `milestone:M-SMOKE-001`, `status:waiting`
+
+Tasks:
+
+- T-SMOKE-001: Add repeatable smoke evidence for session bootstrap, authenticated route access, and logout.
+- T-SMOKE-002: Extend beyond fake-OAuth readiness only where local procedure owners can support repeatable evidence.
+- T-SMOKE-003: Record the frontend URL, backend profile, flow covered, and any skipped authenticated steps.
+
+Acceptance Criteria:
+
+- A documented smoke command or procedure covers the selected authenticated flow.
+- Failures point to an owned workflow, route, or backend-contract issue.
 
 ## Blocked Backlog
 
