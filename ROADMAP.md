@@ -6,26 +6,26 @@ archived in `docs/ROADMAP_ARCHIVE.md`. Released history belongs in `CHANGELOG.md
 
 ## Current Baseline
 
-| Field               | Current                                                                                    |
-|---------------------|--------------------------------------------------------------------------------------------|
-| Release phase       | Published `0.2.0` release; post-release maintenance                                       |
-| Next target version | Future post-`0.2.0` public catalog and app shell visual design slice; final version selected before release prep |
-| Frontend stack      | Vite + React + TypeScript                                                                  |
-| Runtime             | Node.js 24.x, npm 11.x                                                                     |
-| Package metadata    | `package.json` and `package-lock.json` version `0.2.0`; `packageManager` `npm@11.16.0`      |
-| Routing target      | React Router                                                                               |
-| CI target           | GitHub Actions                                                                             |
-| Container artifact  | Docker image built from `Dockerfile`, serving the Vite build through unprivileged Nginx on port 8080 |
-| Infrastructure refs | Kustomize and Helm references under `infra/` for the frontend container and same-origin `/api/**` proxy |
-| Release automation  | Tag-driven GitHub Release workflow publishes the GHCR container package, signature, and provenance for future tags that include the workflow |
-| Breaking policy     | Breaking user-facing or backend-contract integration changes require a selected roadmap row |
-| Backend integration | Same-origin `/api/**` browser traffic                                                      |
-| Contract source     | `docs/backend/approved-openapi.json` and `docs/backend/FRONTEND_AI_CONTRACT.md`            |
-| Implemented surface | Session, public catalog, account, admin catalog, admin localization, admin users, operator, app theme preference |
+| Field               | Current                                                                                                                                                                                                                                                                        |
+|---------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Release phase       | Published `0.2.0` release; post-release maintenance                                                                                                                                                                                                                            |
+| Next target version | Future post-`0.2.0` public catalog and app shell visual design slice; final version selected before release prep                                                                                                                                                               |
+| Frontend stack      | Vite + React + TypeScript                                                                                                                                                                                                                                                      |
+| Runtime             | Node.js 24.x, npm 11.x                                                                                                                                                                                                                                                         |
+| Package metadata    | `package.json` and `package-lock.json` version `0.2.0`; `packageManager` `npm@11.16.0`                                                                                                                                                                                         |
+| Routing target      | React Router                                                                                                                                                                                                                                                                   |
+| CI target           | GitHub Actions                                                                                                                                                                                                                                                                 |
+| Container artifact  | Docker image built from `Dockerfile`, serving the Vite build through unprivileged Nginx on port 8080                                                                                                                                                                           |
+| Infrastructure refs | Kustomize and Helm references under `infra/` for the frontend container and same-origin `/api/**` proxy                                                                                                                                                                        |
+| Release automation  | Tag-driven GitHub Release workflow publishes the GHCR container package, signature, and provenance for future tags that include the workflow                                                                                                                                   |
+| Breaking policy     | Breaking user-facing or backend-contract integration changes require a selected roadmap row                                                                                                                                                                                    |
+| Backend integration | Same-origin `/api/**` browser traffic                                                                                                                                                                                                                                          |
+| Contract source     | `docs/backend/approved-openapi.json` and `docs/backend/FRONTEND_AI_CONTRACT.md`                                                                                                                                                                                                |
+| Implemented surface | Session, public catalog, account, admin catalog, admin localization, admin users, operator, app theme preference                                                                                                                                                               |
 | Hardening baseline  | ESLint, TypeScript, Vitest, API type freshness, build, Codecov coverage/test/bundle uploads, Docker build, whitespace, npm audit, advisory M20 runtime/Nginx, rendered-manifest, and Trivy checks, CodeQL, dependency-review, Dependabot, and release image signing/provenance |
-| Latest release      | Published `v0.2.0` on 2026-06-07 with GHCR image, signature, provenance, and GitHub Release notes |
-| Immediate action    | Implement the selected M25 public catalog and app shell visual design pass                    |
-| Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`       |
+| Latest release      | Published `v0.2.0` on 2026-06-07 with GHCR image, signature, provenance, and GitHub Release notes                                                                                                                                                                              |
+| Immediate action    | Implement the selected M25 public catalog and app shell visual design pass                                                                                                                                                                                                     |
+| Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`                                                                                                                                                                                           |
 
 The app currently bootstraps browser session state with `GET /api/session`, renders
 login options from session metadata, generates checked OpenAPI TypeScript types,
