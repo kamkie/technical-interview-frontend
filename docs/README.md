@@ -10,7 +10,7 @@ repository.
 | Local setup, commands, CI reproduction, troubleshooting | [`docs/LOCAL_DEVELOPMENT.md`](LOCAL_DEVELOPMENT.md) |
 | Local same-origin auth smoke workflow | [`docs/LOCAL_AUTH_SMOKE.md`](LOCAL_AUTH_SMOKE.md) |
 | Working with AI agents | [`docs/WORKING_WITH_AI.md`](WORKING_WITH_AI.md) |
-| Current roadmap, release state, deferred scope | [`ROADMAP.md`](../ROADMAP.md) |
+| Current roadmap, release state, and scope boundaries | [`ROADMAP.md`](../ROADMAP.md) |
 | Completed roadmap archive | [`docs/ROADMAP_ARCHIVE.md`](ROADMAP_ARCHIVE.md) |
 | Released and candidate history | [`CHANGELOG.md`](../CHANGELOG.md) |
 | Contributor entry point | [`CONTRIBUTING.md`](../CONTRIBUTING.md) |

@@ -47,7 +47,23 @@ jobs:
         run: npm run typecheck
 
       - name: Test
-        run: npm test
+        run: >-
+          npm test --
+          --reporter=default
+          --reporter=junit
+          --outputFile.junit=../test-results/vitest.junit.xml
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@v7
+        with:
+          disable_search: true
+          fail_ci_if_error: true
+          files: ./test-results/vitest.junit.xml
+          flags: frontend
+          name: frontend-tests
+          report_type: test_results
+          use_oidc: true
 
       - name: Test coverage
         run: npm run test:coverage

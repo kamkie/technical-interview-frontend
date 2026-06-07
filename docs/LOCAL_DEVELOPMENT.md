@@ -121,6 +121,12 @@ npm run audit:security
 git diff --check
 ```
 
+CI's `Test` step adds Vitest's JUnit reporter so Codecov can ingest test results:
+
+```powershell
+npm test -- --reporter=default --reporter=junit --outputFile.junit=../test-results/vitest.junit.xml
+```
+
 The selected local hardening command can also be run directly:
 
 ```powershell
@@ -206,9 +212,10 @@ Implemented M13 checks:
 
 - `.github/workflows/ci.yml` has explicit read-only repository permissions and
   concurrency that cancels superseded pull-request runs while preserving
-  protected-branch, tag, release, and scheduled evidence. It runs
-  `npm run test:coverage` and publishes `coverage/lcov.info` to Codecov with the
-  `frontend` flag using GitHub OIDC.
+  protected-branch, tag, release, and scheduled evidence. It writes Vitest JUnit
+  output to `test-results/vitest.junit.xml` and publishes it to Codecov as
+  `test_results`, then runs `npm run test:coverage` and publishes
+  `coverage/lcov.info` to Codecov with the `frontend` flag using GitHub OIDC.
 - `.github/workflows/codeql.yml` runs CodeQL for `javascript-typescript` and
   `actions` on pull requests, pushes to `main`, and a weekly schedule. Results
   upload to GitHub code scanning so alerts appear in the repository Security tab,
