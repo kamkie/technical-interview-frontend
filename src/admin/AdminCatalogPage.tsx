@@ -99,27 +99,40 @@ export function AdminCatalogPage({ session }: { session: SessionResponse }) {
       <div className="section-heading">
         <p className="eyebrow">Admin catalog</p>
         <h2 id="admin-catalog-title">Catalog management</h2>
+        <p className="section-description">
+          Manage book records and category labels after your admin access is
+          confirmed.
+        </p>
       </div>
 
       {accountState.status === 'loading' && (
-        <p className="session-message" role="status">
-          Loading admin access...
-        </p>
+        <div className="state-block loading-state">
+          <p className="state-block-title">Checking admin access</p>
+          <p className="session-message" role="status">
+            Loading admin access...
+          </p>
+        </div>
       )}
 
       {accountState.status === 'error' && (
-        <p className="session-message error" role="alert">
-          {accountState.message}
-        </p>
+        <div className="state-block error-state">
+          <p className="state-block-title">Admin access unavailable</p>
+          <p className="session-message error" role="alert">
+            {accountState.message}
+          </p>
+        </div>
       )}
 
       {accountState.status === 'ready' &&
         (hasAdminRole(accountState.value) ? (
           <AdminCatalogManager session={session} />
         ) : (
-          <p className="session-message error" role="alert">
-            Admin access is required for catalog management.
-          </p>
+          <div className="state-block error-state">
+            <p className="state-block-title">Admin role required</p>
+            <p className="session-message error" role="alert">
+              Admin access is required for catalog management.
+            </p>
+          </div>
         ))}
     </section>
   )
@@ -652,14 +665,49 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
 
   return (
     <div className="admin-catalog-layout">
+      <div
+        className="route-state-panel"
+        aria-label="Admin catalog status summary"
+      >
+        <div>
+          <span className="state-label">Current task</span>
+          <span className="state-value">Maintain books and categories</span>
+        </div>
+        <div>
+          <span className="state-label">Book state</span>
+          <span className="state-value">
+            {formatLoadStatus(booksState.status)}
+          </span>
+        </div>
+        <div>
+          <span className="state-label">Category state</span>
+          <span className="state-value">
+            {formatLoadStatus(categoriesState.status)}
+          </span>
+        </div>
+        <div>
+          <span className="state-label">Primary actions</span>
+          <span className="state-value">Create, edit, delete</span>
+        </div>
+      </div>
+
       <section className="admin-section" aria-labelledby="admin-books-title">
         <div className="admin-section-heading">
           <div>
             <p className="eyebrow">Books</p>
             <h3 id="admin-books-title">Book management</h3>
+            <p className="section-description">
+              Use current filters to find records, then edit from the latest
+              catalog data.
+            </p>
           </div>
-          <button type="button" className="secondary-button" onClick={refreshBooks}>
-            Refresh books
+          <button
+            type="button"
+            aria-label="Refresh books"
+            className="secondary-button compact-action"
+            onClick={refreshBooks}
+          >
+            Refresh
           </button>
         </div>
 
@@ -745,15 +793,21 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
         </div>
 
         {booksState.status === 'loading' && (
-          <p className="session-message" role="status">
-            Loading books...
-          </p>
+          <div className="state-block loading-state">
+            <p className="state-block-title">Loading managed books</p>
+            <p className="session-message" role="status">
+              Loading books...
+            </p>
+          </div>
         )}
 
         {booksState.status === 'error' && (
-          <p className="session-message error" role="alert">
-            {booksState.message}
-          </p>
+          <div className="state-block error-state">
+            <p className="state-block-title">Books could not be loaded</p>
+            <p className="session-message error" role="alert">
+              {booksState.message}
+            </p>
+          </div>
         )}
 
         {booksState.status === 'ready' && (
@@ -787,13 +841,18 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
           <div>
             <p className="eyebrow">Categories</p>
             <h3 id="admin-categories-title">Category management</h3>
+            <p className="section-description">
+              Category changes refresh the affected book view while preserving
+              current filters.
+            </p>
           </div>
           <button
             type="button"
-            className="secondary-button"
+            aria-label="Refresh categories"
+            className="secondary-button compact-action"
             onClick={refreshCategories}
           >
-            Refresh categories
+            Refresh
           </button>
         </div>
 
@@ -819,15 +878,21 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
         <MutationFeedback state={categoryMutationState} />
 
         {categoriesState.status === 'loading' && (
-          <p className="session-message" role="status">
-            Loading categories...
-          </p>
+          <div className="state-block loading-state">
+            <p className="state-block-title">Loading managed categories</p>
+            <p className="session-message" role="status">
+              Loading categories...
+            </p>
+          </div>
         )}
 
         {categoriesState.status === 'error' && (
-          <p className="session-message error" role="alert">
-            {categoriesState.message}
-          </p>
+          <div className="state-block error-state">
+            <p className="state-block-title">Categories could not be loaded</p>
+            <p className="session-message error" role="alert">
+              {categoriesState.message}
+            </p>
+          </div>
         )}
 
         {categoriesState.status === 'ready' && (
@@ -1014,7 +1079,12 @@ function AdminBookResults({
   if (books.length === 0) {
     return (
       <div className="book-results">
-        <p className="session-message muted">No books match these filters.</p>
+        <div className="state-block empty-state">
+          <p className="state-block-title">No managed books found</p>
+          <p className="session-message muted">
+            No books match these filters.
+          </p>
+        </div>
         <PaginationControls
           ariaLabel="Admin book pagination"
           pageNumber={pageNumber}
@@ -1164,7 +1234,12 @@ function CategoryManagementList({
   onSaveCategory: (category: Category) => void
 }) {
   if (categories.length === 0) {
-    return <p className="session-message muted">No categories available.</p>
+    return (
+      <div className="state-block empty-state">
+        <p className="state-block-title">No managed categories</p>
+        <p className="session-message muted">No categories available.</p>
+      </div>
+    )
   }
 
   return (
@@ -1355,6 +1430,18 @@ function sortCategories(categories: readonly Category[]) {
   return [...categories].sort((left, right) =>
     (left.name ?? '').localeCompare(right.name ?? ''),
   )
+}
+
+function formatLoadStatus(status: LoadState<unknown>['status']) {
+  if (status === 'ready') {
+    return 'Ready'
+  }
+
+  if (status === 'error') {
+    return 'Needs attention'
+  }
+
+  return 'Loading'
 }
 
 function createFilterDraftKey(draft: CatalogFilterDraft) {

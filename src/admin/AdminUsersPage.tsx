@@ -71,10 +71,17 @@ export function AdminUsersPage({ session }: { session: SessionResponse }) {
         <div className="section-heading">
           <p className="eyebrow">Admin users</p>
           <h2 id="admin-users-title">User management</h2>
+          <p className="section-description">
+            Review application users and role-grant provenance after
+            authenticated admin access is confirmed.
+          </p>
         </div>
-        <p className="session-message error" role="alert">
-          Sign in is required for user management.
-        </p>
+        <div className="state-block error-state">
+          <p className="state-block-title">Sign in required</p>
+          <p className="session-message error" role="alert">
+            Sign in is required for user management.
+          </p>
+        </div>
       </section>
     )
   }
@@ -84,27 +91,40 @@ export function AdminUsersPage({ session }: { session: SessionResponse }) {
       <div className="section-heading">
         <p className="eyebrow">Admin users</p>
         <h2 id="admin-users-title">User management</h2>
+        <p className="section-description">
+          Review application users and role-grant provenance after
+          authenticated admin access is confirmed.
+        </p>
       </div>
 
       {accountState.status === 'loading' && (
-        <p className="session-message" role="status">
-          Loading admin access...
-        </p>
+        <div className="state-block loading-state">
+          <p className="state-block-title">Checking admin access</p>
+          <p className="session-message" role="status">
+            Loading admin access...
+          </p>
+        </div>
       )}
 
       {accountState.status === 'error' && (
-        <p className="session-message error" role="alert">
-          {accountState.message}
-        </p>
+        <div className="state-block error-state">
+          <p className="state-block-title">Admin access unavailable</p>
+          <p className="session-message error" role="alert">
+            {accountState.message}
+          </p>
+        </div>
       )}
 
       {accountState.status === 'ready' &&
         (hasAdminRole(accountState.value) ? (
           <AdminUsersManager session={session} />
         ) : (
-          <p className="session-message error" role="alert">
-            Admin access is required for user management.
-          </p>
+          <div className="state-block error-state">
+            <p className="state-block-title">Admin role required</p>
+            <p className="session-message error" role="alert">
+              Admin access is required for user management.
+            </p>
+          </div>
         ))}
     </section>
   )
@@ -215,27 +235,65 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
 
   return (
     <div className="admin-users-layout">
+      <div className="route-state-panel" aria-label="Admin users status summary">
+        <div>
+          <span className="state-label">Current task</span>
+          <span className="state-value">Review users and role grants</span>
+        </div>
+        <div>
+          <span className="state-label">User state</span>
+          <span className="state-value">
+            {formatLoadStatus(usersState.status)}
+          </span>
+        </div>
+        <div>
+          <span className="state-label">Selected user</span>
+          <span className="state-value">
+            {selectedRouteId ? `User ${selectedRouteId}` : 'No user selected'}
+          </span>
+        </div>
+        <div>
+          <span className="state-label">Primary actions</span>
+          <span className="state-value">Inspect, replace roles</span>
+        </div>
+      </div>
+
       <section className="admin-section" aria-labelledby="admin-users-list-title">
         <div className="admin-section-heading">
           <div>
             <p className="eyebrow">Users</p>
             <h3 id="admin-users-list-title">Application users</h3>
+            <p className="section-description">
+              Select a user to review profile details, roles, and grant
+              history.
+            </p>
           </div>
-          <button type="button" className="secondary-button" onClick={refreshUsers}>
-            Refresh users
+          <button
+            type="button"
+            aria-label="Refresh users"
+            className="secondary-button compact-action"
+            onClick={refreshUsers}
+          >
+            Refresh
           </button>
         </div>
 
         {usersState.status === 'loading' && (
-          <p className="session-message" role="status">
-            Loading users...
-          </p>
+          <div className="state-block loading-state">
+            <p className="state-block-title">Loading users</p>
+            <p className="session-message" role="status">
+              Loading users...
+            </p>
+          </div>
         )}
 
         {usersState.status === 'error' && (
-          <p className="session-message error" role="alert">
-            {usersState.message}
-          </p>
+          <div className="state-block error-state">
+            <p className="state-block-title">Users could not be loaded</p>
+            <p className="session-message error" role="alert">
+              {usersState.message}
+            </p>
+          </div>
         )}
 
         {usersState.status === 'ready' && (
@@ -268,7 +326,12 @@ function AdminUserResults({
   users: readonly AdminUserAccount[]
 }) {
   if (users.length === 0) {
-    return <p className="session-message muted">No users are available.</p>
+    return (
+      <div className="state-block empty-state">
+        <p className="state-block-title">No users returned</p>
+        <p className="session-message muted">No users are available.</p>
+      </div>
+    )
   }
 
   return (
@@ -384,31 +447,46 @@ function AdminUserDetailPanel({
         <div>
           <p className="eyebrow">Detail</p>
           <h3 id="admin-user-detail-title">User detail</h3>
+          <p className="section-description">
+            Detail content follows the selected user from the current list.
+          </p>
         </div>
       </div>
 
       {state.status === 'loading' && (
-        <p className="session-message" role="status">
-          Loading user detail...
-        </p>
+        <div className="state-block loading-state">
+          <p className="state-block-title">Loading selected user</p>
+          <p className="session-message" role="status">
+            Loading user detail...
+          </p>
+        </div>
       )}
 
       {state.status === 'error' && (
-        <p className="session-message muted">
-          User detail is unavailable until the user list loads.
-        </p>
+        <div className="state-block empty-state">
+          <p className="state-block-title">Detail unavailable</p>
+          <p className="session-message muted">
+            User detail is unavailable until the user list loads.
+          </p>
+        </div>
       )}
 
       {state.status === 'ready' && selectedRouteId && user === null && (
-        <p className="session-message error" role="alert">
-          No user was found for id {selectedRouteId}.
-        </p>
+        <div className="state-block error-state">
+          <p className="state-block-title">User not found</p>
+          <p className="session-message error" role="alert">
+            No user was found for id {selectedRouteId}.
+          </p>
+        </div>
       )}
 
       {state.status === 'ready' && !selectedRouteId && user === null && (
-        <p className="session-message muted">
-          Select a user to review roles and provenance.
-        </p>
+        <div className="state-block empty-state">
+          <p className="state-block-title">No user selected</p>
+          <p className="session-message muted">
+            Select a user to review roles and provenance.
+          </p>
+        </div>
       )}
 
       {state.status === 'ready' && user !== null && (
@@ -754,4 +832,16 @@ function formatGrantingOperator(grant: AdminUserRoleGrant) {
   }
 
   return 'System'
+}
+
+function formatLoadStatus(status: LoadState<unknown>['status']) {
+  if (status === 'ready') {
+    return 'Ready'
+  }
+
+  if (status === 'error') {
+    return 'Needs attention'
+  }
+
+  return 'Loading'
 }

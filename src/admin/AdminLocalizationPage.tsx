@@ -127,27 +127,40 @@ export function AdminLocalizationPage({ session }: { session: SessionResponse })
       <div className="section-heading">
         <p className="eyebrow">Admin localizations</p>
         <h2 id="admin-localization-title">Localization management</h2>
+        <p className="section-description">
+          Maintain localized messages by key and language while reviewing
+          translated text as content.
+        </p>
       </div>
 
       {accountState.status === 'loading' && (
-        <p className="session-message" role="status">
-          Loading admin access...
-        </p>
+        <div className="state-block loading-state">
+          <p className="state-block-title">Checking admin access</p>
+          <p className="session-message" role="status">
+            Loading admin access...
+          </p>
+        </div>
       )}
 
       {accountState.status === 'error' && (
-        <p className="session-message error" role="alert">
-          {accountState.message}
-        </p>
+        <div className="state-block error-state">
+          <p className="state-block-title">Admin access unavailable</p>
+          <p className="session-message error" role="alert">
+            {accountState.message}
+          </p>
+        </div>
       )}
 
       {accountState.status === 'ready' &&
         (hasAdminRole(accountState.value) ? (
           <AdminLocalizationManager session={session} />
         ) : (
-          <p className="session-message error" role="alert">
-            Admin access is required for localization management.
-          </p>
+          <div className="state-block error-state">
+            <p className="state-block-title">Admin role required</p>
+            <p className="session-message error" role="alert">
+              Admin access is required for localization management.
+            </p>
+          </div>
         ))}
     </section>
   )
@@ -425,18 +438,49 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
 
   return (
     <div className="admin-localization-layout">
+      <div
+        className="route-state-panel"
+        aria-label="Localization status summary"
+      >
+        <div>
+          <span className="state-label">Current task</span>
+          <span className="state-value">Maintain localized messages</span>
+        </div>
+        <div>
+          <span className="state-label">Message state</span>
+          <span className="state-value">
+            {formatLoadStatus(localizationsState.status)}
+          </span>
+        </div>
+        <div>
+          <span className="state-label">Coverage</span>
+          <span className="state-value">
+            {coverage.length > 0 ? 'Coverage visible' : 'No coverage rows'}
+          </span>
+        </div>
+        <div>
+          <span className="state-label">Primary actions</span>
+          <span className="state-value">Create, edit, delete</span>
+        </div>
+      </div>
+
       <section className="admin-section" aria-labelledby="localization-list-title">
         <div className="admin-section-heading">
           <div>
             <p className="eyebrow">Messages</p>
             <h3 id="localization-list-title">Localization rows</h3>
+            <p className="section-description">
+              Filter by message key or language and review the matching
+              localized text.
+            </p>
           </div>
           <button
             type="button"
-            className="secondary-button"
+            aria-label="Refresh localizations"
+            className="secondary-button compact-action"
             onClick={refreshLocalizations}
           >
-            Refresh localizations
+            Refresh
           </button>
         </div>
 
@@ -512,15 +556,23 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
         </div>
 
         {localizationsState.status === 'loading' && (
-          <p className="session-message" role="status">
-            Loading localizations...
-          </p>
+          <div className="state-block loading-state">
+            <p className="state-block-title">Loading localization rows</p>
+            <p className="session-message" role="status">
+              Loading localizations...
+            </p>
+          </div>
         )}
 
         {localizationsState.status === 'error' && (
-          <p className="session-message error" role="alert">
-            {localizationsState.message}
-          </p>
+          <div className="state-block error-state">
+            <p className="state-block-title">
+              Localization rows could not be loaded
+            </p>
+            <p className="session-message error" role="alert">
+              {localizationsState.message}
+            </p>
+          </div>
         )}
 
         <LocalizationCoverageTable
@@ -536,9 +588,12 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
               onEditLocalization={(row) => void startEdit(row)}
             />
           ) : (
-            <p className="session-message muted">
-              No localization rows match these filters.
-            </p>
+            <div className="state-block empty-state">
+              <p className="state-block-title">No localization rows found</p>
+              <p className="session-message muted">
+                No localization rows match these filters.
+              </p>
+            </div>
           ))}
 
         {localizationsState.status === 'ready' && (
@@ -752,9 +807,14 @@ function LocalizationForm({
       onSubmit={onSubmit}
     >
       <div className="form-heading-row">
-        <h3 id="localization-form-title">
-          {editing ? 'Edit localization' : 'Create localization'}
-        </h3>
+        <div>
+          <h3 id="localization-form-title">
+            {editing ? 'Edit localization' : 'Create localization'}
+          </h3>
+          <p className="section-description">
+            Use message keys and supported language codes for each row.
+          </p>
+        </div>
         {editing && (
           <button
             type="button"
@@ -975,6 +1035,18 @@ function normalizeQueryLanguage(language: string | null) {
   )
     ? normalized
     : ''
+}
+
+function formatLoadStatus(status: LoadState<unknown>['status']) {
+  if (status === 'ready') {
+    return 'Ready'
+  }
+
+  if (status === 'error') {
+    return 'Needs attention'
+  }
+
+  return 'Loading'
 }
 
 function parsePageSize(value: string | null): PageSize {

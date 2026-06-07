@@ -41,18 +41,28 @@ export function AccountProfile({ session }: { session: SessionResponse }) {
       <div className="section-heading">
         <p className="eyebrow">Authenticated account</p>
         <h2 id="account-title">Account</h2>
+        <p className="section-description">
+          Review the current account profile and update preferences for this
+          session.
+        </p>
       </div>
 
       {accountState.status === 'loading' && (
-        <p className="session-message" role="status">
-          Loading account...
-        </p>
+        <div className="state-block loading-state">
+          <p className="state-block-title">Loading account profile</p>
+          <p className="session-message" role="status">
+            Loading account...
+          </p>
+        </div>
       )}
 
       {accountState.status === 'error' && (
-        <p className="session-message error" role="alert">
-          {accountState.message}
-        </p>
+        <div className="state-block error-state">
+          <p className="state-block-title">Account profile unavailable</p>
+          <p className="session-message error" role="alert">
+            {accountState.message}
+          </p>
+        </div>
       )}
 
       {accountState.status === 'ready' && (
@@ -197,6 +207,9 @@ function LanguagePreferenceForm({
       <div className="language-preference-header">
         <div>
           <h3>Language preference</h3>
+          <p className="section-description">
+            Save a preferred language for account and workflow messages.
+          </p>
         </div>
       </div>
 

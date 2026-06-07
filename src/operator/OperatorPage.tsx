@@ -261,10 +261,17 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
         <div className="section-heading">
           <p className="eyebrow">Operator</p>
           <h2 id="operator-title">Operator audit</h2>
+          <p className="section-description">
+            Inspect read-only operational and audit evidence for an
+            authenticated session.
+          </p>
         </div>
-        <p className="session-message error" role="alert">
-          Sign in is required for operator audit access.
-        </p>
+        <div className="state-block error-state">
+          <p className="state-block-title">Sign in required</p>
+          <p className="session-message error" role="alert">
+            Sign in is required for operator audit access.
+          </p>
+        </div>
       </section>
     )
   }
@@ -274,6 +281,33 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
       <div className="section-heading">
         <p className="eyebrow">Operator</p>
         <h2 id="operator-title">Operator audit</h2>
+        <p className="section-description">
+          Inspect read-only operational and audit evidence for an
+          authenticated session.
+        </p>
+      </div>
+
+      <div className="route-state-panel" aria-label="Operator status summary">
+        <div>
+          <span className="state-label">Current task</span>
+          <span className="state-value">Review audit and runtime evidence</span>
+        </div>
+        <div>
+          <span className="state-label">Overview state</span>
+          <span className="state-value">
+            {formatLoadStatus(overviewState.status)}
+          </span>
+        </div>
+        <div>
+          <span className="state-label">Audit state</span>
+          <span className="state-value">
+            {formatLoadStatus(auditPageState.status)}
+          </span>
+        </div>
+        <div>
+          <span className="state-label">Primary actions</span>
+          <span className="state-value">Filter, paginate, inspect details</span>
+        </div>
       </div>
 
       <div className="operator-layout">
@@ -282,6 +316,10 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
             <div>
               <p className="eyebrow">Overview</p>
               <h3 id="operator-overview-title">Operator overview</h3>
+              <p className="section-description">
+                Summarizes audit, runtime, and health information for
+                operational review.
+              </p>
             </div>
           </div>
           <OperatorOverview
@@ -295,6 +333,9 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
             <div>
               <p className="eyebrow">Audit log</p>
               <h3 id="audit-log-title">Audit rows</h3>
+              <p className="section-description">
+                Review audit entries with filters, sorting, and pagination.
+              </p>
             </div>
           </div>
 
@@ -431,17 +472,23 @@ function OperatorOverview({
 }) {
   if (state.status === 'loading') {
     return (
-      <p className="session-message" role="status">
-        Loading operator overview...
-      </p>
+      <div className="state-block loading-state">
+        <p className="state-block-title">Loading operator overview</p>
+        <p className="session-message" role="status">
+          Loading operator overview...
+        </p>
+      </div>
     )
   }
 
   if (state.status === 'error') {
     return (
-      <p className="session-message error" role="alert">
-        {state.message}
-      </p>
+      <div className="state-block error-state">
+        <p className="state-block-title">Operator overview unavailable</p>
+        <p className="session-message error" role="alert">
+          {state.message}
+        </p>
+      </div>
     )
   }
 
@@ -664,17 +711,23 @@ function AuditLogResults({
 }) {
   if (state.status === 'loading') {
     return (
-      <p className="session-message" role="status">
-        Loading audit logs...
-      </p>
+      <div className="state-block loading-state">
+        <p className="state-block-title">Loading audit rows</p>
+        <p className="session-message" role="status">
+          Loading audit logs...
+        </p>
+      </div>
     )
   }
 
   if (state.status === 'error') {
     return (
-      <p className="session-message error" role="alert">
-        {state.message}
-      </p>
+      <div className="state-block error-state">
+        <p className="state-block-title">Audit rows unavailable</p>
+        <p className="session-message error" role="alert">
+          {state.message}
+        </p>
+      </div>
     )
   }
 
@@ -685,9 +738,12 @@ function AuditLogResults({
     <div className="audit-results">
       <AuditPageSummary page={page} query={query} />
       {rows.length === 0 ? (
-        <p className="session-message muted">
-          No audit entries match these filters.
-        </p>
+        <div className="state-block empty-state">
+          <p className="state-block-title">No audit rows found</p>
+          <p className="session-message muted">
+            No audit entries match these filters.
+          </p>
+        </div>
       ) : (
         <div className="catalog-table-scroll">
           <table className="catalog-table operator-audit-table">
@@ -843,6 +899,10 @@ function AuditDetailsPanel({
         <div>
           <p className="eyebrow">Details</p>
           <h3 id="audit-details-title">Audit details</h3>
+          <p className="section-description">
+            Select a row to inspect the structured audit payload without
+            changing the current filters.
+          </p>
         </div>
         {entry !== null && (
           <button type="button" className="secondary-button" onClick={onCloseDetails}>
@@ -852,9 +912,12 @@ function AuditDetailsPanel({
       </div>
 
       {entry === null ? (
-        <p className="session-message muted">
-          Select an audit entry to inspect its read-only details.
-        </p>
+        <div className="state-block empty-state">
+          <p className="state-block-title">No audit entry selected</p>
+          <p className="session-message muted">
+            Select an audit entry to inspect its read-only details.
+          </p>
+        </div>
       ) : (
         <div className="audit-detail-content">
           <dl className="operator-metadata">
@@ -1062,6 +1125,18 @@ function hasStructuredDetails(value: unknown) {
     value !== null &&
     Object.keys(value).length > 0
   )
+}
+
+function formatLoadStatus(status: LoadState<unknown>['status']) {
+  if (status === 'ready') {
+    return 'Ready'
+  }
+
+  if (status === 'error') {
+    return 'Needs attention'
+  }
+
+  return 'Loading'
 }
 
 function createFilterDraftKey(draft: AuditFilterDraft) {

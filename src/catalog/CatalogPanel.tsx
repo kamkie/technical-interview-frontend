@@ -191,6 +191,29 @@ export function CatalogPanel() {
       <div className="section-heading">
         <p className="eyebrow">Public catalog</p>
         <h2 id="catalog-title">Books</h2>
+        <p className="section-description">
+          Browse approved books with filters, categories, sorting, and
+          pagination.
+        </p>
+      </div>
+
+      <div className="route-state-panel" aria-label="Catalog status summary">
+        <div>
+          <span className="state-label">Current task</span>
+          <span className="state-value">Find public catalog records</span>
+        </div>
+        <div>
+          <span className="state-label">Query state</span>
+          <span className="state-value">
+            {getActiveFilterSummary(query).length > 0
+              ? 'Filtered results'
+              : 'Default catalog view'}
+          </span>
+        </div>
+        <div>
+          <span className="state-label">Primary actions</span>
+          <span className="state-value">Search, filter, sort, paginate</span>
+        </div>
       </div>
 
       <form className="catalog-filters" onSubmit={handleFilterSubmit}>
@@ -271,15 +294,21 @@ export function CatalogPanel() {
       )}
 
       {booksState.status === 'loading' && (
-        <p className="session-message" role="status">
-          Loading books...
-        </p>
+        <div className="state-block loading-state">
+          <p className="state-block-title">Loading catalog results</p>
+          <p className="session-message" role="status">
+            Loading books...
+          </p>
+        </div>
       )}
 
       {booksState.status === 'error' && (
-        <p className="session-message error" role="alert">
-          {booksState.message}
-        </p>
+        <div className="state-block error-state">
+          <p className="state-block-title">Books could not be displayed</p>
+          <p className="session-message error" role="alert">
+            {booksState.message}
+          </p>
+        </div>
       )}
 
       {booksState.status === 'ready' && (
@@ -360,7 +389,12 @@ function BookResults({
   if (books.length === 0) {
     return (
       <div className="book-results">
-        <p className="session-message muted">No books match these filters.</p>
+        <div className="state-block empty-state">
+          <p className="state-block-title">No catalog results</p>
+          <p className="session-message muted">
+            No books match these filters.
+          </p>
+        </div>
         <PaginationControls
           ariaLabel="Book pagination"
           pageNumber={pageNumber}
