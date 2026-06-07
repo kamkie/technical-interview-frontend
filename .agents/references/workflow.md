@@ -49,8 +49,6 @@ Every worker handoff should include:
 - any unexpected dirty-worktree observations and how they were handled
 - remaining risks, contradictions, or owner-drift concerns
 
-For roadmap-adjacent guidance work, also confirm whether `ROADMAP.md` was edited and whether obsolete roadmap sections were recreated.
-
 ## Coordination Boundaries
 
 Plans and worker prompts coordinate execution. Durable rules belong in the owning backend contract artifact, executable test, human doc, design guide, roadmap row, focused reference, or source file.

@@ -28,7 +28,7 @@ Active plans under `.agents/plans/` are execution contracts. When asking AI to i
 
 For implementation, give the AI a narrow ownership boundary and ask it to inspect the current worktree before editing. State whether existing user changes must be preserved, and call out any files that are read-only.
 
-For ad hoc implementation, expect one planning subagent and a separate implementation subagent unless the current task explicitly changes that workflow. The coordinator should keep worker prompts scoped, avoid sharing full thread history, and use `.agents/references/workflow.md` for role details.
+For ad hoc implementation, expect one planning subagent and a separate implementation subagent unless the current task explicitly changes that workflow; `.agents/references/workflow.md` owns the AI role details.
 
 For frontend API work, require the AI to read `docs/backend/approved-openapi.json`, `docs/backend/FRONTEND_AI_CONTRACT.md`, and `docs/backend/README.md` before changing clients, generated types, auth behavior, CSRF handling, or API error handling.
 

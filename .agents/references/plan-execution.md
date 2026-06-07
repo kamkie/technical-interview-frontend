@@ -78,7 +78,6 @@ At the end of a plan run or slice handoff:
 - report validation commands and results
 - list skipped checks with reasons
 - state whether `ROADMAP.md` changed and which stable IDs or references changed
-- state whether obsolete roadmap sections were recreated
 - summarize remaining risks, contradictions, smoke gaps, contract gaps, or blocked follow-up work
 
 Use `.agents/references/testing.md` for validation selection and `.agents/references/reviews.md` for review triggers.
