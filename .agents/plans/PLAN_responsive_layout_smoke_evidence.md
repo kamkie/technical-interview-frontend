@@ -10,17 +10,18 @@ Filename: `.agents/plans/PLAN_responsive_layout_smoke_evidence.md`
 
 ## Readiness
 
-- Plan readiness: Not ready for execution; `M-SMOKE-001` depends on `M-WORKFLOW-001`.
+- Plan readiness: Ready for an explicit implementation request; `M-WORKFLOW-001` is complete and the predecessor-readiness packet is ready.
 - Approved by:
 - Approved at:
 - Open questions: No blocking product questions identified from current owners.
-- Implementation progress: Not started; all task packets remain `Waiting`.
+- Implementation progress: Not started; P0-predecessor-readiness is `Ready` and downstream packets remain `Waiting`.
 
 Use this plan after `M-WORKFLOW-001` lands and the predecessor readiness packet confirms workflow layout, route context, table actions, and session controls are stable enough for responsive and smoke evidence work. Creating or updating this plan is not implementation approval.
 
 ## Status History
 
 - 2026-06-07T23:06:58+02:00: none -> Draft by Codex; plan created for `M-SMOKE-001`.
+- 2026-06-08T00:53:32+02:00: predecessor `M-WORKFLOW-001` completed by `PLAN-workflow-polish`; P0 promoted to `Ready`.
 
 ## Goal
 
@@ -93,7 +94,7 @@ Load only the artifacts needed for the current packet. Do not bulk-load generate
 
 | Packet                          | Status  | Owner       | Depends On       | Last Updated | Notes                                                           |
 | ------------------------------- | ------- | ----------- | ---------------- | ------------ | --------------------------------------------------------------- |
-| P0-predecessor-readiness        | Waiting | Coordinator | `M-WORKFLOW-001` | 2026-06-07   | Confirm workflow polish is complete before execution            |
+| P0-predecessor-readiness        | Ready   | Coordinator | `M-WORKFLOW-001` | 2026-06-08   | Confirm workflow polish is complete before execution            |
 | P1-evidence-target-selection    | Waiting | Coordinator | P0               | 2026-06-07   | Select viewport, route, anonymous smoke, and auth smoke targets |
 | P2-responsive-layout-coverage   | Waiting | Worker      | P1               | 2026-06-07   | Covers `E-RESP-001`                                             |
 | P3-anonymous-smoke-evidence     | Waiting | Worker      | P2               | 2026-06-07   | Covers `E-SMOKE-002`                                            |
@@ -575,14 +576,14 @@ Use this checkpoint before starting each dependent task, before a pause or hando
 
 - Resume docs reread:
   - After context compaction, interruption, resume, or handoff, reread the latest user request, `AGENTS.md`, this plan's header, `## Readiness`, `## Long-Run Continuity`, `## Execution Model`, the current task packet and result summary, `.agents/references/plan-execution.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and the next action's exact owner docs or source files.
-- Current task or wave: none; all packets are waiting on `M-WORKFLOW-001`.
+- Current task or wave: P0-predecessor-readiness is ready after `M-WORKFLOW-001` completion.
 - Completed commits: none.
-- Plan status and readiness: Draft; not ready for execution until `M-WORKFLOW-001` completes and P0 records readiness.
+- Plan status and readiness: Draft; ready for an explicit implementation request after `M-WORKFLOW-001`.
 - Validation and self-review state: plan creation should run `npm run lint:markdown` and `git diff --check`.
 - Coordinator reconciliation state: not started.
 - Changelog, docs, spec, roadmap, or plan updates: this plan is the active coordination artifact; `ROADMAP.md` links to `PLAN-responsive-layout-smoke-evidence`.
-- Blockers or open questions: normal predecessor dependency on `M-WORKFLOW-001`; no blocking product questions.
-- Next action: after `M-WORKFLOW-001` completes, run P0-predecessor-readiness.
+- Blockers or open questions: no blocking product questions.
+- Next action: run P0-predecessor-readiness when implementation is explicitly requested.
 - Context handoff notes: keep authenticated smoke metadata-driven from `GET /api/session`; do not promote smoke gaps to quality gates without `M-QUALITY-001` owner decisions.
 
 ## Execution Graph
@@ -614,7 +615,7 @@ sequenceDiagram
 
 | Packet                          | State   | Dispatch                         | Return  | Orchestrator closeout                     | Checkpoint / next action                  |
 | ------------------------------- | ------- | -------------------------------- | ------- | ----------------------------------------- | ----------------------------------------- |
-| P0-predecessor-readiness        | Waiting | Coordinator-owned; no worker     | N/A     | Pending                                   | Run after `M-WORKFLOW-001` completes      |
+| P0-predecessor-readiness        | Ready   | Coordinator-owned; no worker     | N/A     | Pending                                   | Run when implementation is requested      |
 | P1-evidence-target-selection    | Waiting | Coordinator-owned after P0 lands | N/A     | Pending target selection                  | Promote P2 after targets are recorded     |
 | P2-responsive-layout-coverage   | Waiting | Planned to Worker 1 after P1     | Pending | Pending                                   | Checkpoint after validation if allowed    |
 | P3-anonymous-smoke-evidence     | Waiting | Planned to Worker 2 after P2     | Pending | Pending                                   | Checkpoint after validation if allowed    |

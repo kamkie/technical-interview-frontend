@@ -24,8 +24,8 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 
 - Release phase: Post-`0.2.0` maintenance.
 - Next target version: Future maintenance release; final scope and version selected before release prep.
-- Current priority: M-WORKFLOW-001: Workflow Polish.
-- Active product plans: `PLAN-workflow-polish` is checked in for `M-WORKFLOW-001` planning and `PLAN-responsive-layout-smoke-evidence` is checked in for `M-SMOKE-001` planning; execution stays ordered by milestone dependencies.
+- Current priority: M-SMOKE-001: Responsive Layout And Smoke Evidence.
+- Active product plans: `PLAN-responsive-layout-smoke-evidence` is checked in for `M-SMOKE-001`; `PLAN-workflow-polish` completed `M-WORKFLOW-001` and remains as the milestone execution record until archive routing is selected.
 - Selection policy: Breaking user-facing or backend-contract integration changes require a selected roadmap item.
 
 ## Product Direction
@@ -83,7 +83,7 @@ Acceptance Criteria:
 
 ### M-WORKFLOW-001: Workflow Polish
 
-Labels: `type:milestone`, `status:ready`, `plan:PLAN-workflow-polish`
+Labels: `type:milestone`, `status:done`, `plan:PLAN-workflow-polish`
 
 Plan ID: `PLAN-workflow-polish`
 
@@ -93,7 +93,7 @@ Depends on: M-UI-001.
 
 #### E-STATE-001: State Semantics
 
-Labels: `type:epic`, `milestone:M-WORKFLOW-001`, `status:waiting`
+Labels: `type:epic`, `milestone:M-WORKFLOW-001`, `status:done`
 
 Tasks:
 
@@ -108,7 +108,7 @@ Acceptance Criteria:
 
 #### E-WORKFLOW-001: Visual Hierarchy
 
-Labels: `type:epic`, `milestone:M-WORKFLOW-001`, `status:waiting`
+Labels: `type:epic`, `milestone:M-WORKFLOW-001`, `status:done`
 
 Tasks:
 
@@ -123,7 +123,7 @@ Acceptance Criteria:
 
 #### E-CATALOG-001: Catalog Workflows
 
-Labels: `type:epic`, `milestone:M-WORKFLOW-001`, `status:waiting`
+Labels: `type:epic`, `milestone:M-WORKFLOW-001`, `status:done`
 
 Tasks:
 
@@ -139,7 +139,7 @@ Acceptance Criteria:
 
 #### E-OPS-001: Admin And Operator Workflows
 
-Labels: `type:epic`, `milestone:M-WORKFLOW-001`, `status:waiting`
+Labels: `type:epic`, `milestone:M-WORKFLOW-001`, `status:done`
 
 Tasks:
 
@@ -154,7 +154,7 @@ Acceptance Criteria:
 
 #### E-AUTH-001: Account And Session Copy
 
-Labels: `type:epic`, `milestone:M-WORKFLOW-001`, `status:waiting`
+Labels: `type:epic`, `milestone:M-WORKFLOW-001`, `status:done`
 
 Tasks:
 
@@ -169,7 +169,7 @@ Acceptance Criteria:
 
 ### M-SMOKE-001: Responsive Layout And Smoke Evidence
 
-Labels: `type:milestone`, `status:waiting`, `plan:PLAN-responsive-layout-smoke-evidence`
+Labels: `type:milestone`, `status:ready`, `plan:PLAN-responsive-layout-smoke-evidence`
 
 Plan ID: `PLAN-responsive-layout-smoke-evidence`
 
@@ -196,6 +196,8 @@ Acceptance Criteria:
 
 Labels: `type:epic`, `milestone:M-SMOKE-001`, `status:waiting`
 
+Current evidence: `npm run smoke:anonymous` is the canonical anonymous command and is expected to pass in the documented local smoke environment; missing prerequisites and smoke assertions fail the command.
+
 Tasks:
 
 - T-SMOKE-004: Add repeatable smoke evidence for anonymous shell and public catalog paths.
@@ -210,6 +212,8 @@ Acceptance Criteria:
 #### E-SMOKE-001: Authenticated Browser Smoke
 
 Labels: `type:epic`, `milestone:M-SMOKE-001`, `status:waiting`
+
+Current evidence: `npm run smoke:authenticated` covers authenticated browser smoke against the internal mock API; live sibling-backend fake-OAuth automation remains deferred unless selected by owners.
 
 Tasks:
 
@@ -257,7 +261,7 @@ Blocked by: No repeatable local smoke gap is currently documented.
 
 Tasks:
 
-- T-SMOKE-007: Identify the affected route, component, workflow, or owner document.
+- T-SMOKE-007: Identify whether a future repeatable failure belongs to the smoke script, frontend route/query behavior, backend contract artifact, or backend implementation.
 - T-SMOKE-008: Turn the repeatable failure into component, route, browser, or procedure coverage.
 
 Acceptance Criteria:

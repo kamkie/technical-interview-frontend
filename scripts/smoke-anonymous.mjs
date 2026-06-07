@@ -17,7 +17,7 @@ const defaultBookQuery = {
 const routeBackedBookQuery = {
   title: '__anonymous_smoke__',
   author: '__anonymous_smoke__',
-  isbn: '__anonymous_smoke__',
+  isbn: '978013',
   category: ['Java', 'Architecture'],
   page: 2,
   size: 20,
@@ -48,10 +48,6 @@ function pass(step, detail) {
   record('pass', step, detail)
 }
 
-function skip(step, detail) {
-  record('skip', step, detail)
-}
-
 function fail(step, detail) {
   record('fail', step, detail)
   throw new SmokeFailure(step, detail)
@@ -77,32 +73,26 @@ async function main() {
 
   const frontendProbe = await fetchText(config, '/')
   if (frontendProbe.error) {
-    skip(
+    fail(
       'frontend availability',
       `cannot reach ${config.origin}/; start npm run dev or point FRONTEND_SMOKE_URL at a serving frontend origin (${frontendProbe.error.message})`,
     )
-    printSummary()
-    return
   }
 
   if (!isSuccessfulFrontendStatus(frontendProbe.status)) {
-    skip(
+    fail(
       'frontend availability',
       `${config.origin}/ returned HTTP ${frontendProbe.status}; expected a running frontend dev, preview, or container origin`,
     )
-    printSummary()
-    return
   }
   pass('frontend availability', `${config.origin}/ returned HTTP ${frontendProbe.status}`)
 
   const sessionProbe = await fetchJson(config, SESSION_PATH)
   if (isUnavailableJsonResult(sessionProbe)) {
-    skip(
+    fail(
       'backend availability',
       `${SESSION_PATH} was unavailable through ${config.origin}; start the sibling backend and keep frontend traffic on the frontend origin`,
     )
-    printSummary()
-    return
   }
 
   assertOkJson(sessionProbe, 'session bootstrap')
@@ -165,17 +155,16 @@ async function runLocalizedFailureProbe(config, path) {
   }
 
   if (response.status === 200) {
-    skip(
+    fail(
       'localized public-read failure',
-      `${path} was accepted by the backend, so no reproducible localized public-read failure was available`,
+      `${path} was accepted by the backend; expected reproducible HTTP 400 problem details`,
     )
-    return
   }
 
   if (response.status !== 400) {
     fail(
       'localized public-read failure',
-      `${path} returned HTTP ${response.status}; expected 400 problem details or a 200 skip`,
+      `${path} returned HTTP ${response.status}; expected 400 problem details`,
     )
   }
 
@@ -202,11 +191,10 @@ async function runBrowserCatalogSmoke(config, routePath, expectedBooksPath) {
   try {
     playwright = await import('playwright')
   } catch (error) {
-    skip(
+    fail(
       'browser automation',
       `Playwright is not installed or cannot be imported: ${error.message}`,
     )
-    return
   }
 
   let browser
@@ -215,11 +203,10 @@ async function runBrowserCatalogSmoke(config, routePath, expectedBooksPath) {
       headless: process.env.FRONTEND_SMOKE_HEADLESS !== 'false',
     })
   } catch (error) {
-    skip(
+    fail(
       'browser automation',
       `Chromium is unavailable for Playwright. Run npx playwright install chromium and retry. ${error.message}`,
     )
-    return
   }
 
   try {
@@ -269,7 +256,7 @@ async function runBrowserCatalogSmoke(config, routePath, expectedBooksPath) {
     await page.getByRole('heading', { name: 'Books' }).waitFor({
       timeout: config.timeoutMs,
     })
-    await page.getByRole('heading', { name: 'Session' }).waitFor({
+    await page.getByRole('button', { name: 'Sign in' }).waitFor({
       timeout: config.timeoutMs,
     })
 
@@ -679,14 +666,12 @@ function printSummary() {
   const counts = {
     pass: results.filter((result) => result.status === 'pass').length,
     fail: results.filter((result) => result.status === 'fail').length,
-    skip: results.filter((result) => result.status === 'skip').length,
   }
-  const overall =
-    counts.fail > 0 ? 'FAILED' : counts.pass > 0 && counts.skip === 0 ? 'PASSED' : 'SKIPPED'
+  const overall = counts.fail > 0 ? 'FAILED' : 'PASSED'
 
   console.log('')
   console.log(
-    `Anonymous smoke summary: ${overall} (${counts.pass} passed, ${counts.skip} skipped, ${counts.fail} failed)`,
+    `Anonymous smoke summary: ${overall} (${counts.pass} passed, ${counts.fail} failed)`,
   )
 }
 

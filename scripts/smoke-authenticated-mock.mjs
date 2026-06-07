@@ -291,10 +291,10 @@ async function verifyAccountAccess(page, config, session) {
     waitUntil: 'domcontentloaded',
     timeout: config.timeoutMs,
   })
-  await page.getByRole('heading', { name: 'Account' }).waitFor({
+  await page.getByRole('heading', { name: 'Account preferences' }).waitFor({
     timeout: config.timeoutMs,
   })
-  await page.getByText('admin-user').waitFor({
+  await page.getByText(account.displayName ?? account.login).waitFor({
     timeout: config.timeoutMs,
   })
 
