@@ -591,25 +591,25 @@ Use this checkpoint before starting each dependent task, before a pause or hando
 sequenceDiagram
     autonumber
     participant O as Orchestrator
-    participant W1 as Worker 1
-    participant W2 as Worker 2
-    participant W3 as Worker 3
+    participant W1 as Worker
+    participant W2 as Worker
+    participant W3 as Worker
 
-    Note over O: P0-predecessor-readiness waits on M-WORKFLOW-001; P1 target selection is coordinator-owned
+    O-->>O: P0-predecessor-readiness waits on M-WORKFLOW-001 and P1 target selection is coordinator-owned
 
     O->>W1: Planned dispatch P2-responsive-layout-coverage: context, write scope, validation, stop conditions
     W1-->>O: Planned return P2-responsive-layout-coverage: diff, validation, skipped checks, risks
-    Note over O: Reconcile P2, run validation, update result summary, checkpoint when authorized
+    O-->>O: Reconcile P2, run validation, update result summary, checkpoint when authorized
 
     O->>W2: Planned dispatch P3-anonymous-smoke-evidence: context, write scope, validation, stop conditions
     W2-->>O: Planned return P3-anonymous-smoke-evidence: diff, validation, skipped checks, risks
-    Note over O: Reconcile P3, run validation, update result summary, checkpoint when authorized
+    O-->>O: Reconcile P3, run validation, update result summary, checkpoint when authorized
 
     O->>W3: Planned dispatch P4-authenticated-smoke-evidence: context, write scope, validation, stop conditions
     W3-->>O: Planned return P4-authenticated-smoke-evidence: diff, validation, skipped checks, risks
-    Note over O: Reconcile P4, run validation, update result summary, checkpoint when authorized
+    O-->>O: Reconcile P4, run validation, update result summary, checkpoint when authorized
 
-    Note over O: Run P5-final-review-milestone-close after P4 lands and checkpoints
+    O-->>O: Run P5-final-review-milestone-close after P4 lands and checkpoints
 ```
 
 | Packet                          | State   | Dispatch                         | Return  | Orchestrator closeout                     | Checkpoint / next action                  |

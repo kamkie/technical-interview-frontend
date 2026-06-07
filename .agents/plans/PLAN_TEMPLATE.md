@@ -189,7 +189,7 @@ sequenceDiagram
 
     O->>W1: Dispatch T1-task-label: context, write scope, validation, stop conditions
     W1-->>O: Return T1-task-label: diff, validation, skipped checks, risks
-    Note over O: Reconcile output, run or verify validation, update result summary, checkpoint when authorized
+    O-->>O: Reconcile output, run or verify validation, update result summary, checkpoint when authorized
 ```
 
 | Packet        | State   | Dispatch | Return  | Orchestrator closeout | Checkpoint / next action |

@@ -640,35 +640,35 @@ Use this checkpoint before starting each dependent packet, before a pause or han
 sequenceDiagram
     autonumber
     participant O as Orchestrator
-    participant W1 as Worker 1
-    participant W2 as Worker 2
-    participant W3 as Worker 3
-    participant W4 as Worker 4
-    participant W5 as Worker 5
+    participant W1 as Worker
+    participant W2 as Worker
+    participant W3 as Worker
+    participant W4 as Worker
+    participant W5 as Worker
 
-    Note over O: P0-predecessor-readiness is coordinator-owned and ready for a future implementation request
+    O-->>O: P0-predecessor-readiness is coordinator-owned and ready for a future implementation request
 
     O->>W1: Planned dispatch P1-state-semantics: context, write scope, validation, stop conditions
     W1-->>O: Planned return P1-state-semantics: diff, validation, skipped checks, risks
-    Note over O: Reconcile P1, run validation, update result summary, checkpoint when authorized
+    O-->>O: Reconcile P1, run validation, update result summary, checkpoint when authorized
 
     O->>W2: Planned dispatch P2-visual-hierarchy: context, write scope, validation, stop conditions
     W2-->>O: Planned return P2-visual-hierarchy: diff, validation, skipped checks, risks
-    Note over O: Reconcile P2, run validation, update result summary, checkpoint when authorized
+    O-->>O: Reconcile P2, run validation, update result summary, checkpoint when authorized
 
     O->>W3: Planned dispatch P3-catalog-workflows: context, write scope, validation, stop conditions
     W3-->>O: Planned return P3-catalog-workflows: diff, validation, skipped checks, risks
-    Note over O: Reconcile P3, run validation, update result summary, checkpoint when authorized
+    O-->>O: Reconcile P3, run validation, update result summary, checkpoint when authorized
 
     O->>W4: Planned dispatch P4-admin-operator-workflows: context, write scope, validation, stop conditions
     W4-->>O: Planned return P4-admin-operator-workflows: diff, validation, skipped checks, risks
-    Note over O: Reconcile P4, run validation, update result summary, checkpoint when authorized
+    O-->>O: Reconcile P4, run validation, update result summary, checkpoint when authorized
 
     O->>W5: Planned dispatch P5-account-session-copy: context, write scope, validation, stop conditions
     W5-->>O: Planned return P5-account-session-copy: diff, validation, skipped checks, risks
-    Note over O: Reconcile P5, run validation, update result summary, checkpoint when authorized
+    O-->>O: Reconcile P5, run validation, update result summary, checkpoint when authorized
 
-    Note over O: Run P6-final-review-milestone-close after P5 lands and checkpoints
+    O-->>O: Run P6-final-review-milestone-close after P5 lands and checkpoints
 ```
 
 | Packet                          | State   | Dispatch                         | Return  | Orchestrator closeout                    | Checkpoint / next action                 |

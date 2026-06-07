@@ -482,23 +482,23 @@ Use this checkpoint before starting each dependent task, before a pause or hando
 sequenceDiagram
     autonumber
     participant O as Orchestrator
-    participant W1 as Worker 1
-    participant W2 as Worker 2
-    participant W3 as Worker 3
+    participant W1 as Worker
+    participant W2 as Worker
+    participant W3 as Worker
 
     O->>W1: Dispatch P1-shell-navigation: shell/nav scope, validation, stop conditions
     W1-->>O: Return P1-shell-navigation: diff, validation, smoke note, risks
-    Note over O: Reconcile P1, run validation, update result summary, checkpoint 598d68c
+    O-->>O: Reconcile P1, run validation, update result summary, checkpoint 598d68c
 
     O->>W2: Dispatch P2-route-context-state: route context scope, validation, stop conditions
     W2-->>O: Return P2-route-context-state: diff, validation, skipped checks, risks
-    Note over O: Reconcile P2, run validation, update result summary, checkpoint d23f676
+    O-->>O: Reconcile P2, run validation, update result summary, checkpoint d23f676
 
     O->>W3: Dispatch P3-coverage-hardening: test scope, validation, stop conditions
     W3-->>O: Return P3-coverage-hardening: diff, validation, skipped checks, risks
-    Note over O: Reconcile P3, run validation, update result summary, checkpoint 252d3d5
+    O-->>O: Reconcile P3, run validation, update result summary, checkpoint 252d3d5
 
-    Note over O: Run P4-final-validation, update ROADMAP and downstream plan, create status-doc checkpoint
+    O-->>O: Run P4-final-validation, update ROADMAP and downstream plan, create status-doc checkpoint
 ```
 
 | Packet                 | State    | Dispatch                     | Return   | Orchestrator closeout                         | Checkpoint / next action       |
