@@ -246,7 +246,7 @@ When prerequisites are available, the command verifies:
 
 If the backend accepts that invalid publication-year combination with `HTTP 200`, only the localized-failure step is skipped. If the backend returns problem details, the smoke branches on status, `messageKey`, and endpoint context, not English message text.
 
-Authenticated smoke remains manual until the repository has agreed local credentials, identity seeding rules, and a canonical command.
+Authenticated smoke remains manual for now: the repository owns the fake-OAuth procedure in [`docs/LOCAL_AUTH_SMOKE.md`](LOCAL_AUTH_SMOKE.md), but does not yet own a canonical authenticated smoke command.
 
 When recording smoke evidence, include the backend profile, frontend URL, browser flow covered, validation date, and any skipped authenticated steps with the reason.
 
@@ -294,7 +294,7 @@ Deferred hardening candidates:
 
 - SBOM and license reporting: revisit when maintainers select a durable dependency/license inventory requirement for the published container package beyond the signed image itself.
 - Enforced bundle-size and asset budgets: revisit when the project owns a reviewed size threshold or production `dist/` growth becomes a repeated review concern.
-- Authenticated browser smoke automation: revisit when the repository has agreed local credentials, identity seeding rules, backend profile, and a canonical command.
+- Authenticated browser smoke automation: revisit when maintainers select a canonical command for the fake-OAuth manual flow in [`docs/LOCAL_AUTH_SMOKE.md`](LOCAL_AUTH_SMOKE.md). External-provider automation still needs provider-specific credentials and identity seeding rules.
 - Anonymous browser smoke and accessibility automation: revisit when the repository owns a canonical browser command and stable failure thresholds.
 - CI artifact upload for hardening reports: revisit when M20 or a later selected check writes a stable report file. Until then, use GitHub code scanning, pull-request check annotations, local command output, and workflow logs as the report locations.
 - GitHub Actions SHA pinning: revisit when maintainers select a stricter supply-chain policy or add automation that keeps pinned SHAs current. M13-B should keep trusted versioned actions, explicit permissions, and Dependabot action updates.
