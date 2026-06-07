@@ -32,7 +32,8 @@ describe('AccountProfile', () => {
 
     expect(
       screen.getByText(
-        'Review the current account profile and update preferences for this session.',
+        'Review the current account and choose the language used for account ' +
+          'and workflow messages.',
       ),
     ).toBeInTheDocument()
 
@@ -66,14 +67,22 @@ describe('AccountProfile', () => {
     render(<AccountProfile session={createSession()} />)
 
     expect(await screen.findByText('Kamil Kiewisz')).toBeInTheDocument()
-    expect(screen.getByText('kamkie')).toBeInTheDocument()
     expect(screen.getByText('kamil@example.test')).toBeInTheDocument()
-    expect(screen.getByText('USER')).toBeInTheDocument()
+    expect(screen.getByText('User')).toBeInTheDocument()
+    expect(screen.getAllByText('Polish')[0]).toBeInTheDocument()
+    const accountDetails = screen.getByText('Account details').closest('details')
+    expect(accountDetails).not.toBeNull()
+    expect(accountDetails).not.toHaveAttribute('open')
     expect(
       screen.getByText(
-        'Save a preferred language for account and workflow messages.',
+        'Choose the language used for account and workflow messages.',
       ),
     ).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('Account details'))
+
+    expect(screen.getByText('Login name')).toBeInTheDocument()
+    expect(screen.getByText('kamkie')).toBeInTheDocument()
 
     fireEvent.change(screen.getByLabelText('Language'), {
       target: {

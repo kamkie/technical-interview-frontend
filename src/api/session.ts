@@ -10,6 +10,9 @@ export const SESSION_PATH = '/api/session' as const
 export type SessionResponse = components['schemas']['SessionResponse']
 export type SessionLoginProvider =
   components['schemas']['SessionLoginProvider']
+export type AvailableSessionLoginProvider = SessionLoginProvider & {
+  authorizationPath: string
+}
 
 export async function fetchCurrentSession(
   fetchImplementation: FetchImplementation = globalThis.fetch,
@@ -70,6 +73,37 @@ export function getLoginProviders(
   session: SessionResponse,
 ): readonly SessionLoginProvider[] {
   return session.loginProviders ?? []
+}
+
+export function getAvailableLoginProviders(
+  session: SessionResponse,
+): readonly AvailableSessionLoginProvider[] {
+  return getLoginProviders(session).flatMap((provider) => {
+    const authorizationPath = provider.authorizationPath?.trim()
+
+    if (!authorizationPath?.startsWith('/api/')) {
+      return []
+    }
+
+    return [
+      {
+        ...provider,
+        authorizationPath,
+      },
+    ]
+  })
+}
+
+export function formatLoginProviderName(provider: SessionLoginProvider) {
+  const clientName = provider.clientName?.trim()
+
+  if (clientName) {
+    return clientName
+  }
+
+  const registrationId = provider.registrationId?.trim()
+
+  return registrationId || 'this provider'
 }
 
 export function getCsrfHeaders(

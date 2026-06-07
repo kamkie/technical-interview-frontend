@@ -10,9 +10,9 @@ import {
 
 import {
   fetchCurrentSession,
-  getLoginProviders,
+  formatLoginProviderName,
+  getAvailableLoginProviders,
   logoutCurrentSession,
-  type SessionLoginProvider,
   type SessionResponse,
 } from './api/session'
 import { AccountProfile } from './account/AccountProfile'
@@ -452,6 +452,13 @@ function SessionAccountMenu({
             id={panelId}
             role="region"
           >
+            <div className="session-action-summary">
+              <p className="session-action-title">Sign in to your workspace</p>
+              <p className="session-message muted">
+                Choose one of the sign-in options supplied by the current
+                session.
+              </p>
+            </div>
             <SessionLoginActions session={state.session} />
             <SessionStatusSummary session={state.session} />
             <button
@@ -508,6 +515,11 @@ function SessionAccountMenu({
               {submitting ? 'Signing out...' : 'Sign out'}
             </button>
           </div>
+          {!state.session.logoutPath && (
+            <p className="session-message muted">
+              Sign out is unavailable for this session.
+            </p>
+          )}
           {logoutState.status === 'error' && (
             <p className="session-message error" role="alert">
               {logoutState.message}
@@ -578,7 +590,9 @@ function SessionDetails({
   const csrf = session.csrf
   const csrfLabel =
     csrf?.enabled === true
-      ? `${csrf.cookieName ?? 'CSRF cookie'} -> ${csrf.headerName ?? 'CSRF header'}`
+      ? `Cookie ${csrf.cookieName ?? 'unavailable'}; header ${
+          csrf.headerName ?? 'unavailable'
+        }`
       : 'Disabled'
 
   return (
@@ -587,7 +601,7 @@ function SessionDetails({
 
       <dl className="session-metadata">
         <div>
-          <dt>Account</dt>
+          <dt>Account endpoint</dt>
           <dd>
             {session.authenticated === true
               ? session.accountPath ?? 'Unavailable'
@@ -595,7 +609,7 @@ function SessionDetails({
           </dd>
         </div>
         <div>
-          <dt>Logout</dt>
+          <dt>Sign-out endpoint</dt>
           <dd>{session.logoutPath ?? 'Unavailable'}</dd>
         </div>
         <div>
@@ -603,7 +617,7 @@ function SessionDetails({
           <dd>{session.sessionCookie?.name ?? 'Unavailable'}</dd>
         </div>
         <div>
-          <dt>CSRF</dt>
+          <dt>Write protection</dt>
           <dd>{csrfLabel}</dd>
         </div>
       </dl>
@@ -612,23 +626,25 @@ function SessionDetails({
 }
 
 function SessionLoginActions({ session }: { session: SessionResponse }) {
-  const loginProviders = getLoginProviders(session).filter(hasAuthorizationPath)
+  const loginProviders = getAvailableLoginProviders(session)
 
   if (loginProviders.length === 0) {
     return (
-      <p className="session-message muted">No login providers available.</p>
+      <p className="session-message muted">
+        No sign-in options are available for this session.
+      </p>
     )
   }
 
   return (
     <nav className="login-actions" aria-label="Login providers">
-      {loginProviders.map((provider) => (
+      {loginProviders.map((provider, index) => (
         <a
           className="login-link"
           href={provider.authorizationPath}
-          key={provider.registrationId ?? provider.authorizationPath}
+          key={`${provider.authorizationPath}-${index}`}
         >
-          Sign in with {provider.clientName ?? provider.registrationId}
+          Sign in with {formatLoginProviderName(provider)}
         </a>
       ))}
     </nav>
@@ -637,7 +653,7 @@ function SessionLoginActions({ session }: { session: SessionResponse }) {
 
 function SessionStatusSummary({ session }: { session: SessionResponse }) {
   const statusLabel =
-    session.authenticated === true ? 'Signed in' : 'Signed out'
+    session.authenticated === true ? 'Signed in' : 'Browsing as guest'
 
   return (
     <div className="session-summary">
@@ -650,12 +666,6 @@ function SessionStatusSummary({ session }: { session: SessionResponse }) {
       </span>
     </div>
   )
-}
-
-function hasAuthorizationPath(
-  provider: SessionLoginProvider,
-): provider is SessionLoginProvider & { authorizationPath: string } {
-  return Boolean(provider.authorizationPath)
 }
 
 export default App

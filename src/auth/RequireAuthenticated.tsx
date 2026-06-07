@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
 
 import {
-  getLoginProviders,
-  type SessionLoginProvider,
+  formatLoginProviderName,
+  getAvailableLoginProviders,
   type SessionResponse,
 } from '../api/session'
 
@@ -56,31 +56,27 @@ export function RequireAuthenticated({
 }
 
 function LoginProviderActions({ session }: { session: SessionResponse }) {
-  const loginProviders = getLoginProviders(session).filter(hasAuthorizationPath)
+  const loginProviders = getAvailableLoginProviders(session)
 
   if (loginProviders.length === 0) {
     return (
-      <p className="session-message muted">No login providers available.</p>
+      <p className="session-message muted">
+        No sign-in options are available for this session.
+      </p>
     )
   }
 
   return (
     <nav className="login-actions" aria-label="Login providers">
-      {loginProviders.map((provider) => (
+      {loginProviders.map((provider, index) => (
         <a
           className="login-link"
           href={provider.authorizationPath}
-          key={provider.registrationId ?? provider.authorizationPath}
+          key={`${provider.authorizationPath}-${index}`}
         >
-          Sign in with {provider.clientName ?? provider.registrationId}
+          Sign in with {formatLoginProviderName(provider)}
         </a>
       ))}
     </nav>
   )
-}
-
-function hasAuthorizationPath(
-  provider: SessionLoginProvider,
-): provider is SessionLoginProvider & { authorizationPath: string } {
-  return Boolean(provider.authorizationPath)
 }

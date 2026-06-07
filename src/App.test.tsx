@@ -87,7 +87,7 @@ describe('App', () => {
       expect(document.documentElement).toHaveAttribute('data-theme', 'dark')
     })
     expect(
-      await screen.findByRole('heading', { name: 'Account' }),
+      await screen.findByRole('heading', { name: 'Account preferences' }),
     ).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('radio', { name: 'Light' }))
@@ -185,7 +185,7 @@ describe('App', () => {
     })
     expect(signInButton).toHaveAttribute('aria-expanded', 'false')
     expect(
-      screen.queryByText('XSRF-TOKEN -> X-XSRF-TOKEN'),
+      screen.queryByText('Cookie XSRF-TOKEN; header X-XSRF-TOKEN'),
     ).not.toBeInTheDocument()
     expect(await screen.findByText('Clean Code')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Java' })).toBeInTheDocument()
@@ -208,10 +208,12 @@ describe('App', () => {
     })
 
     expect(
-      within(signInMenu).getByText('Signed out'),
+      within(signInMenu).getByText('Browsing as guest'),
     ).toBeInTheDocument()
     expect(
-      within(signInMenu).queryByText('XSRF-TOKEN -> X-XSRF-TOKEN'),
+      within(signInMenu).queryByText(
+        'Cookie XSRF-TOKEN; header X-XSRF-TOKEN',
+      ),
     ).not.toBeInTheDocument()
     const connectionDetailsButton = within(signInMenu).getByRole('button', {
       name: 'Connection details',
@@ -220,19 +222,26 @@ describe('App', () => {
     fireEvent.click(connectionDetailsButton)
     expect(connectionDetailsButton).toHaveAttribute('aria-expanded', 'true')
     expect(
-      within(signInMenu).getByText('XSRF-TOKEN -> X-XSRF-TOKEN'),
+      within(signInMenu).getByText(
+        'Cookie XSRF-TOKEN; header X-XSRF-TOKEN',
+      ),
     ).toBeInTheDocument()
     expect(loginLink).toHaveAttribute('href', githubAuthorizationPath)
     expect(smokeLoginLink).toHaveAttribute('href', smokeAuthorizationPath)
   })
 
-  it('does not invent a login entry point when provider metadata has no authorization path', async () => {
+  it('does not invent route-guard login actions without usable provider metadata', async () => {
     mockAppFetch({
       session: createSession({
         loginProviders: [
           {
             registrationId: 'github',
             clientName: 'GitHub',
+          },
+          {
+            registrationId: 'external',
+            clientName: 'External Provider',
+            authorizationPath: 'https://identity.example.test/login',
           },
         ],
       }),
@@ -246,7 +255,57 @@ describe('App', () => {
     expect(
       screen.queryByRole('link', { name: 'Sign in with GitHub' }),
     ).not.toBeInTheDocument()
-    expect(screen.getByText('No login providers available.')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: 'Sign in with External Provider' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.getByText('No sign-in options are available for this session.'),
+    ).toBeInTheDocument()
+  })
+
+  it('keeps header sign-in actions scoped to usable session metadata', async () => {
+    mockAppFetch({
+      session: createSession({
+        loginProviders: [
+          {
+            registrationId: 'sso',
+            clientName: 'Team SSO',
+            authorizationPath: '/api/session/from-metadata/team-sso',
+          },
+          {
+            registrationId: 'external',
+            clientName: 'External Provider',
+            authorizationPath: 'https://identity.example.test/login',
+          },
+          {
+            registrationId: 'missing-path',
+            clientName: 'Missing Path',
+          },
+        ],
+      }),
+    })
+
+    renderApp('/catalog')
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Sign in' }))
+
+    const signInMenu = screen.getByRole('region', {
+      name: 'Sign in options',
+    })
+
+    expect(
+      within(signInMenu).getByRole('link', { name: 'Sign in with Team SSO' }),
+    ).toHaveAttribute('href', '/api/session/from-metadata/team-sso')
+    expect(
+      within(signInMenu).queryByRole('link', {
+        name: 'Sign in with External Provider',
+      }),
+    ).not.toBeInTheDocument()
+    expect(
+      within(signInMenu).queryByRole('link', {
+        name: 'Sign in with Missing Path',
+      }),
+    ).not.toBeInTheDocument()
   })
 
   it('renders session bootstrap failures', async () => {
@@ -313,7 +372,7 @@ describe('App', () => {
       '/account',
     )
     expect(
-      screen.getByRole('heading', { name: 'Account' }),
+      screen.getByRole('heading', { name: 'Account preferences' }),
     ).toBeInTheDocument()
     expect(
       screen.queryByRole('link', { name: 'Localizations' }),
@@ -336,10 +395,10 @@ describe('App', () => {
     expect(await screen.findByText('Kamil Kiewisz')).toBeInTheDocument()
     expect(screen.getByText('kamkie')).toBeInTheDocument()
     expect(screen.getByText('kamil@example.test')).toBeInTheDocument()
-    expect(screen.getByText('pl')).toBeInTheDocument()
+    expect(screen.getAllByText('Polish')[0]).toBeInTheDocument()
     expect(screen.getByLabelText('Language')).toHaveValue('pl')
     expect(screen.getByRole('button', { name: 'Save language' })).toBeDisabled()
-    expect(screen.getByText('USER')).toBeInTheDocument()
+    expect(screen.getByText('User')).toBeInTheDocument()
     expect(
       fetchMock.mock.calls.some(([input]) => String(input) === ACCOUNT_PATH),
     ).toBe(true)
@@ -395,12 +454,12 @@ describe('App', () => {
     ).toBeInTheDocument()
     expect(screen.getByLabelText('Language')).toHaveValue('de')
 
-    const preferredLanguageField = screen
-      .getByText('Preferred language')
-      .closest('div')
+    const preferredLanguageField = screen.getAllByText('German')[0].closest('div')
 
     expect(preferredLanguageField).not.toBeNull()
-    expect(within(preferredLanguageField as HTMLElement).getByText('de')).toBeInTheDocument()
+    expect(
+      within(preferredLanguageField as HTMLElement).getByText('German'),
+    ).toBeInTheDocument()
   })
 
   it('clears the account language preference with a blank contract body', async () => {
@@ -439,7 +498,7 @@ describe('App', () => {
     expect(screen.getByLabelText('Language')).toHaveValue('')
 
     const preferredLanguageField = screen
-      .getByText('Preferred language')
+      .getAllByText('No preference')[0]
       .closest('div')
 
     expect(preferredLanguageField).not.toBeNull()

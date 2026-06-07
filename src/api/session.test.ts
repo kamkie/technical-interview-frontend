@@ -4,6 +4,8 @@ import {
   ApiRequestError,
   SESSION_PATH,
   fetchCurrentSession,
+  formatLoginProviderName,
+  getAvailableLoginProviders,
   getCsrfHeaders,
   getLoginProviders,
   logoutCurrentSession,
@@ -189,6 +191,48 @@ describe('session helpers', () => {
     delete session.loginProviders
 
     expect(getLoginProviders(session)).toEqual([])
+  })
+
+  it('keeps UI login links on backend-provided same-origin API paths', () => {
+    const session = createSession({
+      loginProviders: [
+        {
+          registrationId: 'github',
+          clientName: 'GitHub',
+          authorizationPath: ' /api/session/from-metadata/primary-provider ',
+        },
+        {
+          registrationId: 'external',
+          clientName: 'External',
+          authorizationPath: 'https://identity.example.test/login',
+        },
+        {
+          registrationId: 'missing-path',
+          clientName: 'Missing path',
+        },
+      ],
+    })
+
+    expect(getAvailableLoginProviders(session)).toEqual([
+      {
+        registrationId: 'github',
+        clientName: 'GitHub',
+        authorizationPath: '/api/session/from-metadata/primary-provider',
+      },
+    ])
+  })
+
+  it('formats login provider labels from display metadata first', () => {
+    expect(
+      formatLoginProviderName({
+        registrationId: 'raw-provider-id',
+        clientName: 'Team SSO',
+      }),
+    ).toBe('Team SSO')
+    expect(formatLoginProviderName({ registrationId: 'github' })).toBe(
+      'github',
+    )
+    expect(formatLoginProviderName({})).toBe('this provider')
   })
 
   it('mirrors the configured CSRF cookie into the configured header', () => {

@@ -32,7 +32,10 @@ export function AccountProfile({ session }: { session: SessionResponse }) {
         if (!ignore) {
           setAccountState({
             status: 'error',
-            message: getDisplayMessage(error, 'Account profile could not be loaded.'),
+            message: getDisplayMessage(
+              error,
+              'Account profile could not be loaded.',
+            ),
           })
         }
       })
@@ -45,11 +48,11 @@ export function AccountProfile({ session }: { session: SessionResponse }) {
   return (
     <section className="account-panel" aria-labelledby="account-title">
       <div className="section-heading">
-        <p className="eyebrow">Authenticated account</p>
-        <h2 id="account-title">Account</h2>
+        <p className="eyebrow">Account workspace</p>
+        <h2 id="account-title">Account preferences</h2>
         <p className="section-description">
-          Review the current account profile and update preferences for this
-          session.
+          Review the current account and choose the language used for account
+          and workflow messages.
         </p>
       </div>
 
@@ -94,40 +97,47 @@ function AccountProfileDetails({
   const displayName =
     account.displayName || account.login || account.email || 'Current user'
   const roles = (account.roles ?? []).filter(Boolean)
+  const contactLabel = account.email || account.login || 'Contact unavailable'
+  const preferredLanguage = formatLanguagePreference(account.preferredLanguage)
 
   return (
     <div className="account-profile">
       <div className="account-summary">
         <div>
           <p className="account-name">{displayName}</p>
-          <p className="account-subtitle">{account.provider ?? 'Provider unavailable'}</p>
+          <p className="account-subtitle">{contactLabel}</p>
         </div>
-        <div className="account-roles" aria-label="Account roles">
+        <div className="account-roles" aria-label="Account access">
           {roles.length > 0 ? (
             roles.map((role) => (
               <span className="role-pill" key={role}>
-                {role}
+                {formatRoleLabel(role)}
               </span>
             ))
           ) : (
-            <span className="session-message muted">No roles assigned.</span>
+            <span className="session-message muted">No access roles assigned.</span>
           )}
         </div>
       </div>
 
       <dl className="account-metadata">
-        <ProfileField label="Login" value={account.login} />
-        <ProfileField label="Email" value={account.email} />
-        <ProfileField label="Provider" value={account.provider} />
         <ProfileField
-          label="Preferred language"
-          value={account.preferredLanguage ?? 'No preference'}
+          label="Language preference"
+          value={preferredLanguage}
         />
-        <ProfileField label="User ID" value={formatNumber(account.id)} />
-        <ProfileField label="Last login" value={account.lastLoginAt} />
-        <ProfileField label="Created" value={account.createdAt} />
-        <ProfileField label="Updated" value={account.updatedAt} />
       </dl>
+
+      <details className="account-technical-details">
+        <summary>Account details</summary>
+        <dl className="account-metadata">
+          <ProfileField label="Login name" value={account.login} />
+          <ProfileField label="Identity provider" value={account.provider} />
+          <ProfileField label="Account record" value={formatNumber(account.id)} />
+          <ProfileField label="Last sign-in" value={account.lastLoginAt} />
+          <ProfileField label="Created" value={account.createdAt} />
+          <ProfileField label="Updated" value={account.updatedAt} />
+        </dl>
+      </details>
 
       <LanguagePreferenceForm
         account={account}
@@ -140,13 +150,13 @@ function AccountProfileDetails({
 }
 
 const LANGUAGE_OPTIONS = [
-  { value: 'en', label: 'English (en)' },
-  { value: 'es', label: 'Spanish (es)' },
-  { value: 'de', label: 'German (de)' },
-  { value: 'fr', label: 'French (fr)' },
-  { value: 'pl', label: 'Polish (pl)' },
-  { value: 'uk', label: 'Ukrainian (uk)' },
-  { value: 'no', label: 'Norwegian (no)' },
+  { value: 'en', label: 'English' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'de', label: 'German' },
+  { value: 'fr', label: 'French' },
+  { value: 'pl', label: 'Polish' },
+  { value: 'uk', label: 'Ukrainian' },
+  { value: 'no', label: 'Norwegian' },
 ] as const
 
 function LanguagePreferenceForm({
@@ -206,7 +216,7 @@ function LanguagePreferenceForm({
         <div>
           <h3>Language preference</h3>
           <p className="section-description">
-            Save a preferred language for account and workflow messages.
+            Choose the language used for account and workflow messages.
           </p>
         </div>
       </div>
@@ -270,4 +280,29 @@ function ProfileField({
 
 function formatNumber(value: number | undefined) {
   return value === undefined ? undefined : String(value)
+}
+
+function formatLanguagePreference(value: string | undefined) {
+  const languageValue = value?.trim()
+
+  if (!languageValue) {
+    return 'No preference'
+  }
+
+  return (
+    LANGUAGE_OPTIONS.find((language) => language.value === languageValue)
+      ?.label ?? languageValue
+  )
+}
+
+function formatRoleLabel(role: string) {
+  const normalizedRole = role.trim().replace(/^ROLE_/, '').replaceAll('_', ' ')
+
+  if (!normalizedRole) {
+    return 'Access role'
+  }
+
+  return normalizedRole
+    .toLocaleLowerCase('en-US')
+    .replace(/\b[a-z]/g, (letter) => letter.toLocaleUpperCase('en-US'))
 }

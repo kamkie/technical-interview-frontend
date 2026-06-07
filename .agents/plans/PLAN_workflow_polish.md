@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN_workflow_polish.md`
 - Approved by:
 - Approved at:
 - Open questions: No.
-- Implementation progress: P0 through P4 are complete; P5-account-session-copy is `Ready` and P6 remains `Waiting`.
+- Implementation progress: P0 through P5 are complete; P6-final-review-milestone-close is `Ready`.
 
 Use this plan after `M-UI-001` lands and the predecessor readiness packet confirms shell navigation, route context, and session-control behavior are stable enough for workflow polish. Creating or updating this plan is not implementation approval.
 
@@ -28,6 +28,7 @@ Use this plan after `M-UI-001` lands and the predecessor readiness packet confir
 - 2026-06-08T00:19:27+02:00: P2 complete by Worker 2; page hierarchy and action placement polished and P3 promoted to `Ready`.
 - 2026-06-08T00:26:27+02:00: P3 complete by Worker 3; public and admin catalog workflow polish landed and P4 promoted to `Ready`.
 - 2026-06-08T00:35:32+02:00: P4 complete by Worker 4; admin/operator workflow grouping landed and P5 promoted to `Ready`.
+- 2026-06-08T00:48:20+02:00: P5 complete by Worker 5; account/session copy clarified and P6 promoted to `Ready`.
 
 ## Goal
 
@@ -97,8 +98,8 @@ Load only the artifacts needed for the assigned packet. Do not bulk-load generat
 | P2-visual-hierarchy             | Complete | Worker      | P1                    | 2026-06-08   | Covers `E-WORKFLOW-001`; page hierarchy and action placement polished    |
 | P3-catalog-workflows            | Complete | Worker      | P2                    | 2026-06-08   | Covers `E-CATALOG-001`; public and admin catalog workflows polished      |
 | P4-admin-operator-workflows     | Complete | Worker      | P3                    | 2026-06-08   | Covers `E-OPS-001`; admin and operator workflows grouped                 |
-| P5-account-session-copy         | Ready    | Worker      | P4                    | 2026-06-08   | Covers `E-AUTH-001`                                                      |
-| P6-final-review-milestone-close | Waiting  | Coordinator | P5                    | 2026-06-07   | Confirm owner drift, tests, and handoff evidence                         |
+| P5-account-session-copy         | Complete | Worker      | P4                    | 2026-06-08   | Covers `E-AUTH-001`; account/session copy clarified                      |
+| P6-final-review-milestone-close | Ready    | Coordinator | P5                    | 2026-06-08   | Confirm owner drift, tests, and handoff evidence                         |
 
 Use `Waiting` for these packets until `M-UI-001` is complete and predecessor readiness has been recorded. Do not promote downstream packets to `Ready` until their predecessor lands, validates, and any required checkpoint is complete.
 
@@ -463,7 +464,7 @@ Result summary:
 - Validation evidence from `.agents/references/testing.md`: Worker fixed an initial targeted-test assertion issue, then passed targeted admin/operator tests; passed `npm run lint`; passed `npm run typecheck`; passed `npm test`; passed `npm run build`; passed `git diff --check`. Coordinator reran `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, and `git diff --check`.
 - Browser review evidence: Worker reviewed `http://127.0.0.1:4173/` with mock dev server on `/admin/localizations`, `/admin/users`, `/admin/users/2`, and `/operator` at desktop `1280x720` and mobile `390x844`; no page-level horizontal overflow and table overflow stayed inside scroll wrappers.
 - Self-review evidence from `.agents/references/reviews.md`: Reviewed role/access preservation, localization stable fields, audit query serialization, role replacement, CSRF behavior, operator read-only behavior, localized messages as display content, and focused workflow CSS.
-- Commit: Pending P4 checkpoint commit after coordinator validation.
+- Commit: `a66048c` (`Group admin and operator workflows`).
 - Coordinator reconciliation: P4 deliverables match `E-OPS-001`; P5 can start after the checkpoint commit.
 - Changelog/docs/spec/roadmap updates: No `ROADMAP.md`, changelog, spec, or owner-doc update needed for P4.
 - Blockers: None.
@@ -494,6 +495,7 @@ Write scope:
 - `src/account/AccountProfile.tsx`.
 - `src/api/session.ts` only if helper coverage requires it.
 - `src/api/session.test.ts`.
+- Matching route-guard login-provider rendering in `src/auth/RequireAuthenticated.tsx`.
 - Matching app/account tests.
 - Focused CSS selectors in `src/index.css`.
 - `.agents/plans/PLAN_workflow_polish.md` result summary.
@@ -533,17 +535,17 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence from `.agents/references/testing.md`:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Commit:
-- Coordinator reconciliation:
-- Changelog/docs/spec/roadmap updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: complete
+- Worker: Worker 5 (`019ea43b-3b19-7d60-a219-da774958b915`).
+- Changed files or reviewed diff: Updated `src/App.tsx`, `src/App.test.tsx`, `src/account/AccountProfile.tsx`, `src/account/AccountProfile.test.tsx`, `src/api/session.ts`, `src/api/session.test.ts`, `src/auth/RequireAuthenticated.tsx`, and focused `src/index.css` session/account selectors.
+- Validation evidence from `.agents/references/testing.md`: Worker passed targeted app/account/session tests; passed `npm run lint`; passed `npm run typecheck`; passed `npm test`; passed `npm run build`; passed `git diff --check`. Coordinator reran `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, and `git diff --check`.
+- Self-review evidence from `.agents/references/reviews.md`: Reviewed metadata-driven login provider rendering, shared header and route-guard filtering, same-origin `/api/**` login paths, no hard-coded provider paths or provider-specific OAuth behavior, account preference request preservation, logout metadata preservation, CSRF display preservation, and no backend contract/generated-type edits.
+- Commit: Pending P5 checkpoint commit after coordinator validation.
+- Coordinator reconciliation: P5 deliverables match `E-AUTH-001`; P6 can start after the checkpoint commit records the commit identifier.
+- Changelog/docs/spec/roadmap updates: No `ROADMAP.md`, changelog, spec, or owner-doc update needed for P5.
+- Blockers: None.
+- Review risks: No live OAuth or sibling-backend smoke was run; session/account behavior is covered by metadata-driven tests and the full frontend baseline.
+- Handoff notes and next action: Create the P5 checkpoint commit, record its commit identifier, then run P6-final-review-milestone-close.
 
 ### Task Packet: P6-final-review-milestone-close
 
@@ -632,14 +634,14 @@ Use this checkpoint before starting each dependent packet, before a pause or han
 
 - Resume docs reread:
   - After context compaction, interruption, resume, or handoff, reread the latest user request, `AGENTS.md`, this plan's header, `## Readiness`, `## Long-Run Continuity`, `## Execution Model`, the current task packet and result summary, `.agents/references/plan-execution.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and the next action's exact owner docs or source files.
-- Current task or wave: P5-account-session-copy is ready after the P4 checkpoint.
-- Completed commits: `e4a2165` for P1-state-semantics; `1dd5ac8` for P2-visual-hierarchy; `5a2cace` for P3-catalog-workflows; P4 checkpoint pending.
+- Current task or wave: P5-account-session-copy is complete and pending its checkpoint commit.
+- Completed commits: `e4a2165` for P1-state-semantics; `1dd5ac8` for P2-visual-hierarchy; `5a2cace` for P3-catalog-workflows; `a66048c` for P4-admin-operator-workflows; P5 checkpoint pending.
 - Plan status and readiness: `In Progress`; P0 completed after `M-UI-001`.
-- Validation and self-review state: P0 docs-only validation passed; P1 through P4 validation passed.
-- Coordinator reconciliation state: P0 through P4 reconciliation complete; P5 pending dispatch after P4 checkpoint.
-- Changelog, docs, spec, roadmap, or plan updates: this plan migrated to task-packet template on 2026-06-07; P0 through P4 status updated on 2026-06-08.
+- Validation and self-review state: P0 docs-only validation passed; P1 through P5 validation passed.
+- Coordinator reconciliation state: P0 through P5 reconciliation complete; P6 pending after the P5 checkpoint.
+- Changelog, docs, spec, roadmap, or plan updates: this plan migrated to task-packet template on 2026-06-07; P0 through P5 status updated on 2026-06-08.
 - Blockers or open questions: none currently blocking P0.
-- Next action: create the P4 checkpoint commit, then dispatch P5-account-session-copy.
+- Next action: create the P5 checkpoint commit, record its commit identifier, then run P6-final-review-milestone-close.
 - Context handoff notes: do not start P2 until P1 lands, validates, and any required checkpoint is complete.
 
 ## Execution Graph
@@ -685,9 +687,9 @@ sequenceDiagram
 | P1-state-semantics              | Complete | Dispatched to Worker 1 after P0  | Complete | Reconciled shared state semantics and validation   | Checkpoint commit `e4a2165`              |
 | P2-visual-hierarchy             | Complete | Dispatched to Worker 2 after P1  | Complete | Reconciled hierarchy, browser review, validation   | Checkpoint commit `1dd5ac8`              |
 | P3-catalog-workflows            | Complete | Dispatched to Worker 3 after P2  | Complete | Reconciled catalog workflows and validation        | Checkpoint commit `5a2cace`              |
-| P4-admin-operator-workflows     | Complete | Dispatched to Worker 4 after P3  | Complete | Reconciled admin/operator workflows and validation | Checkpoint commit pending                |
-| P5-account-session-copy         | Ready    | Planned to Worker 5 after P4     | Pending  | Pending                                            | Checkpoint after validation if allowed   |
-| P6-final-review-milestone-close | Waiting  | Coordinator-owned after P5 lands | N/A      | Pending final validation and owner check           | Close milestone when authorized evidence |
+| P4-admin-operator-workflows     | Complete | Dispatched to Worker 4 after P3  | Complete | Reconciled admin/operator workflows and validation | Checkpoint commit `a66048c`              |
+| P5-account-session-copy         | Complete | Dispatched to Worker 5 after P4  | Complete | Reconciled account/session copy and validation     | Checkpoint commit pending                |
+| P6-final-review-milestone-close | Ready    | Coordinator-owned after P5 lands | N/A      | Pending final validation and owner check           | Close milestone when authorized evidence |
 
 ## Validation Plan
 
@@ -715,7 +717,7 @@ sequenceDiagram
 
 ## Handoff Notes
 
-- P0 confirmed `M-UI-001` has landed; P1 implemented shared state semantics, P2 polished page hierarchy, P3 polished catalog workflows, P4 grouped admin/operator workflows, and P5 is next.
+- P0 confirmed `M-UI-001` has landed; P1 implemented shared state semantics, P2 polished page hierarchy, P3 polished catalog workflows, P4 grouped admin/operator workflows, and P5 clarified account/session copy.
 - Original plan authoring validation from 2026-06-07 passed `npm run lint:markdown` and `git diff --check`.
 - This migration preserves task order and scope while replacing the legacy plan-task tables with task packets.
 - Do not mark `M-WORKFLOW-001` done until implementation packets and required validation have landed.

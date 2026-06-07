@@ -426,6 +426,18 @@ select {
   align-items: center;
 }
 
+.session-action-summary {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.session-action-title {
+  margin: 0;
+  color: var(--color-heading);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
 .connection-details-button {
   justify-self: start;
   min-height: 2.25rem;
@@ -1482,6 +1494,34 @@ h1 {
   font-size: 0.95rem;
   font-weight: 700;
   line-height: 1.35;
+}
+
+.account-technical-details {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.account-technical-details summary {
+  width: fit-content;
+  min-height: 2.25rem;
+  align-content: center;
+  border: 1px solid var(--color-control-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-control-text);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0 0.75rem;
+}
+
+.account-technical-details summary:hover,
+.account-technical-details summary:focus-visible {
+  background: var(--color-surface-muted);
+}
+
+.account-technical-details[open] summary {
+  margin-bottom: 0.9rem;
 }
 
 .language-preference {
