@@ -39,6 +39,18 @@ describe('OperatorPage', () => {
     expect(
       within(statusSummary).getByText('Filter, paginate, inspect details'),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Find audit entries' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Review audit rows' }),
+    ).toBeInTheDocument()
+    const workflowSummary = screen.getByLabelText('Active audit workflow')
+    expect(
+      within(workflowSummary).getByText(
+        'Target: BOOK / Action: UPDATE / Actor: admin',
+      ),
+    ).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(OPERATOR_SURFACE_PATH, {
       method: 'GET',
       credentials: 'same-origin',

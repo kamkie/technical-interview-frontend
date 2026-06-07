@@ -43,6 +43,11 @@ describe('AdminUsersPage', () => {
     expect(
       within(statusSummary).getByText('Inspect, replace roles'),
     ).toBeInTheDocument()
+    const workflowSummary = screen.getByLabelText('Admin users workflow')
+    expect(
+      screen.getByText(/Reviewing 2 users/),
+    ).toBeInTheDocument()
+    expect(within(workflowSummary).getByText('Replace roles')).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(ACCOUNT_PATH, {
       method: 'GET',
       credentials: 'same-origin',
@@ -127,6 +132,15 @@ describe('AdminUsersPage', () => {
     expect(await screen.findByRole('heading', { name: 'User detail' })).toBeInTheDocument()
     const details = screen.getByRole('complementary', { name: 'User detail' })
 
+    expect(
+      within(details).getByRole('heading', { name: 'Identify selected user' }),
+    ).toBeInTheDocument()
+    expect(
+      within(details).getByRole('heading', { name: 'Audit role grants' }),
+    ).toBeInTheDocument()
+    expect(
+      within(details).getByRole('heading', { name: 'Replace managed roles' }),
+    ).toBeInTheDocument()
     expect(await within(details).findByText('admin@example.test')).toBeInTheDocument()
     expect(within(details).getByText('ADMIN_MANAGED')).toBeInTheDocument()
     expect(within(details).getByText('owner-admin (ID 1)')).toBeInTheDocument()

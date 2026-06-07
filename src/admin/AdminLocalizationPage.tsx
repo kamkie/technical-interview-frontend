@@ -489,75 +489,97 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
           </div>
         </div>
 
-        <form className="localization-filters" onSubmit={handleFilterSubmit}>
-          <label>
-            <span>Message key</span>
-            <input
-              name="messageKey"
-              type="search"
-              value={filterDraft.messageKey}
-              onChange={(event) =>
-                updateFilterDraft({ messageKey: event.currentTarget.value })
-              }
-            />
-          </label>
-          <label>
-            <span>Language</span>
-            <select
-              name="language"
-              value={filterDraft.language}
-              onChange={(event) =>
-                updateFilterDraft({ language: event.currentTarget.value })
-              }
-            >
-              <option value="">All languages</option>
-              {SUPPORTED_LOCALIZATION_LANGUAGES.map((language) => (
-                <option key={language} value={language}>
-                  {language}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="catalog-filter-actions">
-            <button type="submit">Search</button>
-            <button type="button" className="secondary-button" onClick={clearFilters}>
-              Clear
-            </button>
+        <div className="workflow-group" aria-labelledby="localization-search-title">
+          <div className="workflow-group-heading">
+            <div>
+              <h4 id="localization-search-title">Find message rows</h4>
+              <p className="section-description">
+                Narrow by stable key and locale before editing individual rows.
+              </p>
+            </div>
           </div>
-        </form>
 
-        <div
-          className="localization-controls"
-          aria-label="Localization table controls"
-        >
-          <label>
-            <span>Sort by</span>
-            <select
-              value={getSortOptionValue(query.sort)}
-              onChange={(event) => changeSort(event.currentTarget.value)}
-            >
-              {SORT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span>Rows per page</span>
-            <select
-              value={query.size}
-              onChange={(event) =>
-                changePageSize(Number(event.currentTarget.value) as PageSize)
-              }
-            >
-              {PAGE_SIZE_OPTIONS.map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-          </label>
+          <form className="localization-filters" onSubmit={handleFilterSubmit}>
+            <label>
+              <span>Message key</span>
+              <input
+                name="messageKey"
+                type="search"
+                value={filterDraft.messageKey}
+                onChange={(event) =>
+                  updateFilterDraft({ messageKey: event.currentTarget.value })
+                }
+              />
+            </label>
+            <label>
+              <span>Language</span>
+              <select
+                name="language"
+                value={filterDraft.language}
+                onChange={(event) =>
+                  updateFilterDraft({ language: event.currentTarget.value })
+                }
+              >
+                <option value="">All languages</option>
+                {SUPPORTED_LOCALIZATION_LANGUAGES.map((language) => (
+                  <option key={language} value={language}>
+                    {language}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="catalog-filter-actions">
+              <button type="submit">Search</button>
+              <button type="button" className="secondary-button" onClick={clearFilters}>
+                Clear
+              </button>
+            </div>
+          </form>
+
+          <div
+            className="localization-controls"
+            aria-label="Localization table controls"
+          >
+            <label>
+              <span>Sort by</span>
+              <select
+                value={getSortOptionValue(query.sort)}
+                onChange={(event) => changeSort(event.currentTarget.value)}
+              >
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Rows per page</span>
+              <select
+                value={query.size}
+                onChange={(event) =>
+                  changePageSize(Number(event.currentTarget.value) as PageSize)
+                }
+              >
+                {PAGE_SIZE_OPTIONS.map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <LocalizationWorkflowSummary
+            coverage={coverage}
+            page={
+              localizationsState.status === 'ready'
+                ? localizationsState.value
+                : null
+            }
+            query={query}
+            state={localizationsState.status}
+          />
         </div>
 
         {localizationsState.status === 'loading' && (
@@ -576,18 +598,40 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
           />
         )}
 
-        <LocalizationCoverageTable
-          coverage={coverage}
-          onCreateMissing={startCreate}
-        />
+        <div className="workflow-group" aria-labelledby="localization-coverage-title">
+          <div className="workflow-group-heading">
+            <div>
+              <h4 id="localization-coverage-title">Review locale coverage</h4>
+              <p className="section-description">
+                Scan supported locales and create missing rows from stable
+                message keys.
+              </p>
+            </div>
+          </div>
+
+          <LocalizationCoverageTable
+            coverage={coverage}
+            onCreateMissing={startCreate}
+          />
+        </div>
 
         {localizationsState.status === 'ready' &&
           (rows.length > 0 ? (
-            <LocalizationResults
-              rows={rows}
-              onDeleteLocalization={(row) => void deleteVisibleLocalization(row)}
-              onEditLocalization={(row) => void startEdit(row)}
-            />
+            <div className="workflow-group" aria-labelledby="localization-row-title">
+              <div className="workflow-group-heading">
+                <div>
+                  <h4 id="localization-row-title">Operate on rows</h4>
+                  <p className="section-description">
+                    Edit or delete one backend row at a time.
+                  </p>
+                </div>
+              </div>
+              <LocalizationResults
+                rows={rows}
+                onDeleteLocalization={(row) => void deleteVisibleLocalization(row)}
+                onEditLocalization={(row) => void startEdit(row)}
+              />
+            </div>
           ) : (
             <StateBlock
               message="No localization rows match these filters."
@@ -692,6 +736,68 @@ function LocalizationCoverageTable({
           ))}
         </tbody>
       </table>
+    </div>
+  )
+}
+
+function LocalizationWorkflowSummary({
+  coverage,
+  page,
+  query,
+  state,
+}: {
+  coverage: readonly LocalizationKeyCoverage[]
+  page: LocalizationPage | null
+  query: LocalizationQueryState
+  state: LoadState<LocalizationPage>['status']
+}) {
+  const activeFilters = getLocalizationFilterSummary(query)
+  const totalRows = page?.totalElements
+  const rowCount = page?.numberOfElements ?? page?.content?.length
+  const missingLocaleCount =
+    state === 'error'
+      ? undefined
+      : coverage.reduce(
+          (total, group) =>
+            total +
+            group.locales.filter((locale) => locale.status === 'missing').length,
+          0,
+        )
+
+  return (
+    <div className="catalog-summary admin-workflow-summary" aria-live="polite">
+      <p>
+        {page
+          ? `Showing ${rowCount ?? 0}${
+              totalRows !== undefined ? ` of ${totalRows}` : ''
+            } localization rows.`
+          : `Localization rows are ${formatLoadStatus(state).toLowerCase()}.`}
+      </p>
+      <dl
+        className="catalog-query-details compact-query-details"
+        aria-label="Active localization workflow"
+      >
+        <div>
+          <dt>Filters</dt>
+          <dd>{activeFilters.length > 0 ? activeFilters.join(' / ') : 'None'}</dd>
+        </div>
+        <div>
+          <dt>Sort</dt>
+          <dd>{query.sort.join(' / ')}</dd>
+        </div>
+        <div>
+          <dt>Page size</dt>
+          <dd>{query.size}</dd>
+        </div>
+        <div>
+          <dt>Coverage keys</dt>
+          <dd>{state === 'error' ? 'Unknown' : coverage.length}</dd>
+        </div>
+        <div>
+          <dt>Missing locales</dt>
+          <dd>{missingLocaleCount ?? 'Unknown'}</dd>
+        </div>
+      </dl>
     </div>
   )
 }
@@ -1045,6 +1151,20 @@ function parsePageSize(value: string | null): PageSize {
   return PAGE_SIZE_OPTIONS.includes(parsed as PageSize)
     ? (parsed as PageSize)
     : DEFAULT_LOCALIZATION_QUERY.size
+}
+
+function getLocalizationFilterSummary(query: LocalizationQueryState) {
+  const filters: string[] = []
+
+  if (query.messageKey) {
+    filters.push(`Message key: ${query.messageKey}`)
+  }
+
+  if (query.language) {
+    filters.push(`Language: ${query.language}`)
+  }
+
+  return filters
 }
 
 function createFilterDraftKey(draft: LocalizationFilterDraft) {

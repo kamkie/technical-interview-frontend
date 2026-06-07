@@ -299,11 +299,18 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
         )}
 
         {usersState.status === 'ready' && (
-          <AdminUserResults
-            selectedRouteId={selectedRouteId}
-            users={usersState.value}
-            onSelectUser={selectUser}
-          />
+          <>
+            <AdminUsersWorkflowSummary
+              selectedRouteId={selectedRouteId}
+              selectedUser={selectedUser}
+              users={usersState.value}
+            />
+            <AdminUserResults
+              selectedRouteId={selectedRouteId}
+              users={usersState.value}
+              onSelectUser={selectUser}
+            />
+          </>
         )}
       </section>
 
@@ -380,6 +387,58 @@ function AdminUserResults({
           })}
         </tbody>
       </table>
+    </div>
+  )
+}
+
+function AdminUsersWorkflowSummary({
+  selectedRouteId,
+  selectedUser,
+  users,
+}: {
+  selectedRouteId: string
+  selectedUser: AdminUserAccount | null
+  users: readonly AdminUserAccount[]
+}) {
+  const adminCount = users.filter((user) => user.roles?.includes('ADMIN')).length
+  const roleGrantCount = users.reduce(
+    (total, user) => total + (user.roleGrants?.length ?? 0),
+    0,
+  )
+
+  return (
+    <div className="catalog-summary admin-workflow-summary" aria-live="polite">
+      <p>
+        Reviewing {users.length} {users.length === 1 ? 'user' : 'users'} from
+        the admin user list.
+      </p>
+      <dl
+        className="catalog-query-details compact-query-details"
+        aria-label="Admin users workflow"
+      >
+        <div>
+          <dt>Selected</dt>
+          <dd>
+            {selectedUser !== null
+              ? createUserLabel(selectedUser)
+              : selectedRouteId
+                ? `Missing user ${selectedRouteId}`
+                : 'None'}
+          </dd>
+        </div>
+        <div>
+          <dt>Admin roles</dt>
+          <dd>{adminCount}</dd>
+        </div>
+        <div>
+          <dt>Role grants</dt>
+          <dd>{roleGrantCount}</dd>
+        </div>
+        <div>
+          <dt>Operation</dt>
+          <dd>Replace roles</dd>
+        </div>
+      </dl>
     </div>
   )
 }
@@ -515,38 +574,50 @@ function AdminUserDetail({
 
   return (
     <div className="admin-user-detail-content">
-      <div className="account-summary">
-        <div>
-          <p className="account-name">{label}</p>
-          <p className="account-subtitle">
-            {user.login?.trim() ? user.login : 'Login unavailable'}
-          </p>
+      <div className="workflow-group" aria-labelledby="admin-user-identity-title">
+        <div className="workflow-group-heading">
+          <div>
+            <h4 id="admin-user-identity-title">Identify selected user</h4>
+            <p className="section-description">
+              Confirm profile context before reviewing grants or replacing
+              roles.
+            </p>
+          </div>
         </div>
-        <RolePills roles={user.roles} />
-      </div>
 
-      <dl className="account-metadata">
-        <div>
-          <dt>Provider</dt>
-          <dd>{user.provider?.trim() ? user.provider : 'Unknown'}</dd>
+        <div className="account-summary">
+          <div>
+            <p className="account-name">{label}</p>
+            <p className="account-subtitle">
+              {user.login?.trim() ? user.login : 'Login unavailable'}
+            </p>
+          </div>
+          <RolePills roles={user.roles} />
         </div>
-        <div>
-          <dt>Email</dt>
-          <dd>{user.email?.trim() ? user.email : 'Unavailable'}</dd>
-        </div>
-        <div>
-          <dt>Preferred language</dt>
-          <dd>
-            {user.preferredLanguage?.trim()
-              ? user.preferredLanguage
-              : 'No preference'}
-          </dd>
-        </div>
-        <div>
-          <dt>Updated</dt>
-          <dd>{formatTimestamp(user.updatedAt)}</dd>
-        </div>
-      </dl>
+
+        <dl className="account-metadata">
+          <div>
+            <dt>Provider</dt>
+            <dd>{user.provider?.trim() ? user.provider : 'Unknown'}</dd>
+          </div>
+          <div>
+            <dt>Email</dt>
+            <dd>{user.email?.trim() ? user.email : 'Unavailable'}</dd>
+          </div>
+          <div>
+            <dt>Preferred language</dt>
+            <dd>
+              {user.preferredLanguage?.trim()
+                ? user.preferredLanguage
+                : 'No preference'}
+            </dd>
+          </div>
+          <div>
+            <dt>Updated</dt>
+            <dd>{formatTimestamp(user.updatedAt)}</dd>
+          </div>
+        </dl>
+      </div>
 
       <RoleGrantProvenance grants={user.roleGrants} />
 
@@ -567,8 +638,18 @@ function RoleGrantProvenance({
   const visibleGrants = grants ?? []
 
   return (
-    <section className="role-grant-section" aria-labelledby="role-grants-title">
-      <h4 id="role-grants-title">Role-grant provenance</h4>
+    <section
+      className="role-grant-section workflow-group"
+      aria-labelledby="role-grants-title"
+    >
+      <div className="workflow-group-heading">
+        <div>
+          <h4 id="role-grants-title">Audit role grants</h4>
+          <p className="section-description">
+            Review source, operator, timestamp, and reason for each grant.
+          </p>
+        </div>
+      </div>
 
       {visibleGrants.length === 0 ? (
         <p className="session-message muted">
@@ -666,12 +747,17 @@ function RoleReplacementForm({
 
   return (
     <form
-      className="role-replacement-form"
+      className="role-replacement-form workflow-group"
       aria-label={`Replace roles for ${createUserLabel(user)}`}
       onSubmit={handleSubmit}
     >
-      <div className="form-heading-row">
-        <h4>Role replacement</h4>
+      <div className="workflow-group-heading">
+        <div>
+          <h4>Replace managed roles</h4>
+          <p className="section-description">
+            Submit the complete managed role set with an operator reason.
+          </p>
+        </div>
       </div>
 
       <fieldset className="admin-checkbox-group">

@@ -47,6 +47,19 @@ describe('AdminLocalizationPage', () => {
     expect(
       within(statusSummary).getByText('Create, edit, delete'),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Find message rows' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Review locale coverage' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Operate on rows' }),
+    ).toBeInTheDocument()
+    const workflowSummary = screen.getByLabelText('Active localization workflow')
+    expect(
+      within(workflowSummary).getByText('Message key: account.title / Language: pl'),
+    ).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(ACCOUNT_PATH, {
       method: 'GET',
       credentials: 'same-origin',
