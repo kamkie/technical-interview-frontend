@@ -14,7 +14,7 @@
 | Field | Value |
 | --- | --- |
 | Phase | Active Execution |
-| Status | M17 and M21 Ready |
+| Status | Blocked At M24 Release Authorization |
 | Last Updated | 2026-06-07 |
 
 ## Planning Readiness
@@ -22,9 +22,9 @@
 | Field | Value |
 | --- | --- |
 | Decision Complete | Yes for M16 audit scope, M18 fake-OAuth readiness, selected M20 advisory hardening tools and policy, M17 anonymous smoke promotion, and M21 guardrail promotion |
-| Blocking Open Questions | None for the next ready slices |
+| Blocking Open Questions | M24 release preparation needs an explicit current release/version/tag task before changelog promotion, package metadata updates, release commit, or annotated tag work |
 | Accepted Fallbacks | M20 findings are advisory-only during the first pass; generated hardening reports are not checked in; external-provider authenticated smoke remains optional |
-| Ready For Execution | Yes for M17 and M21 |
+| Ready For Execution | No remaining unblocked slices in this plan |
 
 ## Summary
 
@@ -39,10 +39,9 @@ The first executable scope has landed:
 - M20 advisory container/deployment hardening refinement.
 
 M16 found no uncovered approved backend operation, so M22 is not selected from this
-audit. The next promoted ready slices are M17 anonymous browser smoke automation and
-M21 login-provider metadata guardrails. M19 and M23 are blocked on selected product
-scope. M24 starts only after the selected implementation scope has landed with
-validation evidence.
+audit. M17 anonymous browser smoke automation and M21 login-provider metadata
+guardrails have landed. M19 and M23 are blocked on selected product scope. M24 is
+blocked until a current task explicitly requests release/version/tag work.
 
 This plan is an execution contract. Durable product scope stays in `ROADMAP.md`;
 backend API rules stay in `docs/backend/`; local command and hardening procedure
@@ -119,6 +118,8 @@ Out of scope:
 - M20 has repo-owned commands for Trivy, rendered-manifest kube-linter, and
   runtime/Nginx checks. The first pass remains advisory; local/CI output is evidence
   and generated reports are not checked in.
+- M17 anonymous smoke automation is available as `npm run smoke:anonymous`.
+- M21 provider metadata guardrails are covered by auth/session tests.
 
 ## Decision Log
 
@@ -131,6 +132,7 @@ Out of scope:
 | D5 | M18 readiness uses the sibling backend `local,oauth,fake-oauth` profile, `smoke` provider, and `smoke:smoke-user` first-admin bootstrap identity | Maintainer update and refreshed `docs/backend/FRONTEND_AI_CONTRACT.md` | 2026-06-07 | Backend fake-OAuth contract changes |
 | D6 | Remote publication is not authorized by this plan alone | `AGENTS.md` git and release rules | 2026-06-07 | Current user request explicitly asks to push or publish |
 | D7 | M16 found no approved operation gaps; promote M17 and M21, do not select M22 from this audit | `docs/API_COVERAGE.md` | 2026-06-07 | Backend contract refresh or new approved operation gap |
+| D8 | M24 release preparation cannot proceed without an explicit release/version/tag task | `.agents/references/releases.md` and M24 commit checkpoint | 2026-06-07 | User explicitly requests release preparation |
 
 ## Phase Map
 
@@ -140,12 +142,12 @@ Out of scope:
 | 1 | M16 Contract Coverage And Scope Audit | Done | 22 approved operations classified as implemented |
 | 2 | M18 Authenticated Smoke Automation Readiness | Done | Fake-OAuth smoke profile and seed identity documented |
 | 3 | M20 Advisory Hardening Implementation | Done | Repeatable selected hardening checks and evidence docs added |
-| 4 | M21 Login Provider Metadata Guardrail | Ready | M16 coverage audit completed |
+| 4 | M21 Login Provider Metadata Guardrail | Done | Provider metadata guardrail tests landed |
 | 5 | M22 Backend Surface Expansion Selection | Not selected | M16 found no approved operation gaps |
-| 6 | M17 Anonymous Browser Smoke Automation | Ready | M16 promoted smoke automation |
+| 6 | M17 Anonymous Browser Smoke Automation | Done | Anonymous smoke command landed |
 | 7 | M19 Public Catalog Workflow Polish | Blocked on selected polish scope | Exact visible states and tests named |
 | 8 | M23 Implemented Flow Visual Design Pass | Blocked on selected visual scope | Exact flows, accessibility goals, and browser evidence named |
-| 9 | M24 Post-`0.1.0` Release Preparation | Waiting on selected implementation scope | Selected M16-M23 work complete and validated |
+| 9 | M24 Post-`0.1.0` Release Preparation | Blocked on explicit release task | Release/version/tag work requires current authorization |
 
 ## Progress Tracker
 
@@ -155,12 +157,12 @@ Out of scope:
 | 1: M16 coverage audit | Done | M16 worker | `d933e74` | `git diff --check` passed | 22 operations implemented; promotes M17 and M21 |
 | 2: M18 auth smoke readiness | Done | M18 worker | `7cff7f7` | `git diff --check` passed | Fake-OAuth readiness documented |
 | 3: M20 advisory hardening | Done | M20 worker | `0149608` | Full baseline, Docker build, runtime check, and Trivy passed; kube-linter unavailable after render | Selected advisory commands added |
-| 4: M21 metadata guardrail | Ready | M21 worker | Pending | Pending | Promoted after M16 |
+| 4: M21 metadata guardrail | Done | M21 worker | `50560f4` | Relevant auth tests and full baseline passed | Provider paths guarded by metadata-driven tests |
 | 5: M22 surface selection | Not selected | M22 worker | N/A | Covered by M16 | No approved operation gaps |
-| 6: M17 anonymous smoke | Ready | M17 worker | Pending | Pending | Promoted after M16 |
+| 6: M17 anonymous smoke | Done | M17 worker | `256b947` | `npm run smoke:anonymous` skipped clearly because frontend unavailable; full baseline passed | Smoke command added |
 | 7: M19 catalog polish | Blocked | M19 worker | Pending | Pending | Needs focused polish scope |
 | 8: M23 visual pass | Blocked | M23 worker | Pending | Pending | Needs focused visual scope |
-| 9: M24 release prep | Waiting | Release worker / coordinator | Pending | Pending | Starts after selected implementation scope |
+| 9: M24 release prep | Blocked | Release worker / coordinator | Pending | Pending | Needs explicit release/version/tag task |
 
 ## Phase 1: M16 Contract Coverage And Scope Audit
 
