@@ -126,6 +126,20 @@ relevant instructions, ownership boundaries, validation expectations, and the
 specific output needed. Subagents should start from clean state so their work is
 independently scoped instead of inheriting the orchestrator's conversation context.
 
+Planning subagents must return a handoff with:
+
+1. Objective.
+2. Relevant rules, contracts, or source documents.
+3. Proposed file ownership.
+4. Implementation steps.
+5. Required tests and validation.
+6. Risks, open questions, or explicit non-goals.
+
+Implementation subagent prompts must include the planning handoff or state the
+orchestrator's explicit deltas from it. Implementation subagents must return the
+changed files, validation run, skipped validation with reasons, and remaining
+risks.
+
 Backend contract, validation, git, and smallest-coherent-change rules still apply.
 
 ## Plan Execution Rules
