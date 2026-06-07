@@ -9,7 +9,7 @@ archived in `docs/ROADMAP_ARCHIVE.md`. Released history belongs in `CHANGELOG.md
 | Field               | Current                                                                                                                                                                                                                                                                        |
 |---------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Release phase       | Published `0.2.0` release; post-release maintenance                                                                                                                                                                                                                            |
-| Next target version | Future post-`0.2.0` maintenance release that includes the completed admin catalog actions-column polish; final version selected before release prep                                                                                                                             |
+| Next target version | Future post-`0.2.0` maintenance release; final scope and version selected before release prep                                                                                                                                                                                  |
 | Frontend stack      | Vite + React + TypeScript                                                                                                                                                                                                                                                      |
 | Runtime             | Node.js 24.x, npm 11.x                                                                                                                                                                                                                                                         |
 | Package metadata    | `package.json` and `package-lock.json` version `0.2.0`; `packageManager` `npm@11.16.0`                                                                                                                                                                                         |
@@ -36,18 +36,10 @@ app-level light/dark/system theme preference. Local same-origin auth smoke steps
 the canonical validation baseline, Docker image build, tag-driven GHCR package
 publication, and selected hardening evidence are documented.
 Earlier completed roadmap work and plan records are archived in
-`docs/ROADMAP_ARCHIVE.md`. Post-`0.1.0` execution added contract coverage,
-anonymous smoke automation, fake-OAuth readiness, advisory hardening, provider
-metadata guardrails, and the published `v0.2.0` release. Post-`0.2.0` execution
-selected M19 public catalog workflow polish for canonical route state, visible
-query-state summaries, accessible sort affordances, the selected M23
-light/dark/system theme preference, the completed M24 browser session surface
-cleanup, and the completed M25 public catalog and app shell visual pass.
-M26 is complete by explicit request and added a contract-backed mock API so
-frontend-only UI work can run without starting the sibling backend. M27 is
-complete locally and keeps the admin catalog actions column compact for long book
-titles while preserving existing edit/delete behavior. Remaining roadmap work is
-selecting the next product, visual, automation, or release-prep slice.
+`docs/ROADMAP_ARCHIVE.md`; released user-visible history remains in
+`CHANGELOG.md`. No implementation milestone is currently selected. Remaining
+roadmap work is selecting the next product, visual, automation, or release-prep
+slice.
 
 ## Product Direction
 
@@ -71,28 +63,19 @@ selecting the next product, visual, automation, or release-prep slice.
 
 Earlier completed roadmap work is archived in `docs/ROADMAP_ARCHIVE.md`.
 
-Status terms:
+No implementation milestone is currently selected. The next action is to select the
+next product, visual, automation, or release-prep slice.
 
-- `Done`: the milestone has landed locally and remains in the active table until a
-  release cleanup archives it.
+Status terms for future selected rows:
+
 - `Ready`: the milestone can start from the current repository state.
 - `Waiting`: the milestone has a normal predecessor dependency.
 - `Blocked`: the milestone needs a product choice, credential, backend contract
   refresh, or external state before implementation can start.
 
-| Milestone | Status | Scope | Done when | Validation |
-| --- | --- | --- | --- | --- |
-| M19 - Public Catalog Workflow Polish | Done | Selected in `docs/specs/SPEC_public_catalog_workflow_polish.md`: canonical public catalog route query state, visible active filter/sort/page summaries, default-filter clarity, and accessible sort affordances without backend changes. | Component/route tests cover canonical URL replacement, visible query-state summaries, sort control names, and existing request serialization. | Relevant tests plus full baseline for app changes. |
-| M23 - Dark Mode Support | Done | Added app-level dark mode support for implemented public catalog, account, admin, and operator flows without backend/API behavior changes. The app respects the user's OS color-scheme preference on first visit, provides a visible light/dark/system preference control, persists explicit preference locally, and keeps existing session, routing, and localization behavior unchanged. | Light, dark, and system theme selection renders consistently across implemented routes, survives reloads when explicitly selected, preserves keyboard focus visibility and accessible contrast, and has focused component/route coverage plus browser evidence on representative public and authenticated shells. | Relevant tests, browser screenshots or smoke for changed flows, and full baseline for app changes. |
-| M24 - Browser Session Surface Cleanup | Done | Moved the Browser Session status and session metadata out of the main page content into a hidden-by-default Session details surface in the app chrome. Account, logout, session cookie, and CSRF metadata remain available for troubleshooting without making session diagnostics a primary page section. | Primary implemented pages no longer show the Browser Session panel by default, session diagnostics remain reachable through an explicit control with accessible naming and keyboard support, and session bootstrap/login/logout behavior remains unchanged. | Focused App tests cover the disclosure behavior and metadata-driven sign-in links; browser evidence covers the main page and opened session surface. |
-| M25 - Public Catalog And App Shell Visual Design Pass | Done | Polished the implemented anonymous `/catalog` flow and shared app shell after the Browser Session surface cleanup landed. Scope included header/action layout, intro hierarchy, catalog filters, category chips, query summary, table readability, pagination, focus-visible styling, and responsive behavior across light/dark/system themes without backend/API, auth, route, query-string, sorting, filtering, pagination, or localization behavior changes. | The catalog and shell are easier to scan on desktop and mobile, preserve existing route/query/session behavior, keep keyboard focus visible, and have explicit browser evidence for representative light and dark catalog states. | Focused App/catalog tests, browser screenshots for `/catalog` at desktop and mobile widths in light and dark modes, and full baseline for app changes. |
-| M26 - Contract-Backed Mock API Development Mode | Done | Added an opt-in Vite mock API development mode so frontend-only work can run without the sibling backend. The mock serves same-origin `/api/**`, uses generated OpenAPI types for fixtures and route shapes, and keeps session-cookie metadata, login-provider metadata, logout, CSRF, localization, pagination, repeated filters, and representative error behavior aligned with the backend contract. | `npm run dev:mock` runs the frontend against mock middleware instead of the local backend proxy, supports admin/user/anonymous sessions plus success/empty/error scenarios, keeps in-memory mutations for development, and documents that live backend smoke remains the contract-confidence path. | Mock handler tests cover OpenAPI path coverage, session metadata and cookies, CSRF enforcement, repeated category filtering, pagination, version increments, empty/error scenarios, and login/logout state. |
-| M27 - Admin Catalog Actions Column Polish | Done | Polished the admin books table actions column so long edit/delete labels do not wrap into bulky multi-line buttons for rows such as `Manual Regression Book no-tag`. Scope included action button labeling/layout, column sizing, wrapping behavior, responsive behavior, and accessibility/focus treatment while preserving existing backend/API, auth, sorting, filtering, pagination, localization, and destructive-action behavior. | Admin catalog row actions remain easy to scan and operate on desktop and mobile, long labels do not distort the table, keyboard focus stays visible, and edit/delete intent and destructive-action safeguards remain unchanged. | Focused admin catalog tests or browser smoke for representative long-label rows, plus full baseline for app changes. |
-
 ## Near-Term Backlog
 
-1. Select the next product, visual, automation, or release-prep slice after the
-   completed M27 admin catalog actions column polish.
+1. Select the next product, visual, automation, or release-prep slice.
 2. Keep backend surface expansion unselected unless a future backend contract
    refresh or product decision introduces an approved operation gap.
 3. Turn the M18 fake-OAuth readiness contract into an executable authenticated smoke

@@ -17,6 +17,12 @@
 | Status | Local v0.2.0 Release Prepared |
 | Last Updated | 2026-06-07 |
 
+## Archive Note
+
+This file is the historical execution record for the `v0.2.0` plan. Its status
+tables intentionally preserve the plan-time state. Later local completion of
+M19 and M23-M27 is archived in `docs/ROADMAP_ARCHIVE.md`.
+
 ## Planning Readiness
 
 | Field | Value |

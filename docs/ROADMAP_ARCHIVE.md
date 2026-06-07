@@ -12,6 +12,7 @@ remain in `ROADMAP.md`. Released user-visible history remains in `CHANGELOG.md`.
   `.agents/plans/archive/PLAN_frontend_release_procedure_execution.md`.
 - M16-M24 post-`0.1.0` roadmap execution is recorded in
   `.agents/plans/archive/PLAN_post_0_1_roadmap_execution.md`.
+- Later local M19/M23-M27 completion is summarized in this archive.
 
 ## Completed Milestones
 
@@ -36,12 +37,25 @@ remain in `ROADMAP.md`. Released user-visible history remains in `CHANGELOG.md`.
 | M16 - Contract Coverage And Scope Audit | Post-`0.1.0` audit of approved backend OpenAPI operations against generated types, clients, routes, specs, and tests | `docs/API_COVERAGE.md` classifies all 22 approved operations as implemented, with no uncovered operation gap requiring M22 surface selection |
 | M17 - Anonymous Browser Smoke Automation | Canonical anonymous same-origin smoke command for session bootstrap and public catalog flows | `npm run smoke:anonymous` exists, documents prerequisites and skip behavior, and can run without credentials through the frontend `/api/**` proxy |
 | M18 - Authenticated Smoke Automation Readiness | Fake-OAuth readiness contract for repeatable local authenticated smoke | `docs/LOCAL_AUTH_SMOKE.md` names `local,oauth,fake-oauth`, `smoke` provider discovery from `GET /api/session`, `smoke:smoke-user` admin seeding, CSRF/logout/account/admin checks, and skip/fail behavior |
-| M19 - Public Catalog Workflow Polish | Focused catalog polish candidate | No implementation selected for `0.2.0`; remains future product scope because no concrete polish target was selected |
+| M19 - Public Catalog Workflow Polish | Canonical public catalog route query state, visible active filter/sort/page summaries, default-filter clarity, and accessible sort affordances without backend changes | Component/route tests cover canonical URL replacement, visible query-state summaries, sort control names, and existing request serialization |
 | M20 - Container And Deployment Hardening Refinement | Advisory first pass for frontend-owned hardening with Trivy, rendered-manifest kube-linter, and runtime/Nginx invariant checks | `npm run hardening:runtime`, `npm run hardening:kube-linter`, `npm run hardening:trivy`, and `npm run hardening:m20` exist; findings remain advisory until stable thresholds and exception workflow are selected |
 | M21 - Login Provider Metadata Guardrail | Regression coverage for metadata-driven login provider links | Auth/session tests prove providers are rendered from `loginProviders[]` and `authorizationPath`, and no login entry point is invented when metadata omits an authorization path |
 | M22 - Backend Surface Expansion Selection | Backend-supported surface selection from M16 gaps | No surface was selected because M16 found no uncovered approved backend operations |
-| M23 - Implemented Flow Visual Design Pass | Visual design pass candidate | No implementation selected for `0.2.0`; remains future product scope because no concrete flow or evidence target was selected |
+| M23 - Dark Mode Support | App-level light/dark/system theme preference for implemented public catalog, account, admin, and operator flows without backend/API behavior changes | Theme selection renders consistently across implemented routes, survives reloads for explicit preferences, preserves keyboard focus visibility and accessible contrast, and has focused component/route coverage plus browser evidence on representative public and authenticated shells |
 | M24 - Post-`0.1.0` Release Preparation | `0.2.0` release metadata, validation evidence, and publication | `CHANGELOG.md`, `ROADMAP.md`, package metadata, validation evidence, GitHub Release, GHCR image tags, signature/provenance evidence, and published release notes agree for `v0.2.0` |
+
+## Completed Post-v0.2.0 Local Work
+
+These milestones landed locally after the `v0.2.0` release history. M24 is reused
+here because the later local roadmap sequence selected a new M24 after the
+post-`0.1.0` release-prep M24 above.
+
+| Milestone | Scope | Done when |
+| --- | --- | --- |
+| M24 - Browser Session Surface Cleanup | Moved Browser Session status and session metadata out of the main page content into a hidden-by-default Session details surface in the app chrome | Primary implemented pages no longer show the Browser Session panel by default, session diagnostics remain reachable through an explicit accessible control, and session bootstrap/login/logout behavior remains unchanged |
+| M25 - Public Catalog And App Shell Visual Design Pass | Polished the implemented anonymous `/catalog` flow and shared app shell after Browser Session surface cleanup, including header/action layout, intro hierarchy, filters, category chips, query summary, table readability, pagination, focus-visible styling, and responsive light/dark/system behavior | The catalog and shell are easier to scan on desktop and mobile, preserve existing route/query/session behavior, keep keyboard focus visible, and have browser evidence for representative light and dark catalog states |
+| M26 - Contract-Backed Mock API Development Mode | Added opt-in Vite mock API development mode so frontend-only work can run without the sibling backend while preserving same-origin `/api/**` shape and generated OpenAPI type alignment | `npm run dev:mock` runs against mock middleware, supports admin/user/anonymous sessions plus success/empty/error scenarios, keeps in-memory mutations for development, and documents live backend smoke as the contract-confidence path |
+| M27 - Admin Catalog Actions Column Polish | Polished the admin books table actions column so long edit/delete labels do not wrap into bulky multi-line buttons while preserving existing backend/API, auth, sorting, filtering, pagination, localization, and destructive-action behavior | Admin catalog row actions remain easy to scan and operate on desktop and mobile, long labels do not distort the table, keyboard focus stays visible, and edit/delete intent and safeguards remain unchanged |
 
 ## Completed Implementation Notes
 
@@ -67,8 +81,8 @@ remain in `ROADMAP.md`. Released user-visible history remains in `CHANGELOG.md`.
 - M16-M21 added the post-`0.1.0` coverage and smoke evidence: API coverage audit,
   anonymous browser smoke, fake-OAuth readiness, advisory hardening commands, and
   metadata-driven login provider guardrails.
-- M19 and M23 were not implemented for `0.2.0` because they require explicit
-  product scope before UI changes.
+- M19 and M23 were not implemented for `0.2.0`; they were later selected and
+  completed as local post-release work.
 
 ## Completed Procedure Adoption
 

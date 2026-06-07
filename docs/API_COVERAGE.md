@@ -104,9 +104,9 @@ summary.
   matches `docs/backend/FRONTEND_AI_CONTRACT.md`, and every approved path template
   is present in `src/api/generated/openapi.ts`.
 
-## Recommended Promotion
+## M16-Time Recommendation
 
-Recommended next promotion after M16:
+Recommended next promotion after the M16 audit:
 
 1. Promote M17, anonymous browser smoke automation. Since no approved API surface
    is missing, the highest-value dependent follow-up is live same-origin coverage
@@ -117,7 +117,8 @@ Recommended next promotion after M16:
    tests, docs, and specs for provider path constants outside backend-contract
    examples and fixtures.
 
-Do not promote M22 for backend surface expansion from this audit alone. There are
-no uncovered approved operations to select. M19 and M23 should wait for an explicit
-public-catalog or implemented-flow UX/design scope rather than treating API
-coverage as the driver.
+At M16 audit time, M22 was not promoted for backend surface expansion because
+there were no uncovered approved operations to select. M17 and M21 later shipped,
+M19 and M23 were later selected and completed from explicit UI scope, and M22
+remains unnecessary unless a future backend contract refresh introduces an
+approved operation gap.
