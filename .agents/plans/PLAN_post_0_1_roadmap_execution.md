@@ -182,7 +182,32 @@ Implementation notes:
 - Promote exactly one next slice or a small ordered set of slices in `ROADMAP.md`;
   do not make future review gates blockers for a ready slice.
 
-## Phase 2: M20 Advisory Hardening Implementation
+## Phase 2: M18 Authenticated Smoke Automation Readiness
+
+| Field | Value |
+| --- | --- |
+| Status | Ready |
+| Goal | Define repeatable authenticated smoke prerequisites using the backend fake-OAuth provider without hard-coding provider paths or secrets |
+| Owned Files Or Packages | `docs/LOCAL_AUTH_SMOKE.md`, `docs/LOCAL_DEVELOPMENT.md`, optional smoke script docs, this plan |
+| Selected Inputs | Backend profile `local,oauth,fake-oauth`, `smoke` login provider discovered from `GET /api/session`, first-admin bootstrap identity `smoke:smoke-user`, default fake login `smoke-user` |
+| Behavior To Preserve | Login-provider discovery from `GET /api/session`; logout CSRF handling; no secrets committed |
+| Deliverables | Owner docs name fake-OAuth profile setup, default identity, optional `FAKE_OAUTH_*` overrides, admin seeding, login-provider discovery, and skip/fail behavior |
+| Validation Checkpoint | `git diff --check`; later executable smoke uses full baseline and selected smoke command |
+| Commit Checkpoint | One scoped M18 readiness commit when plan execution is requested |
+
+Implementation notes:
+
+- Start from `SPRING_PROFILES_ACTIVE=local,oauth,fake-oauth` and
+  `APP_BOOTSTRAP_INITIAL_ADMIN_IDENTITIES=smoke:smoke-user`.
+- Discover the `smoke` provider from `loginProviders[]` and start login through its
+  relative `authorizationPath`; do not hard-code `/test-support/oauth2/**`.
+- Treat backend unavailable or missing fake provider as a skip with a clear reason.
+- Treat successful login followed by missing CSRF metadata, failed account access,
+  failed logout, or failed ADMIN access with the configured admin seed as a failure.
+- Keep GitHub and OIDC provider smoke as optional manual checks, not the canonical
+  frontend smoke path.
+
+## Phase 3: M20 Advisory Hardening Implementation
 
 | Field | Value |
 | --- | --- |
@@ -210,7 +235,7 @@ Implementation notes:
   fix it inside M20. If the fix is broad, record a follow-up roadmap row instead of
   expanding the slice silently.
 
-## Phase 3: M21 Login Provider Metadata Guardrail
+## Phase 4: M21 Login Provider Metadata Guardrail
 
 | Field | Value |
 | --- | --- |
@@ -230,7 +255,7 @@ Implementation notes:
 - Treat examples copied from backend contract docs as examples only; do not branch on
   provider URL strings in frontend code.
 
-## Phase 4: M22 Backend Surface Expansion Selection
+## Phase 5: M22 Backend Surface Expansion Selection
 
 | Field | Value |
 | --- | --- |
@@ -251,7 +276,7 @@ Implementation notes:
 - Keep pagination, repeated filters, CSRF, localization, and session metadata rules
   anchored in backend contract artifacts and tests.
 
-## Phase 5: M17 Anonymous Browser Smoke Automation
+## Phase 6: M17 Anonymous Browser Smoke Automation
 
 | Field | Value |
 | --- | --- |
@@ -271,7 +296,7 @@ Implementation notes:
   pagination, sorting, and reproducible localized public-read failures where stable.
 - Report backend-unavailable states as skips, not false passes.
 
-## Phase 6: M19 Public Catalog Workflow Polish
+## Phase 7: M19 Public Catalog Workflow Polish
 
 | Field | Value |
 | --- | --- |
@@ -291,7 +316,7 @@ Implementation notes:
 - Do not change backend request semantics unless M22 selected and implemented a
   backend-supported API surface first.
 
-## Phase 7: M23 Implemented Flow Visual Design Pass
+## Phase 8: M23 Implemented Flow Visual Design Pass
 
 | Field | Value |
 | --- | --- |
@@ -309,31 +334,6 @@ Implementation notes:
 - Use this only for implemented public, account, admin, or operator flows.
 - Define browser evidence before changing UI.
 - Keep the pass focused enough for one coherent review.
-
-## Phase 8: M18 Authenticated Smoke Automation Readiness
-
-| Field | Value |
-| --- | --- |
-| Status | Ready |
-| Goal | Define repeatable authenticated smoke prerequisites using the backend fake-OAuth provider without hard-coding provider paths or secrets |
-| Owned Files Or Packages | `docs/LOCAL_AUTH_SMOKE.md`, `docs/LOCAL_DEVELOPMENT.md`, optional smoke script docs, this plan |
-| Selected Inputs | Backend profile `local,oauth,fake-oauth`, `smoke` login provider discovered from `GET /api/session`, first-admin bootstrap identity `smoke:smoke-user`, default fake login `smoke-user` |
-| Behavior To Preserve | Login-provider discovery from `GET /api/session`; logout CSRF handling; no secrets committed |
-| Deliverables | Owner docs name fake-OAuth profile setup, default identity, optional `FAKE_OAUTH_*` overrides, admin seeding, login-provider discovery, and skip/fail behavior |
-| Validation Checkpoint | `git diff --check`; later executable smoke uses full baseline and selected smoke command |
-| Commit Checkpoint | One scoped M18 readiness commit when plan execution is requested |
-
-Implementation notes:
-
-- Start from `SPRING_PROFILES_ACTIVE=local,oauth,fake-oauth` and
-  `APP_BOOTSTRAP_INITIAL_ADMIN_IDENTITIES=smoke:smoke-user`.
-- Discover the `smoke` provider from `loginProviders[]` and start login through its
-  relative `authorizationPath`; do not hard-code `/test-support/oauth2/**`.
-- Treat backend unavailable or missing fake provider as a skip with a clear reason.
-- Treat successful login followed by missing CSRF metadata, failed account access,
-  failed logout, or failed ADMIN access with the configured admin seed as a failure.
-- Keep GitHub and OIDC provider smoke as optional manual checks, not the canonical
-  frontend smoke path.
 
 ## Phase 9: M24 Post-0.1.0 Release Preparation
 
