@@ -126,6 +126,13 @@ Start with this file and the user's request. Load only the mapped owner files ne
 | `.agents/references/troubleshooting.md`  | Validation failure triage and local problem-solving routes                                      | Failed commands, local workflow issues, incomplete smoke results                          |
 | `.agents/references/workflow.md`         | Coordinator, planner, worker, reviewer, verifier, and delegation mechanics                      | Delegation, worker prompts, read sets, scoped handoffs                                    |
 
+### Reusable Prompts
+
+| File                                     | Owns                                     | Load when the task involves                                     |
+| ---------------------------------------- | ---------------------------------------- | --------------------------------------------------------------- |
+| `.agents/prompts/README.md`              | Reusable prompt catalog and prompt rules | Finding or maintaining repository prompt recipes                |
+| `.agents/prompts/compact-ai-guidance.md` | Compact AI guidance prompt recipe        | Compacting standing AI guidance without changing current policy |
+
 ### Authoritative Documentation
 
 | File                                                | Owns                                                                                                                  | Load when the task involves                                                               |
