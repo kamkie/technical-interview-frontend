@@ -3,11 +3,6 @@
 [optional body: explain what changed and why]
 
 Project-Source: <plan|milestone|task|prompt|manual>
-Project-Plan: <plan path or omit>
-Project-Milestone: <milestone name or omit>
-Project-Task: <repo-task slug/title or omit>
-Project-Prompt: <short direct-request summary or omit>
-Refs: <paths/issues/PRs or omit>
 Validation: <command/result>
 
 # Conventional Commits 1.0.0 shape:
@@ -40,6 +35,14 @@ Validation: <command/result>
 #   Use manual only for human-authored commits outside the AI workflow.
 #   Include only the Project-* footers that apply.
 #   Validation is required for AI-created commits; say "not run" with a reason when needed.
+#   Keep all included footers contiguous. Do not add blank lines inside the footer block.
+#
+# Optional footers, when applicable:
+#   Project-Plan: <plan path>
+#   Project-Milestone: <milestone name>
+#   Project-Task: <repo-task slug/title>
+#   Project-Prompt: <short direct-request summary>
+#   Refs: <paths/issues/PRs>
 #
 # Examples:
 #   feat(books): add publication-year search filter

@@ -180,7 +180,7 @@ Status model:
 | 3: M15 AI procedure references | Waiting | M15 worker | Pending | `git diff --check`; full baseline only if non-doc files change | Waits for M14 |
 | 4: M13-A Hardening selection | Waiting | M13 worker | Pending | `git diff --check`; full baseline if package/workflow files change | Waits for M14/M15 |
 | 5: M13-B Hardening implementation | Waiting | M13 worker | Pending | Selected hardening commands plus full baseline | Waits for M13-A |
-| 6: M12-B Release cut | Waiting | M12 worker / coordinator | Pending | Full baseline, tag verification, clean git status | Waits for M13-B and synced `main` |
+| 6: M12-B Release cut | Waiting | M12 worker for metadata edits; coordinator for validation, commit, tag, and plan recording | Pending | Full baseline, tag verification, clean git status | Waits for M13-B and synced `main` |
 
 ## Phase 1: M12-A Release-Readiness Audit
 
