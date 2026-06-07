@@ -1,0 +1,75 @@
+# AI Release Reference
+
+This file owns AI-facing release sequencing, version choice, annotated tags,
+changelog promotion, package checks, and post-release roadmap cleanup for the
+frontend repository.
+
+Release work is maintainer-owned. Do not create commits, tags, pushes, or published
+releases unless the current user request or active plan explicitly authorizes that
+specific action. Remote publication requires explicit current authorization.
+
+## Preconditions
+
+Before preparing a release, confirm:
+
+- the intended implementation scope is complete, reviewed, and integrated on
+  `main`
+- local `main` is synced to the exact release-candidate state
+- backend contract artifacts and generated API types are current, or any intentional
+  refresh is already reviewed
+- `CHANGELOG.md`, `ROADMAP.md`, `README.md`, `SETUP.md`, package metadata, and
+  validation evidence describe the same candidate
+- the full validation baseline passed for the exact candidate
+- selected M13 hardening checks have passed when they exist, or each exception has
+  an owner and release decision
+- browser smoke evidence is recorded, or unavailable authenticated smoke is called
+  out with the reason
+
+## Version Choice
+
+Use semantic version tags:
+
+- `vMAJOR.MINOR.PATCH` for stable releases
+- `vMAJOR.MINOR.PATCH-PRERELEASE` for prereleases
+
+Choose `PATCH` for compatible fixes or cleanup, `MINOR` for backward-compatible
+frontend feature expansion, and `MAJOR` only for an explicitly selected breaking
+change. Keep versions increasing in first-parent history order.
+
+## Release Sequence
+
+1. Inspect current state with `git status --short`, `git branch --show-current`,
+   `git tag --sort=v:refname`, and first-parent history.
+2. Stop if the release would include unrelated dirty work or is not being cut from
+   synced `main`.
+3. Promote release-relevant `CHANGELOG.md` entries from `## [Unreleased]` into a
+   dated `## [VERSION] - YYYY-MM-DD` section, leaving a fresh `## [Unreleased]`.
+4. Verify `package.json` and `package-lock.json` versions match the selected
+   release.
+5. Update `ROADMAP.md` so release phase, latest release, next target version,
+   immediate action, milestone statuses, and deferred scope agree with the release.
+6. Re-run required validation if metadata edits made earlier evidence stale.
+7. When commit authorization exists, commit release metadata as
+   `Prepare vMAJOR.MINOR.PATCH[-PRERELEASE] release`.
+8. When tag authorization exists, create an annotated tag named
+   `vMAJOR.MINOR.PATCH[-PRERELEASE]` with annotation
+   `Release vMAJOR.MINOR.PATCH[-PRERELEASE]`.
+9. Verify the tag points at the release commit and `git status --short` is clean
+   except for explicitly excluded user-owned files.
+
+## Publication And Cleanup
+
+Push `main`, push tags, or publish release notes only when the current task
+explicitly asks for remote publication. After publication, verify release notes match
+the released changelog section.
+
+Post-release roadmap cleanup should:
+
+- move completed work out of the active roadmap view
+- update latest release, next target version, release phase, and immediate action
+- leave active, waiting, and deferred work visible
+- avoid creating another durable released-history file; shipped history belongs in
+  `CHANGELOG.md`
+
+If the frontend later gains a packaged release artifact or release automation, add
+the artifact checks to this reference before treating them as release-blocking.

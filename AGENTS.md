@@ -99,6 +99,19 @@ For upcoming implementation work, prefer:
 - the existing npm scripts for `lint`, `typecheck`, `test`, `build`, and local
   development
 
+## Focused AI References
+
+Use these focused references for procedure details that do not belong inline here:
+
+- `.agents/references/documentation.md` owns AI-facing artifact routing and
+  cross-file alignment checks.
+- `.agents/references/testing.md` owns validation selection by change type.
+- `.agents/references/reviews.md` owns code-review, spec-drift,
+  documentation-drift, and security-review triggers.
+- `.agents/references/releases.md` owns release sequencing, version choice,
+  annotated tags, changelog promotion, package checks, and post-release roadmap
+  cleanup.
+
 ## Plan Execution Rules
 
 When the user asks to implement an active plan, the plan is the execution contract.
@@ -134,33 +147,15 @@ When the user asks to implement an active plan, the plan is the execution contra
 
 ## Change Routing
 
-Use the smallest owner that covers the change:
-
-| Change type | Required artifacts |
-| --- | --- |
-| Backend API integration | imported backend contract, API client/types, affected UI, tests |
-| Session/auth behavior | session client, CSRF handling, route guards, tests or smoke notes |
-| UI behavior | component/page code, user-facing tests, accessibility/responsive checks |
-| Localization/error handling | API client or UI rendering, locale tests, docs if behavior changes |
-| Setup/tooling | `SETUP.md`, package scripts/config, this file if canonical commands change |
-| AI guidance | this file and any directly affected human-facing doc |
-| Roadmap/product scope | `ROADMAP.md`; add a separate spec only when behavior is too broad for a roadmap row |
-
-Avoid storing durable rules in plans, scratch files, or final responses only. Put the
-rule in the owner document above.
+Use `.agents/references/documentation.md` to choose the smallest durable owner and
+to check cross-file alignment. Avoid storing durable rules only in plans, scratch
+files, or final responses.
 
 ## Validation
 
-Current minimum validation:
-
-- app or tooling changes: `npm run lint`, `npm run typecheck`, `npm test`,
-  `npm run build`, and `git diff --check`
-- API type workflow changes: `npm run api:types:check`
-- docs/guidance-only: `git diff --check`
-- imported backend contract refresh: run `scripts/sync-backend-contract.ps1`, then
-  `git diff --check`
-- session/auth browser behavior: add and run browser smoke or e2e coverage for the
-  affected flow; no canonical command exists until those flows are implemented
+Use `.agents/references/testing.md` to choose validation by change type. Report
+commands run, skipped validation with reasons, and any remaining smoke or contract
+risk.
 
 ## Git And Handoff
 
@@ -171,6 +166,8 @@ Current minimum validation:
   keeping unrelated changes out of each commit.
 - Use `.gitmessage` as the commit-message format when committing AI-authored work.
 - Keep unrelated user changes intact.
+- Follow `.agents/references/releases.md` for release commits, annotated tags,
+  changelog promotion, package checks, and post-release cleanup.
 - In handoff, report changed files, validation run, skipped validation with reasons,
   and any remaining risks.
 
@@ -184,5 +181,9 @@ task:
 - roadmap/product scope: `ROADMAP.md`
 - public project overview: `README.md`
 - commit formatting: `.gitmessage`
+- documentation routing: `.agents/references/documentation.md`
+- validation selection: `.agents/references/testing.md`
+- reviews: `.agents/references/reviews.md`
+- release preparation: `.agents/references/releases.md`
 
 Do not bulk-load generated contract files unless the task needs exact schema details.
