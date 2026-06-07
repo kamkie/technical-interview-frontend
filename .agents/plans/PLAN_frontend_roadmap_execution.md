@@ -23,13 +23,11 @@
 | Decision Complete | Yes for dependency-ordered execution |
 | Blocking Open Questions | No known blockers for the next ready milestone |
 | Accepted Fallbacks | Execute the next ready milestone; dependent tasks become ready when their prerequisites are implemented and validated |
-| Ready For Execution | Yes; start M11 implementation |
+| Ready For Execution | Complete |
 | Last Updated | 2026-06-07 |
 
-Phases 1 through 4 are implemented and recorded. Remaining implementation proceeds by dependency
-order. Future dependency gates are sequencing rules, not blockers for starting the
-next ready milestone. When a milestone implements the prerequisite for another
-milestone, the coordinator updates this plan and marks the dependent task ready.
+Phases 1 through 5 are implemented and recorded. Roadmap execution is complete for
+the milestones in this plan.
 
 ## Linked Pre-Planning Artifacts
 
@@ -88,7 +86,7 @@ and no implementation work outside the selected milestone/spec scope.
 | 2 | M3, M5 | Complete | Milestone commits landed and validation passed |
 | 3 | M6, M7 | Complete | Milestone commits landed and validation passed |
 | 4 | M8-M11 specs | Complete | Spec commits landed and coordinator review passed |
-| 5 | M8-M11 implementation | In Progress | M8-M10 are complete; M11 implementation is ready |
+| 5 | M8-M11 implementation | Complete | Implementation commits landed and validation passed |
 
 ## Requirement Gaps And Open Questions
 
@@ -97,7 +95,7 @@ and no implementation work outside the selected milestone/spec scope.
 | Q1 | None for Phase 1 | M1/M2/M4 were ready to implement | Coordinator | Completed | Phase 1 executed and recorded | No |
 | Q2 | M3 and M5 depend on Phase 1 outputs | M3 needs M2 table shape; M5 needs M4 local auth workflow and M3 route foundation | Coordinator | M5 Ready | M3 landed; start M5 | No |
 | Q3 | M6 and M7 depend on M5 | Account work needs authenticated session/header/route guard foundation | Coordinator | M7 Ready | M6 landed; start M7 | No |
-| Q4 | Admin/operator implementation needs specs | Roadmap requires small specs before implementation | Coordinator | M11 Ready | M10 landed; start M11 implementation | No |
+| Q4 | Admin/operator implementation needs specs | Roadmap requires small specs before implementation | Coordinator | Completed | Specs and implementations landed | No |
 
 ## Decision Log And Assumptions
 
@@ -179,7 +177,8 @@ Status model:
 | 17: M8 Admin Catalog Implementation | Done | M8 implementation subagent | `e4db55d` | Passed by M8 subagent and coordinator | Added authenticated admin catalog route, book/category writes, CSRF handling, and tests |
 | 18: M9 Admin Localization Implementation | Done | M9 implementation subagent | `a01004a` | Passed by M9 subagent and coordinator | Added authenticated admin localization route, localization writes, coverage/status logic, CSRF handling, and tests |
 | 19: M10 Operator Audit Implementation | Done | M10 implementation subagent | `f4fb517` | Passed by M10 subagent and coordinator | Added read-only operator route, audit API clients, URL-backed filters, details panel, partial payload handling, and tests |
-| 20: M11 Admin User Management Implementation | Ready | M11 implementation subagent | Pending | Pending | Sequence after M10 implementation landed |
+| 20: M11 Admin User Management Implementation | Done | M11 implementation subagent | `0796e81` | Passed by M11 subagent and coordinator | Added admin user list/detail, role provenance, role replacement, CSRF handling, and tests |
+| 21: Final roadmap execution gate | Done | Coordinator | Pending | Passed by coordinator | Final full validation passed |
 
 ## Phase 1: Completed Implementation
 
@@ -355,7 +354,7 @@ not a blocking gate unless the spec exposes an unresolved product decision.
 | M8 | `docs/specs/SPEC_admin_catalog_management.md` passed coordinator review | Implemented |
 | M9 | `docs/specs/SPEC_admin_localization_management.md` passed coordinator review | Implemented |
 | M10 | `docs/specs/SPEC_operator_audit_surface.md` passed coordinator review | Implemented |
-| M11 | `docs/specs/SPEC_admin_user_management.md` passed coordinator review | Implement M11 now |
+| M11 | `docs/specs/SPEC_admin_user_management.md` passed coordinator review | Implemented |
 
 ## Blockers And Replan Triggers
 
@@ -424,7 +423,8 @@ not a blocking gate unless the spec exposes an unresolved product decision.
 | 2026-06-07 | `npm run lint`; `npm run typecheck`; `npm test`; `npm run build`; `git diff --check` | M8 implementation | Passed | 6 test files, 67 tests; authenticated admin browser smoke skipped because no live authenticated backend session was available |
 | 2026-06-07 | `npm run lint`; `npm run typecheck`; `npm test`; `npm run build`; `git diff --check` | M9 implementation | Passed | 8 test files, 91 tests; authenticated admin browser smoke skipped because no live authenticated backend session was available |
 | 2026-06-07 | `npm run lint`; `npm run typecheck`; `npm test`; `npm run build`; `git diff --check` | M10 implementation | Passed | 10 test files, 107 tests; authenticated admin/operator browser smoke skipped because no live authenticated backend session was available |
-| 2026-06-07 | Pending | Final roadmap execution | Pending | Coordinator records result |
+| 2026-06-07 | `npm run lint`; `npm run typecheck`; `npm test`; `npm run build`; `git diff --check` | M11 implementation | Passed | 12 test files, 128 tests; authenticated admin browser smoke skipped because no live authenticated backend session was available |
+| 2026-06-07 | `npm run lint`; `npm run typecheck`; `npm test`; `npm run build`; `git diff --check` | Final roadmap execution | Passed | 12 test files, 128 tests; all planned milestones and specs are implemented and committed |
 
 ## User Validation
 
