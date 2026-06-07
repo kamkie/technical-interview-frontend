@@ -52,15 +52,6 @@ Defined work belongs in `Ready`, `Waiting`, or `Blocked` rows. Do not move plann
 
 For roadmap work that needs execution coordination, create or update a plan under `.agents/plans/` and reference it with a stable plan ID. Add a separate spec only when user-facing behavior is too broad or ambiguous for a roadmap row plus `docs/DESIGN.md`.
 
-## Current Dependency Expectations
-
-Keep downstream planned UI work aligned with the current hierarchy unless a roadmap-editing task explicitly changes it:
-
-- `M-UI-001` remains waiting on `M-GUIDANCE-001`.
-- `M-WORKFLOW-001` remains waiting on `M-UI-001`.
-- `M-SMOKE-001` remains planned waiting work after workflow polish.
-- `M-QUALITY-001` remains blocked until thresholds, owners, credentials, or repeatable evidence are selected.
-
 ## Editing Checks
 
 - Make the smallest coherent roadmap change.

@@ -53,7 +53,69 @@ Record: this archive.
 
 Scope: Later local M19 and M23-M27 completion summaries after `v0.2.0`.
 
+### PLAN-frontend-ai-guidance-design-alignment
+
+Labels: `type:plan`, `status:archived`
+
+Record: `.agents/plans/archive/PLAN_frontend_ai_guidance_design_alignment.md`
+
+Scope: `M-GUIDANCE-001` frontend design and AI guidance alignment.
+
 ## Completed Milestones
+
+### M-GUIDANCE-001: Frontend Design And AI Guidance Alignment
+
+Labels: `type:milestone`, `status:done`, `plan:PLAN-frontend-ai-guidance-design-alignment`
+
+Goal: Give frontend subagents a roadmap-aligned design owner and enough focused AI guidance to implement planned UI work without inventing intent, API behavior, or process.
+
+#### E-GUIDANCE-001: Roadmap-Aligned Design Owner
+
+Labels: `type:epic`, `milestone:M-GUIDANCE-001`, `status:done`
+
+Tasks:
+
+- T-GUIDANCE-001: Create `docs/DESIGN.md` for durable frontend product and design intent.
+- T-GUIDANCE-002: Align design direction with `M-UI-001`, `M-WORKFLOW-001`, `M-SMOKE-001`, `M-QUALITY-001`, and product non-goals.
+- T-GUIDANCE-003: Link the design owner from human-facing documentation entry points.
+
+Acceptance Criteria:
+
+- `docs/DESIGN.md` exists and matches the selected roadmap hierarchy.
+- Design intent stays separate from roadmap status, dependency, and release-context tracking.
+- Backend contract invariants remain owned by `docs/backend/` and executable tests.
+
+#### E-GUIDANCE-002: Subagent Execution Rails
+
+Labels: `type:epic`, `milestone:M-GUIDANCE-001`, `status:done`
+
+Tasks:
+
+- T-GUIDANCE-004: Add frontend-specific architecture, code-style, execution, workflow, planning, plan-execution, troubleshooting, and reference-maintenance guides under `.agents/references/`.
+- T-GUIDANCE-005: Keep mandatory planning and implementation subagents for ad hoc implementation work.
+- T-GUIDANCE-006: Prevent backend-only Gradle, Flyway, REST Docs, operations, or deployment runbook weight from entering frontend guidance.
+
+Acceptance Criteria:
+
+- Focused AI guides give subagents clear intent, ownership boundaries, validation expectations, and stop conditions.
+- Guides preserve same-origin `/api/**`, session-cookie auth, metadata-driven login/logout, CSRF, localization, pagination, repeated filter, and versioned update rules.
+- No guide recreates obsolete `Procedure Adoption Scope` or `Smoke And Local Procedure Candidates` roadmap sections.
+
+#### E-GUIDANCE-003: Root Rules, Plan Template, And Handoff Alignment
+
+Labels: `type:epic`, `milestone:M-GUIDANCE-001`, `status:done`
+
+Tasks:
+
+- T-GUIDANCE-007: Compact `AGENTS.md` around owner-guide routing while preserving implementation authorization, dirty-worktree protection, mandatory subagents, and backend contract invariants.
+- T-GUIDANCE-008: Add the minimal reusable active-plan template needed for selected frontend plans.
+- T-GUIDANCE-009: Align `.gitmessage` and human-facing AI collaboration docs with the selected workflow.
+
+Acceptance Criteria:
+
+- Root AI rules route detailed procedure to focused owner guides instead of duplicating full workflows.
+- The plan template supports active plan execution without adding generic command wrappers or workflow-state directories by default.
+- Handoffs report changed files, validation, skipped checks, roadmap changes by stable ID, and remaining risks.
 
 ### M0: Foundation
 

@@ -11,10 +11,10 @@
 
 ## Lifecycle
 
-| Status | Current  |
-| ------ | -------- |
-| Phase  | Complete |
-| Status | Done     |
+| Status | Current                               |
+| ------ | ------------------------------------- |
+| Phase  | Archived Completed Guidance Execution |
+| Status | Complete; Archived                    |
 
 ## Planning Readiness
 
@@ -23,21 +23,21 @@
 | Decision Complete       | Yes                                                                                                                               |
 | Blocking Open Questions | None                                                                                                                              |
 | Accepted Fallbacks      | Keep mandatory planning and implementation subagents; adopt backend-style focused owner guides only where they add frontend value |
-| Ready For Execution     | Completed                                                                                                                         |
+| Ready For Execution     | Complete                                                                                                                          |
 | Last Updated            | 2026-06-07                                                                                                                        |
 
 ## Linked Artifacts
 
-| Artifact                 | Path                                                                             | Role                                                                                                                    | Status                                                                                                                             |
-| ------------------------ | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Root AI rules            | `AGENTS.md`                                                                      | Repository-level AI entry point, backend contract invariants, authorization, dirty-worktree rules, and delegation rules | Needs compaction and owner-guide routing                                                                                           |
-| Roadmap                  | `ROADMAP.md`                                                                     | Selected and planned frontend scope using stable milestone, epic, task, and plan IDs                                    | Current shape has replaced the older deferred procedure-adoption sections; keep aligned without recreating them                    |
-| Human lifecycle guide    | `docs/DEVELOPMENT_LIFECYCLE.md`                                                  | Human-facing artifact routing and lifecycle summary                                                                     | Needs `docs/DESIGN.md` routing alignment                                                                                           |
-| Human AI guide           | `docs/WORKING_WITH_AI.md`                                                        | Human guidance for asking AI agents to plan, implement, validate, and review                                            | Needs mandatory-subagent and design-owner alignment                                                                                |
-| Documentation index      | `docs/README.md`                                                                 | Human-facing documentation owner index                                                                                  | Needs `docs/DESIGN.md` entry after creation                                                                                        |
-| Existing AI references   | `.agents/references/`                                                            | Focused AI procedure references                                                                                         | Missing execution, workflow, planning, plan-execution, architecture, code-style, troubleshooting, and reference-maintenance owners |
-| Backend model            | `D:\Projects\demo\technical-interview-demo\AGENTS.md` and `.agents/references/*` | Working comparison source for guidance shape, not content to copy blindly                                               | Consult selectively                                                                                                                |
-| Backend contract imports | `docs/backend/`                                                                  | API integration truth for frontend behavior                                                                             | Preserve as authoritative                                                                                                          |
+| Artifact                 | Path                                                                             | Role                                                                                                                    | Status                                                                                                                          |
+| ------------------------ | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Root AI rules            | `AGENTS.md`                                                                      | Repository-level AI entry point, backend contract invariants, authorization, dirty-worktree rules, and delegation rules | Completed: compacted and routed to focused owner guides                                                                         |
+| Roadmap                  | `ROADMAP.md`                                                                     | Selected and planned frontend scope using stable milestone, epic, task, and plan IDs                                    | Completed: `M-GUIDANCE-001` archived and `M-UI-001` promoted as current priority                                                |
+| Human lifecycle guide    | `docs/DEVELOPMENT_LIFECYCLE.md`                                                  | Human-facing artifact routing and lifecycle summary                                                                     | Completed: aligned with `docs/DESIGN.md` routing                                                                                |
+| Human AI guide           | `docs/WORKING_WITH_AI.md`                                                        | Human guidance for asking AI agents to plan, implement, validate, and review                                            | Completed: aligned with mandatory-subagent and design-owner guidance                                                            |
+| Documentation index      | `docs/README.md`                                                                 | Human-facing documentation owner index                                                                                  | Completed: links to `docs/DESIGN.md`                                                                                            |
+| Existing AI references   | `.agents/references/`                                                            | Focused AI procedure references                                                                                         | Completed: execution, workflow, planning, plan-execution, architecture, code-style, troubleshooting, and reference guides added |
+| Backend model            | `D:\Projects\demo\technical-interview-demo\AGENTS.md` and `.agents/references/*` | Working comparison source for guidance shape, not content to copy blindly                                               | Consult selectively                                                                                                             |
+| Backend contract imports | `docs/backend/`                                                                  | API integration truth for frontend behavior                                                                             | Preserve as authoritative                                                                                                       |
 
 ## Summary
 
@@ -72,7 +72,7 @@ Out of scope:
 
 - The frontend has Vite, React, TypeScript, Node.js 24.x, npm 11.x, generated OpenAPI types, route/component tests, local auth smoke docs, hardening docs, and release docs.
 - The frontend now has `docs/DESIGN.md` as the durable product and design intent owner.
-- The active roadmap now uses stable IDs. `M-GUIDANCE-001` is the ready guidance milestone implemented by this plan; `M-UI-001` waits on it, `M-WORKFLOW-001` waits on UI foundation, `M-SMOKE-001` waits on workflow polish, and `M-QUALITY-001` is blocked on thresholds, owners, or repeatable evidence.
+- The active roadmap now uses stable IDs. `M-GUIDANCE-001` is completed and archived; `M-UI-001` is the current ready milestone, `M-WORKFLOW-001` waits on UI foundation, `M-SMOKE-001` waits on workflow polish, and `M-QUALITY-001` is blocked on thresholds, owners, or repeatable evidence.
 - Smoke and responsive layout work is no longer a deferred candidate. It is planned waiting work under `M-SMOKE-001`.
 - Procedure adoption scope is no longer a standalone roadmap section. Generic planning scaffolds, command wrappers, and workflow-state directories are product non-goals until repeated frontend work proves they are worth the process cost.
 - `AGENTS.md` already enforces mandatory planning and implementation subagents for ad hoc implementation work.
@@ -138,7 +138,7 @@ Shared files:
 - `AGENTS.md`: coordinator-owned or assigned to the root-rules worker only.
 - `ROADMAP.md`: read-only unless the coordinator assigns a narrowly scoped alignment edit; do not recreate obsolete sections.
 - `.agents/references/documentation.md`: coordinator-owned unless assigned during the documentation-routing task.
-- `.agents/plans/PLAN_frontend_ai_guidance_design_alignment.md`: coordinator-owned.
+- `.agents/plans/archive/PLAN_frontend_ai_guidance_design_alignment.md`: archived coordinator-owned execution record.
 
 ## Progress Tracker
 
