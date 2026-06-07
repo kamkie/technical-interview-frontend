@@ -12,13 +12,15 @@ published OpenAPI contract.
 
 ## Status
 
-The repository contains a Vite, React, and TypeScript app for the local `v0.1.0`
+The repository contains a Vite, React, and TypeScript app for the local `v0.2.0`
 release. The tag has been cut locally but has not been published remotely.
 
 Implemented surface includes session bootstrap, metadata-driven login/logout
 controls, public catalog flows, account profile and language preference flows, admin
 catalog/localization/user-management surfaces, and the operator overview/audit-log
-surface.
+surface. The repo also includes anonymous same-origin smoke automation,
+fake-OAuth auth-smoke readiness guidance, API coverage evidence, and advisory
+container/deployment hardening commands.
 
 ## Documentation
 

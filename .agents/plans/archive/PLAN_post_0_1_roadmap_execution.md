@@ -13,8 +13,8 @@
 
 | Field | Value |
 | --- | --- |
-| Phase | Active Execution |
-| Status | Blocked At M24 Release Authorization |
+| Phase | Complete |
+| Status | Local v0.2.0 Release Prepared |
 | Last Updated | 2026-06-07 |
 
 ## Planning Readiness
@@ -22,9 +22,9 @@
 | Field | Value |
 | --- | --- |
 | Decision Complete | Yes for M16 audit scope, M18 fake-OAuth readiness, selected M20 advisory hardening tools and policy, M17 anonymous smoke promotion, and M21 guardrail promotion |
-| Blocking Open Questions | M24 release preparation needs an explicit current release/version/tag task before changelog promotion, package metadata updates, release commit, or annotated tag work |
+| Blocking Open Questions | None for local release preparation; remote publication remains a separate explicit task |
 | Accepted Fallbacks | M20 findings are advisory-only during the first pass; generated hardening reports are not checked in; external-provider authenticated smoke remains optional |
-| Ready For Execution | No remaining unblocked slices in this plan |
+| Ready For Execution | No remaining slices in this plan |
 
 ## Summary
 
@@ -40,8 +40,8 @@ The first executable scope has landed:
 
 M16 found no uncovered approved backend operation, so M22 is not selected from this
 audit. M17 anonymous browser smoke automation and M21 login-provider metadata
-guardrails have landed. M19 and M23 are blocked on selected product scope. M24 is
-blocked until a current task explicitly requests release/version/tag work.
+guardrails have landed. M24 prepared the local `v0.2.0` release. M19 and M23 remain
+future product-scope candidates outside this completed plan.
 
 This plan is an execution contract. Durable product scope stays in `ROADMAP.md`;
 backend API rules stay in `docs/backend/`; local command and hardening procedure
@@ -120,6 +120,8 @@ Out of scope:
   and generated reports are not checked in.
 - M17 anonymous smoke automation is available as `npm run smoke:anonymous`.
 - M21 provider metadata guardrails are covered by auth/session tests.
+- M24 prepared local `v0.2.0` release metadata and tag state. Remote publication is
+  not performed by this plan.
 
 ## Decision Log
 
@@ -133,6 +135,7 @@ Out of scope:
 | D6 | Remote publication is not authorized by this plan alone | `AGENTS.md` git and release rules | 2026-06-07 | Current user request explicitly asks to push or publish |
 | D7 | M16 found no approved operation gaps; promote M17 and M21, do not select M22 from this audit | `docs/API_COVERAGE.md` | 2026-06-07 | Backend contract refresh or new approved operation gap |
 | D8 | M24 release preparation cannot proceed without an explicit release/version/tag task | `.agents/references/releases.md` and M24 commit checkpoint | 2026-06-07 | User explicitly requests release preparation |
+| D9 | User requested `release 0.2.0`, authorizing local release metadata, release commit, and annotated tag but not remote publication | Current user request | 2026-06-07 | User explicitly requests remote publication |
 
 ## Phase Map
 
@@ -145,9 +148,9 @@ Out of scope:
 | 4 | M21 Login Provider Metadata Guardrail | Done | Provider metadata guardrail tests landed |
 | 5 | M22 Backend Surface Expansion Selection | Not selected | M16 found no approved operation gaps |
 | 6 | M17 Anonymous Browser Smoke Automation | Done | Anonymous smoke command landed |
-| 7 | M19 Public Catalog Workflow Polish | Blocked on selected polish scope | Exact visible states and tests named |
-| 8 | M23 Implemented Flow Visual Design Pass | Blocked on selected visual scope | Exact flows, accessibility goals, and browser evidence named |
-| 9 | M24 Post-`0.1.0` Release Preparation | Blocked on explicit release task | Release/version/tag work requires current authorization |
+| 7 | M19 Public Catalog Workflow Polish | Not selected for 0.2.0 | Future product scope |
+| 8 | M23 Implemented Flow Visual Design Pass | Not selected for 0.2.0 | Future product scope |
+| 9 | M24 Post-`0.1.0` Release Preparation | Done | Local v0.2.0 release prepared |
 
 ## Progress Tracker
 
@@ -160,9 +163,9 @@ Out of scope:
 | 4: M21 metadata guardrail | Done | M21 worker | `50560f4` | Relevant auth tests and full baseline passed | Provider paths guarded by metadata-driven tests |
 | 5: M22 surface selection | Not selected | M22 worker | N/A | Covered by M16 | No approved operation gaps |
 | 6: M17 anonymous smoke | Done | M17 worker | `256b947` | `npm run smoke:anonymous` skipped clearly because frontend unavailable; full baseline passed | Smoke command added |
-| 7: M19 catalog polish | Blocked | M19 worker | Pending | Pending | Needs focused polish scope |
-| 8: M23 visual pass | Blocked | M23 worker | Pending | Pending | Needs focused visual scope |
-| 9: M24 release prep | Blocked | Release worker / coordinator | Pending | Pending | Needs explicit release/version/tag task |
+| 7: M19 catalog polish | Not selected | M19 worker | N/A | N/A | Future selected scope |
+| 8: M23 visual pass | Not selected | M23 worker | N/A | N/A | Future selected scope |
+| 9: M24 release prep | Done | Release worker / coordinator | This release commit | Full release validation; kube-linter unavailable after render; smoke skipped because frontend server unavailable | Local v0.2.0 release prepared; no remote publication |
 
 ## Phase 1: M16 Contract Coverage And Scope Audit
 

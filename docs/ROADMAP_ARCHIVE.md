@@ -10,6 +10,8 @@ remain in `ROADMAP.md`. Released user-visible history remains in `CHANGELOG.md`.
   `.agents/plans/archive/PLAN_frontend_roadmap_execution.md`.
 - M12-M15 release, procedure, and hardening work is recorded in
   `.agents/plans/archive/PLAN_frontend_release_procedure_execution.md`.
+- M16-M24 post-`0.1.0` roadmap execution is recorded in
+  `.agents/plans/archive/PLAN_post_0_1_roadmap_execution.md`.
 
 ## Completed Milestones
 
@@ -31,6 +33,15 @@ remain in `ROADMAP.md`. Released user-visible history remains in `CHANGELOG.md`.
 | M13 - Static Analysis And Hardening Tooling | Selected `0.1.0` hardening gates: explicit GitHub Actions permissions/concurrency, CodeQL, dependency-review, an npm audit script, Dependabot grouping, and documented triage/exception rules | CI and local scripts expose the selected checks; release preconditions name required hardening evidence; docs explain false-positive handling, skip policy, and artifact locations |
 | M14 - Human Procedure Documentation | Frontend procedure docs adapted from the backend repo: lifecycle/artifact routing, local development, AI collaboration, and documentation index | `docs/DEVELOPMENT_LIFECYCLE.md`, `docs/LOCAL_DEVELOPMENT.md`, `docs/WORKING_WITH_AI.md`, and `docs/README.md` exist; `README.md`, `SETUP.md`, and `CONTRIBUTING.md` link to the owners without duplicating them |
 | M15 - AI Procedure Reference Layer | Lean AI-facing owner guides for documentation routing, validation selection, review/security review, and release sequencing | `.agents/references/documentation.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and `.agents/references/releases.md` exist; `AGENTS.md` points to them; backend-only workflow state remains deferred |
+| M16 - Contract Coverage And Scope Audit | Post-`0.1.0` audit of approved backend OpenAPI operations against generated types, clients, routes, specs, and tests | `docs/API_COVERAGE.md` classifies all 22 approved operations as implemented, with no uncovered operation gap requiring M22 surface selection |
+| M17 - Anonymous Browser Smoke Automation | Canonical anonymous same-origin smoke command for session bootstrap and public catalog flows | `npm run smoke:anonymous` exists, documents prerequisites and skip behavior, and can run without credentials through the frontend `/api/**` proxy |
+| M18 - Authenticated Smoke Automation Readiness | Fake-OAuth readiness contract for repeatable local authenticated smoke | `docs/LOCAL_AUTH_SMOKE.md` names `local,oauth,fake-oauth`, `smoke` provider discovery from `GET /api/session`, `smoke:smoke-user` admin seeding, CSRF/logout/account/admin checks, and skip/fail behavior |
+| M19 - Public Catalog Workflow Polish | Focused catalog polish candidate | No implementation selected for `0.2.0`; remains future product scope because no concrete polish target was selected |
+| M20 - Container And Deployment Hardening Refinement | Advisory first pass for frontend-owned hardening with Trivy, rendered-manifest kube-linter, and runtime/Nginx invariant checks | `npm run hardening:runtime`, `npm run hardening:kube-linter`, `npm run hardening:trivy`, and `npm run hardening:m20` exist; findings remain advisory until stable thresholds and exception workflow are selected |
+| M21 - Login Provider Metadata Guardrail | Regression coverage for metadata-driven login provider links | Auth/session tests prove providers are rendered from `loginProviders[]` and `authorizationPath`, and no login entry point is invented when metadata omits an authorization path |
+| M22 - Backend Surface Expansion Selection | Backend-supported surface selection from M16 gaps | No surface was selected because M16 found no uncovered approved backend operations |
+| M23 - Implemented Flow Visual Design Pass | Visual design pass candidate | No implementation selected for `0.2.0`; remains future product scope because no concrete flow or evidence target was selected |
+| M24 - Post-`0.1.0` Release Preparation | `0.2.0` release metadata, validation evidence, and local tag preparation | `CHANGELOG.md`, `ROADMAP.md`, package metadata, validation evidence, and the local `v0.2.0` release task agree; remote publication remains explicitly separate |
 
 ## Completed Implementation Notes
 
@@ -53,6 +64,11 @@ remain in `ROADMAP.md`. Released user-visible history remains in `CHANGELOG.md`.
 - M14 human procedure docs live under `docs/` and keep entry-point docs linked to
   their owners. M15 AI-facing references live under `.agents/references/`, and
   `AGENTS.md` points to them without duplicating full procedures.
+- M16-M21 added the post-`0.1.0` coverage and smoke evidence: API coverage audit,
+  anonymous browser smoke, fake-OAuth readiness, advisory hardening commands, and
+  metadata-driven login provider guardrails.
+- M19 and M23 were not implemented for `0.2.0` because they require explicit
+  product scope before UI changes.
 
 ## Completed Procedure Adoption
 

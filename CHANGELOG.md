@@ -5,6 +5,8 @@ until they are promoted for a release tag.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-07
+
 ### Added
 
 - Added a production Docker image build for the Vite app with an unprivileged Nginx
@@ -14,6 +16,25 @@ until they are promoted for a release tag.
 - Added a tag-driven GitHub Release workflow that validates the candidate, publishes
   semantic and immutable GHCR image tags, signs and attests the image digest, and
   renders release notes with package links from `CHANGELOG.md`.
+- Added `docs/API_COVERAGE.md`, classifying all 22 approved backend OpenAPI
+  operations as covered by generated types, clients, UI, specs, or tests.
+- Added fake-OAuth authenticated smoke readiness guidance for the backend
+  `local,oauth,fake-oauth` profile and `smoke:smoke-user` bootstrap identity.
+- Added `npm run smoke:anonymous` for anonymous same-origin browser smoke coverage
+  of session bootstrap, public catalog reads, URL-backed filters, pagination,
+  repeated category/sort query values, and localized public-read failures when
+  reproducible.
+- Added advisory M20 hardening commands for runtime/Nginx invariants, rendered
+  Kustomize/Helm manifest linting with kube-linter, and Trivy image scanning.
+- Added regression coverage proving login provider links come from
+  `GET /api/session` metadata and are not invented when `authorizationPath` is
+  absent.
+
+### Changed
+
+- Shared the local `/api/**` proxy between Vite dev and preview servers so anonymous
+  smoke can target either frontend origin.
+- Aligned the Docker build stage with the repository's Node.js 24 runtime contract.
 
 ### Fixed
 
