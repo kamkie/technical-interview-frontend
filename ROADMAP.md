@@ -24,7 +24,7 @@ archived in `docs/ROADMAP_ARCHIVE.md`. Released history belongs in `CHANGELOG.md
 | Implemented surface | Session, public catalog, account, admin catalog, admin localization, admin users, operator |
 | Hardening baseline  | ESLint, TypeScript, Vitest, API type freshness, build, Docker build, whitespace, npm audit, CodeQL, dependency-review, Dependabot, and release image signing/provenance |
 | Latest release      | Local `v0.1.0` release cut on 2026-06-07; not published remotely                           |
-| Immediate action    | Start M16 contract coverage and post-`0.1.0` scope audit                                    |
+| Immediate action    | Start M16 contract coverage, post-`0.1.0` scope audit, and selected container/deployment hardening refinement |
 | Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`       |
 
 The app currently bootstraps browser session state with `GET /api/session`, renders
@@ -36,7 +36,8 @@ same-origin auth smoke steps, the canonical validation baseline, Docker image bu
 tag-driven GHCR package publication, and selected hardening evidence are documented.
 Completed M0-M15 work and plan records are
 archived in `docs/ROADMAP_ARCHIVE.md`; the next roadmap work starts with M16 and
-then promotes smoke automation or focused UX polish based on that audit.
+then promotes smoke automation, selected container/deployment hardening, or focused
+UX polish based on that audit and the selected follow-up scope.
 
 ## Product Direction
 
@@ -49,6 +50,9 @@ then promotes smoke automation or focused UX polish based on that audit.
   rules.
 - Prefer CI-owned hardening tools with reproducible local commands before treating a
   security or quality signal as release-blocking.
+- Treat container image vulnerability scanning, frontend-owned deployment posture
+  checks, and runtime infrastructure hardening as selected follow-up scope, not
+  deferred scope.
 
 ## Active Milestones
 
@@ -67,19 +71,22 @@ Status terms:
 | M17 - Anonymous Browser Smoke Automation | Waiting on M16 | Add a canonical browser smoke path for anonymous same-origin flows against the sibling backend through the Vite `/api` proxy. Cover session bootstrap, public categories/books, URL-backed filters, pagination, sorting, and localized public-read failures where reproducible. | A documented npm command or script exists, names backend/profile prerequisites, reports skipped backend-dependent steps clearly, and can run without credentials. Public smoke evidence is recorded in docs or test output. | Smoke command plus `git diff --check`; full baseline if package scripts, tooling, or app code change. |
 | M18 - Authenticated Smoke Automation Readiness | Blocked by missing agreed local credentials and identity seeding rules | Define the credential, backend profile, and admin identity seeding contract needed for repeatable authenticated smoke. Do not hard-code provider paths or secrets. | Owner docs name required environment variables or manual setup, expected ADMIN-capable identity, login-provider discovery from `GET /api/session`, logout CSRF handling, and skip behavior when credentials are unavailable. | `git diff --check`; later executable smoke work uses the full baseline and the selected smoke command. |
 | M19 - Public Catalog Workflow Polish | Waiting on M16 | Improve the already implemented public catalog workflow without backend changes: scan density, URL-state clarity, keyboard/focus behavior, accessible table controls, pagination/sort affordances, and localized loading/empty/error states. | A focused spec or roadmap note names the exact polish scope; component/route tests cover the changed visible states; anonymous smoke is updated if the workflow changes browser behavior. | Relevant tests plus full baseline for app changes. |
-| M20 - Post-`0.1.0` Release Preparation | Waiting on selected M16-M19 implementation scope | Prepare the next patch or minor release only after selected implementation and validation evidence land. | `CHANGELOG.md`, `ROADMAP.md`, package metadata when needed, validation evidence, completed milestone archive, and tag/publication decision agree for the selected release candidate. | Full baseline, `npm run audit:security`, release checks, and any selected smoke evidence or explicit skip rationale. |
+| M20 - Container And Deployment Hardening Refinement | Ready | Select and implement the first frontend-owned hardening pass for the container image, GHCR package, checked-in `infra/` references, and runtime config. Include vulnerability scanning, deployment posture checks, and runtime hardening where the frontend repository owns the artifact; exclude backend application operations and environment-specific deployment promotion. | Owner docs and scripts or CI signals name the selected scanner/checks, evidence location, triage owner, exception path, and release-blocking threshold. Follow-on rows are opened if implementation scope is larger than a single coherent hardening pass. | `git diff --check` for docs-only refinement; full baseline, `npm run docker:build`, and selected scanner/posture commands when tooling or runtime files change. |
+| M21 - Post-`0.1.0` Release Preparation | Waiting on selected M16-M20 implementation scope | Prepare the next patch or minor release only after selected implementation and validation evidence land. | `CHANGELOG.md`, `ROADMAP.md`, package metadata when needed, validation evidence, completed milestone archive, and tag/publication decision agree for the selected release candidate. | Full baseline, `npm run audit:security`, release checks, and any selected smoke evidence or explicit skip rationale. |
 
 ## Near-Term Backlog
 
-1. Execute M16 and promote the next ready M17 or M19 slice based on the coverage
-   audit.
-2. Add a canonical browser smoke or e2e command for anonymous same-origin
+1. Execute M16 and promote the next ready M17, M19, or M20 slice based on the
+   coverage audit and selected hardening scope.
+2. Refine M20 into a concrete frontend-owned scanner/posture/runtime hardening pass
+   with selected checks, evidence location, triage owner, and exception path.
+3. Add a canonical browser smoke or e2e command for anonymous same-origin
    session/catalog flows against the sibling backend.
-3. Keep M18 blocked until authenticated smoke credentials and seeding rules are
+4. Keep M18 blocked until authenticated smoke credentials and seeding rules are
    agreed, then turn the readiness contract into an executable smoke command.
-4. Exercise the documented local auth smoke workflow against the sibling backend and
+5. Exercise the documented local auth smoke workflow against the sibling backend and
    move repeatable gaps into tests or owner docs.
-5. If remote publication of the existing local `v0.1.0` tag is requested, treat it
+6. If remote publication of the existing local `v0.1.0` tag is requested, treat it
    as legacy/manual publication because that tag predates the Release workflow. For
    future release tags, push `main` and the annotated tag, then monitor the Release
    workflow and verify the GHCR package, signature/provenance evidence, and
@@ -136,9 +143,9 @@ Keep deferred:
 - Backend-specific Gradle, REST Docs, Flyway, restore-drill, application Helm,
   Kubernetes, and post-deploy smoke procedures. The frontend keeps lightweight
   reference manifests under `infra/` until a deployment target is selected.
-- Container image vulnerability scanning, deployment posture checks, and runtime
-  infrastructure hardening until the frontend has a selected scanner, deployment
-  target, or hosted runtime.
+- Environment-specific deployment promotion, hosted-runtime runbooks, and
+  backend-owned posture checks outside the frontend container/package/reference
+  manifests.
 
 ## Hardening Candidates
 
@@ -146,6 +153,15 @@ The selected M13 hardening baseline is implemented and archived in
 `docs/ROADMAP_ARCHIVE.md`. New hardening candidates should become release-blocking
 only after they have a repeatable local command or a clearly owned CI signal with
 triage and skip rules.
+
+Selected follow-up scope:
+
+- Container image vulnerability scanning, deployment posture checks, and runtime
+  infrastructure hardening: tracked by M20. The first pass selects scanner/posture
+  tools, frontend-owned targets, evidence location, triage owner, and exception path
+  for the Docker image, GHCR package, checked-in `infra/` references, and runtime
+  config. Make any gate release-blocking only after the command or CI signal is
+  repeatable and owned.
 
 Deferred candidates and revisit triggers:
 
@@ -164,14 +180,9 @@ Deferred candidates and revisit triggers:
 - CI artifact upload for hardening reports: revisit when a selected check writes
   stable report files; until then, use code-scanning alerts, pull-request check
   annotations, and workflow logs.
-- Container image vulnerability scanning: revisit now that the repository owns a
-  Docker image, but add it as a release-blocking check only after a stable scanner,
-  report location, triage owner, and exception path are selected.
-
-Do not add backend-only hardening gates, deployment scans, or runtime infrastructure
-checks until the frontend repository owns the corresponding deployment or hosted
-runtime responsibility. Do not make container image scanning release-blocking until
-the scanner and exception workflow are selected.
+Do not add backend-only hardening gates. Do not make selected container/deployment
+hardening release-blocking until the scanner or check, evidence location, triage
+owner, and exception workflow are selected.
 
 ## Release Procedure
 
@@ -263,14 +274,15 @@ Do not start release preparation until all of these are true:
 
 ## Deferred Scope
 
-- Alternate API transports, cross-origin browser support, JWT, and bearer-token auth.
 - Hard-coded OAuth provider paths outside the session bootstrap response.
 - New backend surfaces not yet selected in a roadmap row or spec.
 - Broad visual design work that is not tied to an implemented user flow.
+
+## Rejected Scope
+
+- Alternate API transports, cross-origin browser support, JWT, and bearer-token auth.
 - Deployment promotion beyond the GHCR package, checked-in reference manifests, and
   GitHub Release workflow.
-- Container image vulnerability scanning, deployment posture checks, and runtime
-  infrastructure hardening until selected as explicit follow-up scope.
 
 ## Roadmap Rules
 
