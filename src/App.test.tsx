@@ -46,13 +46,20 @@ describe('App', () => {
   })
 
   it('bootstraps the browser session and renders login providers', async () => {
+    const githubAuthorizationPath = '/api/session/from-metadata/primary-provider'
+    const smokeAuthorizationPath = '/api/session/from-metadata/fake-provider'
     const fetchMock = mockAppFetch({
       session: createSession({
         loginProviders: [
           {
             registrationId: 'github',
             clientName: 'GitHub',
-            authorizationPath: '/api/session/oauth2/authorization/github',
+            authorizationPath: githubAuthorizationPath,
+          },
+          {
+            registrationId: 'smoke',
+            clientName: 'Smoke Provider',
+            authorizationPath: smokeAuthorizationPath,
           },
         ],
       }),
@@ -74,6 +81,9 @@ describe('App', () => {
 
     const loginLink = await screen.findByRole('link', {
       name: 'Sign in with GitHub',
+    })
+    const smokeLoginLink = screen.getByRole('link', {
+      name: 'Sign in with Smoke Provider',
     })
 
     expect(fetchMock).toHaveBeenCalledWith(SESSION_PATH, {
@@ -106,10 +116,31 @@ describe('App', () => {
     expect(screen.getByText('XSRF-TOKEN -> X-XSRF-TOKEN')).toBeInTheDocument()
     expect(await screen.findByText('Clean Code')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Java' })).toBeInTheDocument()
-    expect(loginLink).toHaveAttribute(
-      'href',
-      '/api/session/oauth2/authorization/github',
-    )
+    expect(loginLink).toHaveAttribute('href', githubAuthorizationPath)
+    expect(smokeLoginLink).toHaveAttribute('href', smokeAuthorizationPath)
+  })
+
+  it('does not invent a login entry point when provider metadata has no authorization path', async () => {
+    mockAppFetch({
+      session: createSession({
+        loginProviders: [
+          {
+            registrationId: 'github',
+            clientName: 'GitHub',
+          },
+        ],
+      }),
+    })
+
+    renderApp('/account')
+
+    expect(
+      await screen.findByRole('heading', { name: 'Sign in required' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: 'Sign in with GitHub' }),
+    ).not.toBeInTheDocument()
+    expect(screen.getByText('No login providers available.')).toBeInTheDocument()
   })
 
   it('renders session bootstrap failures', async () => {
@@ -494,7 +525,7 @@ describe('App', () => {
           {
             registrationId: 'oidc',
             clientName: 'Company SSO',
-            authorizationPath: '/api/session/oauth2/authorization/oidc',
+            authorizationPath: '/api/session/from-metadata/account-guard',
           },
         ],
       }),
@@ -507,7 +538,7 @@ describe('App', () => {
     ).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: 'Sign in with Company SSO' }),
-    ).toHaveAttribute('href', '/api/session/oauth2/authorization/oidc')
+    ).toHaveAttribute('href', '/api/session/from-metadata/account-guard')
     expect(screen.queryByRole('link', { name: 'Account' })).not.toBeInTheDocument()
     expect(
       fetchMock.mock.calls.some(([input]) => String(input) === ACCOUNT_PATH),
@@ -521,7 +552,7 @@ describe('App', () => {
           {
             registrationId: 'github',
             clientName: 'GitHub',
-            authorizationPath: '/api/session/oauth2/authorization/github',
+            authorizationPath: '/api/session/from-metadata/admin-catalog-guard',
           },
         ],
       }),
@@ -534,7 +565,7 @@ describe('App', () => {
     ).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: 'Sign in with GitHub' }),
-    ).toHaveAttribute('href', '/api/session/oauth2/authorization/github')
+    ).toHaveAttribute('href', '/api/session/from-metadata/admin-catalog-guard')
     expect(
       screen.queryByRole('button', { name: 'Create book' }),
     ).not.toBeInTheDocument()
@@ -547,7 +578,8 @@ describe('App', () => {
           {
             registrationId: 'github',
             clientName: 'GitHub',
-            authorizationPath: '/api/session/oauth2/authorization/github',
+            authorizationPath:
+              '/api/session/from-metadata/admin-localization-guard',
           },
         ],
       }),
@@ -560,7 +592,10 @@ describe('App', () => {
     ).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: 'Sign in with GitHub' }),
-    ).toHaveAttribute('href', '/api/session/oauth2/authorization/github')
+    ).toHaveAttribute(
+      'href',
+      '/api/session/from-metadata/admin-localization-guard',
+    )
     expect(
       screen.queryByRole('button', { name: 'Create localization' }),
     ).not.toBeInTheDocument()
@@ -578,7 +613,7 @@ describe('App', () => {
           {
             registrationId: 'github',
             clientName: 'GitHub',
-            authorizationPath: '/api/session/oauth2/authorization/github',
+            authorizationPath: '/api/session/from-metadata/admin-users-guard',
           },
         ],
       }),
@@ -591,7 +626,7 @@ describe('App', () => {
     ).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: 'Sign in with GitHub' }),
-    ).toHaveAttribute('href', '/api/session/oauth2/authorization/github')
+    ).toHaveAttribute('href', '/api/session/from-metadata/admin-users-guard')
     expect(screen.queryByRole('link', { name: 'Admin users' })).not.toBeInTheDocument()
     expect(
       fetchMock.mock.calls.some(([input]) => String(input) === ADMIN_USERS_PATH),
@@ -605,7 +640,7 @@ describe('App', () => {
           {
             registrationId: 'github',
             clientName: 'GitHub',
-            authorizationPath: '/api/session/oauth2/authorization/github',
+            authorizationPath: '/api/session/from-metadata/operator-guard',
           },
         ],
       }),
@@ -618,7 +653,7 @@ describe('App', () => {
     ).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: 'Sign in with GitHub' }),
-    ).toHaveAttribute('href', '/api/session/oauth2/authorization/github')
+    ).toHaveAttribute('href', '/api/session/from-metadata/operator-guard')
     expect(screen.queryByRole('link', { name: 'Operator' })).not.toBeInTheDocument()
     expect(
       fetchMock.mock.calls.some(([input]) =>

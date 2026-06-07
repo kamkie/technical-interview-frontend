@@ -164,17 +164,31 @@ describe('logoutCurrentSession', () => {
 
 describe('session helpers', () => {
   it('returns backend-provided login providers without hard-coded paths', () => {
+    const providers = [
+      {
+        registrationId: 'github',
+        clientName: 'GitHub',
+        authorizationPath: '/api/session/from-metadata/primary-provider',
+      },
+      {
+        registrationId: 'smoke',
+        clientName: 'Smoke Provider',
+        authorizationPath: '/api/session/from-metadata/fake-provider',
+      },
+    ] satisfies SessionResponse['loginProviders']
     const session = createSession({
-      loginProviders: [
-        {
-          registrationId: 'github',
-          clientName: 'GitHub',
-          authorizationPath: '/api/session/oauth2/authorization/github',
-        },
-      ],
+      loginProviders: providers,
     })
 
-    expect(getLoginProviders(session)).toEqual(session.loginProviders)
+    expect(getLoginProviders(session)).toEqual(providers)
+  })
+
+  it('does not invent login providers when session metadata omits them', () => {
+    const session = createSession()
+
+    delete session.loginProviders
+
+    expect(getLoginProviders(session)).toEqual([])
   })
 
   it('mirrors the configured CSRF cookie into the configured header', () => {
