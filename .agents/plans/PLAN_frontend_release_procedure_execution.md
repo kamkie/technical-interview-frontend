@@ -13,8 +13,8 @@
 
 | Status | Current |
 | --- | --- |
-| Phase | M14 Human Procedure Documentation |
-| Status | Ready For M14 Human Procedure Work |
+| Phase | M15 AI Procedure Reference Layer |
+| Status | Ready For M15 AI Reference Work |
 | Last Updated | 2026-06-07 |
 
 ## Planning Readiness
@@ -24,7 +24,7 @@
 | Decision Complete | Yes for M12 release-readiness, M14 human docs, M15 AI references, and M13 selection-first hardening |
 | Blocking Open Questions | None for the next ready slice |
 | Accepted Fallbacks | Authenticated browser smoke remains manual until credentials and a canonical command exist; remote release publication requires an explicit current user request |
-| Ready For Execution | M14 human procedure documentation |
+| Ready For Execution | M15 AI procedure reference layer |
 
 ## Summary
 
@@ -117,8 +117,8 @@ Out of scope:
 | --- | --- | --- | --- |
 | 0 | Plan activation | Done | Plan file exists and docs-only validation passed |
 | 1 | M12-A Release-readiness audit and reconciliation | Done | No release tag was created in this slice |
-| 2 | M14 Human procedure documentation | Ready | M12-A commit landed and validation passed |
-| 3 | M15 AI procedure reference layer | Waiting | M14 commit landed and validation passed |
+| 2 | M14 Human procedure documentation | Done | M12-A commit landed and validation passed |
+| 3 | M15 AI procedure reference layer | Ready | M14 commit landed and validation passed |
 | 4 | M13-A Hardening selection and triage rules | Waiting | M14/M15 owners exist |
 | 5 | M13-B Selected hardening tooling implementation | Waiting | M13-A selection is committed and unblocked |
 | 6 | M12-B Final release cut and post-release cleanup | Waiting | M13-B, M14, and M15 are complete; local `main` is at the release-candidate state |
@@ -178,8 +178,8 @@ Status model:
 | --- | --- | --- | --- | --- | --- |
 | 0: Plan activation | Done | Coordinator | `e521cc2` | Passed | Plan exists and was refined before execution |
 | 1: M12-A Release-readiness audit | Done | M12 worker | `7479a43` | Passed by worker and coordinator | No tag creation in this slice; auth smoke remains manual without credentials or a canonical command |
-| 2: M14 Human procedure docs | Ready | M14 worker | Pending | `git diff --check`; full baseline only if non-doc files change | M12-A landed |
-| 3: M15 AI procedure references | Waiting | M15 worker | Pending | `git diff --check`; full baseline only if non-doc files change | Waits for M14 |
+| 2: M14 Human procedure docs | Done | M14 worker | `c34a9fd` | Passed by worker and coordinator | Human procedure owners and entry-point links landed |
+| 3: M15 AI procedure references | Ready | M15 worker | Pending | `git diff --check`; full baseline only if non-doc files change | M14 landed |
 | 4: M13-A Hardening selection | Waiting | M13 worker | Pending | `git diff --check`; full baseline if package/workflow files change | Waits for M14/M15 |
 | 5: M13-B Hardening implementation | Waiting | M13 worker | Pending | Selected hardening commands plus full baseline | Waits for M13-A |
 | 6: M12-B Release cut | Waiting | M12 worker for metadata edits; coordinator for validation, commit, tag, and plan recording | Pending | Full baseline, tag verification, clean git status | Waits for M13-B and synced `main` |
