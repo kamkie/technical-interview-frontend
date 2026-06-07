@@ -1,42 +1,72 @@
 # AI Roadmap Reference
 
-This file owns AI-facing procedure for editing `ROADMAP.md`. Keep `ROADMAP.md` focused on selected, planned, explicitly deferred, or rejected frontend scope.
+This file owns AI-facing procedure for editing `ROADMAP.md`. Keep `ROADMAP.md` focused on selected, planned, blocked, and non-goal first-party frontend scope.
 
-Use this reference with `.agents/references/documentation.md` when changing roadmap scope, milestone state, release-prep scope, backlog rows, deferred candidates, or rejected scope.
+Use this reference with `.agents/references/documentation.md` when changing roadmap scope, milestone state, blocked backlog, release context, product non-goals, stable IDs, or archive/changelog routing.
 
 ## Roadmap Ownership
 
-- `ROADMAP.md` owns current baseline, product direction, active milestone state, near-term backlog, candidate lists, procedure adoption scope, hardening candidates, and rejected frontend scope.
+- `ROADMAP.md` owns selected scope, product direction, milestone state, stable milestone/epic/task/plan IDs, dependencies, blocked backlog, release context, and product non-goals.
+- `docs/DESIGN.md` owns durable product and design intent; roadmap rows may point to it but should not carry detailed design rationale.
+- Active plans under `.agents/plans/` own execution coordination for selected roadmap work; durable results must move into the roadmap, design guide, focused reference, human doc, test, or contract that owns them.
 - Completed milestone summaries move to `docs/ROADMAP_ARCHIVE.md` when they leave the active roadmap.
 - Shipped or release-candidate user-visible history belongs in `CHANGELOG.md`.
 - Release sequencing stays in `.agents/references/releases.md`.
-- Smoke, hardening, and local validation procedures belong in their owner docs or AI validation references, not in `ROADMAP.md`.
+- Smoke, hardening, validation, and troubleshooting procedures belong in their owner docs or AI validation references, not in `ROADMAP.md`.
 - Endpoint fields, request schemas, auth header details, and durable API rules stay in `docs/backend/` or executable tests, not in `ROADMAP.md`.
+
+## Stable IDs
+
+Preserve the current roadmap ID model:
+
+- Milestones use `M-AREA-NNN`.
+- Epics use `E-AREA-NNN`.
+- Tasks use `T-AREA-NNN`.
+- Plans use `PLAN-short-kebab-slug`.
+
+Keep IDs stable when wording, status, ordering, or section placement changes. Do not renumber existing IDs. When work is split, keep the original ID for the closest surviving item and assign new IDs to new items. Do not reuse retired IDs for unrelated work.
+
+## Current Sections
+
+Preserve the current roadmap shape unless the task explicitly changes roadmap structure:
+
+- `Release Context`
+- `Product Direction`
+- `Milestones`
+- `Blocked Backlog`
+- `Product Non-Goals`
+
+Do not recreate older procedure-adoption or smoke/local candidate sections. Procedure guidance belongs in focused references, active plans, owner docs, or executable validation rather than in roadmap candidate sections.
 
 ## Row Shaping
 
-Future selected rows should name:
+Roadmap rows should name the outcome and stable ID clearly enough that an implementation plan can select the next slice. Keep detailed procedures in owner documents or executable tests.
 
-- the durable owner document
-- the backend contract source when API-facing
-- expected tests
-- the validation command set
-
-Use these status terms for selected rows:
+Use these status terms:
 
 - `Ready`: the milestone can start from the current repository state.
 - `Waiting`: the milestone has a normal predecessor dependency.
-- `Blocked`: the milestone needs a product choice, credential, backend contract refresh, or external state before implementation can start.
+- `Blocked`: the milestone needs a product choice, credential, backend contract refresh, selected threshold, failure owner, or external state before implementation can start.
 
-Use `Deferred` only for unclear, unselected, or explicitly deferred scope. Defined work belongs in `Ready`, `Waiting`, or `Blocked` roadmap rows.
+Defined work belongs in `Ready`, `Waiting`, or `Blocked` rows. Do not move planned waiting work into deferred or candidate language merely because it depends on an earlier milestone.
 
-Detailed procedures belong in the owner document or executable tests. Add a separate spec only when user-facing behavior is too broad or ambiguous for a roadmap row.
+For roadmap work that needs execution coordination, create or update a plan under `.agents/plans/` and reference it with a stable plan ID. Add a separate spec only when user-facing behavior is too broad or ambiguous for a roadmap row plus `docs/DESIGN.md`.
+
+## Current Dependency Expectations
+
+Keep downstream planned UI work aligned with the current hierarchy unless a roadmap-editing task explicitly changes it:
+
+- `M-UI-001` remains waiting on `M-GUIDANCE-001`.
+- `M-WORKFLOW-001` remains waiting on `M-UI-001`.
+- `M-SMOKE-001` remains planned waiting work after workflow polish.
+- `M-QUALITY-001` remains blocked until thresholds, owners, credentials, or repeatable evidence are selected.
 
 ## Editing Checks
 
 - Make the smallest coherent roadmap change.
 - Handle roadmap-only documentation edits directly; they do not require subagents unless the user explicitly asks for delegation.
 - Preserve backend contract invariants and do not change API-facing rules through roadmap wording alone.
-- Update `ROADMAP.md` when roadmap or product scope changes.
-- Update `SETUP.md`, `README.md`, package configuration, or other owners only when their owned behavior changes.
-- Check specs, changelog entries, release references, and archive pointers when the selected scope, release state, or completed roadmap work changes.
+- Update `ROADMAP.md` when selected scope, milestone status, blocked backlog, release context, or product non-goals change.
+- Update `docs/DESIGN.md` when product or design intent changes without changing roadmap status.
+- Update `SETUP.md`, `README.md`, package configuration, focused AI references, or other owners only when their owned behavior changes.
+- Check specs, changelog entries, release references, archive pointers, active plans, and design references when selected scope, release state, or completed roadmap work changes.

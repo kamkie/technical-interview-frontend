@@ -15,6 +15,7 @@ Implemented surface includes session bootstrap, metadata-driven login/logout con
 Start with the human documentation index:
 
 - [docs/README.md](docs/README.md) - documentation map and ownership rules
+- [docs/DESIGN.md](docs/DESIGN.md) - product and design intent for the frontend experience
 - [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md) - setup, npm commands, CI reproduction, troubleshooting, contract refresh, and smoke workflow
 - [docs/DEVELOPMENT_LIFECYCLE.md](docs/DEVELOPMENT_LIFECYCLE.md) - lifecycle, artifact routing, and when to use roadmap rows, specs, plans, ADRs, and changelog entries
 - [docs/WORKING_WITH_AI.md](docs/WORKING_WITH_AI.md) - human guidance for AI-assisted planning, implementation, validation, review, and release preparation

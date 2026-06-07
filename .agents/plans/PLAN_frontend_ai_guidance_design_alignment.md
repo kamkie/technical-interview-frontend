@@ -13,8 +13,8 @@
 
 | Status | Current  |
 | ------ | -------- |
-| Phase  | Planning |
-| Status | Ready    |
+| Phase  | Complete |
+| Status | Done     |
 
 ## Planning Readiness
 
@@ -23,7 +23,7 @@
 | Decision Complete       | Yes                                                                                                                               |
 | Blocking Open Questions | None                                                                                                                              |
 | Accepted Fallbacks      | Keep mandatory planning and implementation subagents; adopt backend-style focused owner guides only where they add frontend value |
-| Ready For Execution     | Yes                                                                                                                               |
+| Ready For Execution     | Completed                                                                                                                         |
 | Last Updated            | 2026-06-07                                                                                                                        |
 
 ## Linked Artifacts
@@ -71,12 +71,12 @@ Out of scope:
 ## Current State
 
 - The frontend has Vite, React, TypeScript, Node.js 24.x, npm 11.x, generated OpenAPI types, route/component tests, local auth smoke docs, hardening docs, and release docs.
-- The frontend does not currently have `docs/DESIGN.md`.
-- The active roadmap now uses stable IDs. `M-UI-001` is ready, `M-WORKFLOW-001` waits on it, `M-SMOKE-001` waits on workflow polish, and `M-QUALITY-001` is blocked on thresholds, owners, or repeatable evidence.
+- The frontend now has `docs/DESIGN.md` as the durable product and design intent owner.
+- The active roadmap now uses stable IDs. `M-GUIDANCE-001` is the ready guidance milestone implemented by this plan; `M-UI-001` waits on it, `M-WORKFLOW-001` waits on UI foundation, `M-SMOKE-001` waits on workflow polish, and `M-QUALITY-001` is blocked on thresholds, owners, or repeatable evidence.
 - Smoke and responsive layout work is no longer a deferred candidate. It is planned waiting work under `M-SMOKE-001`.
 - Procedure adoption scope is no longer a standalone roadmap section. Generic planning scaffolds, command wrappers, and workflow-state directories are product non-goals until repeated frontend work proves they are worth the process cost.
 - `AGENTS.md` already enforces mandatory planning and implementation subagents for ad hoc implementation work.
-- The frontend lacks the backend's focused AI owner guides for ordinary task execution, workflow/delegation mechanics, plan authoring, plan execution, architecture placement, code-style/edit shape, troubleshooting, and reference-file maintenance.
+- The frontend now has focused AI owner guides for ordinary task execution, workflow/delegation mechanics, plan authoring, plan execution, architecture placement, code-style/edit shape, troubleshooting, and reference-file maintenance.
 - The current roadmap structure should be treated as the source of truth for selected/planned/blocked scope.
 
 ## Design Contract For `docs/DESIGN.md`
@@ -142,16 +142,16 @@ Shared files:
 
 ## Progress Tracker
 
-| Task                                                                 | Status      | Owner                     | Commit        | Validation                       | Notes                                                                           |
-| -------------------------------------------------------------------- | ----------- | ------------------------- | ------------- | -------------------------------- | ------------------------------------------------------------------------------- |
-| 0: Create and align active plan                                      | Done        | Coordinator               | Not committed | Scoped `git diff --check` passed | Updated to current roadmap stable-ID hierarchy without editing `ROADMAP.md`     |
-| 1: Create roadmap-aligned design owner                               | Not Started | Design worker             | Pending       | Pending                          | Adds `docs/DESIGN.md` and related indexes; aligns to current stable roadmap IDs |
-| 2: Add reference maintenance and documentation routing               | Not Started | AI docs worker            | Pending       | Pending                          | Adds `references-rules.md`; updates documentation routing                       |
-| 3: Add frontend architecture, code-style, and troubleshooting guides | Not Started | Frontend rules worker     | Pending       | Pending                          | Gives implementers product and edit-shape rails                                 |
-| 4: Add execution, workflow, planning, and plan-execution guides      | Not Started | Workflow rules worker     | Pending       | Pending                          | Keeps mandatory subagent model                                                  |
-| 5: Add minimal plan template; avoid generic scaffolding              | Not Started | Planning worker           | Pending       | Pending                          | Adds only the selected minimum needed for active plans                          |
-| 6: Compact root AI rules and commit metadata                         | Not Started | Root rules worker         | Pending       | Pending                          | Updates `AGENTS.md` and `.gitmessage`                                           |
-| 7: Human doc and roadmap-reference alignment                         | Not Started | Coordinator / docs worker | Pending       | Pending                          | Aligns human docs and roadmap references without recreating obsolete sections   |
+| Task                                                                 | Status | Owner                 | Commit          | Validation                       | Notes                                                                       |
+| -------------------------------------------------------------------- | ------ | --------------------- | --------------- | -------------------------------- | --------------------------------------------------------------------------- |
+| 0: Create and align active plan                                      | Done   | Coordinator           | Existing commit | Scoped `git diff --check` passed | Updated to current roadmap stable-ID hierarchy without editing `ROADMAP.md` |
+| 1: Create roadmap-aligned design owner                               | Done   | Design worker         | Final commit    | Scoped `git diff --check` passed | Added `docs/DESIGN.md`; index links completed during human-doc alignment    |
+| 2: Add reference maintenance and documentation routing               | Done   | AI docs worker        | Final commit    | Scoped `git diff --check` passed | Added `references-rules.md`; updated documentation and roadmap routing      |
+| 3: Add frontend architecture, code-style, and troubleshooting guides | Done   | Frontend rules worker | Final commit    | Scoped `git diff --check` passed | Added focused implementation guidance                                       |
+| 4: Add execution, workflow, planning, and plan-execution guides      | Done   | Workflow rules worker | Final commit    | Scoped `git diff --check` passed | Added delegated workflow and active-plan execution guidance                 |
+| 5: Add minimal plan template; avoid generic scaffolding              | Done   | Planning worker       | Final commit    | Scoped `git diff --check` passed | Added only `PLAN_TEMPLATE.md`                                               |
+| 6: Compact root AI rules and commit metadata                         | Done   | Root rules worker     | Final commit    | Scoped `git diff --check` passed | Updated `AGENTS.md` routing and `.gitmessage` plan-task metadata            |
+| 7: Human doc and roadmap-reference alignment                         | Done   | Docs worker           | Final commit    | Scoped `git diff --check` passed | Aligned human docs without editing `ROADMAP.md`                             |
 
 ## Plan Tasks
 
@@ -159,7 +159,7 @@ Shared files:
 
 | Field                   | Value                                                                                                                                                                    |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Status                  | Not Started                                                                                                                                                              |
+| Status                  | Done                                                                                                                                                                     |
 | Goal                    | Create `docs/DESIGN.md` as the durable frontend product/design intent owner aligned with selected and planned roadmap items                                              |
 | Owned Files Or Packages | `docs/DESIGN.md`, `docs/README.md`, possibly `docs/DEVELOPMENT_LIFECYCLE.md` and `docs/WORKING_WITH_AI.md` when they need links                                          |
 | Read-Only Context       | `ROADMAP.md` current milestone hierarchy, `docs/backend/FRONTEND_AI_CONTRACT.md`, `docs/backend/README.md`, backend `docs/DESIGN.md` for shape only                      |
@@ -172,7 +172,7 @@ Shared files:
 
 | Field                   | Value                                                                                                                                                                                                     |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Status                  | Not Started                                                                                                                                                                                               |
+| Status                  | Done                                                                                                                                                                                                      |
 | Goal                    | Add rules that keep `.agents/references/*.md` focused, non-duplicative, and aligned with owner documents                                                                                                  |
 | Owned Files Or Packages | `.agents/references/references-rules.md`, `.agents/references/documentation.md`, `.agents/references/roadmap.md`                                                                                          |
 | Read-Only Context       | Backend `.agents/references/references-rules.md`, backend `.agents/references/documentation.md`, frontend `docs/DEVELOPMENT_LIFECYCLE.md`                                                                 |
@@ -185,7 +185,7 @@ Shared files:
 
 | Field                   | Value                                                                                                                                                                                                |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Status                  | Not Started                                                                                                                                                                                          |
+| Status                  | Done                                                                                                                                                                                                 |
 | Goal                    | Give implementation workers concrete frontend rules and placement guidance                                                                                                                           |
 | Owned Files Or Packages | `.agents/references/architecture.md`, `.agents/references/code-style.md`, `.agents/references/troubleshooting.md`, possibly `.agents/references/testing.md` if troubleshooting references must align |
 | Read-Only Context       | `src/` structure, `package.json`, `docs/backend/FRONTEND_AI_CONTRACT.md`, `docs/DESIGN.md` from Task 1, backend equivalent guides for shape only                                                     |
@@ -198,7 +198,7 @@ Shared files:
 
 | Field                   | Value                                                                                                                                                                                                                         |
 | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Status                  | Not Started                                                                                                                                                                                                                   |
+| Status                  | Done                                                                                                                                                                                                                          |
 | Goal                    | Make the mandatory subagent workflow reliable by defining planner, worker, coordinator, reviewer, and verifier expectations                                                                                                   |
 | Owned Files Or Packages | `.agents/references/execution.md`, `.agents/references/workflow.md`, `.agents/references/planning.md`, `.agents/references/plan-execution.md`                                                                                 |
 | Read-Only Context       | `AGENTS.md`, this plan, backend equivalent guides for shape, frontend `.agents/references/testing.md`, `.agents/references/reviews.md`                                                                                        |
@@ -211,7 +211,7 @@ Shared files:
 
 | Field                   | Value                                                                                                                                                                                                                    |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Status                  | Not Started                                                                                                                                                                                                              |
+| Status                  | Done                                                                                                                                                                                                                     |
 | Goal                    | Make selected active plans consistent without adding broad generic planning scaffolding beyond current need                                                                                                              |
 | Owned Files Or Packages | `.agents/plans/PLAN_TEMPLATE.md`, optional `.agents/plans/README.md`; `.agents/context/*/README.md` only if Task 4 selects durable state for a concrete execution need                                                   |
 | Read-Only Context       | This plan, current `ROADMAP.md` product non-goals, backend `.agents/plans/PLAN_TEMPLATE.md`, `.agents/references/planning.md` from Task 4                                                                                |
@@ -224,7 +224,7 @@ Shared files:
 
 | Field                   | Value                                                                                                                                                                                                   |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Status                  | Not Started                                                                                                                                                                                             |
+| Status                  | Done                                                                                                                                                                                                    |
 | Goal                    | Keep `AGENTS.md` as a strong entry point while moving detailed procedure into focused guides                                                                                                            |
 | Owned Files Or Packages | `AGENTS.md`, `.gitmessage`                                                                                                                                                                              |
 | Read-Only Context       | New references from Tasks 2-5, backend `AGENTS.md`, backend `.gitmessage`, frontend `docs/backend/` rules                                                                                               |
@@ -237,7 +237,7 @@ Shared files:
 
 | Field                   | Value                                                                                                                                                                                                                                               |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Status                  | Not Started                                                                                                                                                                                                                                         |
+| Status                  | Done                                                                                                                                                                                                                                                |
 | Goal                    | Align human-facing docs and roadmap references with the new design and AI guidance owner split                                                                                                                                                      |
 | Owned Files Or Packages | `README.md`, `CONTRIBUTING.md`, `docs/DEVELOPMENT_LIFECYCLE.md`, `docs/WORKING_WITH_AI.md`, `docs/README.md`, possibly `ROADMAP.md` for narrow reference alignment only                                                                             |
 | Read-Only Context       | All changed AI references, `docs/DESIGN.md`, `ROADMAP.md`, `CHANGELOG.md` only if release-history wording is implicated                                                                                                                             |
@@ -314,3 +314,7 @@ Final handoff must include:
 | Date       | Command                                                                           | Scope                                     | Result | Notes                                                                            |
 | ---------- | --------------------------------------------------------------------------------- | ----------------------------------------- | ------ | -------------------------------------------------------------------------------- |
 | 2026-06-07 | `git diff --check -- .agents/plans/PLAN_frontend_ai_guidance_design_alignment.md` | Plan creation and roadmap-shape alignment | Passed | Plan updated to current roadmap stable-ID hierarchy without editing `ROADMAP.md` |
+| 2026-06-07 | `npm run format:markdown`                                                         | Plan implementation docs                  | Passed | Formatted deterministic pipe table alignment for tracked Markdown files          |
+| 2026-06-07 | `npm run lint:markdown`                                                           | Plan implementation docs                  | Passed | Markdown line ending and markdownlint checks passed                              |
+| 2026-06-07 | `git diff --check`                                                                | Plan implementation docs                  | Passed | Whitespace check passed                                                          |
+| 2026-06-07 | `git diff --cached --check`                                                       | Staged plan implementation docs           | Passed | Staged whitespace check passed                                                   |

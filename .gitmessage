@@ -30,7 +30,7 @@ Validation: <command/result>
 #   Project-Source is required for AI-created commits.
 #   Use plan for whole-plan or plan/spec-only commits.
 #   Use milestone for one named plan milestone.
-#   Use task for a repo-task starter.
+#   Use task for one plan task, slice, or repo-task starter.
 #   Use prompt for a direct ad hoc user request.
 #   Use manual only for human-authored commits outside the AI workflow.
 #   Include only the Project-* footers that apply.
@@ -41,6 +41,7 @@ Validation: <command/result>
 #   Project-Plan: <plan path>
 #   Project-Milestone: <milestone name>
 #   Project-Task: <repo-task slug/title>
+#   Project-Plan-Task: <plan task or slice name>
 #   Project-Prompt: <short direct-request summary>
 #   Refs: <paths/issues/PRs>
 #

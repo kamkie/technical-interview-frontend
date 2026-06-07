@@ -59,7 +59,7 @@ Use this order when sources conflict:
 3. Imported backend frontend guidance: `docs/backend/FRONTEND_AI_CONTRACT.md`.
 4. Backend REST Docs sources from `technical-interview-demo`, when consulted directly.
 5. Frontend executable specs and type checks, once the app scaffold exists.
-6. Frontend docs in this repo: `README.md`, `SETUP.md`, `ROADMAP.md`, and this file.
+6. Frontend docs in this repo: `docs/DESIGN.md`, `README.md`, `SETUP.md`, `ROADMAP.md`, and this file.
 
 If an imported backend artifact appears stale or conflicts with the backend repository, refresh it with `scripts/sync-backend-contract.ps1` before implementing API-facing frontend work.
 
@@ -126,11 +126,19 @@ For upcoming implementation work, prefer:
 
 Use these focused references for procedure details that do not belong inline here:
 
+- `.agents/references/architecture.md` owns frontend route, API/client, component, test, and abstraction placement guidance.
+- `.agents/references/code-style.md` owns frontend TypeScript, React, CSS, accessibility, and edit-shape guidance.
 - `.agents/references/documentation.md` owns AI-facing artifact routing and cross-file alignment checks.
+- `.agents/references/execution.md` owns ordinary task gates, repository-state checks, execution loop, and handoff expectations.
+- `.agents/references/plan-execution.md` owns active-plan execution for delegated milestone and spec slices.
+- `.agents/references/planning.md` owns plan authoring, readiness rules, status terms, and planning handoff shape.
+- `.agents/references/references-rules.md` owns maintenance rules for focused AI references.
 - `.agents/references/roadmap.md` owns roadmap editing, selected-row shaping, archive/changelog routing, and roadmap alignment checks.
 - `.agents/references/testing.md` owns validation selection by change type.
+- `.agents/references/troubleshooting.md` owns validation failure triage and local problem-solving routes.
 - `.agents/references/reviews.md` owns code-review, spec-drift, documentation-drift, and security-review triggers.
 - `.agents/references/releases.md` owns release sequencing, version choice, annotated tags, changelog promotion, package checks, GHCR package publication, GitHub Release verification, and post-release roadmap cleanup.
+- `.agents/references/workflow.md` owns coordinator, planner, worker, reviewer, verifier, and delegation mechanics.
 
 ## Ad Hoc Implementation Delegation
 
@@ -138,18 +146,11 @@ Ad hoc implementation is implementation work not already governed by an active p
 
 Roadmap-only documentation edits are governed by `.agents/references/roadmap.md`; they do not require subagents unless the user explicitly asks for delegation.
 
-Do not spawn subagents with full thread history. Keep `fork_context` disabled or omitted, and write a complete scoped prompt that includes the repository path, relevant instructions, ownership boundaries, validation expectations, and the specific output needed. Subagents should start from clean state so their work is independently scoped instead of inheriting the orchestrator's conversation context.
+Do not spawn subagents with full thread history. Keep `fork_context` disabled or omitted, and write a complete scoped prompt. Use `.agents/references/workflow.md` for worker roles, prompt shape, read sets, and handoff requirements.
 
-Planning subagents must return a handoff with:
+Planning subagents must return a handoff with objective, relevant rules or source documents, proposed file ownership, implementation steps, required validation, and risks, open questions, or explicit non-goals.
 
-1. Objective.
-2. Relevant rules, contracts, or source documents.
-3. Proposed file ownership.
-4. Implementation steps.
-5. Required tests and validation.
-6. Risks, open questions, or explicit non-goals.
-
-Implementation subagent prompts must include the planning handoff or state the orchestrator's explicit deltas from it. Implementation subagents must return the changed files, validation run, skipped validation with reasons, and remaining risks.
+Implementation subagent prompts must include the planning handoff or state the orchestrator's explicit deltas from it. Implementation subagents must return changed files, validation run, skipped validation with reasons, and remaining risks.
 
 Backend contract, validation, git, and smallest-coherent-change rules still apply.
 
@@ -160,17 +161,16 @@ When the user asks to implement an active plan, the plan is the execution contra
 - The orchestrator only orchestrates. It may update coordinator-owned plan/status documents, assign workers, review worker output, run validation, resolve integration, and create required commits, but it must not implement milestone or spec tasks itself.
 - Milestone and spec implementation must be delegated to workers with explicit file ownership and scoped validation requirements.
 - Execute plans in dependency order. The selected executable scope is the next `Ready` milestone/spec slice plus any dependent slices that become `Ready` after a predecessor is implemented, committed, and validated. Do not treat later roadmap dependencies, missing future specs, or future review gates as blockers for a currently `Ready` slice.
-- Use plan status terms consistently:
-  - `Ready`: the orchestrator may assign the worker now.
-  - `Waiting`: normal predecessor dependency; promote to `Ready` when the predecessor lands.
-  - `Blocked`: unresolved product choice, backend contract conflict, required credential, user acceptance gate explicitly required by the current task, or external state that cannot be produced by the plan itself.
+- Use plan status terms consistently: `Ready` means assignable now, `Waiting` means normal predecessor dependency, and `Blocked` means unresolved product choice, backend contract conflict, required credential, explicit user acceptance gate, or external state that cannot be produced by the plan.
 - Stop before implementation only when the next `Ready` slice is actually `Blocked` by a decision or external condition that cannot be resolved from the current user request, backend contract, executable tests, or owned project documents.
 - Once a plan run is started, keep executing through the plan until it is complete. Do not stop for status-only handoffs, optional review points, routine validation failures, or work that can be delegated, fixed, or decided from existing project rules.
 - A spec or review step inside the plan is work to perform, not a blocker for earlier milestones. Coordinator review may unlock follow-on implementation unless the current task explicitly requires separate user acceptance.
 
+Use `.agents/references/plan-execution.md` for detailed dependency handling, coordinator ownership, commit checkpoints, stop/replan triggers, and final handoff requirements.
+
 ## Change Routing
 
-Use `.agents/references/documentation.md` to choose the smallest durable owner and to check cross-file alignment. Avoid storing durable rules only in plans, scratch files, or final responses.
+Use `.agents/references/documentation.md` to choose the smallest durable owner and to check cross-file alignment. Product and design intent belongs in `docs/DESIGN.md`; selected roadmap scope, status, dependencies, blocked backlog, release context, and product non-goals belong in `ROADMAP.md`. Avoid storing durable rules only in plans, scratch files, or final responses.
 
 ## Validation
 
@@ -192,9 +192,18 @@ Start with this file and the user's request. Add only the files needed for the c
 - backend contract work: `docs/backend/`
 - setup/tooling work: `SETUP.md` and package/tool config
 - roadmap/product scope: `ROADMAP.md`
+- product/design intent: `docs/DESIGN.md`
 - public project overview: `README.md`
 - commit formatting: `.gitmessage`
+- architecture and code placement: `.agents/references/architecture.md`
+- frontend code style: `.agents/references/code-style.md`
 - documentation routing: `.agents/references/documentation.md`
+- ordinary task execution: `.agents/references/execution.md`
+- delegation workflow: `.agents/references/workflow.md`
+- plan authoring: `.agents/references/planning.md`
+- active plan execution: `.agents/references/plan-execution.md`
+- focused reference maintenance: `.agents/references/references-rules.md`
+- troubleshooting: `.agents/references/troubleshooting.md`
 - validation selection: `.agents/references/testing.md`
 - reviews: `.agents/references/reviews.md`
 - release preparation: `.agents/references/releases.md`
