@@ -6,7 +6,7 @@ This file owns active-plan execution rules for delegated milestone, spec, and ta
 
 When the current user request asks to implement an active plan, the plan is the execution contract. The coordinator executes the next eligible plan packet, not a different interpretation of the roadmap or a new direct-implementation path.
 
-The coordinator may update coordinator-owned plan or status documents, assign workers, review worker output, run validation, resolve integration issues, and create plan-authorized commits. Milestone, spec, and task-packet implementation must be delegated to workers with explicit file ownership and scoped validation requirements.
+The coordinator may update coordinator-owned plan or status documents, assign workers, dispatch a declared clean verifier, resolve integration issues, accept or reject evidence, and create plan-authorized commits. Milestone, spec, and task-packet implementation must be delegated to workers with explicit file ownership and scoped validation requirements.
 
 ## Dependency Order
 
@@ -15,8 +15,8 @@ Execute in dependency order:
 1. Select the next `Ready` milestone, spec, or task packet from the active plan.
 2. Assign a planning worker when the packet needs a handoff or the plan requires one.
 3. Assign a separate implementation worker with exact write scope and validation.
-4. Review the worker output for owner drift, contract drift, validation gaps, and scope leaks.
-5. Run or verify required validation.
+4. Review the worker output, or dispatch the declared clean verifier to review it, for owner drift, contract drift, validation gaps, and scope leaks.
+5. Run, verify, or reconcile required validation evidence.
 6. Update the packet result summary and create the task's plan-authorized commit checkpoint after validation and before promoting dependent packets.
 7. Promote dependent `Waiting` packets to `Ready` only after predecessor work lands according to the plan.
 
@@ -39,10 +39,22 @@ The coordinator owns:
 - user-owned dirty-worktree protection
 - shared-file assignment
 - worker prompts, packet dispatch, and handoff review
-- final validation selection and reporting
+- clean verifier dispatch when the plan declares one
+- validation evidence acceptance and reporting
 - plan-authorized commits when the current request and checkpoint allow them
 
 The coordinator does not implement milestone, spec, or repository-changing task packets directly when the active plan calls for delegated execution. Worker prompts must include repository path, relevant instructions, read-only context, escalation-only context, write scope, validation, stop conditions, and output requirements.
+
+## Clean Verifier
+
+An active plan may declare one dedicated clean verifier for a single plan execution. Use it to reduce coordinator context pressure for review, tests, and verification evidence without moving integration authority away from the coordinator.
+
+- The verifier starts without full thread history or forked conversation context and receives compact scoped prompts.
+- The verifier is read-only unless the plan explicitly assigns artifact write scope. The coordinator records compact summaries in plan or status documents.
+- The verifier may run or confirm validation, review diffs for bugs, owner drift, contract drift, documentation drift, security-review triggers, and scope leaks, and report exact commands, results, skips, findings, and risks.
+- Before each review or validation pass, the verifier must confirm the current worktree state, ref or commit, and diff it can see.
+- Do not use verifier evidence when the verifier cannot see the current integrated state. Refresh the prompt or have the coordinator rerun the evidence instead.
+- The coordinator still owns dispatch, dirty-worktree protection, shared-file sequencing, resolving findings, integration acceptance, plan and status updates, roadmap edits, checkpoint commits, and final handoff.
 
 ## Commit Checkpoint Handling
 
