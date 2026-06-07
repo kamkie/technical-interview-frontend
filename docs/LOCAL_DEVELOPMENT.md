@@ -170,7 +170,7 @@ git diff --check
 
 Run broader validation when a docs change also modifies package scripts, generated files, workflows, source code, or test behavior.
 
-Tracked Markdown must use LF line endings, include a final newline, avoid hard-wrapped prose and list-item continuation prose outside fenced code, and keep pipe tables aligned with `npm run lint:markdown`. Use `npm run format:markdown` to normalize tracked Markdown before linting.
+Tracked Markdown must use LF line endings, include a final newline, use valid Mermaid fenced-code syntax, avoid hard-wrapped prose and list-item continuation prose outside fenced code, and keep pipe tables aligned with `npm run lint:markdown`. Use `npm run format:markdown` to normalize tracked Markdown before linting.
 
 For Dockerfile, Nginx runtime configuration, or release image workflow changes, also run:
 

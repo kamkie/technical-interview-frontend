@@ -32,7 +32,7 @@ git diff --check
 
 Use Corepack to invoke the repository package manager when plain `npm` resolves outside `package.json` `engines` or `packageManager`.
 
-`npm run lint` runs Markdown validation before ESLint. Use `npm run lint:markdown` for docs-only changes that need only the Markdown rule surface: LF line endings, final newline, no hard-wrapped prose or list-item continuation prose outside fenced code, and deterministically aligned pipe tables.
+`npm run lint` runs Markdown validation before ESLint. Use `npm run lint:markdown` for docs-only changes that need only the Markdown rule surface: LF line endings, Mermaid fenced-code syntax, final newline, no hard-wrapped prose or list-item continuation prose outside fenced code, and deterministically aligned pipe tables.
 
 `npm run typecheck` already includes API type freshness. Use `npm run api:types` to rewrite generated API types only after an intentional contract refresh.
 
