@@ -4,6 +4,8 @@ This document owns human guidance for asking AI agents to plan, implement, valid
 
 Detailed AI procedure lives in `AGENTS.md` and the focused `.agents/references/` files. Keep this document as the human entry point and link to those owners instead of copying their full workflows.
 
+Reusable repository prompt recipes live in `.agents/prompts/README.md`. Use them when you want a named session starter for closeout, CI triage, roadmap triage, release readiness, repository state snapshots, or similar recurring workflows.
+
 ## Before Asking
 
 Give the AI the current goal, the files it may edit, and the validation you expect. For API-facing work, point it at the imported backend contract artifacts and require contract-first behavior. For docs or procedure work, name the owner document so rules do not end up only in a plan or final response.
