@@ -77,22 +77,17 @@ export function App() {
         <div className="topbar-primary">
           <div className="brand-lockup">
             <span className="brand-mark" aria-hidden="true">
-              TI
+              LC
             </span>
-            <span className="brand-name">Technical Interview Frontend</span>
+            <span className="brand-name">Library Console</span>
           </div>
           <nav className="topnav" aria-label="Primary navigation">
             <NavLink to={CATALOG_ROUTE_PATH}>Catalog</NavLink>
             {sessionState.status === 'ready' &&
               sessionState.session.authenticated === true && (
                 <>
-                  <NavLink to={ADMIN_CATALOG_ROUTE_PATH}>Admin catalog</NavLink>
-                  <NavLink to={ADMIN_LOCALIZATION_ROUTE_PATH}>
-                    Admin localizations
-                  </NavLink>
-                  <NavLink to={ADMIN_USERS_ROUTE_PATH}>Admin users</NavLink>
-                  <NavLink to={OPERATOR_ROUTE_PATH}>Operator</NavLink>
-                  <NavLink to={ACCOUNT_ROUTE_PATH}>Account</NavLink>
+                  <NavLink to={OPERATOR_ROUTE_PATH}>Operations</NavLink>
+                  <AdminMenu />
                 </>
               )}
           </nav>
@@ -103,21 +98,21 @@ export function App() {
             resolvedTheme={resolvedTheme}
             onPreferenceChange={setPreference}
           />
-          <SessionHeader
+          <SessionAccountMenu
             logoutState={logoutState}
             state={sessionState}
             onLogout={handleLogout}
           />
-          <SessionDetailsMenu state={sessionState} />
         </div>
       </header>
 
       <main className="workspace">
         <section className="intro" aria-labelledby="page-title">
-          <p className="eyebrow">First-party browser UI</p>
-          <h1 id="page-title">Technical Interview Frontend</h1>
+          <p className="eyebrow">Library operations</p>
+          <h1 id="page-title">Book catalog</h1>
           <p className="lede">
-            Contract-first React app for the technical-interview-demo backend.
+            Search the collection, review availability, and manage operational
+            workflows from one focused console.
           </p>
         </section>
 
@@ -191,31 +186,32 @@ export function App() {
   )
 }
 
-function SessionDetailsMenu({ state }: { state: SessionState }) {
+function AdminMenu() {
   const [open, setOpen] = useState(false)
-  const panelId = 'session-details-panel'
+  const panelId = 'admin-menu-panel'
 
   return (
-    <div className="session-menu">
+    <div className="nav-menu">
       <button
         aria-controls={panelId}
         aria-expanded={open}
-        className="session-menu-button"
-        id="session-details-trigger"
+        className="nav-menu-button"
+        id="admin-menu-trigger"
         type="button"
         onClick={() => setOpen((current) => !current)}
       >
-        Session details
+        Admin
       </button>
       {open && (
-        <div
-          aria-labelledby="session-details-trigger"
-          className="session-menu-panel"
+        <nav
+          aria-labelledby="admin-menu-trigger"
+          className="nav-menu-panel"
           id={panelId}
-          role="region"
         >
-          <SessionBootstrapPanel state={state} />
-        </div>
+          <NavLink to={ADMIN_CATALOG_ROUTE_PATH}>Catalog admin</NavLink>
+          <NavLink to={ADMIN_LOCALIZATION_ROUTE_PATH}>Localizations</NavLink>
+          <NavLink to={ADMIN_USERS_ROUTE_PATH}>Users</NavLink>
+        </nav>
       )}
     </div>
   )
@@ -297,7 +293,7 @@ function useSessionBootstrap() {
   return { refreshSession, sessionState }
 }
 
-function SessionHeader({
+function SessionAccountMenu({
   logoutState,
   onLogout,
   state,
@@ -306,11 +302,16 @@ function SessionHeader({
   onLogout: (session: SessionResponse) => void
   state: SessionState
 }) {
+  const [open, setOpen] = useState(false)
+  const panelId = 'account-menu-panel'
+  const detailsId = 'connection-details-panel'
+  const [showDetails, setShowDetails] = useState(false)
+
   if (state.status === 'loading') {
     return (
       <div className="header-session" aria-label="Session status">
         <span className="header-session-text" role="status">
-          Checking session...
+          Checking sign-in...
         </span>
       </div>
     )
@@ -318,16 +319,54 @@ function SessionHeader({
 
   if (state.status === 'error') {
     return (
-      <div className="header-session" aria-label="Session status">
-        <span className="header-session-text error">Session unavailable</span>
+      <div className="account-menu">
+        <button
+          aria-controls={panelId}
+          aria-expanded={open}
+          className="account-menu-button"
+          id="account-menu-trigger"
+          type="button"
+          onClick={() => setOpen((current) => !current)}
+        >
+          Connection issue
+        </button>
+        {open && (
+          <div
+            aria-label="Connection menu"
+            className="account-menu-panel"
+            id={panelId}
+            role="region"
+          >
+            <SessionBootstrapPanel state={state} />
+          </div>
+        )}
       </div>
     )
   }
 
   if (state.session.authenticated !== true) {
     return (
-      <div className="header-session" aria-label="Session status">
-        <span className="status-pill anonymous">Signed out</span>
+      <div className="account-menu">
+        <button
+          aria-controls={panelId}
+          aria-expanded={open}
+          className="account-menu-button"
+          id="account-menu-trigger"
+          type="button"
+          onClick={() => setOpen((current) => !current)}
+        >
+          Sign in
+        </button>
+        {open && (
+          <div
+            aria-label="Sign in options"
+            className="account-menu-panel"
+            id={panelId}
+            role="region"
+          >
+            <SessionDetails session={state.session} />
+          </div>
+        )}
       </div>
     )
   }
@@ -335,20 +374,57 @@ function SessionHeader({
   const submitting = logoutState.status === 'submitting'
 
   return (
-    <div className="header-session" aria-label="Session status">
-      <span className="status-pill authenticated">Signed in</span>
+    <div className="account-menu">
       <button
-        className="logout-button"
+        aria-controls={panelId}
+        aria-expanded={open}
+        className="account-menu-button signed-in"
+        id="account-menu-trigger"
         type="button"
-        disabled={submitting || !state.session.logoutPath}
-        onClick={() => onLogout(state.session)}
+        onClick={() => setOpen((current) => !current)}
       >
-        {submitting ? 'Signing out...' : 'Sign out'}
+        Account
       </button>
-      {logoutState.status === 'error' && (
-        <span className="header-session-text error" role="alert">
-          {logoutState.message}
-        </span>
+      {open && (
+        <div
+          aria-label="Account menu"
+          className="account-menu-panel"
+          id={panelId}
+          role="region"
+        >
+          <div className="account-menu-actions">
+            <NavLink className="account-menu-link" to={ACCOUNT_ROUTE_PATH}>
+              Account settings
+            </NavLink>
+            <button
+              className="logout-button"
+              type="button"
+              disabled={submitting || !state.session.logoutPath}
+              onClick={() => onLogout(state.session)}
+            >
+              {submitting ? 'Signing out...' : 'Sign out'}
+            </button>
+          </div>
+          {logoutState.status === 'error' && (
+            <p className="session-message error" role="alert">
+              {logoutState.message}
+            </p>
+          )}
+          <button
+            aria-controls={detailsId}
+            aria-expanded={showDetails}
+            className="connection-details-button"
+            type="button"
+            onClick={() => setShowDetails((current) => !current)}
+          >
+            Connection details
+          </button>
+          {showDetails && (
+            <div id={detailsId}>
+              <SessionDetails session={state.session} />
+            </div>
+          )}
+        </div>
       )}
     </div>
   )
@@ -358,8 +434,8 @@ function SessionBootstrapPanel({ state }: { state: SessionState }) {
   return (
     <section className="session-panel" aria-labelledby="session-title">
       <div className="section-heading">
-        <p className="eyebrow">Browser session</p>
-        <h2 id="session-title">Session</h2>
+        <p className="eyebrow">Connection</p>
+        <h2 id="session-title">Connection details</h2>
       </div>
 
       {state.status === 'loading' && (
@@ -391,6 +467,24 @@ function SessionDetails({ session }: { session: SessionResponse }) {
 
   return (
     <div className="session-details">
+      {session.authenticated !== true && loginProviders.length > 0 && (
+        <nav className="login-actions" aria-label="Login providers">
+          {loginProviders.map((provider) => (
+            <a
+              className="login-link"
+              href={provider.authorizationPath}
+              key={provider.registrationId ?? provider.authorizationPath}
+            >
+              Sign in with {provider.clientName ?? provider.registrationId}
+            </a>
+          ))}
+        </nav>
+      )}
+
+      {session.authenticated !== true && loginProviders.length === 0 && (
+        <p className="session-message muted">No login providers available.</p>
+      )}
+
       <div className="session-summary">
         <span
           className={`status-pill ${
@@ -423,24 +517,6 @@ function SessionDetails({ session }: { session: SessionResponse }) {
           <dd>{csrfLabel}</dd>
         </div>
       </dl>
-
-      {session.authenticated !== true && loginProviders.length > 0 && (
-        <nav className="login-actions" aria-label="Login providers">
-          {loginProviders.map((provider) => (
-            <a
-              className="login-link"
-              href={provider.authorizationPath}
-              key={provider.registrationId ?? provider.authorizationPath}
-            >
-              Sign in with {provider.clientName ?? provider.registrationId}
-            </a>
-          ))}
-        </nav>
-      )}
-
-      {session.authenticated !== true && loginProviders.length === 0 && (
-        <p className="session-message muted">No login providers available.</p>
-      )}
     </div>
   )
 }

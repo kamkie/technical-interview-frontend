@@ -134,7 +134,7 @@ describe('App', () => {
     expect(
       screen.getByRole('heading', {
         level: 1,
-        name: 'Technical Interview Frontend',
+        name: 'Book catalog',
       }),
     ).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Books' })).toBeInTheDocument()
@@ -169,41 +169,38 @@ describe('App', () => {
         },
       },
     )
-    expect(await screen.findByText('Signed out')).toBeInTheDocument()
-    expect(screen.getAllByText('Signed out')).toHaveLength(1)
+    const signInButton = await screen.findByRole('button', {
+      name: 'Sign in',
+    })
+    expect(signInButton).toHaveAttribute('aria-expanded', 'false')
     expect(
       screen.queryByText('XSRF-TOKEN -> X-XSRF-TOKEN'),
     ).not.toBeInTheDocument()
     expect(await screen.findByText('Clean Code')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Java' })).toBeInTheDocument()
 
-    const sessionDetailsButton = screen.getByRole('button', {
-      name: 'Session details',
+    signInButton.focus()
+    expect(signInButton).toHaveFocus()
+
+    fireEvent.click(signInButton)
+
+    expect(signInButton).toHaveAttribute('aria-expanded', 'true')
+
+    const signInMenu = screen.getByRole('region', {
+      name: 'Sign in options',
     })
-
-    expect(sessionDetailsButton).toHaveAttribute('aria-expanded', 'false')
-    sessionDetailsButton.focus()
-    expect(sessionDetailsButton).toHaveFocus()
-
-    fireEvent.click(sessionDetailsButton)
-
-    expect(sessionDetailsButton).toHaveAttribute('aria-expanded', 'true')
-
-    const sessionDetails = screen.getByRole('region', {
-      name: 'Session details',
-    })
-    const loginLink = await within(sessionDetails).findByRole('link', {
+    const loginLink = await within(signInMenu).findByRole('link', {
       name: 'Sign in with GitHub',
     })
-    const smokeLoginLink = within(sessionDetails).getByRole('link', {
+    const smokeLoginLink = within(signInMenu).getByRole('link', {
       name: 'Sign in with Smoke Provider',
     })
 
     expect(
-      within(sessionDetails).getByRole('heading', { name: 'Session' }),
+      within(signInMenu).getByText('Signed out'),
     ).toBeInTheDocument()
     expect(
-      within(sessionDetails).getByText('XSRF-TOKEN -> X-XSRF-TOKEN'),
+      within(signInMenu).getByText('XSRF-TOKEN -> X-XSRF-TOKEN'),
     ).toBeInTheDocument()
     expect(loginLink).toHaveAttribute('href', githubAuthorizationPath)
     expect(smokeLoginLink).toHaveAttribute('href', smokeAuthorizationPath)
@@ -248,15 +245,15 @@ describe('App', () => {
 
     renderApp()
 
-    expect(await screen.findByText('Session unavailable')).toBeInTheDocument()
+    expect(await screen.findByText('Connection issue')).toBeInTheDocument()
     expect(
       screen.queryByText('GET /api/session failed with 503 Service Unavailable'),
     ).not.toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Session details' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Connection issue' }))
 
     const sessionDetails = screen.getByRole('region', {
-      name: 'Session details',
+      name: 'Connection menu',
     })
 
     expect(within(sessionDetails).getByRole('alert')).toHaveTextContent(
@@ -273,25 +270,36 @@ describe('App', () => {
 
     renderApp('/account')
 
+    const accountButton = await screen.findByRole('button', { name: 'Account' })
+    fireEvent.click(accountButton)
+
+    const accountMenu = screen.getByRole('region', { name: 'Account menu' })
     expect(
-      await screen.findByRole('button', { name: 'Sign out' }),
-    ).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Account' })).toHaveAttribute(
+      within(accountMenu).getByRole('link', { name: 'Account settings' }),
+    ).toHaveAttribute(
       'href',
       '/account',
     )
     expect(
       screen.getByRole('heading', { name: 'Account' }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Admin localizations' })).toHaveAttribute(
+    expect(
+      screen.queryByRole('link', { name: 'Localizations' }),
+    ).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Admin' }))
+    expect(screen.getByRole('link', { name: 'Catalog admin' })).toHaveAttribute(
+      'href',
+      '/admin/catalog',
+    )
+    expect(screen.getByRole('link', { name: 'Localizations' })).toHaveAttribute(
       'href',
       '/admin/localizations',
     )
-    expect(screen.getByRole('link', { name: 'Admin users' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Users' })).toHaveAttribute(
       'href',
       '/admin/users',
     )
-    expect(screen.getByRole('link', { name: 'Operator' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Operations' })).toHaveAttribute(
       'href',
       '/operator',
     )
@@ -506,7 +514,7 @@ describe('App', () => {
 
     renderApp('/catalog')
 
-    expect(await screen.findByRole('button', { name: 'Sign out' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Account' })).toBeInTheDocument()
     expect(await screen.findByText('Clean Code')).toBeInTheDocument()
     expect(
       fetchMock.mock.calls.some(([input]) => String(input) === ACCOUNT_PATH),
@@ -570,7 +578,8 @@ describe('App', () => {
 
     renderApp('/account')
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Sign out' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Account' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign out' }))
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith('/api/session/logout', {
@@ -602,7 +611,8 @@ describe('App', () => {
 
     renderApp('/account')
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Sign out' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Account' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Sign out' }))
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith('/api/session/logout', {
@@ -639,7 +649,7 @@ describe('App', () => {
     expect(
       screen.getByRole('link', { name: 'Sign in with Company SSO' }),
     ).toHaveAttribute('href', '/api/session/from-metadata/account-guard')
-    expect(screen.queryByRole('link', { name: 'Account' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Account' })).not.toBeInTheDocument()
     expect(
       fetchMock.mock.calls.some(([input]) => String(input) === ACCOUNT_PATH),
     ).toBe(false)
@@ -727,7 +737,7 @@ describe('App', () => {
     expect(
       screen.getByRole('link', { name: 'Sign in with GitHub' }),
     ).toHaveAttribute('href', '/api/session/from-metadata/admin-users-guard')
-    expect(screen.queryByRole('link', { name: 'Admin users' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Admin' })).not.toBeInTheDocument()
     expect(
       fetchMock.mock.calls.some(([input]) => String(input) === ADMIN_USERS_PATH),
     ).toBe(false)
@@ -754,7 +764,7 @@ describe('App', () => {
     expect(
       screen.getByRole('link', { name: 'Sign in with GitHub' }),
     ).toHaveAttribute('href', '/api/session/from-metadata/operator-guard')
-    expect(screen.queryByRole('link', { name: 'Operator' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Operations' })).not.toBeInTheDocument()
     expect(
       fetchMock.mock.calls.some(([input]) =>
         String(input).startsWith('/api/admin/'),
