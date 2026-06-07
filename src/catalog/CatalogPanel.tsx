@@ -35,6 +35,11 @@ export function CatalogPanel() {
     () => parseCatalogSearchParams(searchParams),
     [searchParams],
   )
+  const currentSearch = searchParams.toString()
+  const canonicalSearch = useMemo(
+    () => catalogQueryToSearchParams(query).toString(),
+    [query],
+  )
   const [categoriesState, setCategoriesState] = useState<LoadState<Category[]>>({
     status: 'loading',
   })
@@ -100,13 +105,18 @@ export function CatalogPanel() {
 
   const categories =
     categoriesState.status === 'ready' ? categoriesState.value : []
-  const activeCategoryCount = query.categories.length
   const primarySort = getPrimarySort(query)
+
+  useEffect(() => {
+    if (canonicalSearch !== currentSearch) {
+      setSearchParams(new URLSearchParams(canonicalSearch), { replace: true })
+    }
+  }, [canonicalSearch, currentSearch, setSearchParams])
 
   function updateCatalogQuery(nextQuery: CatalogQueryState) {
     const nextSearchParams = catalogQueryToSearchParams(nextQuery)
 
-    if (nextSearchParams.toString() !== searchParams.toString()) {
+    if (nextSearchParams.toString() !== currentSearch) {
       setSearchParams(nextSearchParams)
     }
   }
@@ -256,16 +266,9 @@ export function CatalogPanel() {
         </label>
       </div>
 
-      <div className="catalog-summary" aria-live="polite">
-        {booksState.status === 'ready' && (
-          <p>
-            {booksState.value.totalElements ?? 0} books
-            {activeCategoryCount > 0
-              ? ` in ${activeCategoryCount} selected categories`
-              : ''}
-          </p>
-        )}
-      </div>
+      {booksState.status === 'ready' && (
+        <CatalogQuerySummary page={booksState.value} query={query} />
+      )}
 
       {booksState.status === 'loading' && (
         <p className="session-message" role="status">
@@ -290,6 +293,44 @@ export function CatalogPanel() {
         />
       )}
     </section>
+  )
+}
+
+function CatalogQuerySummary({
+  page,
+  query,
+}: {
+  page: BookPage
+  query: CatalogQueryState
+}) {
+  const activeFilters = getActiveFilterSummary(query)
+
+  return (
+    <div className="catalog-summary" aria-live="polite">
+      <p>{formatBookWindow(page, query)}</p>
+      <dl className="catalog-query-details" aria-label="Active catalog query">
+        <div>
+          <dt>Filters</dt>
+          <dd>
+            {activeFilters.length > 0
+              ? activeFilters.join('; ')
+              : 'No filters applied'}
+          </dd>
+        </div>
+        <div>
+          <dt>Sort</dt>
+          <dd>{getSortLabel(query)}</dd>
+        </div>
+        <div>
+          <dt>Page</dt>
+          <dd>{formatPageStatus(page, query)}</dd>
+        </div>
+        <div>
+          <dt>Rows</dt>
+          <dd>{query.size} per page</dd>
+        </div>
+      </dl>
+    </div>
   )
 }
 
@@ -417,10 +458,13 @@ function SortableColumnHeader({
     direction === 'ASC' ? 'ascending' : direction === 'DESC' ? 'descending' : 'none'
   const indicator =
     direction === 'ASC' ? 'ascending' : direction === 'DESC' ? 'descending' : 'not sorted'
+  const nextDirectionLabel = direction === 'ASC' ? 'descending' : 'ascending'
+  const sortButtonLabel = `Sort by ${label}; currently ${indicator}. Activate to sort ${nextDirectionLabel}.`
 
   return (
     <th aria-sort={ariaSort} scope="col">
       <button
+        aria-label={sortButtonLabel}
         className="column-sort-button"
         type="button"
         onClick={() => onSortByField(field)}
@@ -449,6 +493,62 @@ function BookTableRow({ book }: { book: Book }) {
       <td>{categories.length > 0 ? categories.join(', ') : 'None'}</td>
     </tr>
   )
+}
+
+function getActiveFilterSummary(query: CatalogQueryState) {
+  const filters: string[] = []
+
+  if (query.title) {
+    filters.push(`Title: ${query.title}`)
+  }
+
+  if (query.author) {
+    filters.push(`Author: ${query.author}`)
+  }
+
+  if (query.isbn) {
+    filters.push(`ISBN: ${query.isbn}`)
+  }
+
+  if (query.categories.length > 0) {
+    filters.push(`Categories: ${query.categories.join(', ')}`)
+  }
+
+  return filters
+}
+
+function getSortLabel(query: CatalogQueryState) {
+  const primarySort = getPrimarySort(query)
+  const sortOption = SORT_OPTIONS.find((option) => option.value === primarySort)
+
+  return sortOption?.label ?? primarySort
+}
+
+function formatBookWindow(page: BookPage, query: CatalogQueryState) {
+  const totalElements = page.totalElements ?? 0
+  const numberOfElements = page.numberOfElements ?? page.content?.length ?? 0
+
+  if (totalElements <= 0 || numberOfElements <= 0) {
+    return formatBookCount(totalElements)
+  }
+
+  const pageNumber = page.number ?? query.page
+  const pageSize = page.size ?? query.size
+  const start = pageNumber * pageSize + 1
+  const end = Math.min(start + numberOfElements - 1, totalElements)
+
+  return `Showing ${start}-${end} of ${formatBookCount(totalElements)}`
+}
+
+function formatBookCount(count: number) {
+  return `${count} ${count === 1 ? 'book' : 'books'}`
+}
+
+function formatPageStatus(page: BookPage, query: CatalogQueryState) {
+  const pageNumber = (page.number ?? query.page) + 1
+  const totalPages = page.totalPages ?? 0
+
+  return totalPages > 0 ? `Page ${pageNumber} of ${totalPages}` : `Page ${pageNumber}`
 }
 
 function createFilterDraftKey(draft: CatalogFilterDraft) {

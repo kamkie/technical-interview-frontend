@@ -24,7 +24,7 @@ archived in `docs/ROADMAP_ARCHIVE.md`. Released history belongs in `CHANGELOG.md
 | Implemented surface | Session, public catalog, account, admin catalog, admin localization, admin users, operator |
 | Hardening baseline  | ESLint, TypeScript, Vitest, API type freshness, build, Codecov coverage/test/bundle uploads, Docker build, whitespace, npm audit, advisory M20 runtime/Nginx, rendered-manifest, and Trivy checks, CodeQL, dependency-review, Dependabot, and release image signing/provenance |
 | Latest release      | Published `v0.2.0` on 2026-06-07 with GHCR image, signature, provenance, and GitHub Release notes |
-| Immediate action    | Select the next post-`0.2.0` scope: M19 catalog polish, M23 visual pass, authenticated smoke automation, or future backend-supported surface |
+| Immediate action    | Select the next post-M19 scope: M23 visual pass, authenticated smoke automation, or future backend-supported surface |
 | Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`       |
 
 The app currently bootstraps browser session state with `GET /api/session`, renders
@@ -34,11 +34,13 @@ authenticated session/logout and route guards, exposes account profile and langu
 preference flows, and implements the selected admin/operator surfaces. Local
 same-origin auth smoke steps, the canonical validation baseline, Docker image build,
 tag-driven GHCR package publication, and selected hardening evidence are documented.
-Completed M0-M24 work and plan records are archived in
+Earlier completed roadmap work and plan records are archived in
 `docs/ROADMAP_ARCHIVE.md`. Post-`0.1.0` execution added contract coverage,
 anonymous smoke automation, fake-OAuth readiness, advisory hardening, provider
-metadata guardrails, and the published `v0.2.0` release. Remaining roadmap work starts
-with selecting the next post-`0.2.0` product or automation slice.
+metadata guardrails, and the published `v0.2.0` release. Post-`0.2.0` execution
+selected M19 public catalog workflow polish for canonical route state, visible
+query-state summaries, and accessible sort affordances. Remaining roadmap work
+starts with selecting the next product, visual, or automation slice.
 
 ## Product Direction
 
@@ -57,7 +59,7 @@ with selecting the next post-`0.2.0` product or automation slice.
 
 ## Active Milestones
 
-Completed M0-M24 work is archived in `docs/ROADMAP_ARCHIVE.md`.
+Earlier completed roadmap work is archived in `docs/ROADMAP_ARCHIVE.md`.
 
 Status terms:
 
@@ -70,13 +72,13 @@ Status terms:
 
 | Milestone | Status | Scope | Done when | Validation |
 | --- | --- | --- | --- | --- |
-| M19 - Public Catalog Workflow Polish | Blocked: needs selected polish scope | Improve the already implemented public catalog workflow without backend changes: scan density, URL-state clarity, keyboard/focus behavior, accessible table controls, pagination/sort affordances, and localized loading/empty/error states. | A focused spec or roadmap note names the exact polish scope; component/route tests cover the changed visible states; anonymous smoke is updated if the workflow changes browser behavior. | Relevant tests plus full baseline for app changes. |
+| M19 - Public Catalog Workflow Polish | Done | Selected in `docs/specs/SPEC_public_catalog_workflow_polish.md`: canonical public catalog route query state, visible active filter/sort/page summaries, default-filter clarity, and accessible sort affordances without backend changes. | Component/route tests cover canonical URL replacement, visible query-state summaries, sort control names, and existing request serialization. | Relevant tests plus full baseline for app changes. |
 | M23 - Implemented Flow Visual Design Pass | Blocked: needs selected visual scope | Select broad visual design work only when tied to implemented public, account, admin, or operator flows. Define the exact flows, accessibility/focus/responsive goals, test coverage, and browser evidence before changing app UI. | A selected visual pass is scoped to implemented user flows, covered by focused tests or browser evidence, and avoids backend/API behavior changes. | Relevant tests, browser screenshots or smoke for changed flows, and full baseline for app changes. |
 
 ## Near-Term Backlog
 
-1. Select a concrete M19 catalog polish scope or M23 implemented-flow visual scope
-   before assigning UI work.
+1. Select a concrete M23 implemented-flow visual scope before assigning broad UI
+   work.
 2. Keep backend surface expansion unselected unless a future backend contract refresh
    or product decision
    introduces an approved operation gap.

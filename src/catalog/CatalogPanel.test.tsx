@@ -47,7 +47,10 @@ describe('CatalogPanel', () => {
     expect(
       screen.getByRole('columnheader', { name: 'Categories' }),
     ).toBeInTheDocument()
-    expect(screen.getByText('2 books')).toBeInTheDocument()
+    expect(screen.getByText('Showing 1-2 of 2 books')).toBeInTheDocument()
+    expect(screen.getByText('No filters applied')).toBeInTheDocument()
+    expect(screen.getAllByText('Title A-Z')).toHaveLength(2)
+    expect(screen.getByText('Page 1 of 1')).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(CATEGORIES_PATH, {
       method: 'GET',
       credentials: 'same-origin',
@@ -92,6 +95,16 @@ describe('CatalogPanel', () => {
     const authorInput = screen.getByLabelText('Author')
 
     await screen.findByText('Effective Java')
+    expect(
+      screen.getByRole('button', {
+        name: 'Sort by Title; currently ascending. Activate to sort descending.',
+      }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', {
+        name: 'Sort by Publication year; currently not sorted. Activate to sort ascending.',
+      }),
+    ).toBeInTheDocument()
     fireEvent.change(titleInput, { target: { value: 'clean' } })
     fireEvent.change(authorInput, { target: { value: 'martin' } })
     fireEvent.click(screen.getByRole('button', { name: 'Java' }))
@@ -108,7 +121,10 @@ describe('CatalogPanel', () => {
       )
     })
     expect(await screen.findByText('Clean Code')).toBeInTheDocument()
-    expect(screen.getByText('1 books in 2 selected categories')).toBeInTheDocument()
+    expect(screen.getByText('Showing 1-1 of 1 book')).toBeInTheDocument()
+    expect(
+      screen.getByText('Title: clean; Author: martin; Categories: Java, Architecture'),
+    ).toBeInTheDocument()
   })
 
   it('requests the next button-based page with Spring pagination parameters', async () => {
@@ -117,7 +133,7 @@ describe('CatalogPanel', () => {
     renderCatalogRoute()
 
     expect(await screen.findByText('Refactoring')).toBeInTheDocument()
-    expect(screen.getByText(/Page 1\s+of 3/)).toBeInTheDocument()
+    expect(screen.getAllByText(/Page 1\s+of 3/)).toHaveLength(2)
     expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled()
 
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
@@ -147,7 +163,7 @@ describe('CatalogPanel', () => {
     renderCatalogRoute(`${CATALOG_ROUTE_PATH}?page=2`)
 
     expect(await screen.findByText('Refactoring')).toBeInTheDocument()
-    expect(screen.getByText(/Page 3\s+of 3/)).toBeInTheDocument()
+    expect(screen.getAllByText(/Page 3\s+of 3/)).toHaveLength(2)
     expect(screen.getByRole('button', { name: 'Previous' })).not.toBeDisabled()
     expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled()
   })
@@ -251,12 +267,15 @@ describe('CatalogPanel', () => {
   it('sanitizes invalid and duplicate route query values before requesting books', async () => {
     const fetchMock = mockCatalogFetch()
 
-    renderCatalogRoute(
+    const { router } = renderCatalogRoute(
       `${CATALOG_ROUTE_PATH}?title=%20clean%20&category=Java&category=Java&category=&page=-2&size=999&sort=unknown,DESC`,
     )
 
     await screen.findByDisplayValue('clean')
 
+    await waitFor(() => {
+      expect(router.state.location.search).toBe('?title=clean&category=Java')
+    })
     expect(fetchMock).toHaveBeenCalledWith(
       `${BOOKS_PATH}?title=clean&category=Java&page=0&size=10&sort=title%2CASC`,
       expect.objectContaining({
