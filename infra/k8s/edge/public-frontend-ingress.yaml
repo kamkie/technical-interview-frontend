@@ -1,0 +1,24 @@
+# Reference ingress for the first-party UI.
+# Attach this rule to the same public host used for same-origin /api/** traffic.
+# Add TLS, DNS, WAF, and controller-specific behavior in deployment-owned overlays.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: technical-interview-frontend-public
+  namespace: technical-interview-frontend
+  labels:
+    app.kubernetes.io/name: technical-interview-frontend
+    app.kubernetes.io/component: edge
+spec:
+  ingressClassName: public
+  rules:
+    - host: demo.example.test
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: technical-interview-frontend
+                port:
+                  name: http

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: technical-interview-frontend-config
+  namespace: technical-interview-frontend
+data:
+  FRONTEND_API_UPSTREAM: "http://technical-interview-demo.technical-interview-demo.svc.cluster.local:80"

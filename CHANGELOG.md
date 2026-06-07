@@ -9,6 +9,8 @@ until they are promoted for a release tag.
 
 - Added a production Docker image build for the Vite app with an unprivileged Nginx
   runtime that preserves same-origin `/api/**` proxying.
+- Added frontend Kubernetes/Kustomize and Helm reference manifests for deploying the
+  production container with the same-origin `/api/**` proxy configuration.
 - Added a tag-driven GitHub Release workflow that validates the candidate, publishes
   semantic and immutable GHCR image tags, signs and attests the image digest, and
   renders release notes with package links from `CHANGELOG.md`.

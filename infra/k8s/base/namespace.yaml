@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: technical-interview-frontend
+  labels:
+    app.kubernetes.io/name: technical-interview-frontend
+    app.kubernetes.io/component: frontend

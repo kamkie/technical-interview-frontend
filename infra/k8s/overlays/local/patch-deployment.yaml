@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: technical-interview-frontend
+  namespace: technical-interview-frontend
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: technical-interview-frontend
+          image: technical-interview-frontend:local
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              cpu: 150m
+              memory: 96Mi

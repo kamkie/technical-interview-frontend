@@ -66,6 +66,27 @@ without adding browser CORS or token assumptions. On Linux hosts that do not res
 `host.docker.internal`, add Docker's host-gateway mapping or use a backend reachable
 from the container network.
 
+## Infrastructure References
+
+Reference Kubernetes and Helm assets live under [`infra/`](../infra/). They deploy
+the same production container image, expose Nginx on port `8080` through a service on
+port `80`, and keep the server-side `/api/**` proxy target in
+`FRONTEND_API_UPSTREAM`.
+
+Render the Kustomize and Helm output when those assets change and the tools are
+available:
+
+```powershell
+kubectl kustomize infra/k8s/base
+kubectl kustomize infra/k8s/overlays/local
+helm template technical-interview-frontend infra/helm/technical-interview-frontend
+helm template technical-interview-frontend infra/helm/technical-interview-frontend -f infra/helm/technical-interview-frontend/values-local.yaml
+```
+
+These manifests are reference assets. Deployment-specific TLS, DNS, ingress
+controller annotations, WAF/rate-limit policy, image promotion, and environment
+promotion belong in deployment-owned overlays or platform policy.
+
 ## Canonical Commands
 
 | Task | Command |

@@ -1,0 +1,14 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: technical-interview-frontend
+  namespace: technical-interview-frontend
+  labels:
+    app.kubernetes.io/name: technical-interview-frontend
+    app.kubernetes.io/component: frontend
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: technical-interview-frontend
+      app.kubernetes.io/component: frontend

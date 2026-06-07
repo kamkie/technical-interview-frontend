@@ -36,6 +36,7 @@ Other useful entry points:
 - [SECURITY.md](SECURITY.md) - vulnerability reporting and supported security-fix lines
 - [docs/backend/](docs/backend/) - imported backend contract artifacts
 - [docs/specs/](docs/specs/) - selected admin/operator behavior specs
+- [infra/](infra/) - Kubernetes/Kustomize and Helm deployment references
 
 ## Quick Start
 

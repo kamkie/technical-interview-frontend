@@ -16,6 +16,7 @@ archived in `docs/ROADMAP_ARCHIVE.md`. Released history belongs in `CHANGELOG.md
 | Routing target      | React Router                                                                               |
 | CI target           | GitHub Actions                                                                             |
 | Container artifact  | Docker image built from `Dockerfile`, serving the Vite build through unprivileged Nginx on port 8080 |
+| Infrastructure refs | Kustomize and Helm references under `infra/` for the frontend container and same-origin `/api/**` proxy |
 | Release automation  | Tag-driven GitHub Release workflow publishes the GHCR container package, signature, and provenance for future tags that include the workflow |
 | Breaking policy     | Breaking user-facing or backend-contract integration changes require a selected roadmap row |
 | Backend integration | Same-origin `/api/**` browser traffic                                                      |
@@ -132,8 +133,9 @@ Keep deferred:
 
 - Backend operations and deployment runbooks until this frontend owns a deployment
   target or runtime operations responsibility.
-- Backend-specific Gradle, REST Docs, Flyway, restore-drill, Helm, Kubernetes, and
-  post-deploy smoke procedures.
+- Backend-specific Gradle, REST Docs, Flyway, restore-drill, application Helm,
+  Kubernetes, and post-deploy smoke procedures. The frontend keeps lightweight
+  reference manifests under `infra/` until a deployment target is selected.
 - Container image vulnerability scanning, deployment posture checks, and runtime
   infrastructure hardening until the frontend has a selected scanner, deployment
   target, or hosted runtime.
@@ -265,7 +267,8 @@ Do not start release preparation until all of these are true:
 - Hard-coded OAuth provider paths outside the session bootstrap response.
 - New backend surfaces not yet selected in a roadmap row or spec.
 - Broad visual design work that is not tied to an implemented user flow.
-- Deployment promotion beyond the GHCR package and GitHub Release workflow.
+- Deployment promotion beyond the GHCR package, checked-in reference manifests, and
+  GitHub Release workflow.
 - Container image vulnerability scanning, deployment posture checks, and runtime
   infrastructure hardening until selected as explicit follow-up scope.
 

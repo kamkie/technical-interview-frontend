@@ -1,0 +1,19 @@
+replicaCount: 1
+
+image:
+  repository: technical-interview-frontend
+  tag: local
+
+config:
+  apiUpstream: "http://technical-interview-demo.technical-interview-demo.svc.cluster.local:80"
+
+resources:
+  requests:
+    cpu: 25m
+    memory: 32Mi
+  limits:
+    cpu: 150m
+    memory: 96Mi
+
+autoscaling:
+  enabled: false

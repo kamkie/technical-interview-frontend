@@ -17,6 +17,7 @@ repository.
 | Vulnerability reporting policy | [`SECURITY.md`](../SECURITY.md) |
 | Imported backend contract artifacts | [`docs/backend/`](backend/) |
 | Selected behavior specs | [`docs/specs/`](specs/) |
+| Infrastructure deployment references | [`infra/`](../infra/) |
 
 ## Ownership Rules
 
