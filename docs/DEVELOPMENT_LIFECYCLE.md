@@ -4,15 +4,51 @@ This document owns the human-facing lifecycle for frontend repository changes. K
 
 ## Core Lifecycle
 
-Use this sequence for any change that modifies repository state:
+Use these named phases for any change that modifies repository state. Small direct requests can run the same phases as a short loop; larger or riskier work should make the current phase explicit.
 
-1. Name the user-visible behavior, repository rule, or release state being changed.
-2. Find the owner artifact for that behavior.
-3. Update the owner before or alongside implementation.
-4. Make the smallest coherent change.
-5. Run the smallest validation that proves the change and report skipped checks.
+### 1. Intake
+
+Identify the user-visible behavior, repository rule, product intent, release state, or validation boundary being changed. Note any stable refs, such as roadmap IDs, spec names, plan IDs, prompt filenames, or concrete file paths. Clarify whether the request is for analysis, planning, implementation, validation, review, commit, or release work.
 
 Stop and clarify when the intended behavior cannot be described clearly enough to test, document, or route to an owner.
+
+### 2. Orient
+
+Before edits, check the current worktree and treat existing changes as user-owned unless the task says otherwise. Load only the owner artifacts, focused references, prompts, specs, plans, contract files, or source files needed for the requested phase.
+
+### 3. Route
+
+Choose the path early: direct one-off work, bug triage, design, prompt-guided report, plan authoring, active-plan execution, release readiness, or closeout. Find the smallest owner artifact for the behavior or rule, using the artifact routing table below.
+
+Small documentation cleanup and narrow implementation of already-decided behavior can stay on the direct one-off path when no design or plan gate is triggered.
+
+### 4. Design
+
+Use design when frontend product direction, workflow hierarchy, visual treatment, responsive behavior, UI state coverage, screenshots, drafts, or interaction variants need review before production implementation. Durable product and design intent belongs in `docs/DESIGN.md`; selected scope, milestone status, dependencies, and product non-goals stay in `ROADMAP.md`.
+
+### 5. Plan
+
+Use a plan when the work needs sequencing, disjoint write scopes, worker coordination, multiple owners, multiple commits, unresolved choices, or broader validation coordination. Plans coordinate execution, but durable rules still move into the owning contract, test, document, focused reference, roadmap row, or source file.
+
+### 6. Implement
+
+Update the owner before or alongside implementation when behavior, rules, selected scope, or durable documentation changes. Keep the change scoped to the requested behavior and make the smallest coherent edit. For API-facing work, preserve the imported backend contract and refresh contract artifacts only through the backend contract workflow.
+
+### 7. Validate
+
+Choose validation from `.agents/references/testing.md` based on the diff and risk. Use `docs/LOCAL_DEVELOPMENT.md` and `package.json` for command details, local procedure, setup, and environment notes. Report skipped validation with the reason.
+
+### 8. Review And Close Out
+
+Review for behavior drift, backend contract drift, documentation drift, missing tests, missing validation, and scope leaks before handoff. Report changed files, validation, skipped checks, roadmap changes by stable ID when applicable, and remaining risks.
+
+### 9. Commit
+
+Commit only when the user asks or an active plan checkpoint authorizes it. Before committing, confirm the diff matches the requested scope, validation and review evidence are current, and unrelated user-owned changes are preserved.
+
+### 10. Release
+
+Release work starts only when the user explicitly requests a release boundary or release preparation. Use `.agents/references/releases.md` for release sequencing, changelog promotion, package metadata, Docker evidence, tags, publication guardrails, and post-release roadmap cleanup.
 
 ## Artifact Routing
 

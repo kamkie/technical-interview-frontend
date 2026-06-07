@@ -10,6 +10,8 @@ Reusable repository prompt recipes live in `.agents/prompts/README.md`. Use them
 
 Give the AI the current goal, the files it may edit, and the validation you expect. For API-facing work, point it at the imported backend contract artifacts and require contract-first behavior. For docs or procedure work, name the owner document so rules do not end up only in a plan or final response.
 
+When the request fits a specific lifecycle phase, name it directly: intake, orient, route, design, plan, implement, validate, review and close out, commit, or release. `docs/DEVELOPMENT_LIFECYCLE.md` owns those phase definitions.
+
 Tell the AI when it may commit, tag, push, or publish. If you do not grant that permission explicitly, it should leave changes uncommitted.
 
 ## Planning Requests

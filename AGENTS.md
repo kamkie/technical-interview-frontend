@@ -33,6 +33,8 @@ Use `docs/LOCAL_DEVELOPMENT.md` and `package.json` for current runtime, package 
 
 Start with this file and the user's request. Use `.agents/references/documentation.md` for the focused-reference and durable-owner map. Load only the owner files needed for the current task, and do not bulk-load AI guidance, generated contract files, source trees, or archives unless the current task, explicit audit scope, cross-document consistency check, or validation failure requires it.
 
+Use `docs/DEVELOPMENT_LIFECYCLE.md` for named lifecycle phase wording: intake, orient, route, design, plan, implement, validate, review and close out, commit, and release. Keep the phase definitions there instead of duplicating them in AI guidance.
+
 ## Artifact Lookup
 
 - Treat `PLAN-<short-kebab-slug>` references as active-plan references and search `.agents/plans/` first, then `.agents/plans/archive/` when the active file is not found.
