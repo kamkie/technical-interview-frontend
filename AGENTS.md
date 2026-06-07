@@ -40,6 +40,8 @@ Before any file edit, run `git status --short`.
 
 Treat all existing or unexpected changes as user-owned. Do not revert, delete, overwrite, normalize, or clean up those changes unless the user explicitly asks for that exact recovery action.
 
+When a prior dirty-worktree observation conflicts with the current `git status --short`, treat the current Git state as authoritative and reconcile before stopping. If files that were previously dirty are now clean, check `git diff`, `git diff --cached`, and recent commit history or reflog as needed to determine whether the changes were committed or otherwise resolved; do not report a blocker based only on stale dirty-state memory.
+
 If unexpected changes appear during a task, stop and report:
 
 1. Which files changed.
