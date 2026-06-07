@@ -704,14 +704,16 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
               catalog data.
             </p>
           </div>
-          <button
-            type="button"
-            aria-label="Refresh books"
-            className="secondary-button compact-action"
-            onClick={refreshBooks}
-          >
-            Refresh
-          </button>
+          <div className="section-actions">
+            <button
+              type="button"
+              aria-label="Refresh books"
+              className="secondary-button compact-action"
+              onClick={refreshBooks}
+            >
+              Refresh
+            </button>
+          </div>
         </div>
 
         <form className="catalog-filters" onSubmit={handleFilterSubmit}>
@@ -847,14 +849,16 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
               current filters.
             </p>
           </div>
-          <button
-            type="button"
-            aria-label="Refresh categories"
-            className="secondary-button compact-action"
-            onClick={refreshCategories}
-          >
-            Refresh
-          </button>
+          <div className="section-actions">
+            <button
+              type="button"
+              aria-label="Refresh categories"
+              className="secondary-button compact-action"
+              onClick={refreshCategories}
+            >
+              Refresh
+            </button>
+          </div>
         </div>
 
         <form
@@ -960,14 +964,16 @@ function BookManagementForm({
       <div className="form-heading-row">
         <h4>{editing ? 'Edit book' : 'Create book'}</h4>
         {editing && (
-          <button
-            type="button"
-            className="secondary-button"
-            onClick={onCancelEdit}
-            disabled={submitting}
-          >
-            Cancel edit
-          </button>
+          <div className="section-actions">
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={onCancelEdit}
+              disabled={submitting}
+            >
+              Cancel edit
+            </button>
+          </div>
         )}
       </div>
 

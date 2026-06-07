@@ -297,7 +297,7 @@ function AdminMenu() {
 
 function RouteContextHeader({ context }: { context: RouteContext }) {
   return (
-    <section className="route-context intro" aria-labelledby="page-title">
+    <section className="route-context page-header" aria-labelledby="page-title">
       <p className="eyebrow">{context.area}</p>
       <h1 id="page-title">{context.title}</h1>
       <p className="lede">{context.description}</p>

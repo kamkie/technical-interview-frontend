@@ -270,14 +270,16 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
               history.
             </p>
           </div>
-          <button
-            type="button"
-            aria-label="Refresh users"
-            className="secondary-button compact-action"
-            onClick={refreshUsers}
-          >
-            Refresh
-          </button>
+          <div className="section-actions">
+            <button
+              type="button"
+              aria-label="Refresh users"
+              className="secondary-button compact-action"
+              onClick={refreshUsers}
+            >
+              Refresh
+            </button>
+          </div>
         </div>
 
         {usersState.status === 'loading' && (

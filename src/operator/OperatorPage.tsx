@@ -904,9 +904,15 @@ function AuditDetailsPanel({
           </p>
         </div>
         {entry !== null && (
-          <button type="button" className="secondary-button" onClick={onCloseDetails}>
-            Close details
-          </button>
+          <div className="section-actions">
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={onCloseDetails}
+            >
+              Close details
+            </button>
+          </div>
         )}
       </div>
 

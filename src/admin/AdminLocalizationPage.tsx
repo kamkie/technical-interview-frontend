@@ -477,14 +477,16 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
               localized text.
             </p>
           </div>
-          <button
-            type="button"
-            aria-label="Refresh localizations"
-            className="secondary-button compact-action"
-            onClick={refreshLocalizations}
-          >
-            Refresh
-          </button>
+          <div className="section-actions">
+            <button
+              type="button"
+              aria-label="Refresh localizations"
+              className="secondary-button compact-action"
+              onClick={refreshLocalizations}
+            >
+              Refresh
+            </button>
+          </div>
         </div>
 
         <form className="localization-filters" onSubmit={handleFilterSubmit}>
@@ -814,14 +816,16 @@ function LocalizationForm({
           </p>
         </div>
         {editing && (
-          <button
-            type="button"
-            className="secondary-button"
-            disabled={submitting}
-            onClick={onCancelEdit}
-          >
-            Cancel edit
-          </button>
+          <div className="section-actions">
+            <button
+              type="button"
+              className="secondary-button"
+              disabled={submitting}
+              onClick={onCancelEdit}
+            >
+              Cancel edit
+            </button>
+          </div>
         )}
       </div>
 
