@@ -356,6 +356,7 @@ h1 {
 .catalog-panel,
 .admin-catalog-panel,
 .admin-localization-panel,
+.admin-user-panel,
 .operator-panel {
   display: grid;
   gap: 1.25rem;
@@ -577,6 +578,38 @@ h1 {
   gap: 2rem;
 }
 
+.admin-users-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.45fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.admin-user-detail-panel {
+  display: grid;
+  position: sticky;
+  top: 1rem;
+  gap: 1rem;
+  min-width: 0;
+  padding-left: 1.5rem;
+  border-left: 1px solid #d8dee6;
+}
+
+.admin-user-detail-content,
+.role-grant-section,
+.role-replacement-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.role-grant-section h4,
+.role-replacement-form h4 {
+  margin: 0;
+  color: #17211d;
+  font-size: 1.05rem;
+  letter-spacing: 0;
+}
+
 .admin-section {
   display: grid;
   gap: 1.25rem;
@@ -604,7 +637,8 @@ h1 {
 }
 
 .book-management-form,
-.localization-management-form {
+.localization-management-form,
+.role-replacement-form {
   display: grid;
   gap: 1rem;
   padding-top: 1rem;
@@ -618,7 +652,8 @@ h1 {
 }
 
 .admin-form-grid label,
-.category-create-form label {
+.category-create-form label,
+.admin-user-reason-field {
   display: grid;
   gap: 0.4rem;
   color: #344054;
@@ -631,7 +666,8 @@ h1 {
 .admin-checkbox-group input[type="text"],
 .category-create-form input,
 .admin-categories-table input,
-.localization-message-field textarea {
+.localization-message-field textarea,
+.admin-user-reason-field textarea {
   width: 100%;
   min-height: 2.75rem;
   border: 1px solid #cbd5e1;
@@ -643,6 +679,13 @@ h1 {
 
 .localization-message-field textarea {
   min-height: 8rem;
+  padding-bottom: 0.75rem;
+  padding-top: 0.75rem;
+  resize: vertical;
+}
+
+.admin-user-reason-field textarea {
+  min-height: 7rem;
   padding-bottom: 0.75rem;
   padding-top: 0.75rem;
   resize: vertical;
@@ -726,6 +769,12 @@ h1 {
   border: 1px solid #fecdca;
   background: #ffffff;
   color: #b42318;
+}
+
+.row-actions .selected-row-action {
+  border-color: #106b5d;
+  background: #dff8ee;
+  color: #106b5d;
 }
 
 .admin-action-row button:disabled,
@@ -1231,10 +1280,22 @@ h1 {
     grid-template-columns: 1fr;
   }
 
+  .admin-users-layout {
+    grid-template-columns: 1fr;
+  }
+
   .operator-details-panel {
     position: static;
     grid-column: 1;
     grid-row: auto;
+    padding-left: 0;
+    padding-top: 1.25rem;
+    border-top: 1px solid #d8dee6;
+    border-left: 0;
+  }
+
+  .admin-user-detail-panel {
+    position: static;
     padding-left: 0;
     padding-top: 1.25rem;
     border-top: 1px solid #d8dee6;

@@ -18,6 +18,11 @@ import {
   AdminLocalizationPage,
 } from './admin/AdminLocalizationPage'
 import {
+  ADMIN_USER_DETAIL_ROUTE_PATH,
+  ADMIN_USERS_ROUTE_PATH,
+  AdminUsersPage,
+} from './admin/AdminUsersPage'
+import {
   RequireAuthenticated,
   type SessionState,
 } from './auth/RequireAuthenticated'
@@ -72,6 +77,7 @@ export function App() {
                   <NavLink to={ADMIN_LOCALIZATION_ROUTE_PATH}>
                     Admin localizations
                   </NavLink>
+                  <NavLink to={ADMIN_USERS_ROUTE_PATH}>Admin users</NavLink>
                   <NavLink to={OPERATOR_ROUTE_PATH}>Operator</NavLink>
                   <NavLink to={ACCOUNT_ROUTE_PATH}>Account</NavLink>
                 </>
@@ -124,6 +130,26 @@ export function App() {
               <RequireAuthenticated state={sessionState}>
                 {sessionState.status === 'ready' && (
                   <AdminLocalizationPage session={sessionState.session} />
+                )}
+              </RequireAuthenticated>
+            }
+          />
+          <Route
+            path={ADMIN_USERS_ROUTE_PATH}
+            element={
+              <RequireAuthenticated state={sessionState}>
+                {sessionState.status === 'ready' && (
+                  <AdminUsersPage session={sessionState.session} />
+                )}
+              </RequireAuthenticated>
+            }
+          />
+          <Route
+            path={ADMIN_USER_DETAIL_ROUTE_PATH}
+            element={
+              <RequireAuthenticated state={sessionState}>
+                {sessionState.status === 'ready' && (
+                  <AdminUsersPage session={sessionState.session} />
                 )}
               </RequireAuthenticated>
             }

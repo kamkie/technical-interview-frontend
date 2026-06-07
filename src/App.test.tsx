@@ -14,8 +14,13 @@ import {
   ACCOUNT_PATH,
   type UserAccount,
 } from './api/account'
+import {
+  ADMIN_USERS_PATH,
+  type AdminUserAccount,
+} from './api/adminUsers'
 import { ADMIN_CATALOG_ROUTE_PATH } from './admin/AdminCatalogPage'
 import { ADMIN_LOCALIZATION_ROUTE_PATH } from './admin/AdminLocalizationPage'
+import { ADMIN_USERS_ROUTE_PATH } from './admin/AdminUsersPage'
 import {
   BOOKS_PATH,
   CATEGORIES_PATH,
@@ -150,6 +155,10 @@ describe('App', () => {
     expect(screen.getByRole('link', { name: 'Admin localizations' })).toHaveAttribute(
       'href',
       '/admin/localizations',
+    )
+    expect(screen.getByRole('link', { name: 'Admin users' })).toHaveAttribute(
+      'href',
+      '/admin/users',
     )
     expect(screen.getByRole('link', { name: 'Operator' })).toHaveAttribute(
       'href',
@@ -562,6 +571,33 @@ describe('App', () => {
     ).toBe(false)
   })
 
+  it('guards the admin users route for anonymous sessions without calling admin user APIs', async () => {
+    const fetchMock = mockAppFetch({
+      session: createSession({
+        loginProviders: [
+          {
+            registrationId: 'github',
+            clientName: 'GitHub',
+            authorizationPath: '/api/session/oauth2/authorization/github',
+          },
+        ],
+      }),
+    })
+
+    renderApp(ADMIN_USERS_ROUTE_PATH)
+
+    expect(
+      await screen.findByRole('heading', { name: 'Sign in required' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'Sign in with GitHub' }),
+    ).toHaveAttribute('href', '/api/session/oauth2/authorization/github')
+    expect(screen.queryByRole('link', { name: 'Admin users' })).not.toBeInTheDocument()
+    expect(
+      fetchMock.mock.calls.some(([input]) => String(input) === ADMIN_USERS_PATH),
+    ).toBe(false)
+  })
+
   it('guards the operator route for anonymous sessions without calling operator APIs', async () => {
     const fetchMock = mockAppFetch({
       session: createSession({
@@ -618,6 +654,31 @@ describe('App', () => {
     )
   })
 
+  it('renders the admin users route for admin users', async () => {
+    const fetchMock = mockAppFetch({
+      account: createAccount({
+        roles: ['USER', 'ADMIN'],
+      }),
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    renderApp(ADMIN_USERS_ROUTE_PATH)
+
+    expect(
+      await screen.findByRole('heading', { name: 'User management' }),
+    ).toBeInTheDocument()
+    expect(await screen.findByText('Admin User')).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledWith(ADMIN_USERS_PATH, {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: {
+        Accept: 'application/json',
+      },
+    })
+  })
+
   it('renders the operator route for authenticated users without account-role gating', async () => {
     const fetchMock = mockAppFetch({
       session: createSession({
@@ -662,6 +723,7 @@ function renderApp(initialEntry = '/catalog') {
 
 function mockAppFetch({
   account = createAccount(),
+  adminUsers = createAdminUsers(),
   books = createBookPage(),
   categories = [{ id: 1, name: 'Java' }],
   languageResponse = createAccount(),
@@ -672,6 +734,7 @@ function mockAppFetch({
   session,
 }: {
   account?: UserAccount | Response | ((path: string) => UserAccount | Response | Promise<Response>)
+  adminUsers?: AdminUserAccount[] | Response
   books?: BookPage
   categories?: Category[]
   languageResponse?:
@@ -731,6 +794,10 @@ function mockAppFetch({
 
     if (path.startsWith(LOCALIZATIONS_PATH)) {
       return Promise.resolve(Response.json(localizations))
+    }
+
+    if (path === ADMIN_USERS_PATH) {
+      return Promise.resolve(toAdminUsersResponse(adminUsers))
     }
 
     if (path === OPERATOR_SURFACE_PATH) {
@@ -808,6 +875,38 @@ function createLocalizationPage(): LocalizationPage {
     totalElements: 1,
     totalPages: 1,
   }
+}
+
+function createAdminUsers(): AdminUserAccount[] {
+  return [
+    {
+      id: 7,
+      provider: 'github',
+      login: 'admin-user',
+      displayName: 'Admin User',
+      email: 'admin@example.test',
+      preferredLanguage: 'en',
+      roles: ['USER', 'ADMIN'],
+      roleGrants: [
+        {
+          role: 'USER',
+          source: 'AUTHENTICATED_LOGIN',
+          grantedAt: '2026-06-07T09:00:00Z',
+        },
+        {
+          role: 'ADMIN',
+          source: 'ADMIN_MANAGED',
+          grantedAt: '2026-06-07T09:05:00Z',
+          grantedByUserId: 42,
+          grantedByLogin: 'owner-admin',
+          reason: 'Initial administrator',
+        },
+      ],
+      lastLoginAt: '2026-06-06T22:10:00Z',
+      createdAt: '2026-05-11T12:00:00Z',
+      updatedAt: '2026-06-06T22:10:00Z',
+    },
+  ]
 }
 
 function createOperatorSurface(): OperatorSurface {
@@ -905,6 +1004,10 @@ function resolveValue<T, TArgs extends unknown[]>(
 }
 
 function toAccountResponse(value: UserAccount | Response) {
+  return value instanceof Response ? value : Response.json(value)
+}
+
+function toAdminUsersResponse(value: AdminUserAccount[] | Response) {
   return value instanceof Response ? value : Response.json(value)
 }
 
