@@ -41,7 +41,9 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 
 ### M-UI-001: Production UI Foundation
 
-Labels: `type:milestone`, `status:ready`
+Labels: `type:milestone`, `status:ready`, `plan:PLAN-production-ui-foundation`
+
+Plan ID: `PLAN-production-ui-foundation`
 
 Goal: Make the existing frontend read as a production work tool rather than a technical demo.
 
