@@ -1,12 +1,15 @@
 # Changelog
 
 This project follows Keep a Changelog style. Release entries stay under `Unreleased`
-until the first frontend tag is cut.
+until they are promoted for a release tag.
 
 ## [Unreleased]
 
-This section represents the candidate `0.1.0` frontend surface until a tagged
-release is created.
+No unreleased changes yet.
+
+## [0.1.0] - 2026-06-07
+
+First frontend release.
 
 ### Added
 
@@ -33,16 +36,27 @@ release is created.
   admin user management.
 - GitHub Actions CI workflow for lint, typecheck, tests, build, and whitespace
   validation.
+- Static-analysis and hardening checks for explicit workflow
+  permissions/concurrency, CodeQL, dependency-review, high-or-critical npm audit,
+  Dependabot grouping, and documented triage/exception handling.
 - Component, route, and API client tests with shared fixtures across public catalog,
   account, admin, and operator behavior.
-- Lean frontend-specific AI guidance.
+- Frontend release procedure covering version selection, changelog promotion,
+  validation evidence, annotated tags, publication guardrails, and post-release
+  roadmap cleanup.
+- Human procedure documentation for lifecycle, local development, working with AI,
+  and documentation navigation.
+- Lean frontend-specific AI guidance and focused AI references for documentation
+  routing, validation selection, reviews, and release sequencing.
 
 ### Changed
 
 - Roadmap now records the M0-M11 implementation slice as complete and moves
-  near-term work to `0.1.0` release hardening plus canonical browser smoke coverage.
+  near-term work to post-`0.1.0` browser smoke coverage and future selected
+  backend-supported scope.
 - Setup documentation now includes backend contract refresh, generated API type
-  checks, local auth smoke guidance, and the canonical validation commands.
+  checks, local auth smoke guidance, hardening commands, and the canonical
+  validation commands.
 
 ## [0.0.0]
 

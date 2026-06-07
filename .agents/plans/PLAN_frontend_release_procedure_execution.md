@@ -14,7 +14,7 @@
 | Status | Current |
 | --- | --- |
 | Phase | M12-B Final Release Cut |
-| Status | Ready For M12-B Release Metadata Preflight |
+| Status | M12-B Release Metadata Prepared; Validation Pending |
 | Last Updated | 2026-06-07 |
 
 ## Planning Readiness
@@ -91,7 +91,7 @@ Out of scope:
 | --- | --- | --- | --- |
 | Roadmap | `ROADMAP.md` | Milestone source, release state, deferred scope, and post-release cleanup owner | Current |
 | Prior plan | `.agents/plans/PLAN_frontend_roadmap_execution.md` | Completed M0-M11 precedent and plan format | Complete |
-| Changelog | `CHANGELOG.md` | Released history and `0.1.0` changelog promotion owner | Candidate `0.1.0` entries under `Unreleased` |
+| Changelog | `CHANGELOG.md` | Released history and `0.1.0` changelog promotion owner | `0.1.0` section prepared for local tag |
 | Package metadata | `package.json`, `package-lock.json` | Package name, version, runtime, scripts, and dependency baseline | Version is `0.1.0`; package manager is `npm@11.14.1`; engines require Node.js `>=24 <25` and npm `>=11 <12` |
 | CI workflow | `.github/workflows/ci.yml` | Current validation gate and target for M13 hardening | Baseline CI exists |
 | Human setup docs | `README.md`, `SETUP.md`, `CONTRIBUTING.md` | Existing public entry points that should link to M14 owners | Current but pre-M14 |
@@ -106,7 +106,8 @@ Out of scope:
 - Browser traffic targets same-origin `/api/**`.
 - `package.json` is already versioned as `0.1.0`.
 - `package-lock.json` root metadata is also versioned as `0.1.0`.
-- `CHANGELOG.md` has candidate `0.1.0` content under `## [Unreleased]`.
+- `CHANGELOG.md` has a dated `0.1.0` release section and a fresh `Unreleased`
+  section.
 - CI runs `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`,
   `npm run build`, and `git diff --check`.
 - No frontend release tag is recorded in `ROADMAP.md`.
@@ -388,6 +389,29 @@ M12-B implementation notes:
 7. Create annotated tag `v0.1.0` with annotation `Release v0.1.0`.
 8. Verify the tag points to the release commit and the working tree is clean except
    for any explicitly excluded user-owned files.
+
+M12-B release metadata/preflight notes:
+
+- Coordinator preflight on 2026-06-07 already ran after `git fetch --prune`:
+  branch `main`, clean worktree, no existing tags, and
+  `git rev-list --left-right --count origin/main...HEAD` reported `0 48`. Treat
+  local `main` as the intended release-candidate state; remote publication remains
+  unauthorized.
+- `package.json`, top-level `package-lock.json`, and the lockfile root package all
+  report version `0.1.0`; no package metadata correction is needed.
+- M12-B metadata edits promote `CHANGELOG.md` candidate entries into
+  `## [0.1.0] - 2026-06-07`, leave a fresh `## [Unreleased]`, and update
+  `ROADMAP.md` for a local `v0.1.0` release cut without claiming remote
+  publication.
+- Authenticated browser smoke remains unavailable as an automated release gate
+  because the repository still lacks agreed local credentials, identity seeding
+  rules, backend profile, and a canonical smoke command. The documented manual
+  workflow remains the owner until those inputs exist.
+- CI-only hardening signals not run locally in this worker slice: CodeQL code
+  scanning, dependency-review pull-request checks, and Dependabot update grouping.
+  Workflow permissions/concurrency are configuration evidence. The coordinator will
+  run the full validation baseline, `npm run audit:security`, and final git/tag
+  verification after these metadata edits.
 
 ## Validation Plan
 

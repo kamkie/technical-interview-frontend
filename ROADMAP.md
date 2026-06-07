@@ -7,8 +7,8 @@ This roadmap tracks the planned first-party browser frontend for the sibling
 
 | Field               | Current                                                                                    |
 |---------------------|--------------------------------------------------------------------------------------------|
-| Release phase       | Pre-release `0.1.0` feature-complete stabilization                                         |
-| Next target version | `0.1.0` release hardening                                                                  |
+| Release phase       | Local `0.1.0` release cut; post-release maintenance                                        |
+| Next target version | Unselected post-`0.1.0` scope                                                              |
 | Frontend stack      | Vite + React + TypeScript                                                                  |
 | Runtime             | Node.js 24.x, npm 11.x                                                                     |
 | Package metadata    | `package.json` and `package-lock.json` version `0.1.0`; `packageManager` `npm@11.14.1`      |
@@ -19,8 +19,8 @@ This roadmap tracks the planned first-party browser frontend for the sibling
 | Contract source     | `docs/backend/approved-openapi.json` and `docs/backend/FRONTEND_AI_CONTRACT.md`            |
 | Implemented surface | Session, public catalog, account, admin catalog, admin localization, admin users, operator |
 | Hardening baseline  | ESLint, TypeScript, Vitest, API type freshness, build, whitespace, npm audit, CodeQL, dependency-review, and Dependabot |
-| Latest release      | No tagged frontend release yet                                                             |
-| Immediate action    | Finish the M12-B final release cut after selected hardening evidence is current             |
+| Latest release      | Local `v0.1.0` release cut on 2026-06-07; not published remotely                           |
+| Immediate action    | Select the next backend-supported M16+ scope or browser smoke automation target             |
 | Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`       |
 
 The app currently bootstraps browser session state with `GET /api/session`, renders
@@ -31,8 +31,11 @@ preference flows, and implements the selected admin/operator surfaces. Local
 same-origin auth smoke steps, the canonical validation baseline, and selected
 hardening evidence are documented.
 The M0-M11 roadmap slice is implemented and recorded in
-`.agents/plans/PLAN_frontend_roadmap_execution.md`; the next roadmap work is the
-final release cut and any newly selected backend-supported scope.
+`.agents/plans/PLAN_frontend_roadmap_execution.md`. The M12-M15 release,
+procedure, and hardening slice is recorded in
+`.agents/plans/PLAN_frontend_release_procedure_execution.md`; the next roadmap work
+is any newly selected backend-supported scope, smoke automation, or release workflow
+improvement.
 
 ## Product Direction
 
@@ -62,22 +65,22 @@ final release cut and any newly selected backend-supported scope.
 | M9 - Admin Localization Management | Complete | Backend-supported localization message-key editing plus locale coverage/status                                                                                                                | Localization admin scope is selected from the imported backend contract, split into a small spec, and covered by tests for supported locales, message edits, coverage/status states, and localized failures                   |
 | M10 - Operator Audit Surface       | Complete | Read-only operator overview plus pageable audit log with filters for target type, action, and actor                                                                                           | Operators can inspect runtime/status summaries, recent audit entries, filtered pageable audit rows, and audit details with tests for access, loading, empty, filtered, paginated, localized error, and partial-payload states |
 | M11 - Admin User Management        | Complete | Admin user list/detail with contract-backed role management                                                                                                                                   | Admins can review user profiles, roles, and role-grant provenance, then replace managed roles with CSRF handling and tests for access, empty, success, validation, localized error, and missing-CSRF states                   |
-| M12 - Release Procedure And `0.1.0` Hardening | Ready | Backend-style release preparation adapted to the frontend repo: version selection, changelog promotion, validation, annotated tag, publication checks, and post-release roadmap cleanup | Maintainers can cut the first frontend release from `main` using a documented procedure; `CHANGELOG.md`, `ROADMAP.md`, package metadata, validation evidence, and tag state agree |
+| M12 - Release Procedure And `0.1.0` Hardening | Complete | Backend-style release preparation adapted to the frontend repo: version selection, changelog promotion, validation, annotated tag, publication checks, and post-release roadmap cleanup | Maintainers can cut the first frontend release from `main` using a documented procedure; `CHANGELOG.md`, `ROADMAP.md`, package metadata, validation evidence, and tag state agree |
 | M13 - Static Analysis And Hardening Tooling | Complete | Selected `0.1.0` hardening gates: explicit GitHub Actions permissions/concurrency, CodeQL, dependency-review, an npm audit script, Dependabot grouping, and documented triage/exception rules | CI and local scripts expose the selected checks; release preconditions name required hardening evidence; docs explain false-positive handling, skip policy, and artifact locations |
 | M14 - Human Procedure Documentation | Complete | Frontend procedure docs adapted from the backend repo: lifecycle/artifact routing, local development, AI collaboration, and documentation index | `docs/DEVELOPMENT_LIFECYCLE.md`, `docs/LOCAL_DEVELOPMENT.md`, `docs/WORKING_WITH_AI.md`, and `docs/README.md` exist; `README.md`, `SETUP.md`, and `CONTRIBUTING.md` link to the owners without duplicating them |
 | M15 - AI Procedure Reference Layer | Complete | Lean AI-facing owner guides for documentation routing, validation selection, review/security review, and release sequencing | `.agents/references/documentation.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and `.agents/references/releases.md` exist; `AGENTS.md` points to them; backend-only workflow state remains deferred |
 
 ## Near-Term Backlog
 
-1. Finish M12-B: promote the candidate `0.1.0` changelog section when tagging,
-   verify package metadata, and follow the release procedure below.
+1. Select the next M16+ backend-supported surface, UX polish slice, or release
+   workflow improvement clearly enough to test or document.
 2. Add a canonical browser smoke or e2e command for same-origin session/auth flows
    once the repository has agreed local credentials, backend profile, and identity
    seeding rules.
 3. Exercise the documented local auth smoke workflow against the sibling backend and
    move repeatable gaps into tests or owner docs.
-4. Add M16+ roadmap rows only when a new backend-supported surface, UX polish slice,
-   or release workflow is selected clearly enough to test or document.
+4. If remote publication is later requested, push `main` and the annotated
+   `v0.1.0` tag, then verify published release notes against `CHANGELOG.md`.
 
 ## Pragmatic Smoke Split
 
@@ -96,7 +99,9 @@ final release cut and any newly selected backend-supported scope.
 
 - Completed M0-M11 roadmap implementation is recorded in
   `.agents/plans/PLAN_frontend_roadmap_execution.md`.
-- New M12+ implementation plans should identify the owner document, backend contract
+- Completed M12-M15 release, procedure, and hardening work is recorded in
+  `.agents/plans/PLAN_frontend_release_procedure_execution.md`.
+- New M16+ implementation plans should identify the owner document, backend contract
   source, tests, and validation before implementation starts.
 - M1 CI lives at `.github/workflows/ci.yml`, triggers on pull requests and pushes to
   `main`, uses Node.js 24.x with `npm ci`, and runs `npm run lint`,
