@@ -13,8 +13,8 @@
 
 | Status | Current |
 | --- | --- |
-| Phase | M12-M15 Roadmap Execution |
-| Status | Ready For M12 Release-Readiness Work |
+| Phase | M14 Human Procedure Documentation |
+| Status | Ready For M14 Human Procedure Work |
 | Last Updated | 2026-06-07 |
 
 ## Planning Readiness
@@ -24,7 +24,7 @@
 | Decision Complete | Yes for M12 release-readiness, M14 human docs, M15 AI references, and M13 selection-first hardening |
 | Blocking Open Questions | None for the next ready slice |
 | Accepted Fallbacks | Authenticated browser smoke remains manual until credentials and a canonical command exist; remote release publication requires an explicit current user request |
-| Ready For Execution | M12-A release-readiness audit and documentation reconciliation |
+| Ready For Execution | M14 human procedure documentation |
 
 ## Summary
 
@@ -115,9 +115,9 @@ Out of scope:
 
 | Phase | Milestone / Slice | Status | Gate |
 | --- | --- | --- | --- |
-| 0 | Plan activation | Ready | Plan file exists and docs-only validation passes |
-| 1 | M12-A Release-readiness audit and reconciliation | Ready | No release tag is created in this slice |
-| 2 | M14 Human procedure documentation | Waiting | M12-A commit landed and validation passed |
+| 0 | Plan activation | Done | Plan file exists and docs-only validation passed |
+| 1 | M12-A Release-readiness audit and reconciliation | Done | No release tag was created in this slice |
+| 2 | M14 Human procedure documentation | Ready | M12-A commit landed and validation passed |
 | 3 | M15 AI procedure reference layer | Waiting | M14 commit landed and validation passed |
 | 4 | M13-A Hardening selection and triage rules | Waiting | M14/M15 owners exist |
 | 5 | M13-B Selected hardening tooling implementation | Waiting | M13-A selection is committed and unblocked |
@@ -176,9 +176,9 @@ Status model:
 
 | Task | Status | Owner | Commit | Validation | Notes |
 | --- | --- | --- | --- | --- | --- |
-| 0: Plan activation | Ready | Coordinator | Pending | `git diff --check` | Create this plan and report readiness |
-| 1: M12-A Release-readiness audit | Ready | M12 worker | Pending | Baseline validation plus `git diff --check` | No tag creation in this slice |
-| 2: M14 Human procedure docs | Waiting | M14 worker | Pending | `git diff --check`; full baseline only if non-doc files change | Waits for M12-A |
+| 0: Plan activation | Done | Coordinator | `e521cc2` | Passed | Plan exists and was refined before execution |
+| 1: M12-A Release-readiness audit | Done | M12 worker | `7479a43` | Passed by worker and coordinator | No tag creation in this slice; auth smoke remains manual without credentials or a canonical command |
+| 2: M14 Human procedure docs | Ready | M14 worker | Pending | `git diff --check`; full baseline only if non-doc files change | M12-A landed |
 | 3: M15 AI procedure references | Waiting | M15 worker | Pending | `git diff --check`; full baseline only if non-doc files change | Waits for M14 |
 | 4: M13-A Hardening selection | Waiting | M13 worker | Pending | `git diff --check`; full baseline if package/workflow files change | Waits for M14/M15 |
 | 5: M13-B Hardening implementation | Waiting | M13 worker | Pending | Selected hardening commands plus full baseline | Waits for M13-A |
