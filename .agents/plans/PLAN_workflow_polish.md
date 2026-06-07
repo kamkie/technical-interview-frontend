@@ -637,23 +637,49 @@ Use this checkpoint before starting each dependent packet, before a pause or han
 ## Execution Graph
 
 ```mermaid
-flowchart TD
-    O1["O1<br/>Coordinator"]
-    P0["P0<br/>Predecessor readiness"]
-    W1["W1<br/>P1: State semantics"]
-    W2["W2<br/>P2: Visual hierarchy"]
-    W3["W3<br/>P3: Catalog workflows"]
-    W4["W4<br/>P4: Admin/operator workflows"]
-    W5["W5<br/>P5: Account/session copy"]
-    O2["O2<br/>Final review"]
-    O1 --> P0
-    P0 --> W1
-    W1 --> W2
-    W2 --> W3
-    W3 --> W4
-    W4 --> W5
-    W5 --> O2
+sequenceDiagram
+    autonumber
+    participant O as Orchestrator
+    participant W1 as Worker 1
+    participant W2 as Worker 2
+    participant W3 as Worker 3
+    participant W4 as Worker 4
+    participant W5 as Worker 5
+
+    Note over O: P0-predecessor-readiness is coordinator-owned and ready for a future implementation request
+
+    O->>W1: Planned dispatch P1-state-semantics: context, write scope, validation, stop conditions
+    W1-->>O: Planned return P1-state-semantics: diff, validation, skipped checks, risks
+    Note over O: Reconcile P1, run validation, update result summary, checkpoint when authorized
+
+    O->>W2: Planned dispatch P2-visual-hierarchy: context, write scope, validation, stop conditions
+    W2-->>O: Planned return P2-visual-hierarchy: diff, validation, skipped checks, risks
+    Note over O: Reconcile P2, run validation, update result summary, checkpoint when authorized
+
+    O->>W3: Planned dispatch P3-catalog-workflows: context, write scope, validation, stop conditions
+    W3-->>O: Planned return P3-catalog-workflows: diff, validation, skipped checks, risks
+    Note over O: Reconcile P3, run validation, update result summary, checkpoint when authorized
+
+    O->>W4: Planned dispatch P4-admin-operator-workflows: context, write scope, validation, stop conditions
+    W4-->>O: Planned return P4-admin-operator-workflows: diff, validation, skipped checks, risks
+    Note over O: Reconcile P4, run validation, update result summary, checkpoint when authorized
+
+    O->>W5: Planned dispatch P5-account-session-copy: context, write scope, validation, stop conditions
+    W5-->>O: Planned return P5-account-session-copy: diff, validation, skipped checks, risks
+    Note over O: Reconcile P5, run validation, update result summary, checkpoint when authorized
+
+    Note over O: Run P6-final-review-milestone-close after P5 lands and checkpoints
 ```
+
+| Packet                          | State   | Dispatch                         | Return  | Orchestrator closeout                    | Checkpoint / next action                 |
+| ------------------------------- | ------- | -------------------------------- | ------- | ---------------------------------------- | ---------------------------------------- |
+| P0-predecessor-readiness        | Ready   | Coordinator-owned; no worker     | N/A     | Pending                                  | Run when implementation is requested     |
+| P1-state-semantics              | Waiting | Planned to Worker 1 after P0     | Pending | Pending                                  | Checkpoint after validation if allowed   |
+| P2-visual-hierarchy             | Waiting | Planned to Worker 2 after P1     | Pending | Pending                                  | Checkpoint after validation if allowed   |
+| P3-catalog-workflows            | Waiting | Planned to Worker 3 after P2     | Pending | Pending                                  | Checkpoint after validation if allowed   |
+| P4-admin-operator-workflows     | Waiting | Planned to Worker 4 after P3     | Pending | Pending                                  | Checkpoint after validation if allowed   |
+| P5-account-session-copy         | Waiting | Planned to Worker 5 after P4     | Pending | Pending                                  | Checkpoint after validation if allowed   |
+| P6-final-review-milestone-close | Waiting | Coordinator-owned after P5 lands | N/A     | Pending final validation and owner check | Close milestone when authorized evidence |
 
 ## Validation Plan
 

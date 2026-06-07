@@ -479,17 +479,34 @@ Use this checkpoint before starting each dependent task, before a pause or hando
 ## Execution Graph
 
 ```mermaid
-flowchart TD
-    O1["O1<br/>Coordinator"]
-    W1["W1<br/>P1: shell and navigation"]
-    W2["W2<br/>P2: route context and state"]
-    W3["W3<br/>P3: coverage hardening"]
-    R1["R1<br/>P4: final validation"]
-    O1 --> W1
-    W1 --> W2
-    W2 --> W3
-    W3 --> R1
+sequenceDiagram
+    autonumber
+    participant O as Orchestrator
+    participant W1 as Worker 1
+    participant W2 as Worker 2
+    participant W3 as Worker 3
+
+    O->>W1: Dispatch P1-shell-navigation: shell/nav scope, validation, stop conditions
+    W1-->>O: Return P1-shell-navigation: diff, validation, smoke note, risks
+    Note over O: Reconcile P1, run validation, update result summary, checkpoint 598d68c
+
+    O->>W2: Dispatch P2-route-context-state: route context scope, validation, stop conditions
+    W2-->>O: Return P2-route-context-state: diff, validation, skipped checks, risks
+    Note over O: Reconcile P2, run validation, update result summary, checkpoint d23f676
+
+    O->>W3: Dispatch P3-coverage-hardening: test scope, validation, stop conditions
+    W3-->>O: Return P3-coverage-hardening: diff, validation, skipped checks, risks
+    Note over O: Reconcile P3, run validation, update result summary, checkpoint 252d3d5
+
+    Note over O: Run P4-final-validation, update ROADMAP and downstream plan, create status-doc checkpoint
 ```
+
+| Packet                 | State    | Dispatch                     | Return   | Orchestrator closeout                         | Checkpoint / next action       |
+| ---------------------- | -------- | ---------------------------- | -------- | --------------------------------------------- | ------------------------------ |
+| P1-shell-navigation    | Complete | Sent to Worker 1             | Returned | Reconciled, validated, result summary updated | `598d68c`                      |
+| P2-route-context-state | Complete | Sent to Worker 2             | Returned | Reconciled, validated, result summary updated | `d23f676`                      |
+| P3-coverage-hardening  | Complete | Sent to Worker 3             | Returned | Reconciled, validated, result summary updated | `252d3d5`                      |
+| P4-final-validation    | Complete | Coordinator-owned; no worker | N/A      | Final review, roadmap update, status update   | Status-doc checkpoint; handoff |
 
 ## Validation Plan
 

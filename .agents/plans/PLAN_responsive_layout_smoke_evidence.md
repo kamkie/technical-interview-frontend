@@ -588,22 +588,38 @@ Use this checkpoint before starting each dependent task, before a pause or hando
 ## Execution Graph
 
 ```mermaid
-flowchart TD
-    O1["O1<br/>Coordinator"]
-    P0["P0<br/>Predecessor readiness"]
-    P1["P1<br/>Evidence target selection"]
-    P2["P2<br/>Responsive layout coverage"]
-    P3["P3<br/>Anonymous smoke evidence"]
-    P4["P4<br/>Authenticated smoke evidence"]
-    P5["P5<br/>Final review and close"]
-    O1 --> P0
-    P0 --> P1
-    P1 --> P2
-    P2 --> P3
-    P3 --> P4
-    P4 --> P5
-    P5 --> O1
+sequenceDiagram
+    autonumber
+    participant O as Orchestrator
+    participant W1 as Worker 1
+    participant W2 as Worker 2
+    participant W3 as Worker 3
+
+    Note over O: P0-predecessor-readiness waits on M-WORKFLOW-001; P1 target selection is coordinator-owned
+
+    O->>W1: Planned dispatch P2-responsive-layout-coverage: context, write scope, validation, stop conditions
+    W1-->>O: Planned return P2-responsive-layout-coverage: diff, validation, skipped checks, risks
+    Note over O: Reconcile P2, run validation, update result summary, checkpoint when authorized
+
+    O->>W2: Planned dispatch P3-anonymous-smoke-evidence: context, write scope, validation, stop conditions
+    W2-->>O: Planned return P3-anonymous-smoke-evidence: diff, validation, skipped checks, risks
+    Note over O: Reconcile P3, run validation, update result summary, checkpoint when authorized
+
+    O->>W3: Planned dispatch P4-authenticated-smoke-evidence: context, write scope, validation, stop conditions
+    W3-->>O: Planned return P4-authenticated-smoke-evidence: diff, validation, skipped checks, risks
+    Note over O: Reconcile P4, run validation, update result summary, checkpoint when authorized
+
+    Note over O: Run P5-final-review-milestone-close after P4 lands and checkpoints
 ```
+
+| Packet                          | State   | Dispatch                         | Return  | Orchestrator closeout                     | Checkpoint / next action                  |
+| ------------------------------- | ------- | -------------------------------- | ------- | ----------------------------------------- | ----------------------------------------- |
+| P0-predecessor-readiness        | Waiting | Coordinator-owned; no worker     | N/A     | Pending                                   | Run after `M-WORKFLOW-001` completes      |
+| P1-evidence-target-selection    | Waiting | Coordinator-owned after P0 lands | N/A     | Pending target selection                  | Promote P2 after targets are recorded     |
+| P2-responsive-layout-coverage   | Waiting | Planned to Worker 1 after P1     | Pending | Pending                                   | Checkpoint after validation if allowed    |
+| P3-anonymous-smoke-evidence     | Waiting | Planned to Worker 2 after P2     | Pending | Pending                                   | Checkpoint after validation if allowed    |
+| P4-authenticated-smoke-evidence | Waiting | Planned to Worker 3 after P3     | Pending | Pending                                   | Checkpoint after validation if allowed    |
+| P5-final-review-milestone-close | Waiting | Coordinator-owned after P4 lands | N/A     | Pending final validation and owner review | Close milestone when evidence is complete |
 
 ## Validation Plan
 

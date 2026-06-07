@@ -182,11 +182,19 @@ Use this checkpoint for multi-task, context-heavy, delegated, parallel, or likel
 ## Execution Graph
 
 ```mermaid
-flowchart TD
-    O1["O1<br/>Coordinator"]
-    W1["W1<br/>T1: task label"]
-    O1 --> W1
+sequenceDiagram
+    autonumber
+    participant O as Orchestrator
+    participant W1 as Worker
+
+    O->>W1: Dispatch T1-task-label: context, write scope, validation, stop conditions
+    W1-->>O: Return T1-task-label: diff, validation, skipped checks, risks
+    Note over O: Reconcile output, run or verify validation, update result summary, checkpoint when authorized
 ```
+
+| Packet        | State   | Dispatch | Return  | Orchestrator closeout | Checkpoint / next action |
+| ------------- | ------- | -------- | ------- | --------------------- | ------------------------ |
+| T1-task-label | Pending | Pending  | Pending | Pending               | Pending                  |
 
 ## Validation Plan
 

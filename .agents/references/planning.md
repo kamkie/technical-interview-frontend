@@ -29,7 +29,7 @@ Plans should include:
 - contract and repository invariants, without copying detailed backend schemas or endpoint rules
 - progress tracker with each task packet's `Ready`, `Waiting`, `Blocked`, or `Complete` state
 - task packets with lane, goal, initial context budget, write scope, dependencies, validation, escalation triggers, stop conditions, expected output, and result summary
-- execution model, long-run continuity, and Mermaid execution graph
+- execution model, long-run continuity, Mermaid `sequenceDiagram` execution graph, and handoff ledger
 - blockers and replan triggers
 - validation plan and review expectations
 - handoff expectations
@@ -78,6 +78,12 @@ Use task packets as the default worker dispatch contract for active-plan work. E
 Use inline packets for ordinary plans. Link child packet files only when the parent plan would become difficult to scan, such as more than six worker-owned tasks, multiple parallel waves, or an expected parent-plan length above roughly 200 lines after packeting.
 
 The parent plan remains the source of approval, readiness, dependencies, execution graph, packet index, and compact result summaries. Do not paste raw worker transcripts, raw test output, browser logs, or bulky run logs into the plan.
+
+## Execution Graphs
+
+Use `## Execution Graph` to show orchestrator-worker communication, not task topology. The graph must be a Mermaid `sequenceDiagram` with only role participants, such as `Orchestrator` and one or more `Worker` participants. Participant labels must be roles or role instances, not packet IDs. Put packet IDs and handoff contents on arrows: orchestrator-to-worker arrows name dispatch context, write scope, validation, and stop conditions; worker-to-orchestrator arrows name returned diff, validation result, skipped checks, dirty-worktree notes, and risks. Use notes only for orchestrator-owned reconciliation, validation, result-summary updates, commit checkpoints, or coordinator-owned packets with no worker handoff.
+
+Pair every execution graph with a compact handoff ledger table. The ledger records packet state, dispatch status, return status, orchestrator closeout, and checkpoint or next action. The progress tracker and result summaries remain authoritative for live packet state; the graph owns the communication shape and handoff order.
 
 ## Commit Checkpoints
 
