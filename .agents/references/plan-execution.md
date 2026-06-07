@@ -17,7 +17,7 @@ Execute in dependency order:
 3. Assign a separate implementation worker with exact write scope and validation.
 4. Review the worker output for owner drift, contract drift, validation gaps, and scope leaks.
 5. Run or verify required validation.
-6. Create any plan-authorized commit checkpoint before promoting dependent slices.
+6. Create the task's plan-authorized commit checkpoint after validation and before promoting dependent slices.
 7. Promote dependent `Waiting` slices to `Ready` only after predecessor work lands according to the plan.
 
 Do not treat later roadmap dependencies, missing future specs, optional review points, or future quality gates as blockers for a currently `Ready` slice.
@@ -47,11 +47,13 @@ The coordinator does not implement milestone or spec tasks directly when the act
 
 When an active plan contains commit checkpoints and the current user request asks to implement that plan, those checkpoints are commit authorization for the scoped plan work.
 
+- Expect repository-changing tasks to have one checkpoint per task, scheduled after that task's required validation.
 - Commit only the files owned by the completed slice.
 - Keep unrelated user-owned and parallel-worker changes out of the commit.
 - Run the checkpoint validation first unless the plan explicitly allows a narrower recovery commit.
 - Use the repository commit-message format.
-- Do not create extra cleanup commits for files outside the slice.
+- Do not batch multiple validated tasks into one commit unless the plan explicitly combines them into the same task checkpoint.
+- Do not create extra cleanup commits for files outside the task or slice.
 
 If the active plan has no checkpoint or the current request does not authorize plan execution commits, report the completed work without committing.
 

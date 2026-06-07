@@ -58,9 +58,9 @@ Keep planned downstream work as `Waiting` when it only depends on earlier select
 
 ## Commit Checkpoints
 
-Plan task rows may include commit checkpoints. A checkpoint should state whether commits are authorized by the current plan execution request, what files belong in the commit, and which validation must pass first.
+Plan every repository-changing task with a commit checkpoint after that task's validation. The checkpoint should state that the commit is authorized after validation, what files belong in the commit, and which validation must pass first.
 
-When no current user request or plan checkpoint authorizes a commit, do not commit. When a checkpoint authorizes a commit, keep unrelated user-owned changes out of the commit and use the repository commit-message rules.
+Tasks that are read-only or produce no repository changes should state that no commit is needed. When a checkpoint authorizes a commit, keep unrelated user-owned changes out of the commit and use the repository commit-message rules.
 
 ## Plan Handoff
 

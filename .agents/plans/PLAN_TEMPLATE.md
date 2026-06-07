@@ -86,6 +86,7 @@ Out of scope:
 - Implementation workers edit only assigned files, preserve user-owned changes, run scoped validation, and report changed files, validation, skipped checks, and remaining risks.
 - Reviewers check for owner drift, backend contract drift, documentation drift, security risk, missing validation, and scope leaks.
 - Shared files are coordinator-owned unless assigned to one worker at a time.
+- Every repository-changing task should include a commit checkpoint after that task's validation; read-only or no-change tasks should state that no commit is needed.
 
 ## Progress Tracker
 
@@ -97,16 +98,16 @@ Out of scope:
 
 ### Task 1: [Task Name]
 
-| Field                   | Value                                                                         |
-| ----------------------- | ----------------------------------------------------------------------------- |
-| Status                  | [Ready / Waiting / Blocked / Complete]                                        |
-| Goal                    | [Outcome]                                                                     |
-| Owned Files Or Packages | `[exact write scope]`                                                         |
-| Read-Only Context       | `[files workers may consult but must not edit]`                               |
-| Behavior To Preserve    | [Backend contract, user-visible behavior, repository rule, or non-goal]       |
-| Deliverables            | [Concrete output]                                                             |
-| Validation Checkpoint   | `[command]` or [manual review]                                                |
-| Commit Checkpoint       | [Authorized / Not authorized / Authorized after validation with files listed] |
+| Field                   | Value                                                                                              |
+| ----------------------- | -------------------------------------------------------------------------------------------------- |
+| Status                  | [Ready / Waiting / Blocked / Complete]                                                             |
+| Goal                    | [Outcome]                                                                                          |
+| Owned Files Or Packages | `[exact write scope]`                                                                              |
+| Read-Only Context       | `[files workers may consult but must not edit]`                                                    |
+| Behavior To Preserve    | [Backend contract, user-visible behavior, repository rule, or non-goal]                            |
+| Deliverables            | [Concrete output]                                                                                  |
+| Validation Checkpoint   | `[command]` or [manual review]                                                                     |
+| Commit Checkpoint       | [Authorized after validation with files listed / No commit needed for read-only or no-change task] |
 
 Implementation notes:
 

@@ -22,6 +22,8 @@ Ask for a plan when work spans multiple owners, milestones, or commits. For ad h
 
 Plans coordinate execution. Durable rules still belong in `docs/DESIGN.md`, `ROADMAP.md`, `docs/specs/`, `docs/LOCAL_DEVELOPMENT.md`, `docs/DEVELOPMENT_LIFECYCLE.md`, `docs/WORKING_WITH_AI.md`, backend contract artifacts, focused AI references, or executable tests.
 
+For active plan execution, expect the planner to schedule a commit checkpoint after each repository-changing task validates. Read-only or no-change tasks should state that no commit is needed.
+
 Active plans under `.agents/plans/` are execution contracts. When asking AI to implement an active plan, tell it to follow the plan's dependency order and route detailed execution questions to `AGENTS.md` and `.agents/references/plan-execution.md`.
 
 ## Implementation Requests
