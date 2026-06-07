@@ -15,6 +15,11 @@ until they are promoted for a release tag.
 - Polished the public catalog workflow with canonical route query replacement,
   visible active filter/sort/page summaries, and clearer accessible sort controls.
 
+### Fixed
+
+- Set the initial document background before bundled assets load to avoid a white
+  blank-page flash during app startup.
+
 ## [0.2.0] - 2026-06-07
 
 ### Added
