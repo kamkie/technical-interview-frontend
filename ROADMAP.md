@@ -7,7 +7,7 @@ Roadmap hierarchy:
 - Milestone: delivery slice with an outcome and order.
 - Epic: product or workflow area inside a milestone.
 - Task: actionable unit inside an epic.
-- Plan: execution artifact that may be created when milestone work needs a plan.
+- Plan: execution artifact created when milestone work needs coordinated execution.
 
 Stable IDs:
 
@@ -25,6 +25,7 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 - Release phase: Post-`0.2.0` maintenance.
 - Next target version: Future maintenance release; final scope and version selected before release prep.
 - Current priority: M-UI-001: Production UI Foundation.
+- Active product plan: None checked in; create a focused plan from `.agents/plans/PLAN_TEMPLATE.md` when selected milestone work needs coordination.
 - Selection policy: Breaking user-facing or backend-contract integration changes require a selected roadmap item.
 
 ## Product Direction
@@ -40,9 +41,7 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 
 ### M-UI-001: Production UI Foundation
 
-Labels: `type:milestone`, `status:ready`, `plan:PLAN-production-ui-foundation`
-
-Plan ID: `PLAN-production-ui-foundation`
+Labels: `type:milestone`, `status:ready`
 
 Goal: Make the existing frontend read as a production work tool rather than a technical demo.
 
@@ -82,9 +81,7 @@ Acceptance Criteria:
 
 ### M-WORKFLOW-001: Workflow Polish
 
-Labels: `type:milestone`, `status:waiting`, `plan:PLAN-workflow-polish`
-
-Plan ID: `PLAN-workflow-polish`
+Labels: `type:milestone`, `status:waiting`
 
 Goal: Improve daily catalog, account, admin, and operator workflows after the production shell foundation lands.
 
@@ -168,9 +165,7 @@ Acceptance Criteria:
 
 ### M-SMOKE-001: Responsive Layout And Smoke Evidence
 
-Labels: `type:milestone`, `status:waiting`, `plan:PLAN-responsive-layout-smoke`
-
-Plan ID: `PLAN-responsive-layout-smoke`
+Labels: `type:milestone`, `status:waiting`
 
 Goal: Keep redesigned workflows usable across viewports and add repeatable browser smoke evidence for the most important routes.
 
@@ -227,9 +222,7 @@ Blocked items are planned work, but they need a product choice, stable threshold
 
 ### M-QUALITY-001: Quality Gates
 
-Labels: `type:milestone`, `status:blocked`, `plan:PLAN-quality-gates`
-
-Plan ID: `PLAN-quality-gates`
+Labels: `type:milestone`, `status:blocked`
 
 Goal: Add enforceable accessibility, smoke, and hardening evidence only after the repository has selected thresholds, owners, and failure behavior.
 
@@ -295,4 +288,4 @@ These are deliberate product and integration boundaries for the current roadmap.
 - Backend-only operations and deployment runbooks until this frontend owns a deployment target or runtime operations responsibility.
 - Backend-specific Gradle, REST Docs, Flyway, restore-drill, application Helm, Kubernetes, and post-deploy smoke gates by default.
 - Environment-specific deployment promotion beyond the GHCR package, checked-in reference manifests, and GitHub Release workflow.
-- Generic command wrappers and workflow-state directories until repeated frontend work proves they are worth the process cost; selected active plans may add minimal plan guidance when the roadmap names the work.
+- Generic command wrappers, broad workflow-state directories, and reusable execution scaffolding until repeated frontend work selects a concrete owner; repository prompt recipes remain narrow session starters, not roadmap scope.
