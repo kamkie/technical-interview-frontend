@@ -9,7 +9,7 @@ archived in `docs/ROADMAP_ARCHIVE.md`. Released history belongs in `CHANGELOG.md
 | Field               | Current                                                                                    |
 |---------------------|--------------------------------------------------------------------------------------------|
 | Release phase       | Local `0.1.0` release cut; post-release maintenance                                        |
-| Next target version | Unselected post-`0.1.0` scope                                                              |
+| Next target version | Proposed post-`0.1.0` roadmap slice; final version selected before release prep             |
 | Frontend stack      | Vite + React + TypeScript                                                                  |
 | Runtime             | Node.js 24.x, npm 11.x                                                                     |
 | Package metadata    | `package.json` and `package-lock.json` version `0.1.0`; `packageManager` `npm@11.14.1`      |
@@ -21,7 +21,7 @@ archived in `docs/ROADMAP_ARCHIVE.md`. Released history belongs in `CHANGELOG.md
 | Implemented surface | Session, public catalog, account, admin catalog, admin localization, admin users, operator |
 | Hardening baseline  | ESLint, TypeScript, Vitest, API type freshness, build, whitespace, npm audit, CodeQL, dependency-review, and Dependabot |
 | Latest release      | Local `v0.1.0` release cut on 2026-06-07; not published remotely                           |
-| Immediate action    | Select the next backend-supported M16+ scope or browser smoke automation target             |
+| Immediate action    | Start M16 contract coverage and post-`0.1.0` scope audit                                    |
 | Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`       |
 
 The app currently bootstraps browser session state with `GET /api/session`, renders
@@ -31,8 +31,8 @@ authenticated session/logout and route guards, exposes account profile and langu
 preference flows, and implements the selected admin/operator surfaces. Local
 same-origin auth smoke steps, the canonical validation baseline, and selected
 hardening evidence are documented. Completed M0-M15 work and plan records are
-archived in `docs/ROADMAP_ARCHIVE.md`; the next roadmap work is any newly selected
-backend-supported scope, smoke automation, or release workflow improvement.
+archived in `docs/ROADMAP_ARCHIVE.md`; the next roadmap work starts with M16 and
+then promotes smoke automation or focused UX polish based on that audit.
 
 ## Product Direction
 
@@ -48,22 +48,34 @@ backend-supported scope, smoke automation, or release workflow improvement.
 
 ## Active Milestones
 
-No post-`0.1.0` milestone is selected yet. Completed M0-M15 work is archived in
-`docs/ROADMAP_ARCHIVE.md`.
+Completed M0-M15 work is archived in `docs/ROADMAP_ARCHIVE.md`.
 
-Next action: select the next M16+ backend-supported scope, UX/workflow improvement,
-or browser smoke automation target.
+Status terms:
+
+- `Ready`: the milestone can start from the current repository state.
+- `Waiting`: the milestone has a normal predecessor dependency.
+- `Blocked`: the milestone needs a product choice, credential, backend contract
+  refresh, or external state before implementation can start.
+
+| Milestone | Status | Scope | Done when | Validation |
+| --- | --- | --- | --- | --- |
+| M16 - Contract Coverage And Scope Audit | Ready | Reconcile `docs/backend/approved-openapi.json`, generated API types, API clients, routes, specs, and visible UI coverage after `0.1.0`. Decide whether the next implementation slice is missing backend-supported surface, smoke automation, or focused UX polish. | `docs/API_COVERAGE.md` records each approved OpenAPI operation as implemented, deferred, or needing follow-up; `ROADMAP.md` promotes the next slice based on that audit; no new endpoint or auth assumption is introduced. | `git diff --check`; add broader validation only if executable files change. |
+| M17 - Anonymous Browser Smoke Automation | Waiting on M16 | Add a canonical browser smoke path for anonymous same-origin flows against the sibling backend through the Vite `/api` proxy. Cover session bootstrap, public categories/books, URL-backed filters, pagination, sorting, and localized public-read failures where reproducible. | A documented npm command or script exists, names backend/profile prerequisites, reports skipped backend-dependent steps clearly, and can run without credentials. Public smoke evidence is recorded in docs or test output. | Smoke command plus `git diff --check`; full baseline if package scripts, tooling, or app code change. |
+| M18 - Authenticated Smoke Automation Readiness | Blocked by missing agreed local credentials and identity seeding rules | Define the credential, backend profile, and admin identity seeding contract needed for repeatable authenticated smoke. Do not hard-code provider paths or secrets. | Owner docs name required environment variables or manual setup, expected ADMIN-capable identity, login-provider discovery from `GET /api/session`, logout CSRF handling, and skip behavior when credentials are unavailable. | `git diff --check`; later executable smoke work uses the full baseline and the selected smoke command. |
+| M19 - Public Catalog Workflow Polish | Waiting on M16 | Improve the already implemented public catalog workflow without backend changes: scan density, URL-state clarity, keyboard/focus behavior, accessible table controls, pagination/sort affordances, and localized loading/empty/error states. | A focused spec or roadmap note names the exact polish scope; component/route tests cover the changed visible states; anonymous smoke is updated if the workflow changes browser behavior. | Relevant tests plus full baseline for app changes. |
+| M20 - Post-`0.1.0` Release Preparation | Waiting on selected M16-M19 implementation scope | Prepare the next patch or minor release only after selected implementation and validation evidence land. | `CHANGELOG.md`, `ROADMAP.md`, package metadata when needed, validation evidence, completed milestone archive, and tag/publication decision agree for the selected release candidate. | Full baseline, `npm run audit:security`, release checks, and any selected smoke evidence or explicit skip rationale. |
 
 ## Near-Term Backlog
 
-1. Select the next M16+ backend-supported surface, UX polish slice, or release
-   workflow improvement clearly enough to test or document.
-2. Add a canonical browser smoke or e2e command for same-origin session/auth flows
-   once the repository has agreed local credentials, backend profile, and identity
-   seeding rules.
-3. Exercise the documented local auth smoke workflow against the sibling backend and
+1. Execute M16 and promote the next ready M17 or M19 slice based on the coverage
+   audit.
+2. Add a canonical browser smoke or e2e command for anonymous same-origin
+   session/catalog flows against the sibling backend.
+3. Keep M18 blocked until authenticated smoke credentials and seeding rules are
+   agreed, then turn the readiness contract into an executable smoke command.
+4. Exercise the documented local auth smoke workflow against the sibling backend and
    move repeatable gaps into tests or owner docs.
-4. If remote publication is later requested, push `main` and the annotated
+5. If remote publication is later requested, push `main` and the annotated
    `v0.1.0` tag, then verify published release notes against `CHANGELOG.md`.
 
 ## Pragmatic Smoke Split
@@ -83,6 +95,8 @@ or browser smoke automation target.
 
 - New M16+ implementation plans should identify the owner document, backend contract
   source, tests, and validation before implementation starts.
+- M16 contract coverage findings should live in `docs/API_COVERAGE.md` and should
+  classify every approved OpenAPI operation before implementation scope is promoted.
 - Future admin/operator expansion should update or add specs under `docs/specs/`
   before implementation.
 - New hardening work should add package scripts and CI steps only for checks with a
