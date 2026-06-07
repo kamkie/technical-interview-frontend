@@ -3,7 +3,37 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
     <title>Technical Interview Frontend</title>
+    <script>
+      (() => {
+        let storedPreference
+
+        try {
+          storedPreference = window.localStorage.getItem(
+            'technical-interview-frontend.theme',
+          )
+        } catch {
+          storedPreference = null
+        }
+
+        const root = document.documentElement
+        const preference = ['dark', 'light', 'system'].includes(
+          storedPreference,
+        )
+          ? storedPreference
+          : 'system'
+        const systemTheme = window.matchMedia?.('(prefers-color-scheme: dark)')
+          .matches
+          ? 'dark'
+          : 'light'
+        const resolvedTheme = preference === 'system' ? systemTheme : preference
+
+        root.dataset.theme = resolvedTheme
+        root.dataset.themePreference = preference
+        root.style.colorScheme = resolvedTheme
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

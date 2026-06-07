@@ -9,7 +9,7 @@ archived in `docs/ROADMAP_ARCHIVE.md`. Released history belongs in `CHANGELOG.md
 | Field               | Current                                                                                    |
 |---------------------|--------------------------------------------------------------------------------------------|
 | Release phase       | Published `0.2.0` release; post-release maintenance                                       |
-| Next target version | Future post-`0.2.0` dark mode support slice; final version selected before release prep      |
+| Next target version | Future post-`0.2.0` browser session surface cleanup slice; final version selected before release prep |
 | Frontend stack      | Vite + React + TypeScript                                                                  |
 | Runtime             | Node.js 24.x, npm 11.x                                                                     |
 | Package metadata    | `package.json` and `package-lock.json` version `0.2.0`; `packageManager` `npm@11.16.0`      |
@@ -21,29 +21,31 @@ archived in `docs/ROADMAP_ARCHIVE.md`. Released history belongs in `CHANGELOG.md
 | Breaking policy     | Breaking user-facing or backend-contract integration changes require a selected roadmap row |
 | Backend integration | Same-origin `/api/**` browser traffic                                                      |
 | Contract source     | `docs/backend/approved-openapi.json` and `docs/backend/FRONTEND_AI_CONTRACT.md`            |
-| Implemented surface | Session, public catalog, account, admin catalog, admin localization, admin users, operator |
+| Implemented surface | Session, public catalog, account, admin catalog, admin localization, admin users, operator, app theme preference |
 | Hardening baseline  | ESLint, TypeScript, Vitest, API type freshness, build, Codecov coverage/test/bundle uploads, Docker build, whitespace, npm audit, advisory M20 runtime/Nginx, rendered-manifest, and Trivy checks, CodeQL, dependency-review, Dependabot, and release image signing/provenance |
 | Latest release      | Published `v0.2.0` on 2026-06-07 with GHCR image, signature, provenance, and GitHub Release notes |
-| Immediate action    | Implement the selected M23 dark mode support slice                                           |
+| Immediate action    | Implement the selected M24 browser session surface cleanup slice                              |
 | Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`       |
 
 The app currently bootstraps browser session state with `GET /api/session`, renders
 login options from session metadata, generates checked OpenAPI TypeScript types,
 routes public catalog state through React Router query strings, supports
 authenticated session/logout and route guards, exposes account profile and language
-preference flows, and implements the selected admin/operator surfaces. Local
-same-origin auth smoke steps, the canonical validation baseline, Docker image build,
-tag-driven GHCR package publication, and selected hardening evidence are documented.
+preference flows, implements the selected admin/operator surfaces, and provides an
+app-level light/dark/system theme preference. Local same-origin auth smoke steps,
+the canonical validation baseline, Docker image build, tag-driven GHCR package
+publication, and selected hardening evidence are documented.
 Earlier completed roadmap work and plan records are archived in
 `docs/ROADMAP_ARCHIVE.md`. Post-`0.1.0` execution added contract coverage,
 anonymous smoke automation, fake-OAuth readiness, advisory hardening, provider
 metadata guardrails, and the published `v0.2.0` release. Post-`0.2.0` execution
 selected M19 public catalog workflow polish for canonical route state, visible
-query-state summaries, and accessible sort affordances. Remaining roadmap work
-starts with the selected M23 dark mode support slice before selecting the next
-product, visual, or automation slice. A follow-up UI cleanup should move the
-current Browser Session details out of the primary page content and into an
-explicit menu, drawer, details panel, or equivalent secondary surface.
+query-state summaries, accessible sort affordances, and the selected M23
+light/dark/system theme preference. Remaining roadmap work starts with the
+selected M24 browser session surface cleanup before selecting the next product,
+visual, or automation slice. The cleanup should move the current Browser Session
+details out of the primary page content and into an explicit menu, drawer,
+details panel, or equivalent secondary surface.
 
 ## Product Direction
 
@@ -76,23 +78,21 @@ Status terms:
 | Milestone | Status | Scope | Done when | Validation |
 | --- | --- | --- | --- | --- |
 | M19 - Public Catalog Workflow Polish | Done | Selected in `docs/specs/SPEC_public_catalog_workflow_polish.md`: canonical public catalog route query state, visible active filter/sort/page summaries, default-filter clarity, and accessible sort affordances without backend changes. | Component/route tests cover canonical URL replacement, visible query-state summaries, sort control names, and existing request serialization. | Relevant tests plus full baseline for app changes. |
-| M23 - Dark Mode Support | Ready | Add app-level dark mode support for implemented public catalog, account, admin, and operator flows without backend/API behavior changes. Respect the user's OS color-scheme preference on first visit, provide a visible light/dark/system preference control, persist explicit preference locally, and keep existing session, routing, and localization behavior unchanged. | Light, dark, and system theme selection renders consistently across implemented routes, survives reloads when explicitly selected, preserves keyboard focus visibility and accessible contrast, and has focused component/route coverage plus browser evidence on representative public and authenticated shells. | Relevant tests, browser screenshots or smoke for changed flows, and full baseline for app changes. |
-| M24 - Browser Session Surface Cleanup | Waiting: after M23 | Move the Browser Session status and session metadata out of the main page content into a secondary app-menu, drawer, details panel, or equivalent hidden-by-default surface. Keep account, logout, session cookie, and CSRF metadata available for troubleshooting without making the session diagnostics a primary page section. | Primary implemented pages no longer show the Browser Session panel by default, session diagnostics remain reachable through an explicit control with accessible naming and keyboard support, and session bootstrap/login/logout behavior remains unchanged. | Relevant component or route tests for the new disclosure/menu behavior, browser evidence for the main page and opened session surface, and full baseline for app changes. |
+| M23 - Dark Mode Support | Done | Added app-level dark mode support for implemented public catalog, account, admin, and operator flows without backend/API behavior changes. The app respects the user's OS color-scheme preference on first visit, provides a visible light/dark/system preference control, persists explicit preference locally, and keeps existing session, routing, and localization behavior unchanged. | Light, dark, and system theme selection renders consistently across implemented routes, survives reloads when explicitly selected, preserves keyboard focus visibility and accessible contrast, and has focused component/route coverage plus browser evidence on representative public and authenticated shells. | Relevant tests, browser screenshots or smoke for changed flows, and full baseline for app changes. |
+| M24 - Browser Session Surface Cleanup | Ready | Move the Browser Session status and session metadata out of the main page content into a secondary app-menu, drawer, details panel, or equivalent hidden-by-default surface. Keep account, logout, session cookie, and CSRF metadata available for troubleshooting without making the session diagnostics a primary page section. | Primary implemented pages no longer show the Browser Session panel by default, session diagnostics remain reachable through an explicit control with accessible naming and keyboard support, and session bootstrap/login/logout behavior remains unchanged. | Relevant component or route tests for the new disclosure/menu behavior, browser evidence for the main page and opened session surface, and full baseline for app changes. |
 
 ## Near-Term Backlog
 
-1. Implement the selected M23 dark mode support slice before assigning other broad
-   UI work.
-2. Move the Browser Session panel out of the main page flow into an explicit
-   secondary surface after M23 lands.
-3. Keep backend surface expansion unselected unless a future backend contract refresh
+1. Implement the selected M24 browser session surface cleanup slice before
+   assigning other broad UI work.
+2. Keep backend surface expansion unselected unless a future backend contract refresh
    or product decision
    introduces an approved operation gap.
-4. Turn the M18 fake-OAuth readiness contract into an executable authenticated smoke
+3. Turn the M18 fake-OAuth readiness contract into an executable authenticated smoke
    command when that automation slice is selected.
-5. Exercise the documented local auth smoke workflow against the sibling backend and
+4. Exercise the documented local auth smoke workflow against the sibling backend and
    move repeatable gaps into tests or owner docs.
-6. For future releases, push `main` and the annotated tag, then monitor the Release
+5. For future releases, push `main` and the annotated tag, then monitor the Release
    workflow and verify the GHCR package, signature/provenance evidence, and
    published release notes against `CHANGELOG.md`.
 

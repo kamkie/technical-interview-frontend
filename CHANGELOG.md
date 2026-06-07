@@ -5,6 +5,11 @@ until they are promoted for a release tag.
 
 ## [Unreleased]
 
+### Added
+
+- Added app-level light, dark, and system theme support with a visible persisted
+  preference control across public, account, admin, and operator routes.
+
 ### Changed
 
 - Polished the public catalog workflow with canonical route query replacement,

@@ -38,11 +38,75 @@ import {
   type OperatorSurface,
 } from './api/operator'
 import { SESSION_PATH, type SessionResponse } from './api/session'
+import { THEME_STORAGE_KEY } from './ui/theme'
 
 describe('App', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
+    window.localStorage.clear()
+    clearDocumentTheme()
     clearDocumentCookies()
+  })
+
+  it('uses the system dark preference on first visit without storing an explicit preference', async () => {
+    mockColorScheme('dark')
+    mockAppFetch({
+      session: createSession(),
+    })
+
+    renderApp()
+
+    expect(screen.getByRole('radio', { name: 'System' })).toBeChecked()
+
+    await waitFor(() => {
+      expect(document.documentElement).toHaveAttribute('data-theme', 'dark')
+    })
+    expect(document.documentElement).toHaveAttribute(
+      'data-theme-preference',
+      'system',
+    )
+    expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBeNull()
+    expect(
+      screen.getByRole('radiogroup', { name: /using dark mode/i }),
+    ).toBeInTheDocument()
+  })
+
+  it('persists explicit theme selections and reapplies them on authenticated routes', async () => {
+    mockColorScheme('light')
+    window.localStorage.setItem(THEME_STORAGE_KEY, 'dark')
+    mockAppFetch({
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    const view = renderApp('/account')
+
+    expect(screen.getByRole('radio', { name: 'Dark' })).toBeChecked()
+    await waitFor(() => {
+      expect(document.documentElement).toHaveAttribute('data-theme', 'dark')
+    })
+    expect(
+      await screen.findByRole('heading', { name: 'Account' }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Light' }))
+
+    await waitFor(() => {
+      expect(document.documentElement).toHaveAttribute('data-theme', 'light')
+    })
+    expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe('light')
+
+    view.unmount()
+    renderApp('/operator')
+
+    expect(screen.getByRole('radio', { name: 'Light' })).toBeChecked()
+    await waitFor(() => {
+      expect(document.documentElement).toHaveAttribute('data-theme', 'light')
+    })
+    expect(
+      await screen.findByRole('heading', { name: 'Operator audit' }),
+    ).toBeInTheDocument()
   })
 
   it('bootstraps the browser session and renders login providers', async () => {
@@ -1054,4 +1118,29 @@ function clearDocumentCookies() {
     .forEach((cookieName) => {
       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`
     })
+}
+
+function clearDocumentTheme() {
+  document.documentElement.removeAttribute('data-theme')
+  document.documentElement.removeAttribute('data-theme-preference')
+  document.documentElement.style.colorScheme = ''
+}
+
+function mockColorScheme(theme: 'dark' | 'light') {
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn().mockImplementation((query: string): MediaQueryList => {
+      return {
+        matches:
+          query === '(prefers-color-scheme: dark)' && theme === 'dark',
+        media: query,
+        onchange: null,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        dispatchEvent: vi.fn(() => true),
+      }
+    }),
+  )
 }

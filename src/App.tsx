@@ -30,8 +30,19 @@ import { CatalogPanel } from './catalog/CatalogPanel'
 import { CATALOG_ROUTE_PATH } from './catalog/catalogQuery'
 import { OPERATOR_ROUTE_PATH, OperatorPage } from './operator/OperatorPage'
 import { getDisplayMessage } from './ui/asyncState'
+import {
+  THEME_PREFERENCES,
+  useThemePreference,
+  type ThemePreference,
+} from './ui/theme'
 
 const ACCOUNT_ROUTE_PATH = '/account'
+
+const THEME_LABELS: Record<ThemePreference, string> = {
+  dark: 'Dark',
+  light: 'Light',
+  system: 'System',
+}
 
 type LogoutState =
   | { status: 'idle' }
@@ -40,6 +51,7 @@ type LogoutState =
 
 export function App() {
   const { refreshSession, sessionState } = useSessionBootstrap()
+  const { preference, resolvedTheme, setPreference } = useThemePreference()
   const [logoutState, setLogoutState] = useState<LogoutState>({
     status: 'idle',
   })
@@ -85,11 +97,18 @@ export function App() {
               )}
           </nav>
         </div>
-        <SessionHeader
-          logoutState={logoutState}
-          state={sessionState}
-          onLogout={handleLogout}
-        />
+        <div className="topbar-actions">
+          <ThemePreferenceControl
+            preference={preference}
+            resolvedTheme={resolvedTheme}
+            onPreferenceChange={setPreference}
+          />
+          <SessionHeader
+            logoutState={logoutState}
+            state={sessionState}
+            onLogout={handleLogout}
+          />
+        </div>
       </header>
 
       <main className="workspace">
@@ -168,6 +187,37 @@ export function App() {
           <Route path="*" element={<Navigate to={CATALOG_ROUTE_PATH} replace />} />
         </Routes>
       </main>
+    </div>
+  )
+}
+
+function ThemePreferenceControl({
+  onPreferenceChange,
+  preference,
+  resolvedTheme,
+}: {
+  onPreferenceChange: (preference: ThemePreference) => void
+  preference: ThemePreference
+  resolvedTheme: 'dark' | 'light'
+}) {
+  return (
+    <div
+      className="theme-control"
+      role="radiogroup"
+      aria-label={`Theme preference, currently ${THEME_LABELS[preference]} using ${resolvedTheme} mode`}
+    >
+      {THEME_PREFERENCES.map((option) => (
+        <label className="theme-option" key={option}>
+          <input
+            type="radio"
+            name="theme-preference"
+            value={option}
+            checked={preference === option}
+            onChange={() => onPreferenceChange(option)}
+          />
+          <span>{THEME_LABELS[option]}</span>
+        </label>
+      ))}
     </div>
   )
 }
