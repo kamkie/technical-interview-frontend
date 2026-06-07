@@ -24,8 +24,8 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 
 - Release phase: Post-`0.2.0` maintenance.
 - Next target version: Future maintenance release; final scope and version selected before release prep.
-- Current priority: M-SMOKE-001: Responsive Layout And Smoke Evidence.
-- Active product plans: `PLAN-responsive-layout-smoke-evidence` is checked in for `M-SMOKE-001`; `PLAN-workflow-polish` completed `M-WORKFLOW-001` and remains as the milestone execution record until archive routing is selected.
+- Current priority: No ready selected milestone; `M-QUALITY-001` remains blocked pending quality-gate decisions.
+- Active product plans: `PLAN-responsive-layout-smoke-evidence` completed `M-SMOKE-001`; `PLAN-workflow-polish` completed `M-WORKFLOW-001`; both remain milestone execution records until archive routing is selected.
 - Selection policy: Breaking user-facing or backend-contract integration changes require a selected roadmap item.
 
 ## Product Direction
@@ -169,7 +169,7 @@ Acceptance Criteria:
 
 ### M-SMOKE-001: Responsive Layout And Smoke Evidence
 
-Labels: `type:milestone`, `status:ready`, `plan:PLAN-responsive-layout-smoke-evidence`
+Labels: `type:milestone`, `status:done`, `plan:PLAN-responsive-layout-smoke-evidence`
 
 Plan ID: `PLAN-responsive-layout-smoke-evidence`
 
@@ -179,7 +179,7 @@ Depends on: M-WORKFLOW-001.
 
 #### E-RESP-001: Responsive Layout
 
-Labels: `type:epic`, `milestone:M-SMOKE-001`, `status:waiting`
+Labels: `type:epic`, `milestone:M-SMOKE-001`, `status:done`
 
 Tasks:
 
@@ -194,9 +194,9 @@ Acceptance Criteria:
 
 #### E-SMOKE-002: Anonymous Browser Smoke
 
-Labels: `type:epic`, `milestone:M-SMOKE-001`, `status:waiting`
+Labels: `type:epic`, `milestone:M-SMOKE-001`, `status:done`
 
-Current evidence: `npm run smoke:anonymous` is the canonical anonymous command and is expected to pass in the documented local smoke environment; missing prerequisites and smoke assertions fail the command.
+Current evidence: `npm run smoke:anonymous` is the canonical anonymous command and is expected to pass in the documented local smoke environment; missing prerequisites are recorded as prerequisite skips that exit nonzero, and smoke assertions fail the command.
 
 Tasks:
 
@@ -211,7 +211,7 @@ Acceptance Criteria:
 
 #### E-SMOKE-001: Authenticated Browser Smoke
 
-Labels: `type:epic`, `milestone:M-SMOKE-001`, `status:waiting`
+Labels: `type:epic`, `milestone:M-SMOKE-001`, `status:done`
 
 Current evidence: `npm run smoke:authenticated` covers authenticated browser smoke against the internal mock API; live sibling-backend fake-OAuth automation remains deferred unless selected by owners.
 
