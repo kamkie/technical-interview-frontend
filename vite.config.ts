@@ -25,6 +25,19 @@ export default defineConfig({
   },
   test: {
     css: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      reportsDirectory: '../coverage',
+      include: ['**/*.{ts,tsx}'],
+      exclude: [
+        '**/*.test.{ts,tsx}',
+        '**/generated/**',
+        '**/test/**',
+        'main.tsx',
+        'vite-env.d.ts',
+      ],
+    },
     environment: 'jsdom',
     setupFiles: './test/setup.ts',
   },

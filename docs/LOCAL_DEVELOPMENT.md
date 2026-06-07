@@ -76,6 +76,7 @@ from the container network.
 | Lint | `npm run lint` |
 | Typecheck and API type freshness check | `npm run typecheck` |
 | Run tests once | `npm test` |
+| Run tests with coverage | `npm run test:coverage` |
 | Run tests in watch mode | `npm run test:watch` |
 | Build | `npm run build` |
 | Build production container image | `npm run docker:build` |
@@ -93,6 +94,7 @@ baseline used by CI:
 npm run lint
 npm run typecheck
 npm test
+npm run test:coverage
 npm run build
 npm run audit:security
 git diff --check
@@ -183,7 +185,9 @@ Implemented M13 checks:
 
 - `.github/workflows/ci.yml` has explicit read-only repository permissions and
   concurrency that cancels superseded pull-request runs while preserving
-  protected-branch, tag, release, and scheduled evidence.
+  protected-branch, tag, release, and scheduled evidence. It runs
+  `npm run test:coverage` and publishes `coverage/lcov.info` to Codecov with the
+  `frontend` flag using GitHub OIDC.
 - `.github/workflows/codeql.yml` runs CodeQL for `javascript-typescript` and
   `actions` on pull requests, pushes to `main`, and a weekly schedule. Results
   upload to GitHub code scanning so alerts appear in the repository Security tab,
