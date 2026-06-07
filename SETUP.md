@@ -1,9 +1,6 @@
 # Setup
 
-The setup owner for this frontend repository is
-[docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md). Use it for prerequisites,
-npm commands, CI reproduction, troubleshooting, backend contract refresh, browser
-smoke workflow, and selected hardening commands.
+The setup owner for this frontend repository is [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md). Use it for prerequisites, npm commands, CI reproduction, troubleshooting, backend contract refresh, browser smoke workflow, and selected hardening commands.
 
 ## Quick Start
 
@@ -14,10 +11,7 @@ npm install
 npm run dev
 ```
 
-The dev server binds to `http://127.0.0.1:5173/`. Use `npm run dev:mock` only for
-frontend-only development against the same-origin contract-backed mock API.
-Docker is optional for ordinary development and required only when building or
-validating the production container image.
+The dev server binds to `http://127.0.0.1:5173/`. Use `npm run dev:mock` only for frontend-only development against the same-origin contract-backed mock API. Docker is optional for ordinary development and required only when building or validating the production container image.
 
 ## Related Workflows
 

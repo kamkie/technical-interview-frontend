@@ -1,74 +1,48 @@
 # Changelog
 
-This project follows Keep a Changelog style. Release entries stay under `Unreleased`
-until they are promoted for a release tag.
+This project follows Keep a Changelog style. Release entries stay under `Unreleased` until they are promoted for a release tag.
 
 ## [Unreleased]
 
 ### Added
 
-- Added `npm run dev:mock`, an opt-in same-origin `/api/**` Vite mock API mode
-  backed by generated OpenAPI types for frontend-only development without the
-  sibling backend.
-- Added app-level light, dark, and system theme support with a visible persisted
-  preference control across public, account, admin, and operator routes.
+- Added `npm run dev:mock`, an opt-in same-origin `/api/**` Vite mock API mode backed by generated OpenAPI types for frontend-only development without the sibling backend.
+- Added app-level light, dark, and system theme support with a visible persisted preference control across public, account, admin, and operator routes.
 
 ### Changed
 
-- Polished the public catalog workflow with canonical route query replacement,
-  visible active filter/sort/page summaries, and clearer accessible sort controls.
-- Moved Browser Session diagnostics into a hidden-by-default Session details
-  surface while keeping metadata-driven sign-in, session bootstrap, and logout
-  behavior intact.
+- Polished the public catalog workflow with canonical route query replacement, visible active filter/sort/page summaries, and clearer accessible sort controls.
+- Moved Browser Session diagnostics into a hidden-by-default Session details surface while keeping metadata-driven sign-in, session bootstrap, and logout behavior intact.
 
 ### Fixed
 
-- Kept admin catalog book row action buttons compact for long titles while
-  preserving specific edit/delete accessible names and delete confirmation behavior.
-- Set the initial document background before bundled assets load to avoid a white
-  blank-page flash during app startup.
+- Kept admin catalog book row action buttons compact for long titles while preserving specific edit/delete accessible names and delete confirmation behavior.
+- Set the initial document background before bundled assets load to avoid a white blank-page flash during app startup.
 
 ## [0.2.0] - 2026-06-07
 
 ### Added
 
-- Added a production Docker image build for the Vite app with an unprivileged Nginx
-  runtime that preserves same-origin `/api/**` proxying.
-- Added frontend Kubernetes/Kustomize and Helm reference manifests for deploying the
-  production container with the same-origin `/api/**` proxy configuration.
-- Added a tag-driven GitHub Release workflow that validates the candidate, publishes
-  semantic and immutable GHCR image tags, signs and attests the image digest, and
-  renders release notes with package links from `CHANGELOG.md`.
-- Added `docs/API_COVERAGE.md`, classifying all 22 approved backend OpenAPI
-  operations as covered by generated types, clients, UI, specs, or tests.
-- Added fake-OAuth authenticated smoke readiness guidance for the backend
-  `local,oauth,fake-oauth` profile and `smoke:smoke-user` bootstrap identity.
-- Added `npm run smoke:anonymous` for anonymous same-origin browser smoke coverage
-  of session bootstrap, public catalog reads, URL-backed filters, pagination,
-  repeated category/sort query values, and localized public-read failures when
-  reproducible.
-- Added advisory M20 hardening commands for runtime/Nginx invariants, rendered
-  Kustomize/Helm manifest linting with kube-linter, and Trivy image scanning.
-- Added regression coverage proving login provider links come from
-  `GET /api/session` metadata and are not invented when `authorizationPath` is
-  absent.
+- Added a production Docker image build for the Vite app with an unprivileged Nginx runtime that preserves same-origin `/api/**` proxying.
+- Added frontend Kubernetes/Kustomize and Helm reference manifests for deploying the production container with the same-origin `/api/**` proxy configuration.
+- Added a tag-driven GitHub Release workflow that validates the candidate, publishes semantic and immutable GHCR image tags, signs and attests the image digest, and renders release notes with package links from `CHANGELOG.md`.
+- Added `docs/API_COVERAGE.md`, classifying all 22 approved backend OpenAPI operations as covered by generated types, clients, UI, specs, or tests.
+- Added fake-OAuth authenticated smoke readiness guidance for the backend `local,oauth,fake-oauth` profile and `smoke:smoke-user` bootstrap identity.
+- Added `npm run smoke:anonymous` for anonymous same-origin browser smoke coverage of session bootstrap, public catalog reads, URL-backed filters, pagination, repeated category/sort query values, and localized public-read failures when reproducible.
+- Added advisory M20 hardening commands for runtime/Nginx invariants, rendered Kustomize/Helm manifest linting with kube-linter, and Trivy image scanning.
+- Added regression coverage proving login provider links come from `GET /api/session` metadata and are not invented when `authorizationPath` is absent.
 
 ### Changed
 
-- Shared the local `/api/**` proxy between Vite dev and preview servers so anonymous
-  smoke can target either frontend origin.
+- Shared the local `/api/**` proxy between Vite dev and preview servers so anonymous smoke can target either frontend origin.
 - Aligned the Docker build stage with the repository's Node.js 24 runtime contract.
 
 ### Fixed
 
 - Refreshed the npm 11 lockfile metadata so canonical `npm ci` installs pass in CI.
-- Restored CodeQL and dependency-review workflows with GitHub code-scanning upload
-  and high-or-critical dependency-review enforcement.
-- Aligned CI and container builds to install the npm version declared by
-  `package.json` before running clean installs.
-- Pinned the Release workflow's Cosign installer action to a published
-  `sigstore/cosign-installer` tag so tag-triggered publication can resolve the
-  signing setup step.
+- Restored CodeQL and dependency-review workflows with GitHub code-scanning upload and high-or-critical dependency-review enforcement.
+- Aligned CI and container builds to install the npm version declared by `package.json` before running clean installs.
+- Pinned the Release workflow's Cosign installer action to a published `sigstore/cosign-installer` tag so tag-triggered publication can resolve the signing setup step.
 
 ## [0.1.0] - 2026-06-07
 
@@ -76,50 +50,28 @@ First frontend release.
 
 ### Added
 
-- Vite, React, and TypeScript browser app scaffold with Node.js 24.x and npm 11.x
-  as the canonical runtime/tooling baseline.
-- Imported backend contract documentation, checked generated OpenAPI TypeScript
-  types, and API type freshness validation.
-- Session bootstrap from `GET /api/session`, metadata-driven login provider
-  rendering, CSRF helpers, authenticated logout, and route guards.
-- React Router catalog route with URL-synced search, repeated category filters,
-  Spring pagination, sorting controls, loading/empty states, and localized backend
-  error display.
-- Local same-origin auth smoke documentation and Vite `/api` proxy guidance for the
-  sibling `technical-interview-demo` backend.
+- Vite, React, and TypeScript browser app scaffold with Node.js 24.x and npm 11.x as the canonical runtime/tooling baseline.
+- Imported backend contract documentation, checked generated OpenAPI TypeScript types, and API type freshness validation.
+- Session bootstrap from `GET /api/session`, metadata-driven login provider rendering, CSRF helpers, authenticated logout, and route guards.
+- React Router catalog route with URL-synced search, repeated category filters, Spring pagination, sorting controls, loading/empty states, and localized backend error display.
+- Local same-origin auth smoke documentation and Vite `/api` proxy guidance for the sibling `technical-interview-demo` backend.
 - Authenticated account profile and preferred-language update/clear flow.
-- Admin catalog management for backend-supported book and category create, update,
-  delete, list, filter, sort, and error states.
-- Admin localization management for supported locales, message editing, and
-  coverage/status states.
-- Read-only operator overview and pageable audit log with filters, sorting, recent
-  entries, details, and partial-payload handling.
+- Admin catalog management for backend-supported book and category create, update, delete, list, filter, sort, and error states.
+- Admin localization management for supported locales, message editing, and coverage/status states.
+- Read-only operator overview and pageable audit log with filters, sorting, recent entries, details, and partial-payload handling.
 - Admin user management for user list/detail, role provenance, and role replacement.
-- Contract-scoped specs for admin catalog, admin localization, operator audit, and
-  admin user management.
-- GitHub Actions CI workflow for lint, typecheck, tests, build, and whitespace
-  validation.
-- Static-analysis and hardening checks for explicit workflow
-  permissions/concurrency, CodeQL, dependency-review, high-or-critical npm audit,
-  Dependabot grouping, and documented triage/exception handling.
-- Component, route, and API client tests with shared fixtures across public catalog,
-  account, admin, and operator behavior.
-- Frontend release procedure covering version selection, changelog promotion,
-  validation evidence, annotated tags, publication guardrails, and post-release
-  roadmap cleanup.
-- Human procedure documentation for lifecycle, local development, working with AI,
-  and documentation navigation.
-- Lean frontend-specific AI guidance and focused AI references for documentation
-  routing, validation selection, reviews, and release sequencing.
+- Contract-scoped specs for admin catalog, admin localization, operator audit, and admin user management.
+- GitHub Actions CI workflow for lint, typecheck, tests, build, and whitespace validation.
+- Static-analysis and hardening checks for explicit workflow permissions/concurrency, CodeQL, dependency-review, high-or-critical npm audit, Dependabot grouping, and documented triage/exception handling.
+- Component, route, and API client tests with shared fixtures across public catalog, account, admin, and operator behavior.
+- Frontend release procedure covering version selection, changelog promotion, validation evidence, annotated tags, publication guardrails, and post-release roadmap cleanup.
+- Human procedure documentation for lifecycle, local development, working with AI, and documentation navigation.
+- Lean frontend-specific AI guidance and focused AI references for documentation routing, validation selection, reviews, and release sequencing.
 
 ### Changed
 
-- Roadmap now records the M0-M11 implementation slice as complete and moves
-  near-term work to post-`0.1.0` browser smoke coverage and future selected
-  backend-supported scope.
-- Setup documentation now includes backend contract refresh, generated API type
-  checks, local auth smoke guidance, hardening commands, and the canonical
-  validation commands.
+- Roadmap now records the M0-M11 implementation slice as complete and moves near-term work to post-`0.1.0` browser smoke coverage and future selected backend-supported scope.
+- Setup documentation now includes backend contract refresh, generated API type checks, local auth smoke guidance, hardening commands, and the canonical validation commands.
 
 ## [0.0.0]
 

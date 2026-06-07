@@ -1,29 +1,23 @@
 # Roadmap Archive
 
-This file archives completed roadmap work that no longer needs to occupy the
-active roadmap. Current product scope, backlog, release state, and planned work
-remain in `ROADMAP.md`. Released user-visible history remains in `CHANGELOG.md`.
+This file archives completed roadmap work that no longer needs to occupy the active roadmap. Current product scope, backlog, release state, and planned work remain in `ROADMAP.md`. Released user-visible history remains in `CHANGELOG.md`.
 
 Archive hierarchy:
 
 - Milestone: completed delivery slice with its historical counter.
-- Epic: completed product, workflow, procedure, or hardening area inside the
-  milestone.
+- Epic: completed product, workflow, procedure, or hardening area inside the milestone.
 - Task: completed unit of archived work.
 - Plan: archived execution record when one exists.
 
 Stable IDs:
 
-- Completed milestones preserve their historical IDs, such as `M0`, `M17`, and
-  `M27`.
-- The later local reuse of `M24` is archived as `M24-LOCAL`; its legacy counter is
-  noted so old references remain understandable.
+- Completed milestones preserve their historical IDs, such as `M0`, `M17`, and `M27`.
+- The later local reuse of `M24` is archived as `M24-LOCAL`; its legacy counter is noted so old references remain understandable.
 - Archived epics use `E-<milestone-id>-NNN`.
 - Archived tasks use `T-<milestone-id>-NNN`.
 - Archived plan records use `PLAN-short-kebab-slug`.
 
-Keep IDs stable when wording or archive ordering changes. Do not renumber completed
-work, and do not reuse retired IDs for unrelated work.
+Keep IDs stable when wording or archive ordering changes. Do not renumber completed work, and do not reuse retired IDs for unrelated work.
 
 ## Archived Plan Records
 
@@ -65,8 +59,7 @@ Scope: Later local M19 and M23-M27 completion summaries after `v0.2.0`.
 
 Labels: `type:milestone`, `status:done`, `plan:PLAN-frontend-roadmap-execution`
 
-Goal: Establish the frontend scaffold and the first backend-contract-backed
-runtime path.
+Goal: Establish the frontend scaffold and the first backend-contract-backed runtime path.
 
 #### E-M0-001: Scaffold And Contract Bootstrap
 
@@ -81,15 +74,13 @@ Tasks:
 Acceptance Criteria:
 
 - Existing validation baseline passes.
-- The app renders session and catalog states from `/api/session`, `/api/books`, and
-  `/api/categories`.
+- The app renders session and catalog states from `/api/session`, `/api/books`, and `/api/categories`.
 
 ### M1: CI And Quality Gate
 
 Labels: `type:milestone`, `status:done`, `plan:PLAN-frontend-roadmap-execution`
 
-Goal: Add a repeatable repository quality gate for pull requests and selected
-branch validation.
+Goal: Add a repeatable repository quality gate for pull requests and selected branch validation.
 
 #### E-M1-001: Canonical CI Validation
 
@@ -119,8 +110,7 @@ Labels: `type:epic`, `milestone:M2`, `status:done`
 Tasks:
 
 - T-M2-001: Add a read-only table layout for public books.
-- T-M2-002: Support basic search, filters, pagination, loading, empty, and localized
-  error states.
+- T-M2-002: Support basic search, filters, pagination, loading, empty, and localized error states.
 - T-M2-003: Add mock/test fixtures for visible catalog states.
 
 Acceptance Criteria:
@@ -132,8 +122,7 @@ Acceptance Criteria:
 
 Labels: `type:milestone`, `status:done`, `plan:PLAN-frontend-roadmap-execution`
 
-Goal: Make catalog state navigable, shareable, and richer without changing backend
-request semantics.
+Goal: Make catalog state navigable, shareable, and richer without changing backend request semantics.
 
 #### E-M3-001: URL-Synced Catalog Controls
 
@@ -143,8 +132,7 @@ Tasks:
 
 - T-M3-001: Route catalog state through React Router query strings.
 - T-M3-002: Add browser history expectations for catalog navigation.
-- T-M3-003: Add sorting UI, page-size controls, richer table controls, and deeper
-  catalog state handling.
+- T-M3-003: Add sorting UI, page-size controls, richer table controls, and deeper catalog state handling.
 
 Acceptance Criteria:
 
@@ -171,9 +159,7 @@ Tasks:
 Acceptance Criteria:
 
 - `SETUP.md` links to `docs/LOCAL_AUTH_SMOKE.md`.
-- The local auth smoke doc covers provider credentials, admin identity seeding,
-  session/account/logout checks, CSRF handling, and anonymous-vs-authenticated
-  automation policy.
+- The local auth smoke doc covers provider credentials, admin identity seeding, session/account/logout checks, CSRF handling, and anonymous-vs-authenticated automation policy.
 
 ### M5: Authenticated Session UX
 
@@ -232,8 +218,7 @@ Tasks:
 
 - T-M7-001: Read the current user's preferred language.
 - T-M7-002: Update and clear the preferred language with CSRF handling.
-- T-M7-003: Cover loading, success, validation/error, unauthenticated, and
-  missing-CSRF states.
+- T-M7-003: Cover loading, success, validation/error, unauthenticated, and missing-CSRF states.
 
 Acceptance Criteria:
 
@@ -252,8 +237,7 @@ Labels: `type:epic`, `milestone:M8`, `status:done`
 
 Tasks:
 
-- T-M8-001: Select combined book/category admin scope from the imported backend
-  contract.
+- T-M8-001: Select combined book/category admin scope from the imported backend contract.
 - T-M8-002: Split the selected admin catalog behavior into a focused spec.
 - T-M8-003: Implement list, create, update, delete, and error states.
 
@@ -281,8 +265,7 @@ Tasks:
 Acceptance Criteria:
 
 - Localization admin behavior is split into a focused spec.
-- Tests cover supported locales, message edits, coverage/status states, and
-  localized failures.
+- Tests cover supported locales, message edits, coverage/status states, and localized failures.
 
 ### M10: Operator Audit Surface
 
@@ -302,10 +285,8 @@ Tasks:
 
 Acceptance Criteria:
 
-- Operators can inspect summaries, recent audit entries, filtered audit rows, and
-  audit details.
-- Tests cover access, loading, empty, filtered, paginated, localized error, and
-  partial-payload states.
+- Operators can inspect summaries, recent audit entries, filtered audit rows, and audit details.
+- Tests cover access, loading, empty, filtered, paginated, localized error, and partial-payload states.
 
 ### M11: Admin User Management
 
@@ -326,8 +307,7 @@ Tasks:
 Acceptance Criteria:
 
 - Admins can review user profiles, roles, and role-grant provenance.
-- Tests cover access, empty, success, validation, localized error, and missing-CSRF
-  states.
+- Tests cover access, empty, success, validation, localized error, and missing-CSRF states.
 
 ### M12: Release Procedure And `0.1.0` Hardening
 
@@ -347,10 +327,8 @@ Tasks:
 
 Acceptance Criteria:
 
-- Maintainers can cut the first frontend release from `main` using documented
-  procedure.
-- `CHANGELOG.md`, `ROADMAP.md`, package metadata, validation evidence, and tag state
-  agree.
+- Maintainers can cut the first frontend release from `main` using documented procedure.
+- `CHANGELOG.md`, `ROADMAP.md`, package metadata, validation evidence, and tag state agree.
 
 ### M13: Static Analysis And Hardening Tooling
 
@@ -378,8 +356,7 @@ Acceptance Criteria:
 
 Labels: `type:milestone`, `status:done`, `plan:PLAN-frontend-release-procedure-execution`
 
-Goal: Add human-facing procedure docs without duplicating procedure bodies in entry
-points.
+Goal: Add human-facing procedure docs without duplicating procedure bodies in entry points.
 
 #### E-M14-001: Frontend Procedure Owners
 
@@ -388,8 +365,7 @@ Labels: `type:epic`, `milestone:M14`, `status:done`
 Tasks:
 
 - T-M14-001: Add `docs/DEVELOPMENT_LIFECYCLE.md`.
-- T-M14-002: Add `docs/LOCAL_DEVELOPMENT.md`, `docs/WORKING_WITH_AI.md`, and
-  `docs/README.md`.
+- T-M14-002: Add `docs/LOCAL_DEVELOPMENT.md`, `docs/WORKING_WITH_AI.md`, and `docs/README.md`.
 - T-M14-003: Link `README.md`, `SETUP.md`, and `CONTRIBUTING.md` to owners.
 
 Acceptance Criteria:
@@ -415,8 +391,7 @@ Tasks:
 
 Acceptance Criteria:
 
-- `.agents/references/documentation.md`, `.agents/references/testing.md`,
-  `.agents/references/reviews.md`, and `.agents/references/releases.md` exist.
+- `.agents/references/documentation.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and `.agents/references/releases.md` exist.
 - `AGENTS.md` points to the focused references.
 
 ### M16: Contract Coverage And Scope Audit
@@ -431,8 +406,7 @@ Labels: `type:epic`, `milestone:M16`, `status:done`
 
 Tasks:
 
-- T-M16-001: Compare approved OpenAPI operations with generated types, clients,
-  routes, specs, and tests.
+- T-M16-001: Compare approved OpenAPI operations with generated types, clients, routes, specs, and tests.
 - T-M16-002: Classify operation coverage in `docs/API_COVERAGE.md`.
 - T-M16-003: Decide whether M22 should select a backend surface expansion.
 
@@ -476,21 +450,18 @@ Tasks:
 
 - T-M18-001: Document `local,oauth,fake-oauth` backend profile usage.
 - T-M18-002: Document `smoke` provider discovery from `GET /api/session`.
-- T-M18-003: Document `smoke:smoke-user` admin seeding, CSRF/logout/account/admin
-  checks, and skip/fail behavior.
+- T-M18-003: Document `smoke:smoke-user` admin seeding, CSRF/logout/account/admin checks, and skip/fail behavior.
 
 Acceptance Criteria:
 
 - `docs/LOCAL_AUTH_SMOKE.md` owns fake-OAuth readiness.
-- The readiness contract names the local profile, provider, seed identity, and
-  smoke behavior.
+- The readiness contract names the local profile, provider, seed identity, and smoke behavior.
 
 ### M19: Public Catalog Workflow Polish
 
 Labels: `type:milestone`, `status:done`, `plan:PLAN-post-v0-2-local-work`
 
-Goal: Polish the implemented anonymous public catalog workflow without backend
-changes.
+Goal: Polish the implemented anonymous public catalog workflow without backend changes.
 
 #### E-M19-001: Public Catalog Route State Polish
 
@@ -504,16 +475,14 @@ Tasks:
 
 Acceptance Criteria:
 
-- Component/route tests cover canonical URL replacement and visible query-state
-  summaries.
+- Component/route tests cover canonical URL replacement and visible query-state summaries.
 - Existing request serialization remains unchanged.
 
 ### M20: Container And Deployment Hardening Refinement
 
 Labels: `type:milestone`, `status:done`, `plan:PLAN-post-0-1-roadmap-execution`
 
-Goal: Add an advisory first pass for frontend-owned container and deployment
-hardening.
+Goal: Add an advisory first pass for frontend-owned container and deployment hardening.
 
 #### E-M20-001: Advisory Runtime And Deployment Checks
 
@@ -524,8 +493,7 @@ Tasks:
 - T-M20-001: Add `npm run hardening:runtime`.
 - T-M20-002: Add `npm run hardening:kube-linter`.
 - T-M20-003: Add `npm run hardening:trivy` and `npm run hardening:m20`.
-- T-M20-004: Keep findings advisory until stable thresholds and an exception
-  workflow are selected.
+- T-M20-004: Keep findings advisory until stable thresholds and an exception workflow are selected.
 
 Acceptance Criteria:
 
@@ -546,8 +514,7 @@ Tasks:
 
 - T-M21-001: Add regression coverage for `loginProviders[]`.
 - T-M21-002: Prove provider links use `authorizationPath`.
-- T-M21-003: Prove no login entry point is invented when metadata omits an
-  authorization path.
+- T-M21-003: Prove no login entry point is invented when metadata omits an authorization path.
 
 Acceptance Criteria:
 
@@ -558,8 +525,7 @@ Acceptance Criteria:
 
 Labels: `type:milestone`, `status:done`, `plan:PLAN-post-0-1-roadmap-execution`
 
-Goal: Convert M16 coverage gaps into selected backend-supported surface work when
-needed.
+Goal: Convert M16 coverage gaps into selected backend-supported surface work when needed.
 
 #### E-M22-001: Surface Expansion Decision
 
@@ -568,8 +534,7 @@ Labels: `type:epic`, `milestone:M22`, `status:done`
 Tasks:
 
 - T-M22-001: Review M16 operation classifications.
-- T-M22-002: Decide whether an approved operation gap requires selected frontend
-  scope.
+- T-M22-002: Decide whether an approved operation gap requires selected frontend scope.
 
 Acceptance Criteria:
 
@@ -579,8 +544,7 @@ Acceptance Criteria:
 
 Labels: `type:milestone`, `status:done`, `plan:PLAN-post-v0-2-local-work`
 
-Goal: Add app-level theme preference across implemented flows without backend
-behavior changes.
+Goal: Add app-level theme preference across implemented flows without backend behavior changes.
 
 #### E-M23-001: Light Dark System Theme Preference
 
@@ -589,8 +553,7 @@ Labels: `type:epic`, `milestone:M23`, `status:done`
 Tasks:
 
 - T-M23-001: Add app-level light, dark, and system theme preference.
-- T-M23-002: Apply theme behavior across public catalog, account, admin, and
-  operator flows.
+- T-M23-002: Apply theme behavior across public catalog, account, admin, and operator flows.
 - T-M23-003: Preserve keyboard focus visibility and accessible contrast.
 
 Acceptance Criteria:
@@ -613,13 +576,11 @@ Tasks:
 
 - T-M24-001: Align `CHANGELOG.md`, `ROADMAP.md`, and package metadata for `v0.2.0`.
 - T-M24-002: Capture validation evidence.
-- T-M24-003: Prepare GitHub Release, GHCR image tags, signature/provenance evidence,
-  and published release notes.
+- T-M24-003: Prepare GitHub Release, GHCR image tags, signature/provenance evidence, and published release notes.
 
 Acceptance Criteria:
 
-- Release metadata, validation evidence, package state, and published notes agree
-  for `v0.2.0`.
+- Release metadata, validation evidence, package state, and published notes agree for `v0.2.0`.
 
 ### M24-LOCAL: Browser Session Surface Cleanup
 
@@ -635,10 +596,8 @@ Labels: `type:epic`, `milestone:M24-LOCAL`, `status:done`
 
 Tasks:
 
-- T-M24-LOCAL-001: Move Browser Session status and metadata into a hidden-by-default
-  Session details surface.
-- T-M24-LOCAL-002: Keep diagnostics reachable through an explicit accessible
-  control.
+- T-M24-LOCAL-001: Move Browser Session status and metadata into a hidden-by-default Session details surface.
+- T-M24-LOCAL-002: Keep diagnostics reachable through an explicit accessible control.
 - T-M24-LOCAL-003: Preserve session bootstrap, login, and logout behavior.
 
 Acceptance Criteria:
@@ -651,8 +610,7 @@ Acceptance Criteria:
 
 Labels: `type:milestone`, `status:done`, `plan:PLAN-post-v0-2-local-work`
 
-Goal: Polish the anonymous `/catalog` flow and shared app shell after session
-surface cleanup.
+Goal: Polish the anonymous `/catalog` flow and shared app shell after session surface cleanup.
 
 #### E-M25-001: Catalog And Shell Visual Polish
 
@@ -660,10 +618,8 @@ Labels: `type:epic`, `milestone:M25`, `status:done`
 
 Tasks:
 
-- T-M25-001: Improve header/action layout, intro hierarchy, filters, category chips,
-  and query summary.
-- T-M25-002: Improve table readability, pagination, focus-visible styling, and
-  responsive behavior.
+- T-M25-001: Improve header/action layout, intro hierarchy, filters, category chips, and query summary.
+- T-M25-002: Improve table readability, pagination, focus-visible styling, and responsive behavior.
 - T-M25-003: Preserve existing route, query, session, and theme behavior.
 
 Acceptance Criteria:
@@ -676,8 +632,7 @@ Acceptance Criteria:
 
 Labels: `type:milestone`, `status:done`, `plan:PLAN-post-v0-2-local-work`
 
-Goal: Let frontend-only development run without the sibling backend while
-preserving the approved API shape.
+Goal: Let frontend-only development run without the sibling backend while preserving the approved API shape.
 
 #### E-M26-001: Opt-In Same-Origin Mock API
 
@@ -687,8 +642,7 @@ Tasks:
 
 - T-M26-001: Add opt-in Vite mock API development mode.
 - T-M26-002: Support admin, user, anonymous, success, empty, and error scenarios.
-- T-M26-003: Keep in-memory mutations for development and document live backend
-  smoke as the contract-confidence path.
+- T-M26-003: Keep in-memory mutations for development and document live backend smoke as the contract-confidence path.
 
 Acceptance Criteria:
 
@@ -709,10 +663,8 @@ Labels: `type:epic`, `milestone:M27`, `status:done`
 Tasks:
 
 - T-M27-001: Polish the admin books table actions column.
-- T-M27-002: Prevent long edit/delete labels from creating bulky multi-line
-  buttons.
-- T-M27-003: Preserve backend/API, auth, sorting, filtering, pagination,
-  localization, and destructive-action behavior.
+- T-M27-002: Prevent long edit/delete labels from creating bulky multi-line buttons.
+- T-M27-003: Preserve backend/API, auth, sorting, filtering, pagination, localization, and destructive-action behavior.
 
 Acceptance Criteria:
 
@@ -728,16 +680,11 @@ Labels: `type:epic`, `status:done`, `plan:PLAN-frontend-release-procedure-execut
 
 Tasks:
 
-- T-DOC-001: Add `docs/DEVELOPMENT_LIFECYCLE.md` for human-facing lifecycle and
-  artifact routing.
-- T-DOC-002: Add `docs/LOCAL_DEVELOPMENT.md` for npm commands, CI reproduction,
-  local troubleshooting, backend-contract refresh, browser smoke workflow, and
-  hardening commands.
-- T-DOC-003: Add `docs/WORKING_WITH_AI.md` for human guidance on AI planning,
-  implementation, validation, review, and release preparation.
+- T-DOC-001: Add `docs/DEVELOPMENT_LIFECYCLE.md` for human-facing lifecycle and artifact routing.
+- T-DOC-002: Add `docs/LOCAL_DEVELOPMENT.md` for npm commands, CI reproduction, local troubleshooting, backend-contract refresh, browser smoke workflow, and hardening commands.
+- T-DOC-003: Add `docs/WORKING_WITH_AI.md` for human guidance on AI planning, implementation, validation, review, and release preparation.
 - T-DOC-004: Add `docs/README.md` as the human-facing documentation index.
-- T-DOC-005: Add focused AI references for documentation, testing, reviews, and
-  releases.
+- T-DOC-005: Add focused AI references for documentation, testing, reviews, and releases.
 
 Acceptance Criteria:
 
@@ -750,19 +697,13 @@ Labels: `type:epic`, `status:done`, `plan:PLAN-frontend-release-procedure-execut
 
 Tasks:
 
-- T-HARDEN-ARCHIVE-001: Add explicit GitHub Actions permissions and concurrency
-  controls on every workflow.
-- T-HARDEN-ARCHIVE-002: Add CodeQL for TypeScript/JavaScript source and GitHub
-  workflow analysis.
-- T-HARDEN-ARCHIVE-003: Add dependency-review with private-repository advisory
-  mode.
-- T-HARDEN-ARCHIVE-004: Add an npm-compatible audit script using a high-or-critical
-  advisory threshold.
-- T-HARDEN-ARCHIVE-005: Add Dependabot groups for runtime dependencies,
-  tooling/test dependencies, and Actions updates.
+- T-HARDEN-ARCHIVE-001: Add explicit GitHub Actions permissions and concurrency controls on every workflow.
+- T-HARDEN-ARCHIVE-002: Add CodeQL for TypeScript/JavaScript source and GitHub workflow analysis.
+- T-HARDEN-ARCHIVE-003: Add dependency-review with private-repository advisory mode.
+- T-HARDEN-ARCHIVE-004: Add an npm-compatible audit script using a high-or-critical advisory threshold.
+- T-HARDEN-ARCHIVE-005: Add Dependabot groups for runtime dependencies, tooling/test dependencies, and Actions updates.
 
 Acceptance Criteria:
 
 - M13-A selected the smallest useful hardening set for the `0.1.0` hardening pass.
-- M13-B implemented the checks without adding deferred artifact, credential,
-  threshold, or custom-rule gates.
+- M13-B implemented the checks without adding deferred artifact, credential, threshold, or custom-rule gates.

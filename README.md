@@ -1,39 +1,23 @@
 # Technical Interview Frontend
 
-[![CI](https://github.com/kamkie/technical-interview-frontend/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kamkie/technical-interview-frontend/actions/workflows/ci.yml)
-[![Codecov](https://codecov.io/gh/kamkie/technical-interview-frontend/graph/badge.svg)](https://codecov.io/gh/kamkie/technical-interview-frontend)
-[![Latest release](https://img.shields.io/github/v/release/kamkie/technical-interview-frontend?sort=semver)](https://github.com/kamkie/technical-interview-frontend/releases)
-[![Node.js](https://img.shields.io/badge/node.js-24.x-blue)](package.json)
+[![CI](https://github.com/kamkie/technical-interview-frontend/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kamkie/technical-interview-frontend/actions/workflows/ci.yml) [![Codecov](https://codecov.io/gh/kamkie/technical-interview-frontend/graph/badge.svg)](https://codecov.io/gh/kamkie/technical-interview-frontend) [![Latest release](https://img.shields.io/github/v/release/kamkie/technical-interview-frontend?sort=semver)](https://github.com/kamkie/technical-interview-frontend/releases) [![Node.js](https://img.shields.io/badge/node.js-24.x-blue)](package.json)
 
-Technical Interview Frontend is the first-party browser UI for the sibling
-`technical-interview-demo` backend. It consumes the backend's compact `/api/**`
-surface, session-cookie authentication, CSRF metadata, localization behavior, and
-published OpenAPI contract.
+Technical Interview Frontend is the first-party browser UI for the sibling `technical-interview-demo` backend. It consumes the backend's compact `/api/**` surface, session-cookie authentication, CSRF metadata, localization behavior, and published OpenAPI contract.
 
 ## Status
 
-The repository contains a Vite, React, and TypeScript app for the published
-`v0.2.0` release.
+The repository contains a Vite, React, and TypeScript app for the published `v0.2.0` release.
 
-Implemented surface includes session bootstrap, metadata-driven login/logout
-controls, public catalog flows, account profile and language preference flows, admin
-catalog/localization/user-management surfaces, and the operator overview/audit-log
-surface. The repo also includes anonymous same-origin smoke automation,
-fake-OAuth auth-smoke readiness guidance, API coverage evidence, and advisory
-container/deployment hardening commands.
+Implemented surface includes session bootstrap, metadata-driven login/logout controls, public catalog flows, account profile and language preference flows, admin catalog/localization/user-management surfaces, and the operator overview/audit-log surface. The repo also includes anonymous same-origin smoke automation, fake-OAuth auth-smoke readiness guidance, API coverage evidence, and advisory container/deployment hardening commands.
 
 ## Documentation
 
 Start with the human documentation index:
 
 - [docs/README.md](docs/README.md) - documentation map and ownership rules
-- [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md) - setup, npm commands, CI
-  reproduction, troubleshooting, contract refresh, and smoke workflow
-- [docs/DEVELOPMENT_LIFECYCLE.md](docs/DEVELOPMENT_LIFECYCLE.md) - lifecycle,
-  artifact routing, and when to use roadmap rows, specs, plans, ADRs, and changelog
-  entries
-- [docs/WORKING_WITH_AI.md](docs/WORKING_WITH_AI.md) - human guidance for AI-assisted
-  planning, implementation, validation, review, and release preparation
+- [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md) - setup, npm commands, CI reproduction, troubleshooting, contract refresh, and smoke workflow
+- [docs/DEVELOPMENT_LIFECYCLE.md](docs/DEVELOPMENT_LIFECYCLE.md) - lifecycle, artifact routing, and when to use roadmap rows, specs, plans, ADRs, and changelog entries
+- [docs/WORKING_WITH_AI.md](docs/WORKING_WITH_AI.md) - human guidance for AI-assisted planning, implementation, validation, review, and release preparation
 
 Other useful entry points:
 
@@ -47,19 +31,16 @@ Other useful entry points:
 
 ## Quick Start
 
-Prerequisites are Node.js 24.x and npm 11.x. The canonical package manager is pinned
-in `package.json`.
+Prerequisites are Node.js 24.x and npm 11.x. The canonical package manager is pinned in `package.json`.
 
 ```powershell
 npm install
 npm run dev
 ```
 
-The dev server binds to `http://127.0.0.1:5173/`. Full local workflow and validation
-commands live in [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md).
+The dev server binds to `http://127.0.0.1:5173/`. Full local workflow and validation commands live in [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md).
 
-Build the production container image when validating Docker or release workflow
-changes:
+Build the production container image when validating Docker or release workflow changes:
 
 ```powershell
 npm run docker:build
@@ -67,8 +48,4 @@ npm run docker:build
 
 ## Backend Contract
 
-Backend-facing frontend work must follow the imported contract artifacts in
-[docs/backend/](docs/backend/). Do not invent endpoints, request fields,
-authentication headers, CORS requirements, or alternate transports. Contract refresh
-and API type commands are owned by
-[docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md).
+Backend-facing frontend work must follow the imported contract artifacts in [docs/backend/](docs/backend/). Do not invent endpoints, request fields, authentication headers, CORS requirements, or alternate transports. Contract refresh and API type commands are owned by [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md).
