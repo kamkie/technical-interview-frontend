@@ -5,28 +5,32 @@ This roadmap tracks the planned first-party browser frontend for the sibling
 
 ## Current Baseline
 
-| Field               | Current                                                                              |
-|---------------------|--------------------------------------------------------------------------------------|
-| Release phase       | Pre-release foundation                                                               |
-| Next target version | `0.1.0`                                                                              |
-| Frontend stack      | Vite + React + TypeScript                                                            |
-| Runtime             | Node.js 24.x, npm 11.x                                                               |
-| Routing target      | React Router                                                                         |
-| CI target           | GitHub Actions                                                                       |
-| Backend integration | Same-origin `/api/**` browser traffic                                                |
-| Contract source     | `docs/backend/approved-openapi.json` and `docs/backend/FRONTEND_AI_CONTRACT.md`      |
-| Implemented surface | Session bootstrap, login-provider rendering, public catalog table, local auth docs, CI validation |
-| Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check` |
+| Field               | Current                                                                                   |
+|---------------------|-------------------------------------------------------------------------------------------|
+| Release phase       | Pre-release `0.1.0` feature-complete stabilization                                        |
+| Next target version | `0.1.0` release hardening                                                                 |
+| Frontend stack      | Vite + React + TypeScript                                                                 |
+| Runtime             | Node.js 24.x, npm 11.x                                                                    |
+| Routing target      | React Router                                                                              |
+| CI target           | GitHub Actions                                                                            |
+| Backend integration | Same-origin `/api/**` browser traffic                                                     |
+| Contract source     | `docs/backend/approved-openapi.json` and `docs/backend/FRONTEND_AI_CONTRACT.md`           |
+| Implemented surface | Session, public catalog, account, admin catalog, admin localization, admin users, operator |
+| Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`      |
 
 The app currently bootstraps browser session state with `GET /api/session`, renders
-login options from session metadata, generates checked OpenAPI TypeScript types, shows
-a simple public catalog table for books and categories with contract-shaped
-pagination, repeated filters, and localized backend error display, documents local
-same-origin auth smoke steps, and runs the canonical validation baseline in CI.
+login options from session metadata, generates checked OpenAPI TypeScript types,
+routes public catalog state through React Router query strings, supports
+authenticated session/logout and route guards, exposes account profile and language
+preference flows, and implements the selected admin/operator surfaces. Local
+same-origin auth smoke steps and the canonical validation baseline are documented.
+The M0-M11 roadmap slice is implemented and recorded in
+`.agents/plans/PLAN_frontend_roadmap_execution.md`; the next roadmap work is release
+hardening and any newly selected backend-supported scope.
 
 ## Product Direction
 
-- Build a contract-first browser UI for the backend's supported public,
+- Keep extending the contract-first browser UI only for backend-supported public,
   authenticated-account, and admin/operator API surfaces.
 - Keep integration same-origin and session-cookie based.
 - Prefer thin route/page experiences backed by a small shared API client layer.
@@ -41,44 +45,54 @@ same-origin auth smoke steps, and runs the canonical validation baseline in CI.
 | M0 - Foundation                   | Complete    | Project scaffold, generated API types, session bootstrap, public catalog reads                           | Existing validation baseline passes and the app can render session plus catalog states from `/api/session`, `/api/books`, and `/api/categories`           |
 | M1 - CI and Quality Gate          | Complete    | GitHub Actions workflow for canonical npm validation commands                                            | CI runs lint, typecheck, tests, build, and whitespace checks on pull requests or the selected branch workflow                                             |
 | M2 - Simple Public Catalog UX     | Complete    | Basic table layout with read-only search, filters, pagination, loading, empty, localized errors, and mock/test fixtures for each visible state | Users can scan and filter public books without relying on implementation placeholders; component tests cover fixture-backed visible states                |
-| M3 - Advanced Catalog Controls    | Next        | React Router route-level navigation with browser history expectations, richer table controls, URL-synced filters, sorting UI, and deeper catalog state handling | Users can share filtered catalog URLs, adjust sorting through the UI, navigate with browser back/forward controls, and use richer table controls with tests covering route/query-state synchronization |
+| M3 - Advanced Catalog Controls    | Complete    | React Router route-level navigation with browser history expectations, richer table controls, URL-synced filters, sorting UI, and deeper catalog state handling | Users can share filtered catalog URLs, adjust sorting through the UI, navigate with browser back/forward controls, and use richer table controls with tests covering route/query-state synchronization |
 | M4 - Local Auth Workflow Docs     | Complete    | Document repeatable local same-origin auth against `..\technical-interview-demo`, including backend startup, Vite `/api` proxy wiring, OAuth setup, manual smoke steps, and automation limits | `SETUP.md` links to a local auth smoke doc covering `local,oauth` startup, provider credentials, admin identity seeding, session/account/logout checks, CSRF handling, and anonymous-vs-authenticated automation policy |
-| M5 - Authenticated Session UX     | Planned     | Account-aware header/state, logout flow, and route guarding for authenticated-only areas                 | UI refreshes session after login/logout paths, mirrors CSRF metadata for unsafe authenticated writes, and has smoke or e2e coverage based on the documented local workflow |
-| M6 - Account Profile Surface      | Planned     | Read-only account profile page plus account-aware menu/header                                            | Account UI only appears after session bootstrap establishes the current user and tests cover unauthenticated and authenticated states                     |
-| M7 - Account Language Preference  | Planned     | Account self-service flow for reading, updating, and clearing the current user's preferred language      | Users can update or clear the contract-backed account language preference with CSRF handling and tests for loading, success, validation/error, unauthenticated, and missing-CSRF states |
-| M8 - Admin Catalog Management     | Planned     | Combined backend-supported admin book and category management                                            | Combined book/category admin scope is selected from the imported backend contract, split into a small spec, and covered by tests for list, create, update, delete, and error states |
-| M9 - Admin Localization Management | Planned    | Backend-supported localization message-key editing plus locale coverage/status                           | Localization admin scope is selected from the imported backend contract, split into a small spec, and covered by tests for supported locales, message edits, coverage/status states, and localized failures |
-| M10 - Operator Audit Surface      | Planned     | Read-only operator overview plus pageable audit log with filters for target type, action, and actor      | Operators can inspect runtime/status summaries, recent audit entries, filtered pageable audit rows, and audit details with tests for access, loading, empty, filtered, paginated, localized error, and partial-payload states |
-| M11 - Admin User Management       | Planned     | Admin user list/detail with contract-backed role management                                              | Admins can review user profiles, roles, and role-grant provenance, then replace managed roles with CSRF handling and tests for access, empty, success, validation, localized error, and missing-CSRF states |
+| M5 - Authenticated Session UX     | Complete    | Account-aware header/state, logout flow, and route guarding for authenticated-only areas                 | UI refreshes session after login/logout paths, mirrors CSRF metadata for unsafe authenticated writes, and has smoke or e2e coverage based on the documented local workflow |
+| M6 - Account Profile Surface      | Complete    | Read-only account profile page plus account-aware menu/header                                            | Account UI only appears after session bootstrap establishes the current user and tests cover unauthenticated and authenticated states                     |
+| M7 - Account Language Preference  | Complete    | Account self-service flow for reading, updating, and clearing the current user's preferred language      | Users can update or clear the contract-backed account language preference with CSRF handling and tests for loading, success, validation/error, unauthenticated, and missing-CSRF states |
+| M8 - Admin Catalog Management     | Complete    | Combined backend-supported admin book and category management                                            | Combined book/category admin scope is selected from the imported backend contract, split into a small spec, and covered by tests for list, create, update, delete, and error states |
+| M9 - Admin Localization Management | Complete   | Backend-supported localization message-key editing plus locale coverage/status                           | Localization admin scope is selected from the imported backend contract, split into a small spec, and covered by tests for supported locales, message edits, coverage/status states, and localized failures |
+| M10 - Operator Audit Surface      | Complete    | Read-only operator overview plus pageable audit log with filters for target type, action, and actor      | Operators can inspect runtime/status summaries, recent audit entries, filtered pageable audit rows, and audit details with tests for access, loading, empty, filtered, paginated, localized error, and partial-payload states |
+| M11 - Admin User Management       | Complete    | Admin user list/detail with contract-backed role management                                              | Admins can review user profiles, roles, and role-grant provenance, then replace managed roles with CSRF handling and tests for access, empty, success, validation, localized error, and missing-CSRF states |
 
 ## Near-Term Backlog
 
-1. Add React Router catalog navigation with URL-synced filters, sorting UI, and
-   browser history behavior.
-2. Implement authenticated session UX against the documented local auth workflow.
-3. Introduce a shared mutation helper only when the first unsafe write is implemented.
-4. Revisit account self-service and the first admin/operator slice after account
-   profile and CSRF behavior are proven in the frontend.
+1. Run a `0.1.0` release-hardening pass: reconcile stale public docs with the
+   implemented surface, decide whether release history starts in `CHANGELOG.md`, and
+   verify package metadata before tagging.
+2. Add a canonical browser smoke or e2e command for same-origin session/auth flows
+   once the repository has agreed local credentials, backend profile, and identity
+   seeding rules.
+3. Exercise the documented local auth smoke workflow against the sibling backend and
+   move repeatable gaps into tests or owner docs.
+4. Add M12+ roadmap rows only when a new backend-supported surface, UX polish slice,
+   or release workflow is selected clearly enough to test or document.
 
 ## Pragmatic Smoke Split
 
-- Public catalog milestones can use anonymous browser smoke or e2e coverage against
-  the sibling backend at `..\technical-interview-demo`, validating session bootstrap,
-  categories, books, filters, pagination, and localized read errors.
-- Authenticated session and logout coverage should wait for M4's documented local
-  backend auth workflow. Once that workflow exists, browser coverage should exercise
-  login-provider rendering from session metadata, session refresh after login/logout,
-  and CSRF handling for unsafe authenticated writes.
+- Unit and component tests cover the current public, account, admin, and operator
+  route behavior.
+- Public catalog browser smoke can run anonymously against the sibling backend at
+  `..\technical-interview-demo`, validating session bootstrap, categories, books,
+  filters, pagination, sorting, and localized read errors.
+- Authenticated browser smoke remains manual until there is a canonical command and
+  agreed local credentials. Once automated, it should exercise login-provider
+  rendering from session metadata, session refresh after login/logout, CSRF handling
+  for unsafe authenticated writes, and authenticated access for account,
+  admin/operator routes.
 
 ## Implementation Defaults
 
-- Roadmap implementation is coordinated by
+- Completed M0-M11 roadmap implementation is recorded in
   `.agents/plans/PLAN_frontend_roadmap_execution.md`.
+- New M12+ implementation plans should identify the owner document, backend contract
+  source, tests, and validation before implementation starts.
 - M1 CI lives at `.github/workflows/ci.yml`, triggers on pull requests and pushes to
   `main`, uses Node.js 24.x with `npm ci`, and runs lint, typecheck, tests, build, and
   `git diff --check`.
 - M2 table columns are title, author, publication year, ISBN, and categories.
-  Pagination stays button-based in M2; richer table controls belong to M3.
+  M3 adds URL-synced filters, sorting, page-size controls, and browser history
+  behavior.
 - M2 fixture-backed visible states use shared fixtures under `src/test/fixtures/`,
   covering loading, populated, empty, filtered, paginated, localized book error, and
   category error states.
@@ -86,13 +100,16 @@ same-origin auth smoke steps, and runs the canonical validation baseline in CI.
   `SETUP.md`.
 - M4 local same-origin development uses a Vite `/api` proxy to
   `http://localhost:8080` for the backend running from `..\technical-interview-demo`.
+- M8-M11 admin/operator scope is specified under `docs/specs/`; future admin/operator
+  expansion should update or add specs before implementation.
 
 ## Deferred Scope
 
 - Alternate API transports, cross-origin browser support, JWT, and bearer-token auth.
 - Hard-coded OAuth provider paths outside the session bootstrap response.
-- Admin/operator workflows outside the selected milestone and spec scope.
+- New backend surfaces not yet selected in a roadmap row or spec.
 - Broad visual design work that is not tied to an implemented user flow.
+- Release automation or deployment workflow until explicitly selected.
 
 ## Roadmap Rules
 
