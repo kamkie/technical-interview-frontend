@@ -83,6 +83,40 @@ describe('AdminCatalogPage', () => {
     expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled()
   })
 
+  it('keeps long-title book row actions compact while preserving specific names', async () => {
+    mockAdminFetch({
+      books: createBookPage({
+        content: [
+          createBook({
+            id: 99,
+            title: 'Manual Regression Book no-tag',
+            categories: [],
+          }),
+        ],
+        numberOfElements: 1,
+        totalElements: 1,
+      }),
+    })
+
+    renderAdminCatalog()
+
+    const titleCell = await screen.findByRole('rowheader', {
+      name: 'Manual Regression Book no-tag',
+    })
+    const row = titleCell.closest('tr')
+    expect(row).not.toBeNull()
+
+    const editButton = within(row as HTMLTableRowElement).getByRole('button', {
+      name: 'Edit Manual Regression Book no-tag',
+    })
+    const deleteButton = within(row as HTMLTableRowElement).getByRole('button', {
+      name: 'Delete Manual Regression Book no-tag',
+    })
+
+    expect(editButton).toHaveTextContent(/^Edit$/)
+    expect(deleteButton).toHaveTextContent(/^Delete$/)
+  })
+
   it('keeps authenticated non-admin users away from mutation controls', async () => {
     const fetchMock = mockAdminFetch({
       account: createAccount({

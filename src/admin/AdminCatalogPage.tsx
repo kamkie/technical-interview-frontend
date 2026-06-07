@@ -1066,7 +1066,7 @@ function AdminBookResults({
               <th className="plain-column-header" scope="col">
                 Categories
               </th>
-              <th className="plain-column-header" scope="col">
+              <th className="plain-column-header admin-books-actions-header" scope="col">
                 Actions
               </th>
             </tr>
@@ -1122,17 +1122,23 @@ function AdminBookRow({
       <td>{book.publicationYear ?? 'Unknown'}</td>
       <td>{book.isbn ?? 'Unknown'}</td>
       <td>{categories.length > 0 ? categories.join(', ') : 'None'}</td>
-      <td>
-        <div className="row-actions">
-          <button type="button" onClick={() => onEditBook(book)}>
-            Edit {title}
+      <td className="admin-books-actions-cell">
+        <div className="row-actions admin-books-row-actions">
+          <button
+            type="button"
+            className="admin-books-action-button"
+            aria-label={`Edit ${title}`}
+            onClick={() => onEditBook(book)}
+          >
+            Edit
           </button>
           <button
             type="button"
-            className="danger-button"
+            className="danger-button admin-books-action-button"
+            aria-label={`Delete ${title}`}
             onClick={() => onDeleteBook(book)}
           >
-            Delete {title}
+            Delete
           </button>
         </div>
       </td>
