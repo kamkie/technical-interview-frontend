@@ -14,6 +14,7 @@ repository.
 | Completed roadmap archive | [`docs/ROADMAP_ARCHIVE.md`](ROADMAP_ARCHIVE.md) |
 | Released and candidate history | [`CHANGELOG.md`](../CHANGELOG.md) |
 | Contributor entry point | [`CONTRIBUTING.md`](../CONTRIBUTING.md) |
+| Vulnerability reporting policy | [`SECURITY.md`](../SECURITY.md) |
 | Imported backend contract artifacts | [`docs/backend/`](backend/) |
 | Selected behavior specs | [`docs/specs/`](specs/) |
 

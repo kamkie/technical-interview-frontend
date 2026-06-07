@@ -33,6 +33,7 @@ Other useful entry points:
 - [ROADMAP.md](ROADMAP.md) - selected scope, release state, and deferred work
 - [CHANGELOG.md](CHANGELOG.md) - released and candidate history
 - [CONTRIBUTING.md](CONTRIBUTING.md) - contributor orientation
+- [SECURITY.md](SECURITY.md) - vulnerability reporting and supported security-fix lines
 - [docs/backend/](docs/backend/) - imported backend contract artifacts
 - [docs/specs/](docs/specs/) - selected admin/operator behavior specs
 
