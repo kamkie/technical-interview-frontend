@@ -25,7 +25,7 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 - Release phase: Post-`0.2.0` maintenance.
 - Next target version: Future maintenance release; final scope and version selected before release prep.
 - Current priority: M-UI-001: Production UI Foundation.
-- Active product plan: `PLAN-workflow-polish` is checked in for `M-WORKFLOW-001` planning; execution waits for `M-UI-001`.
+- Active product plans: `PLAN-workflow-polish` is checked in for `M-WORKFLOW-001` planning and `PLAN-responsive-layout-smoke-evidence` is checked in for `M-SMOKE-001` planning; execution stays ordered by milestone dependencies.
 - Selection policy: Breaking user-facing or backend-contract integration changes require a selected roadmap item.
 
 ## Product Direction
@@ -169,7 +169,9 @@ Acceptance Criteria:
 
 ### M-SMOKE-001: Responsive Layout And Smoke Evidence
 
-Labels: `type:milestone`, `status:waiting`
+Labels: `type:milestone`, `status:waiting`, `plan:PLAN-responsive-layout-smoke-evidence`
+
+Plan ID: `PLAN-responsive-layout-smoke-evidence`
 
 Goal: Keep redesigned workflows usable across viewports and add repeatable browser smoke evidence for the most important routes.
 
