@@ -103,18 +103,6 @@ Initial context budget:
 - Escalate to:
   - Exact owner guides, source files, specs, validation output, browser evidence, or backend contract artifacts allowed only when an escalation trigger fires.
 
-Allowed inputs:
-
-- Files and artifacts named in `Read first`.
-- Files and artifacts named in `Escalate to` only after an escalation trigger fires.
-
-Forbidden inputs:
-
-- Unrelated archived plans.
-- Unrelated roadmap archive entries.
-- Previous worker chat beyond the coordinator handoff summary.
-- Implementation evidence from unrelated task packets.
-
 Write scope:
 
 - Exact files or directories this task may edit, or `read-only` for design, exploration, testing, and review packets without assigned artifact edits.

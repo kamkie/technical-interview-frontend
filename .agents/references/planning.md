@@ -28,7 +28,7 @@ Plans should include:
 - assumptions, open questions, proposed changes, and accepted fallbacks
 - contract and repository invariants, without copying detailed backend schemas or endpoint rules
 - progress tracker with each task packet's `Ready`, `Waiting`, `Blocked`, or `Complete` state
-- task packets with lane, goal, initial context budget, allowed and forbidden inputs, write scope, dependencies, validation, escalation triggers, stop conditions, expected output, and result summary
+- task packets with lane, goal, initial context budget, write scope, dependencies, validation, escalation triggers, stop conditions, expected output, and result summary
 - execution model, long-run continuity, and Mermaid execution graph
 - blockers and replan triggers
 - validation plan and review expectations
@@ -73,7 +73,7 @@ Keep planned downstream work as `Waiting` when it only depends on earlier select
 
 ## Task Packets
 
-Use task packets as the default worker dispatch contract for active-plan work. Each task packet must name exact read-first context, escalation-only context, forbidden inputs, write scope, validation, stop conditions, and expected output. Exploration, design, testing, and review packets should be `read-only` unless the plan explicitly assigns draft or test artifact edits.
+Use task packets as the default worker dispatch contract for active-plan work. Each task packet must name exact read-first context, escalation-only context, write scope, validation, stop conditions, and expected output. Exploration, design, testing, and review packets should be `read-only` unless the plan explicitly assigns draft or test artifact edits.
 
 Use inline packets for ordinary plans. Link child packet files only when the parent plan would become difficult to scan, such as more than six worker-owned tasks, multiple parallel waves, or an expected parent-plan length above roughly 200 lines after packeting.
 

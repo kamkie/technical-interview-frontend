@@ -118,18 +118,6 @@ Initial context budget:
 - Escalate to:
   - `src/App.tsx`, affected route tests, affected route source, and focused references only when readiness cannot be decided from the roadmap and completed diffs.
 
-Allowed inputs:
-
-- Files named in `Read first`.
-- Files named in `Escalate to` only after an escalation trigger fires.
-
-Forbidden inputs:
-
-- Unrelated archived plans.
-- Unrelated roadmap archive entries.
-- Previous worker chat beyond the coordinator handoff summary.
-- Implementation evidence from unrelated task packets.
-
 Write scope:
 
 - `.agents/plans/PLAN_workflow_polish.md`.
@@ -195,18 +183,6 @@ Initial context budget:
   - `AGENTS.md`, `docs/DESIGN.md`, `ROADMAP.md` `E-STATE-001`, `.agents/references/architecture.md`, `.agents/references/code-style.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, current route/component tests, and existing state helpers in `src/ui/`.
 - Escalate to:
   - Affected route components in `src/catalog/`, `src/account/`, `src/admin/`, and `src/operator/`; `src/api/` modules; `docs/backend/`; specs for changed routes.
-
-Allowed inputs:
-
-- Files named in `Read first`.
-- Files named in `Escalate to` only after an escalation trigger fires.
-
-Forbidden inputs:
-
-- Unrelated archived plans.
-- Unrelated roadmap archive entries.
-- Previous worker chat beyond the coordinator handoff summary.
-- Implementation evidence from unrelated task packets.
 
 Write scope:
 
@@ -282,18 +258,6 @@ Initial context budget:
 - Escalate to:
   - Affected route components and tests; Browser review evidence when local layout verification is needed.
 
-Allowed inputs:
-
-- Files named in `Read first`.
-- Files named in `Escalate to` only after an escalation trigger fires.
-
-Forbidden inputs:
-
-- Unrelated archived plans.
-- Unrelated roadmap archive entries.
-- Previous worker chat beyond the coordinator handoff summary.
-- Implementation evidence from unrelated task packets beyond P1 summary.
-
 Write scope:
 
 - `src/App.tsx`.
@@ -366,18 +330,6 @@ Initial context budget:
   - `AGENTS.md`, `ROADMAP.md` `E-CATALOG-001`, `docs/DESIGN.md`, `docs/specs/SPEC_public_catalog_workflow_polish.md`, `docs/specs/SPEC_admin_catalog_management.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and P1/P2 result summaries.
 - Escalate to:
   - `docs/backend/`, `src/catalog/`, `src/admin/AdminCatalogPage.tsx`, `src/test/fixtures/catalog.ts`, focused CSS selectors, and matching tests.
-
-Allowed inputs:
-
-- Files named in `Read first`.
-- Files named in `Escalate to` only after an escalation trigger fires.
-
-Forbidden inputs:
-
-- Unrelated archived plans.
-- Unrelated roadmap archive entries.
-- Previous worker chat beyond the coordinator handoff summary.
-- Implementation evidence from unrelated task packets beyond P1/P2 summaries.
 
 Write scope:
 
@@ -453,18 +405,6 @@ Initial context budget:
 - Escalate to:
   - `docs/backend/`, `src/admin/AdminLocalizationPage.tsx`, `src/admin/AdminUsersPage.tsx`, `src/operator/OperatorPage.tsx`, matching tests, and focused CSS selectors.
 
-Allowed inputs:
-
-- Files named in `Read first`.
-- Files named in `Escalate to` only after an escalation trigger fires.
-
-Forbidden inputs:
-
-- Unrelated archived plans.
-- Unrelated roadmap archive entries.
-- Previous worker chat beyond the coordinator handoff summary.
-- Implementation evidence from unrelated task packets beyond P1/P2 summaries.
-
 Write scope:
 
 - `src/admin/AdminLocalizationPage.tsx`.
@@ -538,18 +478,6 @@ Initial context budget:
   - `AGENTS.md`, `ROADMAP.md` `E-AUTH-001`, `docs/DESIGN.md`, `docs/backend/`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and P1/P2 result summaries.
 - Escalate to:
   - `src/App.tsx`, `src/account/AccountProfile.tsx`, `src/api/session.ts`, `src/api/session.test.ts`, matching app/account tests, and focused CSS selectors.
-
-Allowed inputs:
-
-- Files named in `Read first`.
-- Files named in `Escalate to` only after an escalation trigger fires.
-
-Forbidden inputs:
-
-- Unrelated archived plans.
-- Unrelated roadmap archive entries.
-- Previous worker chat beyond the coordinator handoff summary.
-- Implementation evidence from unrelated task packets beyond P1/P2 summaries.
 
 Write scope:
 
@@ -625,17 +553,6 @@ Initial context budget:
   - `AGENTS.md`, `ROADMAP.md`, `docs/DESIGN.md`, `docs/specs/`, `.agents/references/documentation.md`, `.agents/references/roadmap.md`, `.agents/references/testing.md`, and `.agents/references/reviews.md`.
 - Escalate to:
   - Full diff from P1-P5, validation logs, source files, tests, and focused references needed to resolve owner drift.
-
-Allowed inputs:
-
-- Files named in `Read first`.
-- Files named in `Escalate to` only after an escalation trigger fires.
-
-Forbidden inputs:
-
-- Unrelated archived plans.
-- Unrelated roadmap archive entries except when archive readiness is explicitly selected.
-- Previous worker chat beyond coordinator handoff summaries.
 
 Write scope:
 
