@@ -11,6 +11,8 @@ skipped check with the reason.
 | Docs or AI guidance only | `git diff --check` |
 | App source, tests, package scripts, tool config, or workflow behavior | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check` |
 | Dockerfile, Nginx runtime config, or container release workflow | Full baseline, `npm run docker:build`, and a container smoke check when runtime behavior changes; record Docker unavailability explicitly |
+| M20 hardening selection docs | `git diff --check` |
+| M20 hardening tooling or runtime changes | Full baseline, `npm run docker:build`, selected Trivy image scan, selected kube-linter rendered-manifest checks, selected runtime/Nginx check, and `git diff --check`; keep finding gates advisory until a later threshold is selected |
 | Backend contract refresh | `./scripts/sync-backend-contract.ps1`, regenerate with `npm run api:types`, then `git diff --check` |
 | API type workflow changes without a contract refresh | `npm run api:types:check`, plus the full baseline if scripts or executable files changed |
 | Backend API integration behavior | Contract artifacts are current, generated types are current, affected tests pass, and the full baseline passes |
@@ -59,6 +61,20 @@ Dependabot PR creation is an operational maintenance signal, not a blocking comm
 for every local validation run. A Dependabot security update tied to a high or
 critical advisory should be handled through the audit/dependency-review triage path.
 
+## Selected M20 Hardening Evidence
+
+M20's first pass is advisory. Evidence comes from local command output, pull-request
+logs, or workflow logs rather than checked-in generated reports. The selected tools
+are Trivy for the production container image, kube-linter for rendered Kustomize and
+Helm manifests, and a repo-owned runtime/Nginx check for `Dockerfile` plus
+`docker/nginx/` invariants.
+
+Tool installation, rendering, or check configuration failures should be fixed or
+recorded as unavailable. Vulnerability, posture, and runtime findings should be
+triaged, but they are not release-blocking until a later roadmap row or release
+decision selects stable severity/posture thresholds and an enforced exception
+workflow.
+
 ## Validation Boundaries
 
 Run broader validation when a docs task also changes package scripts, workflows,
@@ -66,7 +82,9 @@ source code, generated files, test behavior, or release-candidate metadata that 
 match executable evidence.
 
 Do not make a future hardening candidate release-blocking until it has a repeatable
-local command or a clearly owned CI signal with triage and skip rules.
+local command or a clearly owned CI signal with triage and skip rules. For M20, do
+not move from advisory to release-blocking until one stable baseline exists and the
+enforced threshold has been selected.
 
 For selected M13 checks, exceptions must be scoped to a finding or advisory and must
 include an owner, mitigation or planned fix, expiration or revisit trigger, and the

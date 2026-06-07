@@ -24,7 +24,7 @@ archived in `docs/ROADMAP_ARCHIVE.md`. Released history belongs in `CHANGELOG.md
 | Implemented surface | Session, public catalog, account, admin catalog, admin localization, admin users, operator |
 | Hardening baseline  | ESLint, TypeScript, Vitest, API type freshness, build, Docker build, whitespace, npm audit, CodeQL, dependency-review, Dependabot, and release image signing/provenance |
 | Latest release      | Local `v0.1.0` release cut on 2026-06-07; not published remotely                           |
-| Immediate action    | Start M16 contract coverage, post-`0.1.0` scope audit, and selected container/deployment hardening refinement |
+| Immediate action    | Start M16 contract coverage and implement the selected advisory M20 container/deployment hardening refinement |
 | Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`       |
 
 The app currently bootstraps browser session state with `GET /api/session`, renders
@@ -71,7 +71,7 @@ Status terms:
 | M17 - Anonymous Browser Smoke Automation | Waiting on M16 | Add a canonical browser smoke path for anonymous same-origin flows against the sibling backend through the Vite `/api` proxy. Cover session bootstrap, public categories/books, URL-backed filters, pagination, sorting, and localized public-read failures where reproducible. | A documented npm command or script exists, names backend/profile prerequisites, reports skipped backend-dependent steps clearly, and can run without credentials. Public smoke evidence is recorded in docs or test output. | Smoke command plus `git diff --check`; full baseline if package scripts, tooling, or app code change. |
 | M18 - Authenticated Smoke Automation Readiness | Blocked by missing agreed local credentials and identity seeding rules | Define the credential, backend profile, and admin identity seeding contract needed for repeatable authenticated smoke. Do not hard-code provider paths or secrets. | Owner docs name required environment variables or manual setup, expected ADMIN-capable identity, login-provider discovery from `GET /api/session`, logout CSRF handling, and skip behavior when credentials are unavailable. | `git diff --check`; later executable smoke work uses the full baseline and the selected smoke command. |
 | M19 - Public Catalog Workflow Polish | Waiting on M16 | Improve the already implemented public catalog workflow without backend changes: scan density, URL-state clarity, keyboard/focus behavior, accessible table controls, pagination/sort affordances, and localized loading/empty/error states. | A focused spec or roadmap note names the exact polish scope; component/route tests cover the changed visible states; anonymous smoke is updated if the workflow changes browser behavior. | Relevant tests plus full baseline for app changes. |
-| M20 - Container And Deployment Hardening Refinement | Ready | Select and implement the first frontend-owned hardening pass for the container image, GHCR package, checked-in `infra/` references, and runtime config. Include vulnerability scanning, deployment posture checks, and runtime hardening where the frontend repository owns the artifact; exclude backend application operations and environment-specific deployment promotion. | Owner docs and scripts or CI signals name the selected scanner/checks, evidence location, triage owner, exception path, and release-blocking threshold. Follow-on rows are opened if implementation scope is larger than a single coherent hardening pass. | `git diff --check` for docs-only refinement; full baseline, `npm run docker:build`, and selected scanner/posture commands when tooling or runtime files change. |
+| M20 - Container And Deployment Hardening Refinement | Ready | Implement the selected advisory first pass for frontend-owned hardening: Trivy scans the production container image, kube-linter checks rendered Kustomize and Helm manifests, and a repo-owned runtime/Nginx check covers `Dockerfile` plus `docker/nginx/` invariants. Exclude backend application operations, deployment promotion, and environment-specific platform policy. | Owner docs and scripts or CI signals name Trivy, kube-linter, the runtime/Nginx check, local command evidence, maintainer triage, exception handling, and advisory-only policy. Generated reports are not checked in during the first pass. Follow-on rows are opened before making findings release-blocking or adding persisted CI artifacts. | `git diff --check` for docs-only refinement; full baseline, `npm run docker:build`, Trivy image scan, kube-linter rendered-manifest checks, and the runtime/Nginx check when tooling or runtime files change. |
 | M21 - Login Provider Metadata Guardrail | Waiting on M16 | Audit login/session UI, docs, and tests for OAuth provider paths outside `GET /api/session` metadata. Remove unsupported constants if found and add focused coverage or owner-doc guidance that prevents regressions. | Auth entry points render providers from `loginProviders[]`; no provider path is hard-coded in frontend-owned code or docs outside backend-contract examples; coverage or owner docs make the constraint enforceable. | `git diff --check` for docs-only audit; relevant auth tests plus full baseline if source or test files change. |
 | M22 - Backend Surface Expansion Selection | Waiting on M16 | Convert M16 coverage gaps into one selected backend-supported surface slice before implementation. Use a roadmap row or focused spec to name the operation group, user-visible behavior, tests, and validation; do not invent endpoints or request fields. | The selected surface has an owner spec or roadmap row, operation coverage is recorded in `docs/API_COVERAGE.md`, route/user states and tests are named, and unselected surfaces remain classified for follow-up. | `git diff --check` for selection docs; API-facing validation and full baseline when implementation follows. |
 | M23 - Implemented Flow Visual Design Pass | Waiting on M16 | Select broad visual design work only when tied to implemented public, account, admin, or operator flows. Define the exact flows, accessibility/focus/responsive goals, test coverage, and browser evidence before changing app UI. | A selected visual pass is scoped to implemented user flows, covered by focused tests or browser evidence, and avoids backend/API behavior changes. | Relevant tests, browser screenshots or smoke for changed flows, and full baseline for app changes. |
@@ -82,8 +82,9 @@ Status terms:
 1. Execute M16 and promote the next ready M17, M19, M20, M21, M22, or M23 slice
    based on the coverage audit and selected hardening, auth, backend-surface, or
    visual-design scope.
-2. Refine M20 into a concrete frontend-owned scanner/posture/runtime hardening pass
-   with selected checks, evidence location, triage owner, and exception path.
+2. Implement M20 as the selected advisory Trivy, kube-linter, and runtime/Nginx
+   hardening pass with local command evidence, maintainer triage, and no checked-in
+   generated reports.
 3. Use M21 to turn login-provider metadata invariants into explicit audit evidence
    or regression coverage before expanding auth-related UI.
 4. Use M22 to select the next backend-supported surface from M16 coverage findings
@@ -167,11 +168,14 @@ triage and skip rules.
 Selected follow-up scope:
 
 - Container image vulnerability scanning, deployment posture checks, and runtime
-  infrastructure hardening: tracked by M20. The first pass selects scanner/posture
-  tools, frontend-owned targets, evidence location, triage owner, and exception path
-  for the Docker image, GHCR package, checked-in `infra/` references, and runtime
-  config. Make any gate release-blocking only after the command or CI signal is
-  repeatable and owned.
+  infrastructure hardening: tracked by M20. The first pass is advisory-only and uses
+  Trivy for the Docker image, kube-linter for rendered Kustomize and Helm manifests,
+  and a repo-owned runtime/Nginx check for `Dockerfile` plus `docker/nginx/`
+  invariants. Local or CI command output is the evidence location; generated
+  reports are not checked in during the first pass. Maintainers own triage and the
+  existing hardening exception path until a dedicated owner is selected. Make any
+  finding severity or posture gate release-blocking only after the command or CI
+  signal has one stable baseline and a reviewed exception workflow.
 
 Deferred candidates and revisit triggers:
 
@@ -187,12 +191,12 @@ Deferred candidates and revisit triggers:
   supply-chain policy or add automation that keeps pinned SHAs current.
 - Custom frontend security lint rules beyond CodeQL and ESLint: revisit when a
   repeated issue pattern is not covered by the selected checks.
-- CI artifact upload for hardening reports: revisit when a selected check writes
-  stable report files; until then, use code-scanning alerts, pull-request check
-  annotations, and workflow logs.
+- CI artifact upload for hardening reports: revisit when M20 or a later selected
+  check writes stable report files; until then, use code-scanning alerts,
+  pull-request check annotations, local command output, and workflow logs.
 Do not add backend-only hardening gates. Do not make selected container/deployment
-hardening release-blocking until the scanner or check, evidence location, triage
-owner, and exception workflow are selected.
+hardening release-blocking until one stable baseline exists and a severity or
+posture threshold has been selected.
 
 ## Release Procedure
 

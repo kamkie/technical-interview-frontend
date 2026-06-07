@@ -32,7 +32,7 @@ Change this value in a deployment-owned overlay or Helm values file when the bac
 service name, namespace, or gateway differs. Do not switch browser code to CORS,
 JWT, bearer tokens, hard-coded provider paths, or non-`/api/**` endpoints.
 
-## Render Checks
+## Render And Posture Checks
 
 Run these checks when changing the manifests and the tools are available:
 
@@ -43,6 +43,12 @@ helm template technical-interview-frontend infra/helm/technical-interview-fronte
 helm template technical-interview-frontend infra/helm/technical-interview-frontend -f infra/helm/technical-interview-frontend/values-local.yaml
 git diff --check
 ```
+
+The selected M20 deployment posture check uses kube-linter against rendered
+Kustomize and Helm output. Use the command sequence in
+[`docs/LOCAL_DEVELOPMENT.md`](../docs/LOCAL_DEVELOPMENT.md) so rendered manifests
+stay under ignored scratch space and generated reports are not checked in during the
+advisory first pass.
 
 These files are reference deployment assets, not a complete production runbook.
 Controller-specific TLS, WAF, rate limits, DNS, image promotion, and environment

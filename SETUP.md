@@ -3,7 +3,7 @@
 The setup owner for this frontend repository is
 [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md). Use it for prerequisites,
 npm commands, CI reproduction, troubleshooting, backend contract refresh, browser
-smoke workflow, and future hardening commands.
+smoke workflow, and selected hardening commands.
 
 ## Quick Start
 

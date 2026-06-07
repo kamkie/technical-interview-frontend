@@ -11,6 +11,8 @@ CI-owned hardening signals for the frontend repository.
 - Node.js 24.x
 - npm 11.x, matching `package.json` `packageManager` and `engines`
 - Docker, only when building or validating the production container image
+- Trivy, kube-linter, kubectl, and Helm when running the selected advisory M20
+  hardening checks locally
 - Optional sibling backend checkout at `..\technical-interview-demo` for contract
   refreshes and local browser smoke
 
@@ -102,6 +104,8 @@ promotion belong in deployment-owned overlays or platform policy.
 | Build | `npm run build` |
 | Build production container image | `npm run docker:build` |
 | Audit high-or-critical dependency advisories | `npm run audit:security` |
+| Advisory container vulnerability scan | `trivy image --exit-code 0 --severity HIGH,CRITICAL technical-interview-frontend` |
+| Advisory deployment posture check | Render `infra/` manifests and run `kube-linter lint temp/hardening` |
 | Generate API types | `npm run api:types` |
 | Verify API types without rewriting | `npm run api:types:check` |
 | Validate whitespace in the diff | `git diff --check` |
@@ -162,6 +166,11 @@ npm run docker:build
 
 If Docker is unavailable locally, record that explicitly and rely on the tag-driven
 release workflow only after maintainers accept the environment limitation.
+
+When M20 hardening tooling or runtime config changes, also run the selected
+advisory checks that apply to the changed artifact. Keep generated reports out of
+git during the first pass; local command output, pull-request logs, or workflow logs
+are the evidence location.
 
 ## Backend Contract Refresh
 
@@ -237,6 +246,45 @@ Implemented M13 checks:
   the repository owns a stable reviewer team or
   `CODEOWNERS`, review uses the normal maintainer path instead of named reviewers.
 
+Selected M20 advisory checks:
+
+- Container vulnerability scanning uses Trivy against the image built by
+  `npm run docker:build`. The first pass is advisory and keeps Trivy's exit code at
+  `0` for vulnerability findings:
+
+  ```powershell
+  npm run docker:build
+  trivy image --exit-code 0 --severity HIGH,CRITICAL technical-interview-frontend
+  ```
+
+- Deployment posture checks use kube-linter against rendered Kustomize and Helm
+  manifests. Write rendered manifests under ignored `temp/hardening`, review
+  findings, and delete the scratch directory when finished:
+
+  ```powershell
+  Remove-Item -Recurse -Force temp/hardening -ErrorAction SilentlyContinue
+  New-Item -ItemType Directory -Force temp/hardening | Out-Null
+  kubectl kustomize infra/k8s/base | Out-File -Encoding utf8 temp/hardening/kustomize-base.yaml
+  kubectl kustomize infra/k8s/overlays/local | Out-File -Encoding utf8 temp/hardening/kustomize-local.yaml
+  helm template technical-interview-frontend infra/helm/technical-interview-frontend | Out-File -Encoding utf8 temp/hardening/helm-base.yaml
+  helm template technical-interview-frontend infra/helm/technical-interview-frontend -f infra/helm/technical-interview-frontend/values-local.yaml | Out-File -Encoding utf8 temp/hardening/helm-local.yaml
+  kube-linter lint temp/hardening
+  Remove-Item -Recurse -Force temp/hardening
+  ```
+
+- Runtime/Nginx hardening uses a repo-owned check added by the M20 implementation.
+  It should cover the production `Dockerfile` and `docker/nginx/` template
+  invariants that this frontend owns, including use of the unprivileged Nginx image,
+  port `8080`, `/healthz`, same-origin `/api` proxying through
+  `FRONTEND_API_UPSTREAM`, and no browser CORS, JWT, bearer-token, or hard-coded
+  provider-path assumptions.
+
+M20 findings are advisory until a later roadmap row or release decision selects a
+stable threshold. Tool installation or command/configuration failures should be
+fixed or recorded as unavailable; vulnerability, posture, and runtime findings
+should be triaged through the exception path below but do not block a release
+candidate during the first pass.
+
 ## Release And Container Publication
 
 The production image is a static Vite build served by unprivileged Nginx on port
@@ -268,12 +316,10 @@ Deferred hardening candidates:
   command.
 - Anonymous browser smoke and accessibility automation: revisit when the repository
   owns a canonical browser command and stable failure thresholds.
-- CI artifact upload for hardening reports: revisit when a selected check writes a
-  stable report file. Until then, use GitHub code scanning, pull-request check
-  annotations, and workflow logs as the report locations.
-- Container image vulnerability scanning: revisit now that the repository owns a
-  container artifact, but make it release-blocking only after a stable scanner,
-  report location, triage owner, and exception path are selected.
+- CI artifact upload for hardening reports: revisit when M20 or a later selected
+  check writes a stable report file. Until then, use GitHub code scanning,
+  pull-request check annotations, local command output, and workflow logs as the
+  report locations.
 - GitHub Actions SHA pinning: revisit when maintainers select a stricter
   supply-chain policy or add automation that keeps pinned SHAs current. M13-B should
   keep trusted versioned actions, explicit permissions, and Dependabot action
