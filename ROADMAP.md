@@ -18,9 +18,9 @@ This roadmap tracks the planned first-party browser frontend for the sibling
 | Backend integration | Same-origin `/api/**` browser traffic                                                      |
 | Contract source     | `docs/backend/approved-openapi.json` and `docs/backend/FRONTEND_AI_CONTRACT.md`            |
 | Implemented surface | Session, public catalog, account, admin catalog, admin localization, admin users, operator |
-| Hardening baseline  | ESLint, TypeScript, Vitest, API type freshness, build, and whitespace checks               |
+| Hardening baseline  | ESLint, TypeScript, Vitest, API type freshness, build, whitespace, npm audit, CodeQL, dependency-review, and Dependabot |
 | Latest release      | No tagged frontend release yet                                                             |
-| Immediate action    | Implement selected M13 hardening tooling before the final release cut                       |
+| Immediate action    | Finish the M12-B final release cut after selected hardening evidence is current             |
 | Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`       |
 
 The app currently bootstraps browser session state with `GET /api/session`, renders
@@ -28,10 +28,11 @@ login options from session metadata, generates checked OpenAPI TypeScript types,
 routes public catalog state through React Router query strings, supports
 authenticated session/logout and route guards, exposes account profile and language
 preference flows, and implements the selected admin/operator surfaces. Local
-same-origin auth smoke steps and the canonical validation baseline are documented.
+same-origin auth smoke steps, the canonical validation baseline, and selected
+hardening evidence are documented.
 The M0-M11 roadmap slice is implemented and recorded in
-`.agents/plans/PLAN_frontend_roadmap_execution.md`; the next roadmap work is release
-hardening and any newly selected backend-supported scope.
+`.agents/plans/PLAN_frontend_roadmap_execution.md`; the next roadmap work is the
+final release cut and any newly selected backend-supported scope.
 
 ## Product Direction
 
@@ -62,22 +63,20 @@ hardening and any newly selected backend-supported scope.
 | M10 - Operator Audit Surface       | Complete | Read-only operator overview plus pageable audit log with filters for target type, action, and actor                                                                                           | Operators can inspect runtime/status summaries, recent audit entries, filtered pageable audit rows, and audit details with tests for access, loading, empty, filtered, paginated, localized error, and partial-payload states |
 | M11 - Admin User Management        | Complete | Admin user list/detail with contract-backed role management                                                                                                                                   | Admins can review user profiles, roles, and role-grant provenance, then replace managed roles with CSRF handling and tests for access, empty, success, validation, localized error, and missing-CSRF states                   |
 | M12 - Release Procedure And `0.1.0` Hardening | Ready | Backend-style release preparation adapted to the frontend repo: version selection, changelog promotion, validation, annotated tag, publication checks, and post-release roadmap cleanup | Maintainers can cut the first frontend release from `main` using a documented procedure; `CHANGELOG.md`, `ROADMAP.md`, package metadata, validation evidence, and tag state agree |
-| M13 - Static Analysis And Hardening Tooling | Ready | Selected `0.1.0` hardening gates: explicit GitHub Actions permissions/concurrency, CodeQL, dependency-review, an npm audit script, Dependabot grouping, and documented triage/exception rules | CI and local scripts expose the selected checks; release preconditions name required hardening evidence; docs explain false-positive handling, skip policy, and artifact locations |
+| M13 - Static Analysis And Hardening Tooling | Complete | Selected `0.1.0` hardening gates: explicit GitHub Actions permissions/concurrency, CodeQL, dependency-review, an npm audit script, Dependabot grouping, and documented triage/exception rules | CI and local scripts expose the selected checks; release preconditions name required hardening evidence; docs explain false-positive handling, skip policy, and artifact locations |
 | M14 - Human Procedure Documentation | Complete | Frontend procedure docs adapted from the backend repo: lifecycle/artifact routing, local development, AI collaboration, and documentation index | `docs/DEVELOPMENT_LIFECYCLE.md`, `docs/LOCAL_DEVELOPMENT.md`, `docs/WORKING_WITH_AI.md`, and `docs/README.md` exist; `README.md`, `SETUP.md`, and `CONTRIBUTING.md` link to the owners without duplicating them |
 | M15 - AI Procedure Reference Layer | Complete | Lean AI-facing owner guides for documentation routing, validation selection, review/security review, and release sequencing | `.agents/references/documentation.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and `.agents/references/releases.md` exist; `AGENTS.md` points to them; backend-only workflow state remains deferred |
 
 ## Near-Term Backlog
 
-1. Implement the selected M13 `0.1.0` hardening gates without adding deferred
-   artifact, credential, or threshold-dependent checks.
-2. Finish M12-B: promote the candidate `0.1.0` changelog section when tagging,
+1. Finish M12-B: promote the candidate `0.1.0` changelog section when tagging,
    verify package metadata, and follow the release procedure below.
-3. Add a canonical browser smoke or e2e command for same-origin session/auth flows
+2. Add a canonical browser smoke or e2e command for same-origin session/auth flows
    once the repository has agreed local credentials, backend profile, and identity
    seeding rules.
-4. Exercise the documented local auth smoke workflow against the sibling backend and
+3. Exercise the documented local auth smoke workflow against the sibling backend and
    move repeatable gaps into tests or owner docs.
-5. Add M16+ roadmap rows only when a new backend-supported surface, UX polish slice,
+4. Add M16+ roadmap rows only when a new backend-supported surface, UX polish slice,
    or release workflow is selected clearly enough to test or document.
 
 ## Pragmatic Smoke Split
@@ -114,8 +113,8 @@ hardening and any newly selected backend-supported scope.
   `http://localhost:8080` for the backend running from `..\technical-interview-demo`.
 - M8-M11 admin/operator scope is specified under `docs/specs/`; future admin/operator
   expansion should update or add specs before implementation.
-- M13 hardening should add package scripts and CI steps only for checks with a
-  repeatable local command and a documented owner for failures.
+- M13 hardening adds package scripts and CI steps only for checks with a repeatable
+  local command or a CI-owned signal with a documented owner for failures.
 - M14 human procedure docs live under `docs/` and keep entry-point docs linked to
   their owners. M15 AI-facing references live under `.agents/references/`, and
   `AGENTS.md` points to them without duplicating full procedures.
@@ -164,8 +163,9 @@ Keep deferred:
 
 ## Hardening Tooling Candidates
 
-M13-A selected the smallest useful set for the `0.1.0` hardening pass. M13-B should
-implement only these checks before M13 is marked complete:
+M13-A selected the smallest useful set for the `0.1.0` hardening pass. M13-B
+implemented these checks without adding deferred artifact, credential, threshold, or
+custom-rule gates:
 
 - Explicit GitHub Actions permissions and concurrency controls on every workflow.
 - CodeQL for TypeScript/JavaScript source and GitHub workflow analysis where the
@@ -234,9 +234,8 @@ Do not start release preparation until all of these are true:
 - The full frontend validation baseline has passed for the exact candidate:
   `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, and
   `git diff --check`.
-- If M13 lands before the release, all selected static-analysis and hardening checks
-  have passed for the exact candidate, or each exception has a documented owner and
-  release decision.
+- Selected M13 static-analysis and hardening checks have passed for the exact
+  candidate, or each exception has a documented owner and release decision.
 - Any required browser smoke or e2e evidence has either passed or is explicitly
   recorded as unavailable with the reason.
 

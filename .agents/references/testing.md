@@ -17,7 +17,7 @@ skipped check with the reason.
 | Browser smoke evidence | Record frontend URL, backend profile when used, flow covered, validation date, and skipped authenticated steps with reasons |
 | Release metadata or release-readiness work | Full baseline for release candidate changes; docs-only release references may use `git diff --check` |
 | M13-A hardening selection docs | `git diff --check` |
-| Hardening checks after M13-B lands | Full baseline plus each selected local hardening command or documented CI-owned signal |
+| M13 hardening tooling or release validation after M13-B | Full baseline plus `npm run audit:security`; document CodeQL, dependency-review, and Dependabot as CI-owned signals |
 
 The current full baseline is:
 
@@ -29,20 +29,28 @@ npm run build
 git diff --check
 ```
 
+Use Corepack to invoke the repository package manager when plain `npm` resolves
+outside `package.json` `engines` or `packageManager`.
+
 `npm run typecheck` already includes API type freshness. Use `npm run api:types` to
 rewrite generated API types only after an intentional contract refresh.
 
 ## Selected M13 Hardening Evidence
 
-After M13-B implements tooling, hardening validation is:
+After M13-B, hardening validation is:
 
 - full baseline validation
-- `npm run audit:security`, expected to wrap `npm audit --audit-level=high`
-- CI evidence for explicit workflow permissions and concurrency
-- CI/code-scanning evidence for CodeQL TypeScript/JavaScript analysis and workflow
-  analysis where supported
-- CI pull-request evidence for dependency-review
-- Dependabot configuration review for grouped npm and GitHub Actions updates
+- `npm run audit:security`, expected to wrap `npm audit --audit-level=high`;
+  failures appear in local command output and CI workflow logs
+- workflow configuration review for explicit permissions and concurrency that
+  cancels superseded pull-request runs without canceling protected branch, tag,
+  release, or scheduled evidence
+- CI/code-scanning evidence for CodeQL `javascript-typescript` and `actions`
+  analysis; reports live in GitHub code scanning alerts and CodeQL workflow logs
+- CI pull-request evidence for dependency-review; failures live in the pull-request
+  check, annotations, and workflow logs
+- Dependabot configuration review for grouped npm runtime, npm tooling/test, and
+  GitHub Actions updates
 
 Dependabot PR creation is an operational maintenance signal, not a blocking command
 for every local validation run. A Dependabot security update tied to a high or
