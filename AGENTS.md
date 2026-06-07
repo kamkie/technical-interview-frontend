@@ -23,6 +23,42 @@ When a task changes repository state:
 If the intended behavior cannot be described clearly enough to test or document, stop
 and clarify before implementing it.
 
+## Implementation Authorization
+
+Do not treat critique, direction, desired outcomes, or proposed change lists as
+permission to edit files.
+
+Before changing repository state, confirm that the current task contains explicit
+implementation authorization such as "implement this", "apply the change", "edit the
+files", "fix it now", "make the change", or an equivalent direct instruction.
+
+Examples that require clarification before editing:
+
+- "design changes to make this look more production"
+- "the menu is messy"
+- "admin stuff should be separate"
+- "this needs cleanup"
+- "what should change"
+
+For those requests, respond with a proposed approach, affected files, and validation
+plan. Wait for explicit approval before editing.
+
+## Dirty Worktree Protection
+
+Before any file edit, run `git status --short`.
+
+Treat all existing or unexpected changes as user-owned. Do not revert, delete,
+overwrite, normalize, or clean up those changes unless the user explicitly asks for
+that exact recovery action.
+
+If unexpected changes appear during a task, stop and report:
+
+1. Which files changed.
+2. Whether they are inside the intended write scope.
+3. What action you propose next.
+
+Do not use delegated-worker scope as a reason to revert files outside that scope.
+
 ## Truth Priority
 
 Use this order when sources conflict:
