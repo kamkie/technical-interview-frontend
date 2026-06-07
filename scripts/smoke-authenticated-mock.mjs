@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { createServer } from 'vite'
+import { withViteServer } from './with-vite.mjs'
 
 const DEFAULT_HOST = '127.0.0.1'
 const DEFAULT_PORT = 5173
@@ -12,7 +10,6 @@ const ACCOUNT_ROUTE_PATH = '/account'
 const ADMIN_USERS_PATH = '/api/admin/users'
 const ADMIN_USERS_ROUTE_PATH = '/admin/users'
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const results = []
 
 class SmokeFailure extends Error {
@@ -50,13 +47,7 @@ async function main() {
   console.log('Backend profile: internal contract-backed mock API')
   console.log(`Timeout: ${config.timeoutMs}ms`)
 
-  const mockServer = await startMockServer(config)
-
-  try {
-    await runBrowserSmoke({ ...config, origin: mockServer.origin })
-  } finally {
-    await mockServer.close()
-  }
+  await runWithMockServer(config)
 
   printSummary()
 }
@@ -82,42 +73,30 @@ function readConfig() {
   }
 }
 
-async function startMockServer(config) {
+async function runWithMockServer(config) {
   process.env.FRONTEND_MOCK_SESSION = 'anonymous'
   process.env.FRONTEND_MOCK_API_SCENARIO = 'success'
   delete process.env.FRONTEND_MOCK_API_DELAY_MS
 
-  const viteServer = await createServer({
-    configFile: path.join(repoRoot, 'vite.config.ts'),
-    logLevel: 'error',
-    mode: 'mock',
-    server: {
+  try {
+    await withViteServer({
       host: config.host,
       port: config.port,
       strictPort: config.strictPort,
-    },
-  })
-
-  try {
-    await viteServer.listen()
+      mode: 'mock',
+    }, async (mockServer) => {
+      pass('mock frontend server', `${mockServer.origin}/ is serving Vite mock mode`)
+      await runBrowserSmoke({ ...config, origin: mockServer.origin })
+    })
   } catch (error) {
-    await viteServer.close()
+    if (error instanceof SmokeFailure) {
+      throw error
+    }
+
     fail(
       'mock frontend server',
-      `could not start Vite mock server: ${error.message}`,
+      `could not start or stop Vite mock server: ${error.message}`,
     )
-  }
-
-  const address = viteServer.httpServer?.address()
-  const port =
-    typeof address === 'object' && address !== null ? address.port : config.port
-  const origin = `http://${config.host}:${port}`
-
-  pass('mock frontend server', `${origin}/ is serving Vite mock mode`)
-
-  return {
-    close: () => viteServer.close(),
-    origin,
   }
 }
 

@@ -11,6 +11,9 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "dev:mock": "vite --host 127.0.0.1 --mode mock",
+    "dev:mock:managed": "node scripts/dev-mock-managed.mjs",
+    "dev:list": "node scripts/dev-server-processes.mjs list",
+    "dev:cleanup": "node scripts/dev-server-processes.mjs cleanup",
     "build": "tsc -b && vite build",
     "docker:build": "docker build -t technical-interview-frontend .",
     "preview": "vite preview --host 127.0.0.1",

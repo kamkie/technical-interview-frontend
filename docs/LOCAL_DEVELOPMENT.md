@@ -45,6 +45,28 @@ npm run dev:mock
 
 Mock mode binds to the same `http://127.0.0.1:5173/` origin, but installs Vite middleware for same-origin `/api/**` instead of proxying to `http://localhost:8080`. This mode is only for frontend-only development when the sibling backend is unavailable; live backend smoke remains the contract-confidence path.
 
+For manual browser review that intentionally leaves mock mode running, use the managed wrapper:
+
+```powershell
+npm run dev:mock:managed -- --port 5173
+```
+
+The managed wrapper starts Vite through the Vite Node API, records PID and port under ignored `temp/dev-servers/`, and closes the server on normal exit. Prefer programmatic smoke or review commands that use `scripts/with-vite.mjs` when the task can run a command and stop Vite automatically.
+
+List repo-local Vite/npm dev servers before and after browser-review work:
+
+```powershell
+npm run dev:list
+```
+
+Stop only repo-local Vite/npm dev server process chains owned by this checkout:
+
+```powershell
+npm run dev:cleanup
+```
+
+`dev:list` and `dev:cleanup` match only process command lines that point at this repository, plus repo-owned managed state files for wrappers whose package-script command line is relative. When a task intentionally leaves a server running, record the port, PID, command, and reason. When a task reports a server was stopped, back that statement with a post-stop port check from the cleanup command, `scripts/with-vite.mjs`, or an equivalent explicit probe.
+
 Mock scenario controls:
 
 | Variable                     | Values                       | Default   | Effect                                                                                                                               |
@@ -96,32 +118,35 @@ These manifests are reference assets. Deployment-specific TLS, DNS, ingress cont
 
 ## Canonical Commands
 
-| Task                                         | Command                         |
-| -------------------------------------------- | ------------------------------- |
-| Install dependencies                         | `npm install`                   |
-| Run local dev server                         | `npm run dev`                   |
-| Run local dev server with mock API           | `npm run dev:mock`              |
-| Run production preview                       | `npm run preview`               |
-| Lint                                         | `npm run lint`                  |
-| Lint Markdown only                           | `npm run lint:markdown`         |
-| Format Markdown                              | `npm run format:markdown`       |
-| Lint ESLint only                             | `npm run lint:eslint`           |
-| Typecheck and API type freshness check       | `npm run typecheck`             |
-| Run tests once                               | `npm test`                      |
-| Run tests with coverage                      | `npm run test:coverage`         |
-| Run tests in watch mode                      | `npm run test:watch`            |
-| Build                                        | `npm run build`                 |
-| Build production container image             | `npm run docker:build`          |
-| Audit high-or-critical dependency advisories | `npm run audit:security`        |
-| M20 advisory runtime/Nginx invariant check   | `npm run hardening:runtime`     |
-| M20 advisory rendered-manifest posture check | `npm run hardening:kube-linter` |
-| M20 advisory container vulnerability scan    | `npm run hardening:trivy`       |
-| M20 advisory hardening checks                | `npm run hardening:m20`         |
-| Anonymous same-origin browser smoke          | `npm run smoke:anonymous`       |
-| Authenticated mock browser smoke             | `npm run smoke:authenticated`   |
-| Generate API types                           | `npm run api:types`             |
-| Verify API types without rewriting           | `npm run api:types:check`       |
-| Validate whitespace in the diff              | `git diff --check`              |
+| Task                                         | Command                                   |
+| -------------------------------------------- | ----------------------------------------- |
+| Install dependencies                         | `npm install`                             |
+| Run local dev server                         | `npm run dev`                             |
+| Run local dev server with mock API           | `npm run dev:mock`                        |
+| Run managed mock dev server                  | `npm run dev:mock:managed -- --port 5173` |
+| List repo-local dev servers                  | `npm run dev:list`                        |
+| Stop repo-local dev servers                  | `npm run dev:cleanup`                     |
+| Run production preview                       | `npm run preview`                         |
+| Lint                                         | `npm run lint`                            |
+| Lint Markdown only                           | `npm run lint:markdown`                   |
+| Format Markdown                              | `npm run format:markdown`                 |
+| Lint ESLint only                             | `npm run lint:eslint`                     |
+| Typecheck and API type freshness check       | `npm run typecheck`                       |
+| Run tests once                               | `npm test`                                |
+| Run tests with coverage                      | `npm run test:coverage`                   |
+| Run tests in watch mode                      | `npm run test:watch`                      |
+| Build                                        | `npm run build`                           |
+| Build production container image             | `npm run docker:build`                    |
+| Audit high-or-critical dependency advisories | `npm run audit:security`                  |
+| M20 advisory runtime/Nginx invariant check   | `npm run hardening:runtime`               |
+| M20 advisory rendered-manifest posture check | `npm run hardening:kube-linter`           |
+| M20 advisory container vulnerability scan    | `npm run hardening:trivy`                 |
+| M20 advisory hardening checks                | `npm run hardening:m20`                   |
+| Anonymous same-origin browser smoke          | `npm run smoke:anonymous`                 |
+| Authenticated mock browser smoke             | `npm run smoke:authenticated`             |
+| Generate API types                           | `npm run api:types`                       |
+| Verify API types without rewriting           | `npm run api:types:check`                 |
+| Validate whitespace in the diff              | `git diff --check`                        |
 
 ## Reproduce CI Locally
 
@@ -208,6 +233,8 @@ Use `npm run api:types:check` when you only need to verify that `src/api/generat
 
 Browser smoke keeps browser traffic on the frontend origin and same-origin `/api/**` paths. Use `npm run smoke:anonymous` for backend-backed public catalog evidence, `npm run smoke:authenticated` for self-contained authenticated browser evidence against the contract-backed mock API, and [`docs/LOCAL_AUTH_SMOKE.md`](LOCAL_AUTH_SMOKE.md) when live sibling-backend fake-OAuth evidence is required.
 
+At the start of browser-review work, run `npm run dev:list`. At closeout, run `npm run dev:list` again and either stop task-owned servers with `npm run dev:cleanup` or report exactly what remains. Use `scripts/with-vite.mjs` for programmatic Vite-backed checks so the server closes in `finally`; reserve `npm run dev:mock:managed` for an intentionally running interactive server.
+
 Anonymous browser smoke can run without provider secrets:
 
 ```powershell
@@ -253,7 +280,7 @@ Authenticated browser smoke can run without the sibling backend or provider secr
 npm run smoke:authenticated
 ```
 
-The command starts Vite in mock mode, forces an anonymous starting session, launches Playwright Chromium, and chooses an available localhost port starting at `127.0.0.1:5173`. Set `FRONTEND_AUTH_SMOKE_PORT` to request a different starting port, `FRONTEND_AUTH_SMOKE_STRICT_PORT=true` to fail instead of selecting the next open port, and `FRONTEND_SMOKE_HEADLESS=false` to watch the browser run.
+The command starts Vite in mock mode through `scripts/with-vite.mjs`, forces an anonymous starting session, launches Playwright Chromium, and chooses an available localhost port starting at `127.0.0.1:5173`. Set `FRONTEND_AUTH_SMOKE_PORT` to request a different starting port, `FRONTEND_AUTH_SMOKE_STRICT_PORT=true` to fail instead of selecting the next open port, and `FRONTEND_SMOKE_HEADLESS=false` to watch the browser run.
 
 When prerequisites are available, the command verifies:
 
