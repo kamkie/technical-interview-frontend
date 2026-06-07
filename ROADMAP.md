@@ -72,21 +72,31 @@ Status terms:
 | M18 - Authenticated Smoke Automation Readiness | Blocked by missing agreed local credentials and identity seeding rules | Define the credential, backend profile, and admin identity seeding contract needed for repeatable authenticated smoke. Do not hard-code provider paths or secrets. | Owner docs name required environment variables or manual setup, expected ADMIN-capable identity, login-provider discovery from `GET /api/session`, logout CSRF handling, and skip behavior when credentials are unavailable. | `git diff --check`; later executable smoke work uses the full baseline and the selected smoke command. |
 | M19 - Public Catalog Workflow Polish | Waiting on M16 | Improve the already implemented public catalog workflow without backend changes: scan density, URL-state clarity, keyboard/focus behavior, accessible table controls, pagination/sort affordances, and localized loading/empty/error states. | A focused spec or roadmap note names the exact polish scope; component/route tests cover the changed visible states; anonymous smoke is updated if the workflow changes browser behavior. | Relevant tests plus full baseline for app changes. |
 | M20 - Container And Deployment Hardening Refinement | Ready | Select and implement the first frontend-owned hardening pass for the container image, GHCR package, checked-in `infra/` references, and runtime config. Include vulnerability scanning, deployment posture checks, and runtime hardening where the frontend repository owns the artifact; exclude backend application operations and environment-specific deployment promotion. | Owner docs and scripts or CI signals name the selected scanner/checks, evidence location, triage owner, exception path, and release-blocking threshold. Follow-on rows are opened if implementation scope is larger than a single coherent hardening pass. | `git diff --check` for docs-only refinement; full baseline, `npm run docker:build`, and selected scanner/posture commands when tooling or runtime files change. |
-| M21 - Post-`0.1.0` Release Preparation | Waiting on selected M16-M20 implementation scope | Prepare the next patch or minor release only after selected implementation and validation evidence land. | `CHANGELOG.md`, `ROADMAP.md`, package metadata when needed, validation evidence, completed milestone archive, and tag/publication decision agree for the selected release candidate. | Full baseline, `npm run audit:security`, release checks, and any selected smoke evidence or explicit skip rationale. |
+| M21 - Login Provider Metadata Guardrail | Waiting on M16 | Audit login/session UI, docs, and tests for OAuth provider paths outside `GET /api/session` metadata. Remove unsupported constants if found and add focused coverage or owner-doc guidance that prevents regressions. | Auth entry points render providers from `loginProviders[]`; no provider path is hard-coded in frontend-owned code or docs outside backend-contract examples; coverage or owner docs make the constraint enforceable. | `git diff --check` for docs-only audit; relevant auth tests plus full baseline if source or test files change. |
+| M22 - Backend Surface Expansion Selection | Waiting on M16 | Convert M16 coverage gaps into one selected backend-supported surface slice before implementation. Use a roadmap row or focused spec to name the operation group, user-visible behavior, tests, and validation; do not invent endpoints or request fields. | The selected surface has an owner spec or roadmap row, operation coverage is recorded in `docs/API_COVERAGE.md`, route/user states and tests are named, and unselected surfaces remain classified for follow-up. | `git diff --check` for selection docs; API-facing validation and full baseline when implementation follows. |
+| M23 - Implemented Flow Visual Design Pass | Waiting on M16 | Select broad visual design work only when tied to implemented public, account, admin, or operator flows. Define the exact flows, accessibility/focus/responsive goals, test coverage, and browser evidence before changing app UI. | A selected visual pass is scoped to implemented user flows, covered by focused tests or browser evidence, and avoids backend/API behavior changes. | Relevant tests, browser screenshots or smoke for changed flows, and full baseline for app changes. |
+| M24 - Post-`0.1.0` Release Preparation | Waiting on selected M16-M23 implementation scope | Prepare the next patch or minor release only after selected implementation and validation evidence land. | `CHANGELOG.md`, `ROADMAP.md`, package metadata when needed, validation evidence, completed milestone archive, and tag/publication decision agree for the selected release candidate. | Full baseline, `npm run audit:security`, release checks, and any selected smoke evidence or explicit skip rationale. |
 
 ## Near-Term Backlog
 
-1. Execute M16 and promote the next ready M17, M19, or M20 slice based on the
-   coverage audit and selected hardening scope.
+1. Execute M16 and promote the next ready M17, M19, M20, M21, M22, or M23 slice
+   based on the coverage audit and selected hardening, auth, backend-surface, or
+   visual-design scope.
 2. Refine M20 into a concrete frontend-owned scanner/posture/runtime hardening pass
    with selected checks, evidence location, triage owner, and exception path.
-3. Add a canonical browser smoke or e2e command for anonymous same-origin
+3. Use M21 to turn login-provider metadata invariants into explicit audit evidence
+   or regression coverage before expanding auth-related UI.
+4. Use M22 to select the next backend-supported surface from M16 coverage findings
+   before implementation starts.
+5. Use M23 for broad visual design work only after the implemented flows and browser
+   evidence are named.
+6. Add a canonical browser smoke or e2e command for anonymous same-origin
    session/catalog flows against the sibling backend.
-4. Keep M18 blocked until authenticated smoke credentials and seeding rules are
+7. Keep M18 blocked until authenticated smoke credentials and seeding rules are
    agreed, then turn the readiness contract into an executable smoke command.
-5. Exercise the documented local auth smoke workflow against the sibling backend and
+8. Exercise the documented local auth smoke workflow against the sibling backend and
    move repeatable gaps into tests or owner docs.
-6. If remote publication of the existing local `v0.1.0` tag is requested, treat it
+9. If remote publication of the existing local `v0.1.0` tag is requested, treat it
    as legacy/manual publication because that tag predates the Release workflow. For
    future release tags, push `main` and the annotated tag, then monitor the Release
    workflow and verify the GHCR package, signature/provenance evidence, and
@@ -272,12 +282,6 @@ Do not start release preparation until all of these are true:
 - After publication, update `ROADMAP.md` again only if publication changes the
   active release phase, next target version, or deferred release automation scope.
 
-## Deferred Scope
-
-- Hard-coded OAuth provider paths outside the session bootstrap response.
-- New backend surfaces not yet selected in a roadmap row or spec.
-- Broad visual design work that is not tied to an implemented user flow.
-
 ## Rejected Scope
 
 - Alternate API transports, cross-origin browser support, JWT, and bearer-token auth.
@@ -286,7 +290,8 @@ Do not start release preparation until all of these are true:
 
 ## Roadmap Rules
 
-- Keep this file focused on selected, planned, or deferred frontend work.
+- Keep this file focused on selected, planned, explicitly deferred, or rejected
+  frontend scope.
 - Move completed milestone summaries into `docs/ROADMAP_ARCHIVE.md` when they leave
   the active roadmap.
 - Use `CHANGELOG.md` for shipped history.
