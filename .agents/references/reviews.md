@@ -75,10 +75,10 @@ For selected M13 hardening gates:
   no unexpected write scopes, and no concurrency rule that cancels protected branch
   or release/tag evidence. Pull-request runs may cancel superseded runs.
 - CodeQL alerts should be treated as actionable until the relevant data or control
-  flow is understood. Use SARIF artifacts and CodeQL workflow logs as the report
-  locations while this private repository runs without code scanning upload.
-  Prefer source fixes; use a scoped exception only when the alert is demonstrably
-  not exploitable or cannot be fixed before the selected release.
+  flow is understood. Use GitHub code scanning alerts and CodeQL workflow logs as
+  the report locations. Prefer source fixes; use a scoped exception only when the
+  alert is demonstrably not exploitable or cannot be fixed before the selected
+  release.
 - Dependency-review and npm audit failures should be fixed through dependency
   updates, lockfile refreshes, or a package replacement where practical. Use
   pull-request checks, annotations, workflow logs, and `npm run audit:security`

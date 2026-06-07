@@ -43,19 +43,3 @@ jobs:
         uses: github/codeql-action/analyze@v4
         with:
           category: "/language:${{ matrix.language }}"
-          upload: never
-          upload-database: false
-          post-processed-sarif-path: codeql-sarif
-
-      - name: Upload CodeQL SARIF artifact
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: codeql-${{ matrix.language }}-sarif
-          path: codeql-sarif
-          if-no-files-found: warn
-
-      - name: Report CodeQL artifact mode
-        if: ${{ github.event.repository.private }}
-        run: |
-          echo "::notice title=CodeQL artifact mode::This private repository writes CodeQL SARIF artifacts instead of uploading to code scanning. Enable GitHub code scanning/GitHub Advanced Security and switch CodeQL upload back to always when maintainers want Security-tab alerts."

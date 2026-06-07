@@ -152,9 +152,9 @@ Deferred candidates and revisit triggers:
   supply-chain policy or add automation that keeps pinned SHAs current.
 - Custom frontend security lint rules beyond CodeQL and ESLint: revisit when a
   repeated issue pattern is not covered by the selected checks.
-- CI artifact upload for hardening reports beyond CodeQL SARIF: revisit when a
-  selected check writes stable report files; until then, use pull-request check
-  annotations, workflow logs, and CodeQL SARIF artifacts.
+- CI artifact upload for hardening reports: revisit when a selected check writes
+  stable report files; until then, use code-scanning alerts, pull-request check
+  annotations, and workflow logs.
 
 Do not add backend-only hardening gates, container image scans, deployment scans, or
 runtime infrastructure checks until the frontend repository owns a corresponding
