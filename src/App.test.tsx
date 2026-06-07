@@ -26,6 +26,12 @@ import {
   LOCALIZATIONS_PATH,
   type LocalizationPage,
 } from './api/localizations'
+import {
+  AUDIT_LOGS_PATH,
+  OPERATOR_SURFACE_PATH,
+  type AuditLogPage,
+  type OperatorSurface,
+} from './api/operator'
 import { SESSION_PATH, type SessionResponse } from './api/session'
 
 describe('App', () => {
@@ -144,6 +150,10 @@ describe('App', () => {
     expect(screen.getByRole('link', { name: 'Admin localizations' })).toHaveAttribute(
       'href',
       '/admin/localizations',
+    )
+    expect(screen.getByRole('link', { name: 'Operator' })).toHaveAttribute(
+      'href',
+      '/operator',
     )
     expect(await screen.findByText('Kamil Kiewisz')).toBeInTheDocument()
     expect(screen.getByText('kamkie')).toBeInTheDocument()
@@ -552,6 +562,35 @@ describe('App', () => {
     ).toBe(false)
   })
 
+  it('guards the operator route for anonymous sessions without calling operator APIs', async () => {
+    const fetchMock = mockAppFetch({
+      session: createSession({
+        loginProviders: [
+          {
+            registrationId: 'github',
+            clientName: 'GitHub',
+            authorizationPath: '/api/session/oauth2/authorization/github',
+          },
+        ],
+      }),
+    })
+
+    renderApp('/operator')
+
+    expect(
+      await screen.findByRole('heading', { name: 'Sign in required' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'Sign in with GitHub' }),
+    ).toHaveAttribute('href', '/api/session/oauth2/authorization/github')
+    expect(screen.queryByRole('link', { name: 'Operator' })).not.toBeInTheDocument()
+    expect(
+      fetchMock.mock.calls.some(([input]) =>
+        String(input).startsWith('/api/admin/'),
+      ),
+    ).toBe(false)
+  })
+
   it('renders the admin localization route for admin users', async () => {
     const fetchMock = mockAppFetch({
       account: createAccount({
@@ -578,6 +617,39 @@ describe('App', () => {
       }),
     )
   })
+
+  it('renders the operator route for authenticated users without account-role gating', async () => {
+    const fetchMock = mockAppFetch({
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    renderApp('/operator')
+
+    expect(
+      await screen.findByRole('heading', { name: 'Operator audit' }),
+    ).toBeInTheDocument()
+    expect(await screen.findByText('Updated book title.')).toBeInTheDocument()
+    expect(await screen.findByText('Created category Java.')).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledWith(OPERATOR_SURFACE_PATH, {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: {
+        Accept: 'application/json',
+      },
+    })
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${AUDIT_LOGS_PATH}?page=0&size=20&sort=id%2CDESC`,
+      expect.objectContaining({
+        credentials: 'same-origin',
+        method: 'GET',
+      }),
+    )
+    expect(
+      fetchMock.mock.calls.some(([input]) => String(input) === ACCOUNT_PATH),
+    ).toBe(false)
+  })
 })
 
 function renderApp(initialEntry = '/catalog') {
@@ -595,6 +667,8 @@ function mockAppFetch({
   languageResponse = createAccount(),
   localizations = createLocalizationPage(),
   logoutResponse = new Response(null, { status: 204 }),
+  operatorAuditLogs = createOperatorAuditLogPage(),
+  operatorSurface = createOperatorSurface(),
   session,
 }: {
   account?: UserAccount | Response | ((path: string) => UserAccount | Response | Promise<Response>)
@@ -609,6 +683,8 @@ function mockAppFetch({
       ) => UserAccount | Response | Promise<Response>)
   localizations?: LocalizationPage
   logoutResponse?: Response
+  operatorAuditLogs?: AuditLogPage
+  operatorSurface?: OperatorSurface
   session: SessionResponse | SessionResponse[]
 }) {
   const sessionResponses = Array.isArray(session) ? [...session] : [session]
@@ -655,6 +731,14 @@ function mockAppFetch({
 
     if (path.startsWith(LOCALIZATIONS_PATH)) {
       return Promise.resolve(Response.json(localizations))
+    }
+
+    if (path === OPERATOR_SURFACE_PATH) {
+      return Promise.resolve(Response.json(operatorSurface))
+    }
+
+    if (path.startsWith(AUDIT_LOGS_PATH)) {
+      return Promise.resolve(Response.json(operatorAuditLogs))
     }
 
     return Promise.resolve(new Response(null, { status: 404 }))
@@ -714,6 +798,70 @@ function createLocalizationPage(): LocalizationPage {
         description: 'Account title',
         createdAt: '2026-06-07T09:00:00Z',
         updatedAt: '2026-06-07T09:00:00Z',
+      },
+    ],
+    first: true,
+    last: true,
+    number: 0,
+    numberOfElements: 1,
+    size: 20,
+    totalElements: 1,
+    totalPages: 1,
+  }
+}
+
+function createOperatorSurface(): OperatorSurface {
+  return {
+    audit: {
+      auditLogEndpoint: AUDIT_LOGS_PATH,
+      totalEntries: 2,
+      recentEntries: [
+        {
+          id: 1,
+          targetType: 'BOOK',
+          targetId: 10,
+          action: 'UPDATE',
+          actorLogin: 'admin-user',
+          summary: 'Updated book title.',
+          createdAt: '2026-06-07T08:30:00Z',
+          details: {
+            title: {
+              before: 'Clean Code',
+              after: 'Clean Code Updated',
+            },
+          },
+        },
+      ],
+    },
+    runtime: {
+      technicalOverviewEndpoint: '/',
+      technicalOverview: {
+        build: {
+          name: 'technical-interview-demo',
+          version: '1.0.0',
+        },
+      },
+    },
+    operations: {
+      actuatorHealthEndpoint: '/actuator/health',
+      applicationHealthStatus: 'UP',
+      livenessState: 'CORRECT',
+      readinessState: 'ACCEPTING_TRAFFIC',
+    },
+  }
+}
+
+function createOperatorAuditLogPage(): AuditLogPage {
+  return {
+    content: [
+      {
+        id: 2,
+        targetType: 'CATEGORY',
+        targetId: 3,
+        action: 'CREATE',
+        actorLogin: 'admin-user',
+        summary: 'Created category Java.',
+        createdAt: '2026-06-07T08:35:00Z',
       },
     ],
     first: true,

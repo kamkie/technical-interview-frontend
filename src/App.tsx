@@ -23,6 +23,7 @@ import {
 } from './auth/RequireAuthenticated'
 import { CatalogPanel } from './catalog/CatalogPanel'
 import { CATALOG_ROUTE_PATH } from './catalog/catalogQuery'
+import { OPERATOR_ROUTE_PATH, OperatorPage } from './operator/OperatorPage'
 
 const ACCOUNT_ROUTE_PATH = '/account'
 
@@ -71,6 +72,7 @@ export function App() {
                   <NavLink to={ADMIN_LOCALIZATION_ROUTE_PATH}>
                     Admin localizations
                   </NavLink>
+                  <NavLink to={OPERATOR_ROUTE_PATH}>Operator</NavLink>
                   <NavLink to={ACCOUNT_ROUTE_PATH}>Account</NavLink>
                 </>
               )}
@@ -122,6 +124,16 @@ export function App() {
               <RequireAuthenticated state={sessionState}>
                 {sessionState.status === 'ready' && (
                   <AdminLocalizationPage session={sessionState.session} />
+                )}
+              </RequireAuthenticated>
+            }
+          />
+          <Route
+            path={OPERATOR_ROUTE_PATH}
+            element={
+              <RequireAuthenticated state={sessionState}>
+                {sessionState.status === 'ready' && (
+                  <OperatorPage session={sessionState.session} />
                 )}
               </RequireAuthenticated>
             }

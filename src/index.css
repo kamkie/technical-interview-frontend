@@ -355,13 +355,220 @@ h1 {
 
 .catalog-panel,
 .admin-catalog-panel,
-.admin-localization-panel {
+.admin-localization-panel,
+.operator-panel {
   display: grid;
   gap: 1.25rem;
   padding: 1.25rem;
   border: 1px solid #d8dee6;
   border-radius: 8px;
   background: #ffffff;
+}
+
+.operator-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.45fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.operator-section {
+  display: grid;
+  min-width: 0;
+  gap: 1.25rem;
+}
+
+.operator-section + .operator-section {
+  padding-top: 1.25rem;
+  border-top: 1px solid #d8dee6;
+}
+
+.operator-details-panel {
+  display: grid;
+  position: sticky;
+  top: 1rem;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  gap: 1rem;
+  min-width: 0;
+  padding-left: 1.5rem;
+  border-left: 1px solid #d8dee6;
+}
+
+.operator-overview-grid,
+.operator-card,
+.audit-results,
+.audit-detail-content {
+  display: grid;
+  gap: 1rem;
+}
+
+.operator-card {
+  padding-top: 1rem;
+  border-top: 1px solid #d8dee6;
+}
+
+.operator-card:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.operator-card h4,
+.audit-detail-content h4 {
+  margin: 0;
+  color: #17211d;
+  font-size: 1.05rem;
+  letter-spacing: 0;
+}
+
+.operator-metadata-group {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.operator-metadata-group h5,
+.recent-audit-list h5 {
+  margin: 0;
+  color: #344054;
+  font-size: 0.9rem;
+  letter-spacing: 0;
+}
+
+.operator-metadata {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0;
+}
+
+.operator-metadata.single-column {
+  grid-template-columns: 1fr;
+}
+
+.operator-metadata div {
+  min-width: 0;
+}
+
+.operator-metadata dt {
+  margin: 0 0 0.35rem;
+  color: #667085;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.operator-metadata dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #1f2520;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.recent-audit-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.recent-audit-list ul {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recent-audit-list button {
+  display: grid;
+  width: 100%;
+  gap: 0.25rem;
+  border: 1px solid #d8dee6;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1f2520;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.recent-audit-list button span + span,
+.table-subtext {
+  display: block;
+  color: #667085;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.recent-audit-list button:hover,
+.recent-audit-list button:focus-visible {
+  background: #f1f5f9;
+}
+
+.operator-filters {
+  display: grid;
+  grid-template-columns: minmax(11rem, 0.4fr) minmax(11rem, 0.4fr) minmax(12rem, 1fr) auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.operator-filters label,
+.operator-controls label {
+  display: grid;
+  gap: 0.4rem;
+  color: #344054;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.operator-filters input,
+.operator-filters select,
+.operator-controls select {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1f2520;
+  padding: 0 0.75rem;
+}
+
+.operator-controls {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1fr) minmax(9rem, 0.35fr);
+  gap: 1rem;
+  align-items: end;
+}
+
+.audit-detail-summary {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.audit-detail-summary p {
+  margin: 0;
+  color: #1f2520;
+  line-height: 1.5;
+}
+
+.audit-detail-json {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.audit-detail-json pre {
+  max-height: 24rem;
+  margin: 0;
+  overflow: auto;
+  border-radius: 8px;
+  background: #17211d;
+  color: #f8fafc;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  padding: 1rem;
+  white-space: pre-wrap;
 }
 
 .admin-catalog-layout,
@@ -1020,6 +1227,24 @@ h1 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .operator-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .operator-details-panel {
+    position: static;
+    grid-column: 1;
+    grid-row: auto;
+    padding-left: 0;
+    padding-top: 1.25rem;
+    border-top: 1px solid #d8dee6;
+    border-left: 0;
+  }
+
+  .operator-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .catalog-filter-actions {
     grid-column: 1 / -1;
   }
@@ -1093,7 +1318,10 @@ h1 {
 
   .localization-filters,
   .localization-controls,
-  .localization-form-grid {
+  .localization-form-grid,
+  .operator-filters,
+  .operator-controls,
+  .operator-metadata {
     grid-template-columns: 1fr;
   }
 }
