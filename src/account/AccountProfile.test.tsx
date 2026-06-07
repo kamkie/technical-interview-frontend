@@ -78,6 +78,16 @@ describe('AccountProfile', () => {
         'Choose the language used for account and workflow messages.',
       ),
     ).toBeInTheDocument()
+    const languageForm = screen.getByRole('form', {
+      name: 'Language preference',
+    })
+    expect(within(languageForm).getByLabelText('Language')).toBeInTheDocument()
+    expect(
+      within(languageForm).getByRole('button', { name: 'Save language' }),
+    ).toBeInTheDocument()
+    expect(
+      within(languageForm).getByRole('button', { name: 'Clear preference' }),
+    ).toBeInTheDocument()
 
     fireEvent.click(screen.getByText('Account details'))
 

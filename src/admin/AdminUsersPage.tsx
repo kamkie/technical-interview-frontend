@@ -345,7 +345,12 @@ function AdminUserResults({
   }
 
   return (
-    <div className="catalog-table-scroll">
+    <div
+      aria-label="Scrollable admin users table"
+      className="catalog-table-scroll"
+      role="region"
+      tabIndex={0}
+    >
       <table className="catalog-table admin-users-table">
         <caption className="visually-hidden">Admin users</caption>
         <thead>
@@ -471,7 +476,11 @@ function AdminUserRow({
       </td>
       <td>{formatTimestamp(user.lastLoginAt)}</td>
       <td>
-        <div className="row-actions">
+        <div
+          aria-label={`Actions for ${label}`}
+          className="row-actions"
+          role="group"
+        >
           <button
             aria-current={selected ? 'true' : undefined}
             className={selected ? 'secondary-button selected-row-action' : undefined}
@@ -656,7 +665,12 @@ function RoleGrantProvenance({
           No role-grant provenance is available.
         </p>
       ) : (
-        <div className="catalog-table-scroll">
+        <div
+          aria-label="Scrollable role grants table"
+          className="catalog-table-scroll"
+          role="region"
+          tabIndex={0}
+        >
           <table className="catalog-table role-grants-table">
             <caption className="visually-hidden">Role grant provenance</caption>
             <thead>

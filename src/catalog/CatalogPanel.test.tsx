@@ -95,6 +95,46 @@ describe('CatalogPanel', () => {
     )
   })
 
+  it('keeps responsive catalog controls and table scrolling discoverable', async () => {
+    mockCatalogFetch()
+
+    renderCatalogRoute()
+
+    expect(await screen.findByText('Effective Java')).toBeInTheDocument()
+
+    const filters = screen.getByRole('form', { name: 'Catalog filters' })
+    expect(within(filters).getByLabelText('Title')).toBeInTheDocument()
+    expect(within(filters).getByLabelText('Author')).toBeInTheDocument()
+    expect(within(filters).getByLabelText('ISBN')).toBeInTheDocument()
+    expect(
+      within(filters).getByRole('button', { name: 'Search' }),
+    ).toBeInTheDocument()
+    expect(
+      within(filters).getByRole('button', { name: 'Clear' }),
+    ).toBeInTheDocument()
+
+    expect(screen.getByLabelText('Category filters')).toBeInTheDocument()
+    expect(screen.getByLabelText('Catalog table controls')).toBeInTheDocument()
+
+    const tableRegion = screen.getByRole('region', {
+      name: 'Scrollable public books table',
+    })
+    expect(
+      within(tableRegion).getByRole('table', { name: 'Public books' }),
+    ).toBeInTheDocument()
+
+    const pagination = screen.getByLabelText('Book pagination')
+    expect(
+      within(pagination).getByRole('button', { name: 'Previous' }),
+    ).toBeInTheDocument()
+    expect(
+      within(pagination).getByLabelText('Rows per page'),
+    ).toBeInTheDocument()
+    expect(
+      within(pagination).getByRole('button', { name: 'Next' }),
+    ).toBeInTheDocument()
+  })
+
   it('renders an empty state when no books match the current filters', async () => {
     mockCatalogFetch({ books: emptyBookPage })
 

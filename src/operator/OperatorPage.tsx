@@ -354,7 +354,11 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
               </div>
             </div>
 
-            <form className="operator-filters" onSubmit={handleFilterSubmit}>
+            <form
+              aria-label="Audit filters"
+              className="operator-filters"
+              onSubmit={handleFilterSubmit}
+            >
               <label>
                 <span>Target type</span>
                 <select
@@ -775,7 +779,12 @@ function AuditLogResults({
           variant="empty"
         />
       ) : (
-        <div className="catalog-table-scroll">
+        <div
+          aria-label="Scrollable operator audit table"
+          className="catalog-table-scroll"
+          role="region"
+          tabIndex={0}
+        >
           <table className="catalog-table operator-audit-table">
             <caption className="visually-hidden">Operator audit rows</caption>
             <thead>

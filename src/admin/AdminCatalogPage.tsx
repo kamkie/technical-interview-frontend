@@ -727,7 +727,11 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
           </div>
         </div>
 
-        <form className="catalog-filters" onSubmit={handleFilterSubmit}>
+        <form
+          aria-label="Admin book filters"
+          className="catalog-filters"
+          onSubmit={handleFilterSubmit}
+        >
           <label>
             <span>Title</span>
             <input
@@ -1186,7 +1190,12 @@ function AdminBookResults({
 
   return (
     <div className="book-results">
-      <div className="catalog-table-scroll">
+      <div
+        aria-label="Scrollable admin books table"
+        className="catalog-table-scroll"
+        role="region"
+        tabIndex={0}
+      >
         <table className="catalog-table admin-books-table">
           <caption className="visually-hidden">Admin books</caption>
           <thead>
@@ -1278,7 +1287,11 @@ function AdminBookRow({
       <td>{book.isbn ?? 'Unknown'}</td>
       <td>{categories.length > 0 ? categories.join(', ') : 'None'}</td>
       <td className="admin-books-actions-cell">
-        <div className="row-actions admin-books-row-actions">
+        <div
+          aria-label={`Actions for ${title}`}
+          className="row-actions admin-books-row-actions"
+          role="group"
+        >
           <button
             type="button"
             className={`admin-books-action-button ${editing ? 'selected-row-action' : ''}`}
@@ -1329,7 +1342,12 @@ function CategoryManagementList({
   }
 
   return (
-    <div className="catalog-table-scroll">
+    <div
+      aria-label="Scrollable admin categories table"
+      className="catalog-table-scroll"
+      role="region"
+      tabIndex={0}
+    >
       <table className="catalog-table admin-categories-table">
         <caption className="visually-hidden">Admin categories</caption>
         <thead>

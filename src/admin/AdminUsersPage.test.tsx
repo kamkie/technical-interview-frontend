@@ -67,7 +67,17 @@ describe('AdminUsersPage', () => {
         String(input).startsWith(`${ADMIN_USERS_PATH}?`),
       ),
     ).toBe(false)
-    expect(screen.getByRole('table', { name: 'Admin users' })).toBeInTheDocument()
+    const tableRegion = screen.getByRole('region', {
+      name: 'Scrollable admin users table',
+    })
+    expect(
+      within(tableRegion).getByRole('table', { name: 'Admin users' }),
+    ).toBeInTheDocument()
+    expect(
+      within(tableRegion).getByRole('group', {
+        name: 'Actions for Admin User',
+      }),
+    ).toBeInTheDocument()
     expect(screen.getAllByText('USER').length).toBeGreaterThan(0)
     expect(screen.getByText('ADMIN')).toBeInTheDocument()
   })
@@ -142,6 +152,11 @@ describe('AdminUsersPage', () => {
       within(details).getByRole('heading', { name: 'Replace managed roles' }),
     ).toBeInTheDocument()
     expect(await within(details).findByText('admin@example.test')).toBeInTheDocument()
+    expect(
+      within(details).getByRole('region', {
+        name: 'Scrollable role grants table',
+      }),
+    ).toBeInTheDocument()
     expect(within(details).getByText('ADMIN_MANAGED')).toBeInTheDocument()
     expect(within(details).getByText('owner-admin (ID 1)')).toBeInTheDocument()
     expect(within(details).getByText('Initial administrator')).toBeInTheDocument()

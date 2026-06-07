@@ -198,6 +198,7 @@ select {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem 0.75rem;
+  max-width: 100%;
   min-width: 0;
   overflow-x: visible;
 }
@@ -227,6 +228,7 @@ select {
 
 .shell-navigation a {
   display: inline-flex;
+  flex: 0 0 auto;
   min-height: 2.25rem;
   align-items: center;
   border-radius: 8px;
@@ -259,6 +261,7 @@ select {
   flex: 0 0 auto;
   align-items: center;
   gap: 0.25rem;
+  max-width: 100%;
   padding: 0.25rem;
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -341,7 +344,10 @@ select {
 .nav-menu-button,
 .account-menu-button,
 .session-menu-button {
+  display: inline-flex;
   min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--color-control-border);
   border-radius: 8px;
   background: var(--color-surface);
@@ -424,6 +430,11 @@ select {
   flex-wrap: wrap;
   gap: 0.75rem;
   align-items: center;
+}
+
+.account-menu-actions > * {
+  flex: 1 1 10rem;
+  justify-content: center;
 }
 
 .session-action-summary {
@@ -964,7 +975,7 @@ h1 {
 
 .operator-filters {
   display: grid;
-  grid-template-columns: minmax(11rem, 0.4fr) minmax(11rem, 0.4fr) minmax(12rem, 1fr) auto;
+  grid-template-columns: minmax(10rem, 0.4fr) minmax(10rem, 0.4fr) minmax(12rem, 1fr) auto;
   gap: 1rem;
   align-items: end;
 }
@@ -1030,6 +1041,7 @@ h1 {
 .admin-localization-layout {
   display: grid;
   gap: 1.5rem;
+  min-width: 0;
 }
 
 .admin-users-layout {
@@ -1037,6 +1049,7 @@ h1 {
   grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.45fr);
   gap: 1.5rem 2rem;
   align-items: start;
+  min-width: 0;
 }
 
 .admin-users-layout > .route-state-panel {
@@ -1075,6 +1088,7 @@ h1 {
 .admin-section {
   display: grid;
   gap: 1.25rem;
+  min-width: 0;
   padding-top: 1.25rem;
   border-top: 1px solid var(--color-border);
 }
@@ -1660,9 +1674,16 @@ h1 {
   flex-wrap: wrap;
 }
 
+.catalog-filter-actions {
+  min-width: 0;
+}
+
 .catalog-filter-actions button,
 .pagination-controls button {
+  display: inline-flex;
   min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
   border: 0;
   border-radius: 8px;
   background: var(--color-accent);
@@ -1794,10 +1815,18 @@ h1 {
   position: relative;
   max-width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
   border: 1px solid var(--color-border);
   border-radius: 8px;
   background: var(--color-surface);
   box-shadow: var(--shadow-control);
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+.catalog-table-scroll:focus-visible {
+  outline: 3px solid var(--color-focus-ring);
+  outline-offset: 2px;
 }
 
 .catalog-table {
@@ -1810,8 +1839,19 @@ h1 {
 .catalog-table td {
   padding: 1rem;
   border-bottom: 1px solid var(--color-border);
+  overflow-wrap: anywhere;
   text-align: left;
   vertical-align: top;
+}
+
+.admin-books-table,
+.admin-users-table,
+.operator-audit-table {
+  min-width: 880px;
+}
+
+.role-grants-table {
+  min-width: 720px;
 }
 
 .catalog-table thead th {
@@ -1841,6 +1881,7 @@ h1 {
 .admin-books-table .admin-books-actions-cell {
   padding-left: 0.75rem;
   padding-right: 0.75rem;
+  overflow-wrap: normal;
 }
 
 .admin-books-table .admin-books-row-actions {
@@ -1965,10 +2006,12 @@ h1 {
 
   .operator-layout {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
 
   .admin-users-layout {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
 
   .operator-details-panel {
@@ -1993,7 +2036,8 @@ h1 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .catalog-filter-actions {
+  .catalog-filter-actions,
+  .operator-filters .catalog-filter-actions {
     grid-column: 1 / -1;
   }
 
@@ -2010,6 +2054,7 @@ h1 {
   .topbar {
     align-items: flex-start;
     flex-direction: column;
+    position: static;
     padding: 0 1rem;
     padding-bottom: 0.75rem;
     padding-top: 0.75rem;
@@ -2032,18 +2077,56 @@ h1 {
   .shell-navigation {
     flex: 0 1 auto;
     flex-wrap: wrap;
+    width: 100%;
   }
 
   .nav-section {
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 0.3rem;
+    width: 100%;
     padding-left: 0;
     border-left: 0;
   }
 
+  .nav-section-admin .nav-menu {
+    flex: 1 1 10rem;
+  }
+
+  .nav-section-admin .nav-menu-button {
+    width: 100%;
+  }
+
+  .nav-menu-panel {
+    display: grid;
+    gap: 0.25rem;
+  }
+
   .header-session {
     justify-content: flex-start;
+  }
+
+  .theme-control {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .theme-option {
+    flex: 1 1 0;
+  }
+
+  .theme-option span {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .account-menu {
+    width: 100%;
+  }
+
+  .account-menu-button {
+    width: 100%;
   }
 
   .session-menu {
@@ -2061,6 +2144,7 @@ h1 {
 
   .workspace {
     align-content: start;
+    gap: 1.25rem;
     padding: 1.25rem 1rem 2.5rem;
   }
 
@@ -2086,12 +2170,22 @@ h1 {
   }
 
   .admin-section-heading,
-  .form-heading-row {
+  .form-heading-row,
+  .workflow-group-heading,
+  .language-preference-header {
     flex-direction: column;
   }
 
   .section-actions {
     justify-content: flex-start;
+  }
+
+  .section-actions,
+  .section-actions button,
+  .admin-action-row button,
+  .category-create-form button,
+  .row-actions button {
+    width: 100%;
   }
 
   .admin-form-grid {
@@ -2107,6 +2201,14 @@ h1 {
     grid-template-columns: 1fr;
   }
 
+  .catalog-filter-actions {
+    align-items: stretch;
+  }
+
+  .catalog-filter-actions button {
+    flex: 1 1 9rem;
+  }
+
   .catalog-controls {
     grid-template-columns: 1fr;
   }
@@ -2120,7 +2222,23 @@ h1 {
   }
 
   .pagination-controls {
-    justify-content: flex-start;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: stretch;
+  }
+
+  .pagination-controls span {
+    grid-column: 1 / -1;
+    order: -1;
+  }
+
+  .inline-page-size {
+    grid-column: 1 / -1;
+  }
+
+  .inline-page-size select,
+  .pagination-controls button {
+    width: 100%;
   }
 
   .localization-filters,
@@ -2130,5 +2248,50 @@ h1 {
   .operator-controls,
   .operator-metadata {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-lockup {
+    width: 100%;
+  }
+
+  .topbar-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .nav-section-label {
+    white-space: normal;
+  }
+
+  .account-menu-panel,
+  .auth-guard,
+  .protected-panel,
+  .workflow-group,
+  .book-management-form,
+  .catalog-filters,
+  .catalog-summary,
+  .route-state-panel,
+  .session-panel {
+    padding: 0.85rem;
+  }
+
+  .catalog-table th,
+  .catalog-table td,
+  .catalog-table thead .plain-column-header,
+  .column-sort-button {
+    padding: 0.75rem;
+  }
+
+  .admin-books-table .admin-books-row-actions {
+    display: grid;
+    white-space: normal;
+  }
+
+  .admin-books-table .admin-books-action-button,
+  .admin-books-table .selected-row-action {
+    min-width: 0;
+    width: 100%;
   }
 }

@@ -45,6 +45,10 @@ describe('OperatorPage', () => {
     expect(
       screen.getByRole('heading', { name: 'Review audit rows' }),
     ).toBeInTheDocument()
+    const filters = screen.getByRole('form', { name: 'Audit filters' })
+    expect(within(filters).getByLabelText('Target type')).toBeInTheDocument()
+    expect(within(filters).getByLabelText('Action')).toBeInTheDocument()
+    expect(within(filters).getByLabelText('Actor login')).toBeInTheDocument()
     const workflowSummary = screen.getByLabelText('Active audit workflow')
     expect(
       within(workflowSummary).getByText(
@@ -74,6 +78,22 @@ describe('OperatorPage', () => {
     expect(screen.getByLabelText('Actor login')).toHaveValue('admin')
     expect(screen.getByLabelText('Sort by')).toHaveValue('createdAt,DESC|id,DESC')
     expect(screen.getAllByLabelText('Rows per page')[0]).toHaveValue('50')
+    const tableRegion = screen.getByRole('region', {
+      name: 'Scrollable operator audit table',
+    })
+    expect(
+      within(tableRegion).getByRole('table', { name: 'Operator audit rows' }),
+    ).toBeInTheDocument()
+    const pagination = screen.getByLabelText('Audit pagination')
+    expect(
+      within(pagination).getByRole('button', { name: 'Previous' }),
+    ).toBeInTheDocument()
+    expect(
+      within(pagination).getByRole('button', { name: 'Next' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('complementary', { name: 'Audit details' }),
+    ).toBeInTheDocument()
     expect(screen.getAllByText('technical-interview-demo').length).toBeGreaterThan(0)
     expect(screen.getByText('main')).toBeInTheDocument()
     expect(screen.getByText('UP')).toBeInTheDocument()

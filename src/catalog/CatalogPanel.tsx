@@ -217,7 +217,11 @@ export function CatalogPanel() {
         </div>
       </div>
 
-      <form className="catalog-filters" onSubmit={handleFilterSubmit}>
+      <form
+        aria-label="Catalog filters"
+        className="catalog-filters"
+        onSubmit={handleFilterSubmit}
+      >
         <label>
           <span>Title</span>
           <input
@@ -420,7 +424,12 @@ function BookResults({
 
   return (
     <div className="book-results">
-      <div className="catalog-table-scroll">
+      <div
+        aria-label="Scrollable public books table"
+        className="catalog-table-scroll"
+        role="region"
+        tabIndex={0}
+      >
         <table className="catalog-table">
           <caption className="visually-hidden">Public books</caption>
           <thead>

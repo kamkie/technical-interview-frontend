@@ -142,16 +142,28 @@ describe('AdminCatalogPage', () => {
 
     renderAdminCatalog()
 
+    expect(
+      await screen.findByRole('form', { name: 'Admin book filters' }),
+    ).toBeInTheDocument()
     const titleCell = await screen.findByRole('rowheader', {
       name: 'Manual Regression Book no-tag',
     })
     const row = titleCell.closest('tr')
     expect(row).not.toBeNull()
+    const tableRegion = screen.getByRole('region', {
+      name: 'Scrollable admin books table',
+    })
+    expect(
+      within(tableRegion).getByRole('table', { name: 'Admin books' }),
+    ).toBeInTheDocument()
 
-    const editButton = within(row as HTMLTableRowElement).getByRole('button', {
+    const actionGroup = within(row as HTMLTableRowElement).getByRole('group', {
+      name: 'Actions for Manual Regression Book no-tag',
+    })
+    const editButton = within(actionGroup).getByRole('button', {
       name: 'Edit Manual Regression Book no-tag',
     })
-    const deleteButton = within(row as HTMLTableRowElement).getByRole('button', {
+    const deleteButton = within(actionGroup).getByRole('button', {
       name: 'Delete Manual Regression Book no-tag',
     })
 
