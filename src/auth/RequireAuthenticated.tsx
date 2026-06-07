@@ -1,6 +1,10 @@
 import type { ReactNode } from 'react'
 
-import type { SessionResponse } from '../api/session'
+import {
+  getLoginProviders,
+  type SessionLoginProvider,
+  type SessionResponse,
+} from '../api/session'
 
 export type SessionState =
   | { status: 'loading' }
@@ -43,9 +47,40 @@ export function RequireAuthenticated({
         <p className="session-message">
           Use an available login provider to access this area.
         </p>
+        <LoginProviderActions session={state.session} />
       </section>
     )
   }
 
   return <>{children}</>
+}
+
+function LoginProviderActions({ session }: { session: SessionResponse }) {
+  const loginProviders = getLoginProviders(session).filter(hasAuthorizationPath)
+
+  if (loginProviders.length === 0) {
+    return (
+      <p className="session-message muted">No login providers available.</p>
+    )
+  }
+
+  return (
+    <nav className="login-actions" aria-label="Login providers">
+      {loginProviders.map((provider) => (
+        <a
+          className="login-link"
+          href={provider.authorizationPath}
+          key={provider.registrationId ?? provider.authorizationPath}
+        >
+          Sign in with {provider.clientName ?? provider.registrationId}
+        </a>
+      ))}
+    </nav>
+  )
+}
+
+function hasAuthorizationPath(
+  provider: SessionLoginProvider,
+): provider is SessionLoginProvider & { authorizationPath: string } {
+  return Boolean(provider.authorizationPath)
 }

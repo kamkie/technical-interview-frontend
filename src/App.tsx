@@ -108,6 +108,7 @@ export function App() {
             state={sessionState}
             onLogout={handleLogout}
           />
+          <SessionDetailsMenu state={sessionState} />
         </div>
       </header>
 
@@ -120,7 +121,6 @@ export function App() {
           </p>
         </section>
 
-        <SessionBootstrapPanel state={sessionState} />
         <Routes>
           <Route index element={<Navigate to={CATALOG_ROUTE_PATH} replace />} />
           <Route path={CATALOG_ROUTE_PATH} element={<CatalogPanel />} />
@@ -187,6 +187,36 @@ export function App() {
           <Route path="*" element={<Navigate to={CATALOG_ROUTE_PATH} replace />} />
         </Routes>
       </main>
+    </div>
+  )
+}
+
+function SessionDetailsMenu({ state }: { state: SessionState }) {
+  const [open, setOpen] = useState(false)
+  const panelId = 'session-details-panel'
+
+  return (
+    <div className="session-menu">
+      <button
+        aria-controls={panelId}
+        aria-expanded={open}
+        className="session-menu-button"
+        id="session-details-trigger"
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+      >
+        Session details
+      </button>
+      {open && (
+        <div
+          aria-labelledby="session-details-trigger"
+          className="session-menu-panel"
+          id={panelId}
+          role="region"
+        >
+          <SessionBootstrapPanel state={state} />
+        </div>
+      )}
     </div>
   )
 }

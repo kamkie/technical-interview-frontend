@@ -109,7 +109,7 @@ describe('App', () => {
     ).toBeInTheDocument()
   })
 
-  it('bootstraps the browser session and renders login providers', async () => {
+  it('bootstraps the browser session and keeps diagnostics in session details', async () => {
     const githubAuthorizationPath = '/api/session/from-metadata/primary-provider'
     const smokeAuthorizationPath = '/api/session/from-metadata/fake-provider'
     const fetchMock = mockAppFetch({
@@ -143,13 +143,6 @@ describe('App', () => {
       '/catalog',
     )
 
-    const loginLink = await screen.findByRole('link', {
-      name: 'Sign in with GitHub',
-    })
-    const smokeLoginLink = screen.getByRole('link', {
-      name: 'Sign in with Smoke Provider',
-    })
-
     expect(fetchMock).toHaveBeenCalledWith(SESSION_PATH, {
       method: 'GET',
       credentials: 'same-origin',
@@ -176,10 +169,42 @@ describe('App', () => {
         },
       },
     )
-    expect(screen.getAllByText('Signed out')).toHaveLength(2)
-    expect(screen.getByText('XSRF-TOKEN -> X-XSRF-TOKEN')).toBeInTheDocument()
+    expect(await screen.findByText('Signed out')).toBeInTheDocument()
+    expect(screen.getAllByText('Signed out')).toHaveLength(1)
+    expect(
+      screen.queryByText('XSRF-TOKEN -> X-XSRF-TOKEN'),
+    ).not.toBeInTheDocument()
     expect(await screen.findByText('Clean Code')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Java' })).toBeInTheDocument()
+
+    const sessionDetailsButton = screen.getByRole('button', {
+      name: 'Session details',
+    })
+
+    expect(sessionDetailsButton).toHaveAttribute('aria-expanded', 'false')
+    sessionDetailsButton.focus()
+    expect(sessionDetailsButton).toHaveFocus()
+
+    fireEvent.click(sessionDetailsButton)
+
+    expect(sessionDetailsButton).toHaveAttribute('aria-expanded', 'true')
+
+    const sessionDetails = screen.getByRole('region', {
+      name: 'Session details',
+    })
+    const loginLink = await within(sessionDetails).findByRole('link', {
+      name: 'Sign in with GitHub',
+    })
+    const smokeLoginLink = within(sessionDetails).getByRole('link', {
+      name: 'Sign in with Smoke Provider',
+    })
+
+    expect(
+      within(sessionDetails).getByRole('heading', { name: 'Session' }),
+    ).toBeInTheDocument()
+    expect(
+      within(sessionDetails).getByText('XSRF-TOKEN -> X-XSRF-TOKEN'),
+    ).toBeInTheDocument()
     expect(loginLink).toHaveAttribute('href', githubAuthorizationPath)
     expect(smokeLoginLink).toHaveAttribute('href', smokeAuthorizationPath)
   })
@@ -223,7 +248,18 @@ describe('App', () => {
 
     renderApp()
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
+    expect(await screen.findByText('Session unavailable')).toBeInTheDocument()
+    expect(
+      screen.queryByText('GET /api/session failed with 503 Service Unavailable'),
+    ).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Session details' }))
+
+    const sessionDetails = screen.getByRole('region', {
+      name: 'Session details',
+    })
+
+    expect(within(sessionDetails).getByRole('alert')).toHaveTextContent(
       'GET /api/session failed with 503 Service Unavailable',
     )
   })

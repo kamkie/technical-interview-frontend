@@ -14,6 +14,9 @@ until they are promoted for a release tag.
 
 - Polished the public catalog workflow with canonical route query replacement,
   visible active filter/sort/page summaries, and clearer accessible sort controls.
+- Moved Browser Session diagnostics into a hidden-by-default Session details
+  surface while keeping metadata-driven sign-in, session bootstrap, and logout
+  behavior intact.
 
 ### Fixed
 

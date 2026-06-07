@@ -9,7 +9,7 @@ archived in `docs/ROADMAP_ARCHIVE.md`. Released history belongs in `CHANGELOG.md
 | Field               | Current                                                                                    |
 |---------------------|--------------------------------------------------------------------------------------------|
 | Release phase       | Published `0.2.0` release; post-release maintenance                                       |
-| Next target version | Future post-`0.2.0` browser session surface cleanup slice; final version selected before release prep |
+| Next target version | Future post-`0.2.0` public catalog and app shell visual design slice; final version selected before release prep |
 | Frontend stack      | Vite + React + TypeScript                                                                  |
 | Runtime             | Node.js 24.x, npm 11.x                                                                     |
 | Package metadata    | `package.json` and `package-lock.json` version `0.2.0`; `packageManager` `npm@11.16.0`      |
@@ -24,7 +24,7 @@ archived in `docs/ROADMAP_ARCHIVE.md`. Released history belongs in `CHANGELOG.md
 | Implemented surface | Session, public catalog, account, admin catalog, admin localization, admin users, operator, app theme preference |
 | Hardening baseline  | ESLint, TypeScript, Vitest, API type freshness, build, Codecov coverage/test/bundle uploads, Docker build, whitespace, npm audit, advisory M20 runtime/Nginx, rendered-manifest, and Trivy checks, CodeQL, dependency-review, Dependabot, and release image signing/provenance |
 | Latest release      | Published `v0.2.0` on 2026-06-07 with GHCR image, signature, provenance, and GitHub Release notes |
-| Immediate action    | Implement the selected M24 browser session surface cleanup slice                              |
+| Immediate action    | Implement the selected M25 public catalog and app shell visual design pass                    |
 | Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`       |
 
 The app currently bootstraps browser session state with `GET /api/session`, renders
@@ -40,13 +40,11 @@ Earlier completed roadmap work and plan records are archived in
 anonymous smoke automation, fake-OAuth readiness, advisory hardening, provider
 metadata guardrails, and the published `v0.2.0` release. Post-`0.2.0` execution
 selected M19 public catalog workflow polish for canonical route state, visible
-query-state summaries, accessible sort affordances, and the selected M23
-light/dark/system theme preference. Remaining roadmap work starts with the
-selected M24 browser session surface cleanup, then the selected M25 public
-catalog and app shell visual pass, before selecting the next product, visual, or
-automation slice. The cleanup should move the current Browser Session details
-out of the primary page content and into an explicit menu, drawer, details
-panel, or equivalent secondary surface.
+query-state summaries, accessible sort affordances, the selected M23
+light/dark/system theme preference, and the completed M24 browser session
+surface cleanup. Remaining roadmap work starts with the selected M25 public
+catalog and app shell visual pass before selecting the next product, visual, or
+automation slice.
 
 ## Product Direction
 
@@ -80,23 +78,19 @@ Status terms:
 | --- | --- | --- | --- | --- |
 | M19 - Public Catalog Workflow Polish | Done | Selected in `docs/specs/SPEC_public_catalog_workflow_polish.md`: canonical public catalog route query state, visible active filter/sort/page summaries, default-filter clarity, and accessible sort affordances without backend changes. | Component/route tests cover canonical URL replacement, visible query-state summaries, sort control names, and existing request serialization. | Relevant tests plus full baseline for app changes. |
 | M23 - Dark Mode Support | Done | Added app-level dark mode support for implemented public catalog, account, admin, and operator flows without backend/API behavior changes. The app respects the user's OS color-scheme preference on first visit, provides a visible light/dark/system preference control, persists explicit preference locally, and keeps existing session, routing, and localization behavior unchanged. | Light, dark, and system theme selection renders consistently across implemented routes, survives reloads when explicitly selected, preserves keyboard focus visibility and accessible contrast, and has focused component/route coverage plus browser evidence on representative public and authenticated shells. | Relevant tests, browser screenshots or smoke for changed flows, and full baseline for app changes. |
-| M24 - Browser Session Surface Cleanup | Ready | Move the Browser Session status and session metadata out of the main page content into a secondary app-menu, drawer, details panel, or equivalent hidden-by-default surface. Keep account, logout, session cookie, and CSRF metadata available for troubleshooting without making the session diagnostics a primary page section. | Primary implemented pages no longer show the Browser Session panel by default, session diagnostics remain reachable through an explicit control with accessible naming and keyboard support, and session bootstrap/login/logout behavior remains unchanged. | Relevant component or route tests for the new disclosure/menu behavior, browser evidence for the main page and opened session surface, and full baseline for app changes. |
-| M25 - Public Catalog And App Shell Visual Design Pass | Waiting: depends on M24 | Polish the implemented anonymous `/catalog` flow and shared app shell after the Browser Session surface cleanup lands. Scope includes header/action layout, intro hierarchy, catalog filters, category chips, query summary, table readability, pagination, focus-visible styling, and responsive behavior across light/dark/system themes without backend/API, auth, route, query-string, sorting, filtering, pagination, or localization behavior changes. | The catalog and shell are easier to scan on desktop and mobile, preserve existing route/query/session behavior, keep keyboard focus visible, and have explicit browser evidence for representative light and dark catalog states. | Focused App/catalog tests, browser screenshots or smoke for `/catalog` at desktop and mobile widths in light and dark modes, and full baseline for app changes. |
+| M24 - Browser Session Surface Cleanup | Done | Moved the Browser Session status and session metadata out of the main page content into a hidden-by-default Session details surface in the app chrome. Account, logout, session cookie, and CSRF metadata remain available for troubleshooting without making session diagnostics a primary page section. | Primary implemented pages no longer show the Browser Session panel by default, session diagnostics remain reachable through an explicit control with accessible naming and keyboard support, and session bootstrap/login/logout behavior remains unchanged. | Focused App tests cover the disclosure behavior and metadata-driven sign-in links; browser evidence covers the main page and opened session surface. |
+| M25 - Public Catalog And App Shell Visual Design Pass | Ready | Polish the implemented anonymous `/catalog` flow and shared app shell now that the Browser Session surface cleanup has landed. Scope includes header/action layout, intro hierarchy, catalog filters, category chips, query summary, table readability, pagination, focus-visible styling, and responsive behavior across light/dark/system themes without backend/API, auth, route, query-string, sorting, filtering, pagination, or localization behavior changes. | The catalog and shell are easier to scan on desktop and mobile, preserve existing route/query/session behavior, keep keyboard focus visible, and have explicit browser evidence for representative light and dark catalog states. | Focused App/catalog tests, browser screenshots or smoke for `/catalog` at desktop and mobile widths in light and dark modes, and full baseline for app changes. |
 
 ## Near-Term Backlog
 
-1. Implement the selected M24 browser session surface cleanup slice before
-   assigning other broad UI work.
-2. Implement the selected M25 public catalog and app shell visual pass after M24
-   lands.
-3. Keep backend surface expansion unselected unless a future backend contract refresh
-   or product decision
-   introduces an approved operation gap.
-4. Turn the M18 fake-OAuth readiness contract into an executable authenticated smoke
+1. Implement the selected M25 public catalog and app shell visual pass.
+2. Keep backend surface expansion unselected unless a future backend contract
+   refresh or product decision introduces an approved operation gap.
+3. Turn the M18 fake-OAuth readiness contract into an executable authenticated smoke
    command when that automation slice is selected.
-5. Exercise the documented local auth smoke workflow against the sibling backend and
+4. Exercise the documented local auth smoke workflow against the sibling backend and
    move repeatable gaps into tests or owner docs.
-6. For future releases, push `main` and the annotated tag, then monitor the Release
+5. For future releases, push `main` and the annotated tag, then monitor the Release
    workflow and verify the GHCR package, signature/provenance evidence, and
    published release notes against `CHANGELOG.md`.
 
