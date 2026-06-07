@@ -8,7 +8,7 @@ archived in `docs/ROADMAP_ARCHIVE.md`. Released history belongs in `CHANGELOG.md
 
 | Field               | Current                                                                                    |
 |---------------------|--------------------------------------------------------------------------------------------|
-| Release phase       | Local `0.2.0` release cut; post-release maintenance                                        |
+| Release phase       | Published `0.2.0` release; post-release maintenance                                       |
 | Next target version | Future selected post-`0.2.0` roadmap slice; final version selected before release prep       |
 | Frontend stack      | Vite + React + TypeScript                                                                  |
 | Runtime             | Node.js 24.x, npm 11.x                                                                     |
@@ -23,7 +23,7 @@ archived in `docs/ROADMAP_ARCHIVE.md`. Released history belongs in `CHANGELOG.md
 | Contract source     | `docs/backend/approved-openapi.json` and `docs/backend/FRONTEND_AI_CONTRACT.md`            |
 | Implemented surface | Session, public catalog, account, admin catalog, admin localization, admin users, operator |
 | Hardening baseline  | ESLint, TypeScript, Vitest, API type freshness, build, Codecov coverage/test/bundle uploads, Docker build, whitespace, npm audit, advisory M20 runtime/Nginx, rendered-manifest, and Trivy checks, CodeQL, dependency-review, Dependabot, and release image signing/provenance |
-| Latest release      | Local `v0.2.0` release cut on 2026-06-07; not published remotely                           |
+| Latest release      | Published `v0.2.0` on 2026-06-07 with GHCR image, signature, provenance, and GitHub Release notes |
 | Immediate action    | Select the next post-`0.2.0` scope: M19 catalog polish, M23 visual pass, authenticated smoke automation, or future backend-supported surface |
 | Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`       |
 
@@ -37,7 +37,7 @@ tag-driven GHCR package publication, and selected hardening evidence are documen
 Completed M0-M24 work and plan records are archived in
 `docs/ROADMAP_ARCHIVE.md`. Post-`0.1.0` execution added contract coverage,
 anonymous smoke automation, fake-OAuth readiness, advisory hardening, provider
-metadata guardrails, and the local `v0.2.0` release. Remaining roadmap work starts
+metadata guardrails, and the published `v0.2.0` release. Remaining roadmap work starts
 with selecting the next post-`0.2.0` product or automation slice.
 
 ## Product Direction
@@ -84,10 +84,9 @@ Status terms:
    command when that automation slice is selected.
 4. Exercise the documented local auth smoke workflow against the sibling backend and
    move repeatable gaps into tests or owner docs.
-5. If remote publication of local `v0.2.0` is requested, push `main` and the
-   annotated tag, then monitor the Release workflow and verify the GHCR package,
-   signature/provenance evidence, and published release notes against
-   `CHANGELOG.md`.
+5. For future releases, push `main` and the annotated tag, then monitor the Release
+   workflow and verify the GHCR package, signature/provenance evidence, and
+   published release notes against `CHANGELOG.md`.
 
 ## Pragmatic Smoke Split
 

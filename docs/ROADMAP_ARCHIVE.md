@@ -41,7 +41,7 @@ remain in `ROADMAP.md`. Released user-visible history remains in `CHANGELOG.md`.
 | M21 - Login Provider Metadata Guardrail | Regression coverage for metadata-driven login provider links | Auth/session tests prove providers are rendered from `loginProviders[]` and `authorizationPath`, and no login entry point is invented when metadata omits an authorization path |
 | M22 - Backend Surface Expansion Selection | Backend-supported surface selection from M16 gaps | No surface was selected because M16 found no uncovered approved backend operations |
 | M23 - Implemented Flow Visual Design Pass | Visual design pass candidate | No implementation selected for `0.2.0`; remains future product scope because no concrete flow or evidence target was selected |
-| M24 - Post-`0.1.0` Release Preparation | `0.2.0` release metadata, validation evidence, and local tag preparation | `CHANGELOG.md`, `ROADMAP.md`, package metadata, validation evidence, and the local `v0.2.0` release task agree; remote publication remains explicitly separate |
+| M24 - Post-`0.1.0` Release Preparation | `0.2.0` release metadata, validation evidence, and publication | `CHANGELOG.md`, `ROADMAP.md`, package metadata, validation evidence, GitHub Release, GHCR image tags, signature/provenance evidence, and published release notes agree for `v0.2.0` |
 
 ## Completed Implementation Notes
 
