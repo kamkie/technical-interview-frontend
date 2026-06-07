@@ -1,9 +1,8 @@
 # Roadmap
 
 This roadmap tracks active, planned, and explicitly deferred first-party browser
-frontend work for the sibling `technical-interview-demo` backend. Completed
-roadmap work is archived in `docs/ROADMAP_ARCHIVE.md`. Released history belongs in
-`CHANGELOG.md`.
+frontend work for the sibling `technical-interview-demo` backend. Roadmap editing
+rules are owned by `.agents/references/roadmap.md`.
 
 ## Current Baseline
 
@@ -27,11 +26,8 @@ authenticated session/logout and route guards, exposes account profile and langu
 preference flows, implements selected admin/operator surfaces, and provides an
 app-level light/dark/system theme preference.
 
-Earlier completed roadmap work and plan records are archived in
-`docs/ROADMAP_ARCHIVE.md`; released user-visible history remains in
-`CHANGELOG.md`. No implementation milestone is currently selected. Remaining
-roadmap work starts by selecting the next product, visual, automation, or
-release-prep slice.
+No implementation milestone is currently selected. Remaining roadmap work starts by
+selecting the next product, visual, automation, or release-prep slice.
 
 ## Product Direction
 
@@ -53,13 +49,6 @@ release-prep slice.
 No implementation milestone is currently selected. The next action is to select the
 next product, visual, automation, or release-prep slice.
 
-Status terms for future selected rows:
-
-- `Ready`: the milestone can start from the current repository state.
-- `Waiting`: the milestone has a normal predecessor dependency.
-- `Blocked`: the milestone needs a product choice, credential, backend contract
-  refresh, or external state before implementation can start.
-
 ## Near-Term Backlog
 
 1. Select the next product, visual, automation, or release-prep slice.
@@ -70,14 +59,9 @@ Status terms for future selected rows:
 4. Promote local smoke gaps into tests or owner docs only after the documented
    workflows in `docs/LOCAL_DEVELOPMENT.md` or `docs/LOCAL_AUTH_SMOKE.md` expose a
    repeatable gap.
-5. Select release-prep work only when a concrete release candidate exists; release
-   sequencing is owned by `.agents/references/releases.md`.
+5. Select release-prep work only when a concrete release candidate exists.
 
 ## Smoke And Local Procedure Candidates
-
-Smoke and local procedure details belong in `docs/LOCAL_DEVELOPMENT.md`,
-`docs/LOCAL_AUTH_SMOKE.md`, or `.agents/references/testing.md`. Roadmap rows should
-only select new automation or changed ownership.
 
 Deferred candidates:
 
@@ -85,12 +69,6 @@ Deferred candidates:
 - Anonymous browser smoke expansion beyond the current canonical command.
 - Accessibility automation with stable thresholds and failure ownership.
 - Promotion of repeatable local smoke gaps into component, route, or browser tests.
-
-## Future Row Defaults
-
-Future selected rows should name the durable owner document, backend contract source
-when API-facing, expected tests, and validation command set. Detailed procedures
-belong in the owner document or executable tests, not in this roadmap.
 
 ## Procedure Adoption Scope
 
@@ -122,10 +100,6 @@ Keep deferred:
 
 ## Hardening Candidates
 
-Completed hardening work is archived in `docs/ROADMAP_ARCHIVE.md`. Validation and
-release evidence rules are owned by `.agents/references/testing.md` and
-`.agents/references/releases.md`.
-
 Future hardening candidates should become release-blocking only after they have a
 repeatable local command or a clearly owned CI signal with triage and skip rules.
 
@@ -154,20 +128,3 @@ posture threshold has been selected.
 - Alternate API transports, cross-origin browser support, JWT, and bearer-token auth.
 - Deployment promotion beyond the GHCR package, checked-in reference manifests, and
   GitHub Release workflow.
-
-## Roadmap Rules
-
-- Keep this file focused on selected, planned, explicitly deferred, or rejected
-  frontend scope.
-- Move completed milestone summaries into `docs/ROADMAP_ARCHIVE.md` when they leave
-  the active roadmap.
-- Use `CHANGELOG.md` for shipped history.
-- Keep release sequencing in `.agents/references/releases.md`.
-- Keep smoke, hardening, and local validation procedures in their owner docs or AI
-  validation references.
-- Add a separate spec only when user-facing behavior is too broad or ambiguous for a
-  roadmap row.
-- Keep endpoint fields, request schemas, auth header details, and durable API rules in
-  `docs/backend/` or executable tests, not in this roadmap.
-- Update this file when roadmap or product scope changes; update `SETUP.md`,
-  `README.md`, or package configuration only when their owned behavior changes.

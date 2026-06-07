@@ -18,9 +18,9 @@ changed. Then update the smallest owner that can hold the durable rule.
 | Setup, local commands, troubleshooting, or tool usage | `docs/LOCAL_DEVELOPMENT.md` | `SETUP.md`, package scripts, and tool config agree when their behavior changes |
 | Human AI collaboration guidance | `docs/WORKING_WITH_AI.md` | `CONTRIBUTING.md` and AI references link to the same owner when relevant |
 | AI procedure guidance | `.agents/references/` | `AGENTS.md` links to the focused reference instead of duplicating the full rule |
-| Product, milestone, or release scope | `ROADMAP.md` | Specs, changelog, and release references agree when the selected scope changes |
-| Completed roadmap summaries | `docs/ROADMAP_ARCHIVE.md` | `ROADMAP.md` links to the archive and keeps only active, planned, or deferred work |
-| Shipped or release-candidate history | `CHANGELOG.md` | `ROADMAP.md`, package metadata, and release notes agree during release work |
+| Product, milestone, or release scope | `ROADMAP.md` | Use `.agents/references/roadmap.md` for roadmap editing procedure details; specs, changelog, and release references agree when the selected scope changes |
+| Completed roadmap summaries | `docs/ROADMAP_ARCHIVE.md` | Use `.agents/references/roadmap.md` for archive routing; `ROADMAP.md` keeps only active, planned, deferred, or rejected scope |
+| Shipped or release-candidate history | `CHANGELOG.md` | Use `.agents/references/roadmap.md` for changelog routing; `ROADMAP.md`, package metadata, and release notes agree during release work |
 
 Do not leave durable rules only in plans, scratch notes, or final responses. Plans
 can coordinate execution, but the owner document, spec, test, or roadmap row must
@@ -37,7 +37,7 @@ entry points:
 - `README.md`, `SETUP.md`, and `CONTRIBUTING.md` should link to owner docs instead
   of copying procedure bodies.
 - `ROADMAP.md` tracks selected scope, milestone status, release phase, and deferred
-  work.
+  work; `.agents/references/roadmap.md` owns roadmap editing procedure details.
 - `CHANGELOG.md` tracks release-candidate and shipped user-visible history.
 - `docs/specs/` holds selected behavior details only when a roadmap row is not
   specific enough.
@@ -54,5 +54,6 @@ For documentation and guidance tasks:
 - preserve same-origin `/api/**`, session-cookie, metadata-driven login/logout, and
   CSRF invariants for API-facing guidance
 - update `ROADMAP.md` when milestone status, product scope, release state, or
-  deferred scope changes
+  deferred scope changes, using `.agents/references/roadmap.md` for row-shaping and
+  archive/changelog routing
 - run validation from `.agents/references/testing.md` and report skipped checks

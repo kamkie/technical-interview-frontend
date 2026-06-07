@@ -106,6 +106,8 @@ Use these focused references for procedure details that do not belong inline her
 
 - `.agents/references/documentation.md` owns AI-facing artifact routing and
   cross-file alignment checks.
+- `.agents/references/roadmap.md` owns roadmap editing, selected-row shaping,
+  archive/changelog routing, and roadmap alignment checks.
 - `.agents/references/testing.md` owns validation selection by change type.
 - `.agents/references/reviews.md` owns code-review, spec-drift,
   documentation-drift, and security-review triggers.
