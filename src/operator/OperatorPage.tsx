@@ -23,9 +23,14 @@ import {
   sameValues,
   trimmedValues,
 } from '../routing/queryParams'
-import { getDisplayMessage, type LoadState } from '../ui/asyncState'
+import {
+  formatLoadStatus,
+  getDisplayMessage,
+  type LoadState,
+} from '../ui/asyncState'
 import { formatTimestamp } from '../ui/format'
 import { PaginationControls } from '../ui/PaginationControls'
+import { StateBlock } from '../ui/StateBlock'
 
 export const OPERATOR_ROUTE_PATH = '/operator' as const
 
@@ -266,12 +271,11 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
             authenticated session.
           </p>
         </div>
-        <div className="state-block error-state">
-          <p className="state-block-title">Sign in required</p>
-          <p className="session-message error" role="alert">
-            Sign in is required for operator audit access.
-          </p>
-        </div>
+        <StateBlock
+          message="Sign in is required for operator audit access."
+          title="Sign in required"
+          variant="error"
+        />
       </section>
     )
   }
@@ -472,23 +476,21 @@ function OperatorOverview({
 }) {
   if (state.status === 'loading') {
     return (
-      <div className="state-block loading-state">
-        <p className="state-block-title">Loading operator overview</p>
-        <p className="session-message" role="status">
-          Loading operator overview...
-        </p>
-      </div>
+      <StateBlock
+        message="Loading operator overview..."
+        title="Loading operator overview"
+        variant="loading"
+      />
     )
   }
 
   if (state.status === 'error') {
     return (
-      <div className="state-block error-state">
-        <p className="state-block-title">Operator overview unavailable</p>
-        <p className="session-message error" role="alert">
-          {state.message}
-        </p>
-      </div>
+      <StateBlock
+        message={state.message}
+        title="Operator overview unavailable"
+        variant="error"
+      />
     )
   }
 
@@ -711,23 +713,21 @@ function AuditLogResults({
 }) {
   if (state.status === 'loading') {
     return (
-      <div className="state-block loading-state">
-        <p className="state-block-title">Loading audit rows</p>
-        <p className="session-message" role="status">
-          Loading audit logs...
-        </p>
-      </div>
+      <StateBlock
+        message="Loading audit logs..."
+        title="Loading audit rows"
+        variant="loading"
+      />
     )
   }
 
   if (state.status === 'error') {
     return (
-      <div className="state-block error-state">
-        <p className="state-block-title">Audit rows unavailable</p>
-        <p className="session-message error" role="alert">
-          {state.message}
-        </p>
-      </div>
+      <StateBlock
+        message={state.message}
+        title="Audit rows unavailable"
+        variant="error"
+      />
     )
   }
 
@@ -738,12 +738,11 @@ function AuditLogResults({
     <div className="audit-results">
       <AuditPageSummary page={page} query={query} />
       {rows.length === 0 ? (
-        <div className="state-block empty-state">
-          <p className="state-block-title">No audit rows found</p>
-          <p className="session-message muted">
-            No audit entries match these filters.
-          </p>
-        </div>
+        <StateBlock
+          message="No audit entries match these filters."
+          title="No audit rows found"
+          variant="empty"
+        />
       ) : (
         <div className="catalog-table-scroll">
           <table className="catalog-table operator-audit-table">
@@ -912,12 +911,11 @@ function AuditDetailsPanel({
       </div>
 
       {entry === null ? (
-        <div className="state-block empty-state">
-          <p className="state-block-title">No audit entry selected</p>
-          <p className="session-message muted">
-            Select an audit entry to inspect its read-only details.
-          </p>
-        </div>
+        <StateBlock
+          message="Select an audit entry to inspect its read-only details."
+          title="No audit entry selected"
+          variant="empty"
+        />
       ) : (
         <div className="audit-detail-content">
           <dl className="operator-metadata">
@@ -1125,18 +1123,6 @@ function hasStructuredDetails(value: unknown) {
     value !== null &&
     Object.keys(value).length > 0
   )
-}
-
-function formatLoadStatus(status: LoadState<unknown>['status']) {
-  if (status === 'ready') {
-    return 'Ready'
-  }
-
-  if (status === 'error') {
-    return 'Needs attention'
-  }
-
-  return 'Loading'
 }
 
 function createFilterDraftKey(draft: AuditFilterDraft) {

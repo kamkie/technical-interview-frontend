@@ -39,9 +39,15 @@ import {
   type SortField,
   type SortValue,
 } from '../catalog/catalogQuery'
-import { getDisplayMessage, type LoadState, type MutationState } from '../ui/asyncState'
+import {
+  formatLoadStatus,
+  getDisplayMessage,
+  type LoadState,
+  type MutationState,
+} from '../ui/asyncState'
 import { MutationFeedback } from '../ui/MutationFeedback'
 import { PaginationControls } from '../ui/PaginationControls'
+import { StateBlock } from '../ui/StateBlock'
 
 export const ADMIN_CATALOG_ROUTE_PATH = '/admin/catalog' as const
 const EMPTY_CATEGORIES: readonly Category[] = []
@@ -106,33 +112,30 @@ export function AdminCatalogPage({ session }: { session: SessionResponse }) {
       </div>
 
       {accountState.status === 'loading' && (
-        <div className="state-block loading-state">
-          <p className="state-block-title">Checking admin access</p>
-          <p className="session-message" role="status">
-            Loading admin access...
-          </p>
-        </div>
+        <StateBlock
+          message="Loading admin access..."
+          title="Checking admin access"
+          variant="loading"
+        />
       )}
 
       {accountState.status === 'error' && (
-        <div className="state-block error-state">
-          <p className="state-block-title">Admin access unavailable</p>
-          <p className="session-message error" role="alert">
-            {accountState.message}
-          </p>
-        </div>
+        <StateBlock
+          message={accountState.message}
+          title="Admin access unavailable"
+          variant="error"
+        />
       )}
 
       {accountState.status === 'ready' &&
         (hasAdminRole(accountState.value) ? (
           <AdminCatalogManager session={session} />
         ) : (
-          <div className="state-block error-state">
-            <p className="state-block-title">Admin role required</p>
-            <p className="session-message error" role="alert">
-              Admin access is required for catalog management.
-            </p>
-          </div>
+          <StateBlock
+            message="Admin access is required for catalog management."
+            title="Admin role required"
+            variant="error"
+          />
         ))}
     </section>
   )
@@ -793,21 +796,19 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
         </div>
 
         {booksState.status === 'loading' && (
-          <div className="state-block loading-state">
-            <p className="state-block-title">Loading managed books</p>
-            <p className="session-message" role="status">
-              Loading books...
-            </p>
-          </div>
+          <StateBlock
+            message="Loading books..."
+            title="Loading managed books"
+            variant="loading"
+          />
         )}
 
         {booksState.status === 'error' && (
-          <div className="state-block error-state">
-            <p className="state-block-title">Books could not be loaded</p>
-            <p className="session-message error" role="alert">
-              {booksState.message}
-            </p>
-          </div>
+          <StateBlock
+            message={booksState.message}
+            title="Books could not be loaded"
+            variant="error"
+          />
         )}
 
         {booksState.status === 'ready' && (
@@ -878,21 +879,19 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
         <MutationFeedback state={categoryMutationState} />
 
         {categoriesState.status === 'loading' && (
-          <div className="state-block loading-state">
-            <p className="state-block-title">Loading managed categories</p>
-            <p className="session-message" role="status">
-              Loading categories...
-            </p>
-          </div>
+          <StateBlock
+            message="Loading categories..."
+            title="Loading managed categories"
+            variant="loading"
+          />
         )}
 
         {categoriesState.status === 'error' && (
-          <div className="state-block error-state">
-            <p className="state-block-title">Categories could not be loaded</p>
-            <p className="session-message error" role="alert">
-              {categoriesState.message}
-            </p>
-          </div>
+          <StateBlock
+            message={categoriesState.message}
+            title="Categories could not be loaded"
+            variant="error"
+          />
         )}
 
         {categoriesState.status === 'ready' && (
@@ -1079,12 +1078,11 @@ function AdminBookResults({
   if (books.length === 0) {
     return (
       <div className="book-results">
-        <div className="state-block empty-state">
-          <p className="state-block-title">No managed books found</p>
-          <p className="session-message muted">
-            No books match these filters.
-          </p>
-        </div>
+        <StateBlock
+          message="No books match these filters."
+          title="No managed books found"
+          variant="empty"
+        />
         <PaginationControls
           ariaLabel="Admin book pagination"
           pageNumber={pageNumber}
@@ -1235,10 +1233,11 @@ function CategoryManagementList({
 }) {
   if (categories.length === 0) {
     return (
-      <div className="state-block empty-state">
-        <p className="state-block-title">No managed categories</p>
-        <p className="session-message muted">No categories available.</p>
-      </div>
+      <StateBlock
+        message="No categories available."
+        title="No managed categories"
+        variant="empty"
+      />
     )
   }
 
@@ -1430,18 +1429,6 @@ function sortCategories(categories: readonly Category[]) {
   return [...categories].sort((left, right) =>
     (left.name ?? '').localeCompare(right.name ?? ''),
   )
-}
-
-function formatLoadStatus(status: LoadState<unknown>['status']) {
-  if (status === 'ready') {
-    return 'Ready'
-  }
-
-  if (status === 'error') {
-    return 'Needs attention'
-  }
-
-  return 'Loading'
 }
 
 function createFilterDraftKey(draft: CatalogFilterDraft) {

@@ -10,6 +10,7 @@ import {
 } from '../api/catalog'
 import { getDisplayMessage, type LoadState } from '../ui/asyncState'
 import { PaginationControls } from '../ui/PaginationControls'
+import { StateBlock } from '../ui/StateBlock'
 import { CategoryFilter } from './CategoryFilter'
 import {
   DEFAULT_CATALOG_QUERY,
@@ -294,21 +295,19 @@ export function CatalogPanel() {
       )}
 
       {booksState.status === 'loading' && (
-        <div className="state-block loading-state">
-          <p className="state-block-title">Loading catalog results</p>
-          <p className="session-message" role="status">
-            Loading books...
-          </p>
-        </div>
+        <StateBlock
+          message="Loading books..."
+          title="Loading catalog results"
+          variant="loading"
+        />
       )}
 
       {booksState.status === 'error' && (
-        <div className="state-block error-state">
-          <p className="state-block-title">Books could not be displayed</p>
-          <p className="session-message error" role="alert">
-            {booksState.message}
-          </p>
-        </div>
+        <StateBlock
+          message={booksState.message}
+          title="Books could not be displayed"
+          variant="error"
+        />
       )}
 
       {booksState.status === 'ready' && (
@@ -389,12 +388,11 @@ function BookResults({
   if (books.length === 0) {
     return (
       <div className="book-results">
-        <div className="state-block empty-state">
-          <p className="state-block-title">No catalog results</p>
-          <p className="session-message muted">
-            No books match these filters.
-          </p>
-        </div>
+        <StateBlock
+          message="No books match these filters."
+          title="No catalog results"
+          variant="empty"
+        />
         <PaginationControls
           ariaLabel="Book pagination"
           pageNumber={pageNumber}

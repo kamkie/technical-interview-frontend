@@ -103,9 +103,12 @@ describe('AdminUsersPage', () => {
       users: [],
     })
 
-    renderAdminUsers()
+    const { container } = renderAdminUsers()
 
     expect(await screen.findByText('No users returned')).toBeInTheDocument()
+    expect(
+      container.querySelectorAll('.state-block[data-state="empty"]').length,
+    ).toBeGreaterThanOrEqual(2)
     expect(await screen.findByText('No users are available.')).toBeInTheDocument()
     const details = screen.getByRole('complementary', { name: 'User detail' })
     expect(within(details).getByText('No user selected')).toBeInTheDocument()

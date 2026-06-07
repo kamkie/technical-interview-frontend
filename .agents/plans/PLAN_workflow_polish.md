@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-workflow-polish
 
-Status: Draft
+Status: In Progress
 
 Workers: 1
 
@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN_workflow_polish.md`
 - Approved by:
 - Approved at:
 - Open questions: No.
-- Implementation progress: Not started; P0-predecessor-readiness is `Ready` and implementation packets remain `Waiting`.
+- Implementation progress: P0-predecessor-readiness and P1-state-semantics are complete; P2-visual-hierarchy is `Ready` and later implementation packets remain `Waiting`.
 
 Use this plan after `M-UI-001` lands and the predecessor readiness packet confirms shell navigation, route context, and session-control behavior are stable enough for workflow polish. Creating or updating this plan is not implementation approval.
 
@@ -23,6 +23,8 @@ Use this plan after `M-UI-001` lands and the predecessor readiness packet confir
 - 2026-06-07T00:00:00+02:00: none -> Draft by Codex; initial active workflow polish plan created from `M-WORKFLOW-001`.
 - 2026-06-07T22:53:57+02:00: legacy Waiting -> Draft by Codex; migrated to task-packet template and preserved the `M-UI-001` dependency.
 - 2026-06-07T23:36:14+02:00: predecessor `M-UI-001` completed by `PLAN-production-ui-foundation`; P0 promoted to `Ready`.
+- 2026-06-08T00:02:03+02:00: Draft -> In Progress by Codex; P0 confirmed `M-UI-001` readiness and promoted P1 to `Ready`.
+- 2026-06-08T00:10:01+02:00: P1 complete by Worker 1; shared state semantics implemented and P2 promoted to `Ready`.
 
 ## Goal
 
@@ -85,15 +87,15 @@ Load only the artifacts needed for the assigned packet. Do not bulk-load generat
 
 ## Progress Tracker
 
-| Packet                          | Status  | Owner       | Depends On            | Last Updated | Notes                                                                  |
-| ------------------------------- | ------- | ----------- | --------------------- | ------------ | ---------------------------------------------------------------------- |
-| P0-predecessor-readiness        | Ready   | Coordinator | `M-UI-001` completion | 2026-06-07   | Confirm shell/navigation and route context are stable before execution |
-| P1-state-semantics              | Waiting | Worker      | P0                    | 2026-06-07   | Covers `E-STATE-001`                                                   |
-| P2-visual-hierarchy             | Waiting | Worker      | P1                    | 2026-06-07   | Covers `E-WORKFLOW-001`                                                |
-| P3-catalog-workflows            | Waiting | Worker      | P2                    | 2026-06-07   | Covers `E-CATALOG-001`                                                 |
-| P4-admin-operator-workflows     | Waiting | Worker      | P3                    | 2026-06-07   | Covers `E-OPS-001`                                                     |
-| P5-account-session-copy         | Waiting | Worker      | P4                    | 2026-06-07   | Covers `E-AUTH-001`                                                    |
-| P6-final-review-milestone-close | Waiting | Coordinator | P5                    | 2026-06-07   | Confirm owner drift, tests, and handoff evidence                       |
+| Packet                          | Status   | Owner       | Depends On            | Last Updated | Notes                                                                    |
+| ------------------------------- | -------- | ----------- | --------------------- | ------------ | ------------------------------------------------------------------------ |
+| P0-predecessor-readiness        | Complete | Coordinator | `M-UI-001` completion | 2026-06-08   | Confirmed shell/navigation and route context are stable before execution |
+| P1-state-semantics              | Complete | Worker      | P0                    | 2026-06-08   | Covers `E-STATE-001`; shared state blocks and messages implemented       |
+| P2-visual-hierarchy             | Ready    | Worker      | P1                    | 2026-06-08   | Covers `E-WORKFLOW-001`                                                  |
+| P3-catalog-workflows            | Waiting  | Worker      | P2                    | 2026-06-07   | Covers `E-CATALOG-001`                                                   |
+| P4-admin-operator-workflows     | Waiting  | Worker      | P3                    | 2026-06-07   | Covers `E-OPS-001`                                                       |
+| P5-account-session-copy         | Waiting  | Worker      | P4                    | 2026-06-07   | Covers `E-AUTH-001`                                                      |
+| P6-final-review-milestone-close | Waiting  | Coordinator | P5                    | 2026-06-07   | Confirm owner drift, tests, and handoff evidence                         |
 
 Use `Waiting` for these packets until `M-UI-001` is complete and predecessor readiness has been recorded. Do not promote downstream packets to `Ready` until their predecessor lands, validates, and any required checkpoint is complete.
 
@@ -155,17 +157,17 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence from `.agents/references/testing.md`:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Commit:
-- Coordinator reconciliation:
-- Changelog/docs/spec/roadmap updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: complete
+- Worker: Coordinator-owned; no worker required.
+- Changed files or reviewed diff: Reviewed `ROADMAP.md` `M-UI-001` and `M-WORKFLOW-001`; updated this plan's P0 status, stale handoff note, and P1 readiness.
+- Validation evidence from `.agents/references/testing.md`: Passed `npm run lint:markdown`; passed `git diff --check`.
+- Self-review evidence from `.agents/references/reviews.md`: Checked roadmap alignment and documentation drift; no backend contract or security behavior changed.
+- Commit: No implementation commit needed for P0; plan evidence will checkpoint with the next implementation packet when authorized.
+- Coordinator reconciliation: `M-UI-001` is `done`, `M-WORKFLOW-001` is `ready`, and P1 can start.
+- Changelog/docs/spec/roadmap updates: No `ROADMAP.md`, changelog, spec, or owner-doc update needed.
+- Blockers: None.
+- Review risks: None known; P1 must preserve stable-field state branching and localized messages as display content.
+- Handoff notes and next action: Dispatch P1-state-semantics to a fresh implementation worker after P0 validation passes.
 
 ### Task Packet: P1-state-semantics
 
@@ -229,17 +231,17 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence from `.agents/references/testing.md`:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Commit:
-- Coordinator reconciliation:
-- Changelog/docs/spec/roadmap updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: complete
+- Worker: Worker 1 (`019ea41c-8772-7782-baad-80d5254114cb`).
+- Changed files or reviewed diff: Added `src/ui/StateBlock.tsx`; updated `src/ui/MutationFeedback.tsx`, `src/ui/asyncState.ts`, focused `src/index.css` state selectors, public catalog/category, account, admin catalog, admin localization, admin users, operator route components, and affected route/component tests.
+- Validation evidence from `.agents/references/testing.md`: Worker passed targeted route/component tests for account, catalog, admin catalog, admin localization, admin users, and operator; passed `npm run lint`; passed `npm run typecheck`; passed `npm test`; passed `npm run build`; passed `git diff --check`. Coordinator reran `npm run lint` and `git diff --check`.
+- Self-review evidence from `.agents/references/reviews.md`: Reviewed shared state helper use, localized backend messages as display content, no API/generated-type/request/CSRF/auth changes, focused CSS state selectors, and route/component coverage. No owner-doc update needed.
+- Commit: Pending P1 checkpoint commit after coordinator validation.
+- Coordinator reconciliation: P1 deliverables match `E-STATE-001`; P2 can start after the checkpoint commit.
+- Changelog/docs/spec/roadmap updates: No `ROADMAP.md`, changelog, spec, or owner-doc update needed for P1.
+- Blockers: None.
+- Review risks: No manual browser smoke for state styling; P2 includes layout/browser review when materially changed layouts are available.
+- Handoff notes and next action: Create the P1 checkpoint commit, then dispatch P2-visual-hierarchy to a fresh implementation worker.
 
 ### Task Packet: P2-visual-hierarchy
 
@@ -624,15 +626,15 @@ Use this checkpoint before starting each dependent packet, before a pause or han
 
 - Resume docs reread:
   - After context compaction, interruption, resume, or handoff, reread the latest user request, `AGENTS.md`, this plan's header, `## Readiness`, `## Long-Run Continuity`, `## Execution Model`, the current task packet and result summary, `.agents/references/plan-execution.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and the next action's exact owner docs or source files.
-- Current task or wave: none; P0-predecessor-readiness is ready for a future workflow-polish implementation request.
-- Completed commits: none for implementation packets.
-- Plan status and readiness: `Draft`; ready for an explicit implementation request after `M-UI-001`.
-- Validation and self-review state: authoring validation passed on 2026-06-07; implementation validation not started.
-- Coordinator reconciliation state: not started.
-- Changelog, docs, spec, roadmap, or plan updates: this plan migrated to task-packet template on 2026-06-07.
+- Current task or wave: P2-visual-hierarchy is ready after the P1 checkpoint.
+- Completed commits: P1 checkpoint pending.
+- Plan status and readiness: `In Progress`; P0 completed after `M-UI-001`.
+- Validation and self-review state: P0 docs-only validation passed; P1 validation passed.
+- Coordinator reconciliation state: P0 and P1 reconciliation complete; P2 pending dispatch after P1 checkpoint.
+- Changelog, docs, spec, roadmap, or plan updates: this plan migrated to task-packet template on 2026-06-07; P0 and P1 status updated on 2026-06-08.
 - Blockers or open questions: none currently blocking P0.
-- Next action: run P0 when the user asks to implement `PLAN_workflow_polish.md`.
-- Context handoff notes: do not start P1 until P0 lands, validates, and any required checkpoint is complete.
+- Next action: create the P1 checkpoint commit, then dispatch P2-visual-hierarchy.
+- Context handoff notes: do not start P2 until P1 lands, validates, and any required checkpoint is complete.
 
 ## Execution Graph
 
@@ -671,15 +673,15 @@ sequenceDiagram
     O-->>O: Run P6-final-review-milestone-close after P5 lands and checkpoints
 ```
 
-| Packet                          | State   | Dispatch                         | Return  | Orchestrator closeout                    | Checkpoint / next action                 |
-| ------------------------------- | ------- | -------------------------------- | ------- | ---------------------------------------- | ---------------------------------------- |
-| P0-predecessor-readiness        | Ready   | Coordinator-owned; no worker     | N/A     | Pending                                  | Run when implementation is requested     |
-| P1-state-semantics              | Waiting | Planned to Worker 1 after P0     | Pending | Pending                                  | Checkpoint after validation if allowed   |
-| P2-visual-hierarchy             | Waiting | Planned to Worker 2 after P1     | Pending | Pending                                  | Checkpoint after validation if allowed   |
-| P3-catalog-workflows            | Waiting | Planned to Worker 3 after P2     | Pending | Pending                                  | Checkpoint after validation if allowed   |
-| P4-admin-operator-workflows     | Waiting | Planned to Worker 4 after P3     | Pending | Pending                                  | Checkpoint after validation if allowed   |
-| P5-account-session-copy         | Waiting | Planned to Worker 5 after P4     | Pending | Pending                                  | Checkpoint after validation if allowed   |
-| P6-final-review-milestone-close | Waiting | Coordinator-owned after P5 lands | N/A     | Pending final validation and owner check | Close milestone when authorized evidence |
+| Packet                          | State    | Dispatch                         | Return   | Orchestrator closeout                             | Checkpoint / next action                 |
+| ------------------------------- | -------- | -------------------------------- | -------- | ------------------------------------------------- | ---------------------------------------- |
+| P0-predecessor-readiness        | Complete | Coordinator-owned; no worker     | N/A      | Reconciled `M-UI-001` and `M-WORKFLOW-001` status | No implementation commit needed          |
+| P1-state-semantics              | Complete | Dispatched to Worker 1 after P0  | Complete | Reconciled shared state semantics and validation  | Checkpoint commit pending                |
+| P2-visual-hierarchy             | Ready    | Planned to Worker 2 after P1     | Pending  | Pending                                           | Checkpoint after validation if allowed   |
+| P3-catalog-workflows            | Waiting  | Planned to Worker 3 after P2     | Pending  | Pending                                           | Checkpoint after validation if allowed   |
+| P4-admin-operator-workflows     | Waiting  | Planned to Worker 4 after P3     | Pending  | Pending                                           | Checkpoint after validation if allowed   |
+| P5-account-session-copy         | Waiting  | Planned to Worker 5 after P4     | Pending  | Pending                                           | Checkpoint after validation if allowed   |
+| P6-final-review-milestone-close | Waiting  | Coordinator-owned after P5 lands | N/A      | Pending final validation and owner check          | Close milestone when authorized evidence |
 
 ## Validation Plan
 
@@ -707,7 +709,7 @@ sequenceDiagram
 
 ## Handoff Notes
 
-- This plan remains waiting until `M-UI-001` lands.
+- P0 confirmed `M-UI-001` has landed; P1 implemented shared state semantics and P2 is next.
 - Original plan authoring validation from 2026-06-07 passed `npm run lint:markdown` and `git diff --check`.
 - This migration preserves task order and scope while replacing the legacy plan-task tables with task packets.
 - Do not mark `M-WORKFLOW-001` done until implementation packets and required validation have landed.

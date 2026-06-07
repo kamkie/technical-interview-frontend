@@ -153,11 +153,14 @@ describe('OperatorPage', () => {
       surface: {},
     })
 
-    renderOperator()
+    const { container } = renderOperator()
 
     expect(
       await screen.findByText('No audit entries match these filters.'),
     ).toBeInTheDocument()
+    expect(
+      container.querySelectorAll('.state-block[data-state="empty"]').length,
+    ).toBeGreaterThanOrEqual(2)
     expect(screen.getByText('No audit rows found')).toBeInTheDocument()
     expect(screen.getByText('No audit entry selected')).toBeInTheDocument()
     expect(screen.getByText('No recent audit entries available.')).toBeInTheDocument()

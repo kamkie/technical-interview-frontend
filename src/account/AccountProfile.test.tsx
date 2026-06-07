@@ -38,6 +38,7 @@ describe('AccountProfile', () => {
 
     const loadingBlock = screen.getByText('Loading account profile').parentElement
     expect(loadingBlock).not.toBeNull()
+    expect(loadingBlock).toHaveAttribute('data-state', 'loading')
     expect(within(loadingBlock as HTMLElement).getByRole('status')).toHaveTextContent(
       'Loading account...',
     )
@@ -97,7 +98,7 @@ describe('AccountProfile', () => {
     })
     expect(
       await screen.findByText('Language preference updated.'),
-    ).toBeInTheDocument()
+    ).toHaveAttribute('data-state', 'success')
     expect(screen.getByLabelText('Language')).toHaveValue('de')
   })
 
@@ -125,6 +126,7 @@ describe('AccountProfile', () => {
     const errorTitle = await screen.findByText('Account profile unavailable')
     const errorBlock = errorTitle.parentElement
     expect(errorBlock).not.toBeNull()
+    expect(errorBlock).toHaveAttribute('data-state', 'error')
     expect(within(errorBlock as HTMLElement).getByRole('alert')).toHaveTextContent(
       'Profil konta jest niedostepny.',
     )

@@ -131,9 +131,10 @@ describe('AdminCatalogPage', () => {
       }),
     })
 
-    renderAdminCatalog()
+    const { container } = renderAdminCatalog()
 
     expect(await screen.findByText('Admin role required')).toBeInTheDocument()
+    expect(container.querySelector('.state-block[data-state="error"]')).not.toBeNull()
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Admin access is required for catalog management.',
     )
@@ -196,7 +197,10 @@ describe('AdminCatalogPage', () => {
         }),
       })
     })
-    expect(await screen.findByText('Book created.')).toBeInTheDocument()
+    expect(await screen.findByText('Book created.')).toHaveAttribute(
+      'data-state',
+      'success',
+    )
   })
 
   it('keeps book create input values after localized validation failures', async () => {

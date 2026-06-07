@@ -31,8 +31,12 @@ describe('CatalogPanel', () => {
       vi.fn().mockReturnValue(new Promise<Response>(() => undefined)),
     )
 
-    renderCatalogRoute()
+    const { container } = renderCatalogRoute()
 
+    expect(container.querySelector('.state-block[data-state="loading"]')).not.toBeNull()
+    expect(
+      container.querySelector('.session-message[data-state="loading"]'),
+    ).not.toBeNull()
     expect(screen.getByText('Loading categories...')).toBeInTheDocument()
     expect(screen.getByText('Loading books...')).toBeInTheDocument()
   })
@@ -92,9 +96,10 @@ describe('CatalogPanel', () => {
   it('renders an empty state when no books match the current filters', async () => {
     mockCatalogFetch({ books: emptyBookPage })
 
-    renderCatalogRoute()
+    const { container } = renderCatalogRoute()
 
     expect(await screen.findByText('0 books')).toBeInTheDocument()
+    expect(container.querySelector('.state-block[data-state="empty"]')).not.toBeNull()
     expect(screen.getByText('No catalog results')).toBeInTheDocument()
     expect(
       screen.getByText('No books match these filters.'),

@@ -12,3 +12,15 @@ export type MutationState =
 export function getDisplayMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback
 }
+
+export function formatLoadStatus(status: LoadState<unknown>['status']) {
+  if (status === 'ready') {
+    return 'Ready'
+  }
+
+  if (status === 'error') {
+    return 'Needs attention'
+  }
+
+  return 'Loading'
+}

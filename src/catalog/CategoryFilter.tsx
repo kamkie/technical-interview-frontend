@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 
 import type { Category } from '../api/catalog'
 import type { LoadState } from '../ui/asyncState'
+import { StateMessage } from '../ui/StateBlock'
 
 export function CategoryFilter({
   ariaLabel,
@@ -28,19 +29,15 @@ export function CategoryFilter({
   return (
     <div className="category-filter" aria-label={ariaLabel}>
       {categoriesState.status === 'loading' && (
-        <p className="session-message" role="status">
-          Loading categories...
-        </p>
+        <StateMessage variant="loading">Loading categories...</StateMessage>
       )}
 
       {categoriesState.status === 'error' && (
-        <p className="session-message error" role="alert">
-          {categoriesState.message}
-        </p>
+        <StateMessage variant="error">{categoriesState.message}</StateMessage>
       )}
 
       {categoriesState.status === 'ready' && namedCategories.length === 0 && (
-        <p className="session-message muted">No categories available.</p>
+        <StateMessage variant="empty">No categories available.</StateMessage>
       )}
 
       {namedCategories.map((category) => {

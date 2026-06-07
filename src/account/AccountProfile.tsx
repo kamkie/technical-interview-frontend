@@ -6,7 +6,13 @@ import {
   type UserAccount,
 } from '../api/account'
 import type { SessionResponse } from '../api/session'
-import { getDisplayMessage, type LoadState } from '../ui/asyncState'
+import {
+  getDisplayMessage,
+  type LoadState,
+  type MutationState,
+} from '../ui/asyncState'
+import { MutationFeedback } from '../ui/MutationFeedback'
+import { StateBlock } from '../ui/StateBlock'
 
 export function AccountProfile({ session }: { session: SessionResponse }) {
   const [accountState, setAccountState] = useState<LoadState<UserAccount>>({
@@ -48,21 +54,19 @@ export function AccountProfile({ session }: { session: SessionResponse }) {
       </div>
 
       {accountState.status === 'loading' && (
-        <div className="state-block loading-state">
-          <p className="state-block-title">Loading account profile</p>
-          <p className="session-message" role="status">
-            Loading account...
-          </p>
-        </div>
+        <StateBlock
+          message="Loading account..."
+          title="Loading account profile"
+          variant="loading"
+        />
       )}
 
       {accountState.status === 'error' && (
-        <div className="state-block error-state">
-          <p className="state-block-title">Account profile unavailable</p>
-          <p className="session-message error" role="alert">
-            {accountState.message}
-          </p>
-        </div>
+        <StateBlock
+          message={accountState.message}
+          title="Account profile unavailable"
+          variant="error"
+        />
       )}
 
       {accountState.status === 'ready' && (
@@ -145,12 +149,6 @@ const LANGUAGE_OPTIONS = [
   { value: 'no', label: 'Norwegian (no)' },
 ] as const
 
-type LanguageMutationState =
-  | { status: 'idle' }
-  | { status: 'submitting' }
-  | { status: 'success'; message: string }
-  | { status: 'error'; message: string }
-
 function LanguagePreferenceForm({
   account,
   onAccountChange,
@@ -162,7 +160,7 @@ function LanguagePreferenceForm({
 }) {
   const currentLanguage = account.preferredLanguage?.trim() ?? ''
   const [selectedLanguage, setSelectedLanguage] = useState(currentLanguage)
-  const [mutationState, setMutationState] = useState<LanguageMutationState>({
+  const [mutationState, setMutationState] = useState<MutationState>({
     status: 'idle',
   })
   const submitting = mutationState.status === 'submitting'
@@ -250,16 +248,7 @@ function LanguagePreferenceForm({
         </button>
       </div>
 
-      {mutationState.status === 'success' && (
-        <p className="session-message" role="status">
-          {mutationState.message}
-        </p>
-      )}
-      {mutationState.status === 'error' && (
-        <p className="session-message error" role="alert">
-          {mutationState.message}
-        </p>
-      )}
+      <MutationFeedback state={mutationState} />
     </form>
   )
 }

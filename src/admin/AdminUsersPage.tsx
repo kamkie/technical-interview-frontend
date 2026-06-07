@@ -16,9 +16,15 @@ import {
 } from '../api/adminUsers'
 import type { SessionResponse } from '../api/session'
 import { hasAdminRole } from '../auth/roles'
-import { getDisplayMessage, type LoadState, type MutationState } from '../ui/asyncState'
+import {
+  formatLoadStatus,
+  getDisplayMessage,
+  type LoadState,
+  type MutationState,
+} from '../ui/asyncState'
 import { formatTimestamp } from '../ui/format'
 import { MutationFeedback } from '../ui/MutationFeedback'
+import { StateBlock } from '../ui/StateBlock'
 
 export const ADMIN_USERS_ROUTE_PATH = '/admin/users' as const
 export const ADMIN_USER_DETAIL_ROUTE_PATH = `${ADMIN_USERS_ROUTE_PATH}/:id` as const
@@ -76,12 +82,11 @@ export function AdminUsersPage({ session }: { session: SessionResponse }) {
             authenticated admin access is confirmed.
           </p>
         </div>
-        <div className="state-block error-state">
-          <p className="state-block-title">Sign in required</p>
-          <p className="session-message error" role="alert">
-            Sign in is required for user management.
-          </p>
-        </div>
+        <StateBlock
+          message="Sign in is required for user management."
+          title="Sign in required"
+          variant="error"
+        />
       </section>
     )
   }
@@ -98,33 +103,30 @@ export function AdminUsersPage({ session }: { session: SessionResponse }) {
       </div>
 
       {accountState.status === 'loading' && (
-        <div className="state-block loading-state">
-          <p className="state-block-title">Checking admin access</p>
-          <p className="session-message" role="status">
-            Loading admin access...
-          </p>
-        </div>
+        <StateBlock
+          message="Loading admin access..."
+          title="Checking admin access"
+          variant="loading"
+        />
       )}
 
       {accountState.status === 'error' && (
-        <div className="state-block error-state">
-          <p className="state-block-title">Admin access unavailable</p>
-          <p className="session-message error" role="alert">
-            {accountState.message}
-          </p>
-        </div>
+        <StateBlock
+          message={accountState.message}
+          title="Admin access unavailable"
+          variant="error"
+        />
       )}
 
       {accountState.status === 'ready' &&
         (hasAdminRole(accountState.value) ? (
           <AdminUsersManager session={session} />
         ) : (
-          <div className="state-block error-state">
-            <p className="state-block-title">Admin role required</p>
-            <p className="session-message error" role="alert">
-              Admin access is required for user management.
-            </p>
-          </div>
+          <StateBlock
+            message="Admin access is required for user management."
+            title="Admin role required"
+            variant="error"
+          />
         ))}
     </section>
   )
@@ -279,21 +281,19 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
         </div>
 
         {usersState.status === 'loading' && (
-          <div className="state-block loading-state">
-            <p className="state-block-title">Loading users</p>
-            <p className="session-message" role="status">
-              Loading users...
-            </p>
-          </div>
+          <StateBlock
+            message="Loading users..."
+            title="Loading users"
+            variant="loading"
+          />
         )}
 
         {usersState.status === 'error' && (
-          <div className="state-block error-state">
-            <p className="state-block-title">Users could not be loaded</p>
-            <p className="session-message error" role="alert">
-              {usersState.message}
-            </p>
-          </div>
+          <StateBlock
+            message={usersState.message}
+            title="Users could not be loaded"
+            variant="error"
+          />
         )}
 
         {usersState.status === 'ready' && (
@@ -327,10 +327,11 @@ function AdminUserResults({
 }) {
   if (users.length === 0) {
     return (
-      <div className="state-block empty-state">
-        <p className="state-block-title">No users returned</p>
-        <p className="session-message muted">No users are available.</p>
-      </div>
+      <StateBlock
+        message="No users are available."
+        title="No users returned"
+        variant="empty"
+      />
     )
   }
 
@@ -454,39 +455,35 @@ function AdminUserDetailPanel({
       </div>
 
       {state.status === 'loading' && (
-        <div className="state-block loading-state">
-          <p className="state-block-title">Loading selected user</p>
-          <p className="session-message" role="status">
-            Loading user detail...
-          </p>
-        </div>
+        <StateBlock
+          message="Loading user detail..."
+          title="Loading selected user"
+          variant="loading"
+        />
       )}
 
       {state.status === 'error' && (
-        <div className="state-block empty-state">
-          <p className="state-block-title">Detail unavailable</p>
-          <p className="session-message muted">
-            User detail is unavailable until the user list loads.
-          </p>
-        </div>
+        <StateBlock
+          message="User detail is unavailable until the user list loads."
+          title="Detail unavailable"
+          variant="empty"
+        />
       )}
 
       {state.status === 'ready' && selectedRouteId && user === null && (
-        <div className="state-block error-state">
-          <p className="state-block-title">User not found</p>
-          <p className="session-message error" role="alert">
-            No user was found for id {selectedRouteId}.
-          </p>
-        </div>
+        <StateBlock
+          message={`No user was found for id ${selectedRouteId}.`}
+          title="User not found"
+          variant="error"
+        />
       )}
 
       {state.status === 'ready' && !selectedRouteId && user === null && (
-        <div className="state-block empty-state">
-          <p className="state-block-title">No user selected</p>
-          <p className="session-message muted">
-            Select a user to review roles and provenance.
-          </p>
-        </div>
+        <StateBlock
+          message="Select a user to review roles and provenance."
+          title="No user selected"
+          variant="empty"
+        />
       )}
 
       {state.status === 'ready' && user !== null && (
@@ -832,16 +829,4 @@ function formatGrantingOperator(grant: AdminUserRoleGrant) {
   }
 
   return 'System'
-}
-
-function formatLoadStatus(status: LoadState<unknown>['status']) {
-  if (status === 'ready') {
-    return 'Ready'
-  }
-
-  if (status === 'error') {
-    return 'Needs attention'
-  }
-
-  return 'Loading'
 }

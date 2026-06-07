@@ -1,20 +1,13 @@
 import type { MutationState } from './asyncState'
+import { StateMessage } from './StateBlock'
 
 export function MutationFeedback({ state }: { state: MutationState }) {
   if (state.status === 'success') {
-    return (
-      <p className="session-message" role="status">
-        {state.message}
-      </p>
-    )
+    return <StateMessage variant="success">{state.message}</StateMessage>
   }
 
   if (state.status === 'error') {
-    return (
-      <p className="session-message error" role="alert">
-        {state.message}
-      </p>
-    )
+    return <StateMessage variant="error">{state.message}</StateMessage>
   }
 
   return null

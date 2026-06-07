@@ -31,9 +31,15 @@ import {
   sameValues,
   uniqueTrimmedValues,
 } from '../routing/queryParams'
-import { getDisplayMessage, type LoadState, type MutationState } from '../ui/asyncState'
+import {
+  formatLoadStatus,
+  getDisplayMessage,
+  type LoadState,
+  type MutationState,
+} from '../ui/asyncState'
 import { MutationFeedback } from '../ui/MutationFeedback'
 import { PaginationControls } from '../ui/PaginationControls'
+import { StateBlock } from '../ui/StateBlock'
 
 export const ADMIN_LOCALIZATION_ROUTE_PATH = '/admin/localizations' as const
 
@@ -134,33 +140,30 @@ export function AdminLocalizationPage({ session }: { session: SessionResponse })
       </div>
 
       {accountState.status === 'loading' && (
-        <div className="state-block loading-state">
-          <p className="state-block-title">Checking admin access</p>
-          <p className="session-message" role="status">
-            Loading admin access...
-          </p>
-        </div>
+        <StateBlock
+          message="Loading admin access..."
+          title="Checking admin access"
+          variant="loading"
+        />
       )}
 
       {accountState.status === 'error' && (
-        <div className="state-block error-state">
-          <p className="state-block-title">Admin access unavailable</p>
-          <p className="session-message error" role="alert">
-            {accountState.message}
-          </p>
-        </div>
+        <StateBlock
+          message={accountState.message}
+          title="Admin access unavailable"
+          variant="error"
+        />
       )}
 
       {accountState.status === 'ready' &&
         (hasAdminRole(accountState.value) ? (
           <AdminLocalizationManager session={session} />
         ) : (
-          <div className="state-block error-state">
-            <p className="state-block-title">Admin role required</p>
-            <p className="session-message error" role="alert">
-              Admin access is required for localization management.
-            </p>
-          </div>
+          <StateBlock
+            message="Admin access is required for localization management."
+            title="Admin role required"
+            variant="error"
+          />
         ))}
     </section>
   )
@@ -556,23 +559,19 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
         </div>
 
         {localizationsState.status === 'loading' && (
-          <div className="state-block loading-state">
-            <p className="state-block-title">Loading localization rows</p>
-            <p className="session-message" role="status">
-              Loading localizations...
-            </p>
-          </div>
+          <StateBlock
+            message="Loading localizations..."
+            title="Loading localization rows"
+            variant="loading"
+          />
         )}
 
         {localizationsState.status === 'error' && (
-          <div className="state-block error-state">
-            <p className="state-block-title">
-              Localization rows could not be loaded
-            </p>
-            <p className="session-message error" role="alert">
-              {localizationsState.message}
-            </p>
-          </div>
+          <StateBlock
+            message={localizationsState.message}
+            title="Localization rows could not be loaded"
+            variant="error"
+          />
         )}
 
         <LocalizationCoverageTable
@@ -588,12 +587,11 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
               onEditLocalization={(row) => void startEdit(row)}
             />
           ) : (
-            <div className="state-block empty-state">
-              <p className="state-block-title">No localization rows found</p>
-              <p className="session-message muted">
-                No localization rows match these filters.
-              </p>
-            </div>
+            <StateBlock
+              message="No localization rows match these filters."
+              title="No localization rows found"
+              variant="empty"
+            />
           ))}
 
         {localizationsState.status === 'ready' && (
@@ -1035,18 +1033,6 @@ function normalizeQueryLanguage(language: string | null) {
   )
     ? normalized
     : ''
-}
-
-function formatLoadStatus(status: LoadState<unknown>['status']) {
-  if (status === 'ready') {
-    return 'Ready'
-  }
-
-  if (status === 'error') {
-    return 'Needs attention'
-  }
-
-  return 'Loading'
 }
 
 function parsePageSize(value: string | null): PageSize {

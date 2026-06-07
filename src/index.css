@@ -692,6 +692,11 @@ h1 {
   font-weight: 700;
 }
 
+.session-message.success {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+
 .session-message.muted {
   color: var(--color-subtle);
 }
@@ -752,6 +757,15 @@ h1 {
 
 .state-block.loading-state {
   border-style: dashed;
+}
+
+.state-block.empty-state {
+  background: var(--color-surface);
+}
+
+.state-block.success-state {
+  border-color: var(--color-accent);
+  background: var(--color-accent-surface);
 }
 
 .visually-hidden {
