@@ -19,7 +19,7 @@ This roadmap tracks the planned first-party browser frontend for the sibling
 | Implemented surface | Session, public catalog, account, admin catalog, admin localization, admin users, operator |
 | Hardening baseline  | ESLint, TypeScript, Vitest, API type freshness, build, and whitespace checks               |
 | Latest release      | No tagged frontend release yet                                                             |
-| Immediate action    | Prepare the first `0.1.0` release procedure and hardening pass                             |
+| Immediate action    | Prepare first release, procedure docs, AI references, and hardening pass                    |
 | Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`       |
 
 The app currently bootstraps browser session state with `GET /api/session`, renders
@@ -62,20 +62,26 @@ hardening and any newly selected backend-supported scope.
 | M11 - Admin User Management        | Complete | Admin user list/detail with contract-backed role management                                                                                                                                   | Admins can review user profiles, roles, and role-grant provenance, then replace managed roles with CSRF handling and tests for access, empty, success, validation, localized error, and missing-CSRF states                   |
 | M12 - Release Procedure And `0.1.0` Hardening | Ready | Backend-style release preparation adapted to the frontend repo: version selection, changelog promotion, validation, annotated tag, publication checks, and post-release roadmap cleanup | Maintainers can cut the first frontend release from `main` using a documented procedure; `CHANGELOG.md`, `ROADMAP.md`, package metadata, validation evidence, and tag state agree |
 | M13 - Static Analysis And Hardening Tooling | Planned | Frontend hardening gates modeled after the backend repo: CodeQL, dependency/security scanning, SBOM or license reporting, accessibility/smoke checks, report artifacts, and documented triage rules | CI and local scripts expose the selected checks; release preconditions name required hardening evidence; docs explain false-positive handling, skip policy, and artifact locations |
+| M14 - Human Procedure Documentation | Planned | Frontend procedure docs adapted from the backend repo: lifecycle/artifact routing, local development, AI collaboration, and documentation index | `docs/DEVELOPMENT_LIFECYCLE.md`, `docs/LOCAL_DEVELOPMENT.md`, `docs/WORKING_WITH_AI.md`, and `docs/README.md` exist; `README.md`, `SETUP.md`, and `CONTRIBUTING.md` link to the owners without duplicating them |
+| M15 - AI Procedure Reference Layer | Planned | Lean AI-facing owner guides for documentation routing, validation selection, review/security review, and release sequencing | `.agents/references/documentation.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and `.agents/references/releases.md` exist; `AGENTS.md` points to them; backend-only workflow state remains deferred |
 
 ## Near-Term Backlog
 
 1. Execute M12: reconcile stale public docs with the implemented surface, promote the
    candidate `0.1.0` changelog section when tagging, verify package metadata, and
    follow the release procedure below.
-2. Decide whether M13 is a `0.1.0` release blocker or the first post-`0.1.0`
+2. Execute M14 so human-facing setup, local development, lifecycle, AI usage, and
+   documentation navigation have clear owner docs before release.
+3. Execute M15 so AI-facing documentation, validation, review, and release procedure
+   rules move out of roadmap prose into focused owner references.
+4. Decide whether M13 is a `0.1.0` release blocker or the first post-`0.1.0`
    maintenance slice, then select the minimum tool set for this frontend.
-3. Add a canonical browser smoke or e2e command for same-origin session/auth flows
+5. Add a canonical browser smoke or e2e command for same-origin session/auth flows
    once the repository has agreed local credentials, backend profile, and identity
    seeding rules.
-4. Exercise the documented local auth smoke workflow against the sibling backend and
+6. Exercise the documented local auth smoke workflow against the sibling backend and
    move repeatable gaps into tests or owner docs.
-5. Add M14+ roadmap rows only when a new backend-supported surface, UX polish slice,
+7. Add M16+ roadmap rows only when a new backend-supported surface, UX polish slice,
    or release workflow is selected clearly enough to test or document.
 
 ## Pragmatic Smoke Split
@@ -114,6 +120,50 @@ hardening and any newly selected backend-supported scope.
   expansion should update or add specs before implementation.
 - M13 hardening should add package scripts and CI steps only for checks with a
   repeatable local command and a documented owner for failures.
+- M14 and M15 should adapt the backend procedure model without importing backend-only
+  Gradle, container, Helm, operations, or multi-agent workflow-state mechanics.
+
+## Procedure Adoption Scope
+
+The backend repository's procedure model should be adopted selectively. This
+frontend needs the same owner clarity, but not the same operational weight.
+
+Adopt for the frontend:
+
+- `docs/DEVELOPMENT_LIFECYCLE.md` for human-facing lifecycle, artifact routing, and
+  when to use a roadmap row, spec, plan, ADR, or changelog entry.
+- `docs/LOCAL_DEVELOPMENT.md` for npm commands, CI reproduction, local
+  troubleshooting, backend-contract refresh, browser smoke workflow, and hardening
+  commands after M13 lands.
+- `docs/WORKING_WITH_AI.md` for human guidance on asking AI for planning,
+  implementation, validation, review, and release preparation.
+- `docs/README.md` as the human-facing documentation index.
+- `.agents/references/documentation.md` for AI-facing artifact ownership and
+  cross-file alignment.
+- `.agents/references/testing.md` for validation selection by change type, including
+  docs-only, app, API-contract, auth/session, hardening, and release work.
+- `.agents/references/reviews.md` for bug-risk, spec-drift, documentation-drift, and
+  security-review triggers.
+- `.agents/references/releases.md` for release sequencing, version choice, annotated
+  tags, changelog promotion, package-version checks, and post-release roadmap cleanup.
+
+Add only when justified by future work:
+
+- `.agents/references/planning.md` and a reusable plan template if more large
+  multi-milestone plans are expected after M12-M15.
+- A lightweight changed-file classifier or command wrapper only if CI time becomes a
+  real bottleneck.
+- Durable workflow-state directories under `.agents/context/` only if the repository
+  starts using multi-agent delegation or long-lived sidecars again.
+
+Keep deferred:
+
+- Backend operations and deployment runbooks until this frontend owns a deployment
+  target or runtime operations responsibility.
+- Backend-specific Gradle, REST Docs, Flyway, restore-drill, image-signing, GHCR,
+  Helm, Kubernetes, and post-deploy smoke procedures.
+- Container image scanning, deployment posture checks, and runtime infrastructure
+  hardening until the frontend has a corresponding artifact or environment.
 
 ## Hardening Tooling Candidates
 
@@ -121,6 +171,9 @@ M13 should choose the smallest useful set from this list and document any deferr
 tools with a trigger:
 
 - CodeQL for TypeScript/JavaScript source and GitHub workflow analysis.
+- Explicit GitHub Actions permissions and concurrency controls.
+- A deliberate policy for pinning GitHub Actions by SHA, or a documented decision not
+  to pin them for this repository yet.
 - Dependency-review and lockfile checks for pull requests.
 - `npm audit` or another npm-compatible software composition analysis gate, with a
   severity threshold and documented exception process.

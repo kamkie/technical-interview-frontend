@@ -15,6 +15,17 @@ import {
   type OperatorSurface,
 } from '../api/operator'
 import type { SessionResponse } from '../api/session'
+import {
+  appendRepeatedParams,
+  appendStringParam,
+  parseNonNegativeInteger,
+  parsePositiveInteger,
+  sameValues,
+  trimmedValues,
+} from '../routing/queryParams'
+import { getDisplayMessage, type LoadState } from '../ui/asyncState'
+import { formatTimestamp } from '../ui/format'
+import { PaginationControls } from '../ui/PaginationControls'
 
 export const OPERATOR_ROUTE_PATH = '/operator' as const
 
@@ -71,11 +82,6 @@ const SORT_OPTIONS = [
     value: 'targetType,ASC|createdAt,DESC',
   },
 ] as const
-
-type LoadState<T> =
-  | { status: 'loading' }
-  | { status: 'ready'; value: T }
-  | { status: 'error'; message: string }
 
 type AuditQueryState = {
   action: AuditAction | ''
@@ -808,34 +814,19 @@ function AuditPaginationControls({
     page.last === true || (totalPages > 0 && pageNumber >= totalPages - 1)
 
   return (
-    <div className="pagination-controls" aria-label="Audit pagination">
-      <button type="button" disabled={first} onClick={onPreviousPage}>
-        Previous
-      </button>
-      <span>
-        Page {pageNumber + 1}
-        {totalPages > 0 ? ` of ${totalPages}` : ''} - {pageSize} rows
-      </span>
-      <label className="inline-page-size">
-        <span className="visually-hidden">Rows per page</span>
-        <select
-          value={query.size}
-          onChange={(event) => onPageSizeChange(Number(event.currentTarget.value))}
-        >
-          {!PAGE_SIZE_OPTIONS.includes(query.size as PageSizeOption) && (
-            <option value={query.size}>{query.size}</option>
-          )}
-          {PAGE_SIZE_OPTIONS.map((size) => (
-            <option key={size} value={size}>
-              {size}
-            </option>
-          ))}
-        </select>
-      </label>
-      <button type="button" disabled={last} onClick={onNextPage}>
-        Next
-      </button>
-    </div>
+    <PaginationControls
+      ariaLabel="Audit pagination"
+      first={first}
+      last={last}
+      onNextPage={onNextPage}
+      onPageSizeChange={onPageSizeChange}
+      onPreviousPage={onPreviousPage}
+      pageNumber={pageNumber}
+      pageSize={pageSize}
+      pageSizeOptions={PAGE_SIZE_OPTIONS}
+      querySize={query.size}
+      totalPages={totalPages}
+    />
   )
 }
 
@@ -939,9 +930,9 @@ function parseAuditSearchParams(searchParams: URLSearchParams): AuditQueryState 
 function auditQueryToUrlSearchParams(query: AuditQueryState) {
   const searchParams = new URLSearchParams()
 
-  appendString(searchParams, 'targetType', query.targetType)
-  appendString(searchParams, 'action', query.action)
-  appendString(searchParams, 'actorLogin', query.actorLogin)
+  appendStringParam(searchParams, 'targetType', query.targetType)
+  appendStringParam(searchParams, 'action', query.action)
+  appendStringParam(searchParams, 'actorLogin', query.actorLogin)
 
   if (query.page > DEFAULT_AUDIT_PAGE) {
     searchParams.set('page', String(query.page))
@@ -952,7 +943,7 @@ function auditQueryToUrlSearchParams(query: AuditQueryState) {
   }
 
   if (!sameValues(query.sort, DEFAULT_AUDIT_SORT)) {
-    appendRepeated(searchParams, 'sort', query.sort)
+    appendRepeatedParams(searchParams, 'sort', query.sort, { unique: false })
   }
 
   return searchParams
@@ -991,55 +982,6 @@ function normalizeAuditAction(value: string | null): AuditAction | '' {
   return AUDIT_ACTIONS.includes(normalized as AuditAction)
     ? (normalized as AuditAction)
     : ''
-}
-
-function parseNonNegativeInteger(value: string | null, fallback: number) {
-  if (value === null || value.trim() === '') {
-    return fallback
-  }
-
-  const parsed = Number(value)
-
-  return Number.isInteger(parsed) && parsed >= 0 ? parsed : fallback
-}
-
-function parsePositiveInteger(value: string | null, fallback: number) {
-  const parsed = parseNonNegativeInteger(value, fallback)
-
-  return parsed > 0 ? parsed : fallback
-}
-
-function appendString(
-  searchParams: URLSearchParams,
-  name: string,
-  value: string,
-) {
-  const trimmed = value.trim()
-
-  if (trimmed) {
-    searchParams.set(name, trimmed)
-  }
-}
-
-function appendRepeated(
-  searchParams: URLSearchParams,
-  name: string,
-  values: readonly string[],
-) {
-  for (const value of trimmedValues(values)) {
-    searchParams.append(name, value)
-  }
-}
-
-function trimmedValues(values: readonly string[]) {
-  return values.map((value) => value.trim()).filter(Boolean)
-}
-
-function sameValues(left: readonly string[], right: readonly string[]) {
-  return (
-    left.length === right.length &&
-    left.every((value, index) => value === right[index])
-  )
 }
 
 function isCustomSort(sort: readonly string[]) {
@@ -1106,23 +1048,6 @@ function formatOptionalValue(value: unknown) {
   return String(value)
 }
 
-function formatTimestamp(value: string | undefined) {
-  if (!value) {
-    return 'Unknown'
-  }
-
-  const timestamp = new Date(value)
-
-  if (Number.isNaN(timestamp.getTime())) {
-    return value
-  }
-
-  return new Intl.DateTimeFormat(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(timestamp)
-}
-
 function formatOptionalTimestamp(value: string | undefined) {
   if (!value) {
     return undefined
@@ -1137,10 +1062,6 @@ function hasStructuredDetails(value: unknown) {
     value !== null &&
     Object.keys(value).length > 0
   )
-}
-
-function getDisplayMessage(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback
 }
 
 function createFilterDraftKey(draft: AuditFilterDraft) {

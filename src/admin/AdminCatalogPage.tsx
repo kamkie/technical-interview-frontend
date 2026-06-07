@@ -20,6 +20,8 @@ import {
   type UserAccount,
 } from '../api/account'
 import type { SessionResponse } from '../api/session'
+import { hasAdminRole } from '../auth/roles'
+import { CategoryFilter } from '../catalog/CategoryFilter'
 import {
   DEFAULT_CATALOG_QUERY,
   PAGE_SIZE_OPTIONS,
@@ -37,20 +39,12 @@ import {
   type SortField,
   type SortValue,
 } from '../catalog/catalogQuery'
+import { getDisplayMessage, type LoadState, type MutationState } from '../ui/asyncState'
+import { MutationFeedback } from '../ui/MutationFeedback'
+import { PaginationControls } from '../ui/PaginationControls'
 
 export const ADMIN_CATALOG_ROUTE_PATH = '/admin/catalog' as const
 const EMPTY_CATEGORIES: readonly Category[] = []
-
-type LoadState<T> =
-  | { status: 'loading' }
-  | { status: 'ready'; value: T }
-  | { status: 'error'; message: string }
-
-type MutationState =
-  | { status: 'idle' }
-  | { status: 'submitting' }
-  | { status: 'success'; message: string }
-  | { status: 'error'; message: string }
 
 type BookFormMode =
   | { type: 'create' }
@@ -712,6 +706,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
         </form>
 
         <CategoryFilter
+          ariaLabel="Admin category filters"
           categories={namedCategories}
           categoriesState={categoriesState}
           selectedCategories={query.categories}
@@ -989,54 +984,6 @@ function BookManagementForm({
   )
 }
 
-function CategoryFilter({
-  categories,
-  categoriesState,
-  onToggleCategory,
-  selectedCategories,
-}: {
-  categories: readonly (Category & { name: string })[]
-  categoriesState: LoadState<Category[]>
-  onToggleCategory: (categoryName: string) => void
-  selectedCategories: readonly string[]
-}) {
-  return (
-    <div className="category-filter" aria-label="Admin category filters">
-      {categoriesState.status === 'loading' && (
-        <p className="session-message" role="status">
-          Loading categories...
-        </p>
-      )}
-
-      {categoriesState.status === 'error' && (
-        <p className="session-message error" role="alert">
-          {categoriesState.message}
-        </p>
-      )}
-
-      {categoriesState.status === 'ready' && categories.length === 0 && (
-        <p className="session-message muted">No categories available.</p>
-      )}
-
-      {categories.map((category) => {
-        const selected = selectedCategories.includes(category.name)
-
-        return (
-          <button
-            aria-pressed={selected}
-            className={`category-chip ${selected ? 'selected' : ''}`}
-            key={category.id ?? category.name}
-            type="button"
-            onClick={() => onToggleCategory(category.name)}
-          >
-            {category.name}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
 function AdminBookResults({
   onDeleteBook,
   onEditBook,
@@ -1069,6 +1016,7 @@ function AdminBookResults({
       <div className="book-results">
         <p className="session-message muted">No books match these filters.</p>
         <PaginationControls
+          ariaLabel="Admin book pagination"
           pageNumber={pageNumber}
           pageSize={pageSize}
           querySize={query.size}
@@ -1076,8 +1024,9 @@ function AdminBookResults({
           first={first}
           last={last}
           onNextPage={onNextPage}
-          onPageSizeChange={onPageSizeChange}
+          onPageSizeChange={(size) => onPageSizeChange(size as PageSize)}
           onPreviousPage={onPreviousPage}
+          pageSizeOptions={PAGE_SIZE_OPTIONS}
         />
       </div>
     )
@@ -1136,6 +1085,7 @@ function AdminBookResults({
       </div>
 
       <PaginationControls
+        ariaLabel="Admin book pagination"
         pageNumber={pageNumber}
         pageSize={pageSize}
         querySize={query.size}
@@ -1143,8 +1093,9 @@ function AdminBookResults({
         first={first}
         last={last}
         onNextPage={onNextPage}
-        onPageSizeChange={onPageSizeChange}
+        onPageSizeChange={(size) => onPageSizeChange(size as PageSize)}
         onPreviousPage={onPreviousPage}
+        pageSizeOptions={PAGE_SIZE_OPTIONS}
       />
     </div>
   )
@@ -1325,80 +1276,6 @@ function SortableColumnHeader({
   )
 }
 
-function PaginationControls({
-  first,
-  last,
-  onNextPage,
-  onPageSizeChange,
-  onPreviousPage,
-  pageNumber,
-  pageSize,
-  querySize,
-  totalPages,
-}: {
-  first: boolean
-  last: boolean
-  onNextPage: () => void
-  onPageSizeChange: (size: PageSize) => void
-  onPreviousPage: () => void
-  pageNumber: number
-  pageSize: number
-  querySize: PageSize
-  totalPages: number
-}) {
-  return (
-    <div className="pagination-controls" aria-label="Admin book pagination">
-      <button type="button" disabled={first} onClick={onPreviousPage}>
-        Previous
-      </button>
-      <span>
-        Page {pageNumber + 1}
-        {totalPages > 0 ? ` of ${totalPages}` : ''} - {pageSize} rows
-      </span>
-      <label className="inline-page-size">
-        <span className="visually-hidden">Rows per page</span>
-        <select
-          value={querySize}
-          onChange={(event) => onPageSizeChange(Number(event.target.value) as PageSize)}
-        >
-          {PAGE_SIZE_OPTIONS.map((size) => (
-            <option key={size} value={size}>
-              {size}
-            </option>
-          ))}
-        </select>
-      </label>
-      <button type="button" disabled={last} onClick={onNextPage}>
-        Next
-      </button>
-    </div>
-  )
-}
-
-function MutationFeedback({ state }: { state: MutationState }) {
-  if (state.status === 'success') {
-    return (
-      <p className="session-message" role="status">
-        {state.message}
-      </p>
-    )
-  }
-
-  if (state.status === 'error') {
-    return (
-      <p className="session-message error" role="alert">
-        {state.message}
-      </p>
-    )
-  }
-
-  return null
-}
-
-function hasAdminRole(account: UserAccount) {
-  return (account.roles ?? []).includes('ADMIN')
-}
-
 function createEmptyBookDraft(): BookFormDraft {
   return {
     author: '',
@@ -1472,10 +1349,6 @@ function sortCategories(categories: readonly Category[]) {
   return [...categories].sort((left, right) =>
     (left.name ?? '').localeCompare(right.name ?? ''),
   )
-}
-
-function getDisplayMessage(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback
 }
 
 function createFilterDraftKey(draft: CatalogFilterDraft) {

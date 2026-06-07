@@ -4,6 +4,7 @@ import {
   parseApiProblem,
   type FetchImplementation,
 } from './http'
+import { appendNumber, appendString, appendStringList } from './query'
 
 export const OPERATOR_SURFACE_PATH = '/api/admin/operator-surface' as const
 export const AUDIT_LOGS_PATH = '/api/admin/audit-logs' as const
@@ -95,40 +96,4 @@ async function fetchOperatorJson<T>(
   }
 
   return (await response.json()) as T
-}
-
-function appendString(
-  search: URLSearchParams,
-  name: string,
-  value: string | undefined,
-) {
-  const trimmed = value?.trim()
-
-  if (trimmed) {
-    search.set(name, trimmed)
-  }
-}
-
-function appendStringList(
-  search: URLSearchParams,
-  name: string,
-  values: readonly string[] | undefined,
-) {
-  for (const value of values ?? []) {
-    const trimmed = value.trim()
-
-    if (trimmed) {
-      search.append(name, trimmed)
-    }
-  }
-}
-
-function appendNumber(
-  search: URLSearchParams,
-  name: string,
-  value: number | undefined,
-) {
-  if (value !== undefined && Number.isFinite(value)) {
-    search.set(name, String(value))
-  }
 }

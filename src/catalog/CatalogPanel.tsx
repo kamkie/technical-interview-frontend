@@ -8,6 +8,9 @@ import {
   type BookPage,
   type Category,
 } from '../api/catalog'
+import { getDisplayMessage, type LoadState } from '../ui/asyncState'
+import { PaginationControls } from '../ui/PaginationControls'
+import { CategoryFilter } from './CategoryFilter'
 import {
   DEFAULT_CATALOG_QUERY,
   PAGE_SIZE_OPTIONS,
@@ -25,11 +28,6 @@ import {
   type SortField,
   type SortValue,
 } from './catalogQuery'
-
-type LoadState<T> =
-  | { status: 'loading' }
-  | { status: 'ready'; value: T }
-  | { status: 'error'; message: string }
 
 export function CatalogPanel() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -222,6 +220,7 @@ export function CatalogPanel() {
       </form>
 
       <CategoryFilter
+        ariaLabel="Category filters"
         categories={categories}
         categoriesState={categoriesState}
         selectedCategories={query.categories}
@@ -294,63 +293,6 @@ export function CatalogPanel() {
   )
 }
 
-function CategoryFilter({
-  categories,
-  categoriesState,
-  onToggleCategory,
-  selectedCategories,
-}: {
-  categories: readonly Category[]
-  categoriesState: LoadState<Category[]>
-  onToggleCategory: (categoryName: string) => void
-  selectedCategories: readonly string[]
-}) {
-  const namedCategories = useMemo(
-    () =>
-      categories.filter(
-        (category): category is Category & { name: string } =>
-          Boolean(category.name),
-      ),
-    [categories],
-  )
-
-  return (
-    <div className="category-filter" aria-label="Category filters">
-      {categoriesState.status === 'loading' && (
-        <p className="session-message" role="status">
-          Loading categories...
-        </p>
-      )}
-
-      {categoriesState.status === 'error' && (
-        <p className="session-message error" role="alert">
-          {categoriesState.message}
-        </p>
-      )}
-
-      {categoriesState.status === 'ready' && namedCategories.length === 0 && (
-        <p className="session-message muted">No categories available.</p>
-      )}
-
-      {namedCategories.map((category) => {
-        const selected = selectedCategories.includes(category.name)
-
-        return (
-          <button
-            aria-pressed={selected}
-            className={`category-chip ${selected ? 'selected' : ''}`}
-            key={category.id ?? category.name}
-            type="button"
-            onClick={() => onToggleCategory(category.name)}
-          >
-            {category.name}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
 function BookResults({
   onNextPage,
   onPageSizeChange,
@@ -379,6 +321,7 @@ function BookResults({
       <div className="book-results">
         <p className="session-message muted">No books match these filters.</p>
         <PaginationControls
+          ariaLabel="Book pagination"
           pageNumber={pageNumber}
           pageSize={pageSize}
           querySize={query.size}
@@ -386,8 +329,9 @@ function BookResults({
           first={first}
           last={last}
           onNextPage={onNextPage}
-          onPageSizeChange={onPageSizeChange}
+          onPageSizeChange={(size) => onPageSizeChange(size as PageSize)}
           onPreviousPage={onPreviousPage}
+          pageSizeOptions={PAGE_SIZE_OPTIONS}
         />
       </div>
     )
@@ -441,6 +385,7 @@ function BookResults({
       </div>
 
       <PaginationControls
+        ariaLabel="Book pagination"
         pageNumber={pageNumber}
         pageSize={pageSize}
         querySize={query.size}
@@ -448,8 +393,9 @@ function BookResults({
         first={first}
         last={last}
         onNextPage={onNextPage}
-        onPageSizeChange={onPageSizeChange}
+        onPageSizeChange={(size) => onPageSizeChange(size as PageSize)}
         onPreviousPage={onPreviousPage}
+        pageSizeOptions={PAGE_SIZE_OPTIONS}
       />
     </div>
   )
@@ -489,56 +435,6 @@ function SortableColumnHeader({
   )
 }
 
-function PaginationControls({
-  first,
-  last,
-  onNextPage,
-  onPageSizeChange,
-  onPreviousPage,
-  pageNumber,
-  pageSize,
-  querySize,
-  totalPages,
-}: {
-  first: boolean
-  last: boolean
-  onNextPage: () => void
-  onPageSizeChange: (size: PageSize) => void
-  onPreviousPage: () => void
-  pageNumber: number
-  pageSize: number
-  querySize: PageSize
-  totalPages: number
-}) {
-  return (
-    <div className="pagination-controls" aria-label="Book pagination">
-      <button type="button" disabled={first} onClick={onPreviousPage}>
-        Previous
-      </button>
-      <span>
-        Page {pageNumber + 1}
-        {totalPages > 0 ? ` of ${totalPages}` : ''} - {pageSize} rows
-      </span>
-      <label className="inline-page-size">
-        <span className="visually-hidden">Rows per page</span>
-        <select
-          value={querySize}
-          onChange={(event) => onPageSizeChange(Number(event.target.value) as PageSize)}
-        >
-          {PAGE_SIZE_OPTIONS.map((size) => (
-            <option key={size} value={size}>
-              {size}
-            </option>
-          ))}
-        </select>
-      </label>
-      <button type="button" disabled={last} onClick={onNextPage}>
-        Next
-      </button>
-    </div>
-  )
-}
-
 function BookTableRow({ book }: { book: Book }) {
   const categories = (book.categories ?? [])
     .map((category) => category.name)
@@ -553,10 +449,6 @@ function BookTableRow({ book }: { book: Book }) {
       <td>{categories.length > 0 ? categories.join(', ') : 'None'}</td>
     </tr>
   )
-}
-
-function getDisplayMessage(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback
 }
 
 function createFilterDraftKey(draft: CatalogFilterDraft) {

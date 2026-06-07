@@ -50,3 +50,17 @@ export function getBrowserAcceptLanguage() {
 
   return navigator.language || undefined
 }
+
+export function createJsonReadHeaders(
+  acceptLanguage = getBrowserAcceptLanguage(),
+) {
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+  }
+
+  if (acceptLanguage) {
+    headers['Accept-Language'] = acceptLanguage
+  }
+
+  return headers
+}

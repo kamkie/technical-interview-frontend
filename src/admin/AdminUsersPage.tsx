@@ -15,22 +15,15 @@ import {
   type AdminUserRoleUpdateRequest,
 } from '../api/adminUsers'
 import type { SessionResponse } from '../api/session'
+import { hasAdminRole } from '../auth/roles'
+import { getDisplayMessage, type LoadState, type MutationState } from '../ui/asyncState'
+import { formatTimestamp } from '../ui/format'
+import { MutationFeedback } from '../ui/MutationFeedback'
 
 export const ADMIN_USERS_ROUTE_PATH = '/admin/users' as const
 export const ADMIN_USER_DETAIL_ROUTE_PATH = `${ADMIN_USERS_ROUTE_PATH}/:id` as const
 
 const EMPTY_USERS: readonly AdminUserAccount[] = []
-
-type LoadState<T> =
-  | { status: 'loading' }
-  | { status: 'ready'; value: T }
-  | { status: 'error'; message: string }
-
-type MutationState =
-  | { status: 'idle' }
-  | { status: 'submitting' }
-  | { status: 'success'; message: string }
-  | { status: 'error'; message: string }
 
 type RoleDraft = {
   reason: string
@@ -668,26 +661,6 @@ function RolePills({ roles }: { roles: readonly string[] | undefined }) {
   )
 }
 
-function MutationFeedback({ state }: { state: MutationState }) {
-  if (state.status === 'success') {
-    return (
-      <p className="session-message" role="status">
-        {state.message}
-      </p>
-    )
-  }
-
-  if (state.status === 'error') {
-    return (
-      <p className="session-message error" role="alert">
-        {state.message}
-      </p>
-    )
-  }
-
-  return null
-}
-
 function getAdminUserDetailPath(id: number) {
   return `${ADMIN_USERS_ROUTE_PATH}/${encodeURIComponent(String(id))}`
 }
@@ -781,29 +754,4 @@ function formatGrantingOperator(grant: AdminUserRoleGrant) {
   }
 
   return 'System'
-}
-
-function formatTimestamp(value: string | undefined) {
-  if (!value) {
-    return 'Unknown'
-  }
-
-  const timestamp = new Date(value)
-
-  if (Number.isNaN(timestamp.getTime())) {
-    return value
-  }
-
-  return new Intl.DateTimeFormat(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(timestamp)
-}
-
-function hasAdminRole(account: UserAccount) {
-  return (account.roles ?? []).includes('ADMIN')
-}
-
-function getDisplayMessage(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback
 }

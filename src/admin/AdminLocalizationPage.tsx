@@ -23,6 +23,17 @@ import {
   type SupportedLocalizationLanguage,
 } from '../api/localizations'
 import type { SessionResponse } from '../api/session'
+import { hasAdminRole } from '../auth/roles'
+import {
+  appendRepeatedParams,
+  appendStringParam,
+  parseNonNegativeInteger,
+  sameValues,
+  uniqueTrimmedValues,
+} from '../routing/queryParams'
+import { getDisplayMessage, type LoadState, type MutationState } from '../ui/asyncState'
+import { MutationFeedback } from '../ui/MutationFeedback'
+import { PaginationControls } from '../ui/PaginationControls'
 
 export const ADMIN_LOCALIZATION_ROUTE_PATH = '/admin/localizations' as const
 
@@ -52,17 +63,6 @@ const SORT_OPTIONS = [
 ] as const
 
 type PageSize = (typeof PAGE_SIZE_OPTIONS)[number]
-
-type LoadState<T> =
-  | { status: 'loading' }
-  | { status: 'ready'; value: T }
-  | { status: 'error'; message: string }
-
-type MutationState =
-  | { status: 'idle' }
-  | { status: 'submitting' }
-  | { status: 'success'; message: string }
-  | { status: 'error'; message: string }
 
 type LocalizationQueryState = {
   language: string
@@ -543,15 +543,20 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
 
         {localizationsState.status === 'ready' && (
           <PaginationControls
-            first={localizationsState.value.first === true}
-            last={localizationsState.value.last === true}
+            ariaLabel="Localization pagination"
+            first={localizationsState.value.first === true || pageNumber <= 0}
+            last={
+              localizationsState.value.last === true ||
+              (totalPages > 0 && pageNumber >= totalPages - 1)
+            }
             pageNumber={pageNumber}
             pageSize={pageSize}
             querySize={query.size}
             totalPages={totalPages}
             onNextPage={() => goToPage(pageNumber + 1)}
-            onPageSizeChange={changePageSize}
+            onPageSizeChange={(size) => changePageSize(size as PageSize)}
             onPreviousPage={() => goToPage(pageNumber - 1)}
+            pageSizeOptions={PAGE_SIZE_OPTIONS}
           />
         )}
       </section>
@@ -830,78 +835,8 @@ function LocalizationForm({
   )
 }
 
-function PaginationControls({
-  first,
-  last,
-  onNextPage,
-  onPageSizeChange,
-  onPreviousPage,
-  pageNumber,
-  pageSize,
-  querySize,
-  totalPages,
-}: {
-  first: boolean
-  last: boolean
-  onNextPage: () => void
-  onPageSizeChange: (size: PageSize) => void
-  onPreviousPage: () => void
-  pageNumber: number
-  pageSize: number
-  querySize: PageSize
-  totalPages: number
-}) {
-  return (
-    <div className="pagination-controls" aria-label="Localization pagination">
-      <button type="button" disabled={first} onClick={onPreviousPage}>
-        Previous
-      </button>
-      <span>
-        Page {pageNumber + 1}
-        {totalPages > 0 ? ` of ${totalPages}` : ''} - {pageSize} rows
-      </span>
-      <label className="inline-page-size">
-        <span className="visually-hidden">Rows per page</span>
-        <select
-          value={querySize}
-          onChange={(event) => onPageSizeChange(Number(event.target.value) as PageSize)}
-        >
-          {PAGE_SIZE_OPTIONS.map((size) => (
-            <option key={size} value={size}>
-              {size}
-            </option>
-          ))}
-        </select>
-      </label>
-      <button type="button" disabled={last} onClick={onNextPage}>
-        Next
-      </button>
-    </div>
-  )
-}
-
 function CoverageStatus({ status }: { status: LocalizationCoverageStatus }) {
   return <span className={`coverage-pill ${status}`}>{status}</span>
-}
-
-function MutationFeedback({ state }: { state: MutationState }) {
-  if (state.status === 'success') {
-    return (
-      <p className="session-message" role="status">
-        {state.message}
-      </p>
-    )
-  }
-
-  if (state.status === 'error') {
-    return (
-      <p className="session-message error" role="alert">
-        {state.message}
-      </p>
-    )
-  }
-
-  return null
 }
 
 const DEFAULT_LOCALIZATION_QUERY: LocalizationQueryState = {
@@ -929,8 +864,8 @@ function parseLocalizationSearchParams(
 function localizationQueryToUrlSearchParams(query: LocalizationQueryState) {
   const searchParams = new URLSearchParams()
 
-  appendString(searchParams, 'messageKey', query.messageKey)
-  appendString(searchParams, 'language', query.language)
+  appendStringParam(searchParams, 'messageKey', query.messageKey)
+  appendStringParam(searchParams, 'language', query.language)
 
   if (query.page > 0) {
     searchParams.set('page', String(query.page))
@@ -941,7 +876,7 @@ function localizationQueryToUrlSearchParams(query: LocalizationQueryState) {
   }
 
   if (!sameValues(query.sort, DEFAULT_LOCALIZATION_QUERY.sort)) {
-    appendRepeated(searchParams, 'sort', query.sort)
+    appendRepeatedParams(searchParams, 'sort', query.sort)
   }
 
   return searchParams
@@ -1042,72 +977,12 @@ function normalizeQueryLanguage(language: string | null) {
     : ''
 }
 
-function parseNonNegativeInteger(value: string | null, fallback: number) {
-  if (value === null || value.trim() === '') {
-    return fallback
-  }
-
-  const parsed = Number(value)
-
-  return Number.isInteger(parsed) && parsed >= 0 ? parsed : fallback
-}
-
 function parsePageSize(value: string | null): PageSize {
   const parsed = parseNonNegativeInteger(value, DEFAULT_LOCALIZATION_QUERY.size)
 
   return PAGE_SIZE_OPTIONS.includes(parsed as PageSize)
     ? (parsed as PageSize)
     : DEFAULT_LOCALIZATION_QUERY.size
-}
-
-function uniqueTrimmedValues(values: readonly string[]) {
-  const seen = new Set<string>()
-  const normalized: string[] = []
-
-  for (const value of values) {
-    const trimmed = value.trim()
-
-    if (trimmed && !seen.has(trimmed)) {
-      seen.add(trimmed)
-      normalized.push(trimmed)
-    }
-  }
-
-  return normalized
-}
-
-function appendString(
-  searchParams: URLSearchParams,
-  name: string,
-  value: string,
-) {
-  const trimmed = value.trim()
-
-  if (trimmed) {
-    searchParams.set(name, trimmed)
-  }
-}
-
-function appendRepeated(
-  searchParams: URLSearchParams,
-  name: string,
-  values: readonly string[],
-) {
-  for (const value of uniqueTrimmedValues(values)) {
-    searchParams.append(name, value)
-  }
-}
-
-function sameValues(left: readonly string[], right: readonly string[]) {
-  return left.length === right.length && left.every((value, index) => value === right[index])
-}
-
-function hasAdminRole(account: UserAccount) {
-  return (account.roles ?? []).includes('ADMIN')
-}
-
-function getDisplayMessage(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback
 }
 
 function createFilterDraftKey(draft: LocalizationFilterDraft) {

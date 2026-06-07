@@ -1,10 +1,11 @@
 import type { components } from './generated/openapi'
 import {
   ApiRequestError,
-  getBrowserAcceptLanguage,
+  createJsonReadHeaders,
   parseApiProblem,
   type FetchImplementation,
 } from './http'
+import { appendNumber, appendString, appendStringList } from './query'
 import { getCsrfHeaders, type SessionResponse } from './session'
 
 export const BOOKS_PATH = '/api/books' as const
@@ -173,7 +174,7 @@ async function fetchCatalogJson<T>(
   const response = await (options.fetchImplementation ?? globalThis.fetch)(path, {
     method,
     credentials: 'same-origin',
-    headers: createReadHeaders(options.acceptLanguage),
+    headers: createJsonReadHeaders(options.acceptLanguage),
   })
 
   if (!response.ok) {
@@ -254,52 +255,4 @@ async function fetchCatalogMutation(
   }
 
   return response
-}
-
-function createReadHeaders(acceptLanguage = getBrowserAcceptLanguage()) {
-  const headers: Record<string, string> = {
-    Accept: 'application/json',
-  }
-
-  if (acceptLanguage) {
-    headers['Accept-Language'] = acceptLanguage
-  }
-
-  return headers
-}
-
-function appendString(
-  search: URLSearchParams,
-  name: string,
-  value: string | undefined,
-) {
-  const trimmed = value?.trim()
-
-  if (trimmed) {
-    search.set(name, trimmed)
-  }
-}
-
-function appendStringList(
-  search: URLSearchParams,
-  name: string,
-  values: readonly string[] | undefined,
-) {
-  for (const value of values ?? []) {
-    const trimmed = value.trim()
-
-    if (trimmed) {
-      search.append(name, trimmed)
-    }
-  }
-}
-
-function appendNumber(
-  search: URLSearchParams,
-  name: string,
-  value: number | undefined,
-) {
-  if (value !== undefined && Number.isFinite(value)) {
-    search.set(name, String(value))
-  }
 }

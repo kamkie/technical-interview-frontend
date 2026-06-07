@@ -29,6 +29,7 @@ import {
 import { CatalogPanel } from './catalog/CatalogPanel'
 import { CATALOG_ROUTE_PATH } from './catalog/catalogQuery'
 import { OPERATOR_ROUTE_PATH, OperatorPage } from './operator/OperatorPage'
+import { getDisplayMessage } from './ui/asyncState'
 
 const ACCOUNT_ROUTE_PATH = '/account'
 
@@ -368,10 +369,6 @@ function hasAuthorizationPath(
   provider: SessionLoginProvider,
 ): provider is SessionLoginProvider & { authorizationPath: string } {
   return Boolean(provider.authorizationPath)
-}
-
-function getDisplayMessage(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback
 }
 
 export default App

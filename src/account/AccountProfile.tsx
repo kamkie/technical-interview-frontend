@@ -6,11 +6,7 @@ import {
   type UserAccount,
 } from '../api/account'
 import type { SessionResponse } from '../api/session'
-
-type LoadState<T> =
-  | { status: 'loading' }
-  | { status: 'ready'; value: T }
-  | { status: 'error'; message: string }
+import { getDisplayMessage, type LoadState } from '../ui/asyncState'
 
 export function AccountProfile({ session }: { session: SessionResponse }) {
   const [accountState, setAccountState] = useState<LoadState<UserAccount>>({
@@ -272,8 +268,4 @@ function ProfileField({
 
 function formatNumber(value: number | undefined) {
   return value === undefined ? undefined : String(value)
-}
-
-function getDisplayMessage(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback
 }
