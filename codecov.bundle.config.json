@@ -1,0 +1,12 @@
+{
+  "bundleName": "technical-interview-frontend",
+  "enableBundleAnalysis": true,
+  "gitService": "github",
+  "ignorePatterns": [
+    "*.map"
+  ],
+  "oidc": {
+    "useGitHubOIDC": true
+  },
+  "telemetry": false
+}

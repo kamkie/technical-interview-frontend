@@ -22,7 +22,7 @@ archived in `docs/ROADMAP_ARCHIVE.md`. Released history belongs in `CHANGELOG.md
 | Backend integration | Same-origin `/api/**` browser traffic                                                      |
 | Contract source     | `docs/backend/approved-openapi.json` and `docs/backend/FRONTEND_AI_CONTRACT.md`            |
 | Implemented surface | Session, public catalog, account, admin catalog, admin localization, admin users, operator |
-| Hardening baseline  | ESLint, TypeScript, Vitest, API type freshness, build, Docker build, whitespace, npm audit, CodeQL, dependency-review, Dependabot, and release image signing/provenance |
+| Hardening baseline  | ESLint, TypeScript, Vitest, API type freshness, build, Codecov coverage/test/bundle uploads, Docker build, whitespace, npm audit, CodeQL, dependency-review, Dependabot, and release image signing/provenance |
 | Latest release      | Local `v0.1.0` release cut on 2026-06-07; not published remotely                           |
 | Immediate action    | Start M16 contract coverage and implement the selected advisory M20 container/deployment hardening refinement |
 | Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`       |
@@ -181,8 +181,8 @@ Deferred candidates and revisit triggers:
 
 - SBOM and license reporting: revisit when maintainers select a durable
   dependency/license inventory requirement for the published container package.
-- Bundle-size or asset-budget checks: revisit when a reviewed threshold exists or
-  production `dist/` growth becomes a repeated review issue.
+- Enforced bundle-size or asset-budget checks: revisit when a reviewed threshold
+  exists or production `dist/` growth becomes a repeated review issue.
 - Authenticated browser smoke automation: revisit when agreed local credentials,
   identity seeding rules, backend profile, and a canonical command exist.
 - Anonymous browser smoke and accessibility automation: revisit when the repository

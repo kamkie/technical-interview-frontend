@@ -19,6 +19,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
+    "bundle:codecov": "bundle-analyzer ./dist --config-file=./codecov.bundle.config.json",
     "api:types": "node scripts/generate-openapi-types.mjs",
     "api:types:check": "node scripts/generate-openapi-types.mjs --check"
   },
@@ -45,5 +46,8 @@
     "typescript-eslint": "^8.60.1",
     "vite": "^8.0.16",
     "vitest": "^4.1.8"
+  },
+  "optionalDependencies": {
+    "@codecov/bundle-analyzer": "2.0.1"
   }
 }

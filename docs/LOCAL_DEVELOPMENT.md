@@ -102,6 +102,7 @@ promotion belong in deployment-owned overlays or platform policy.
 | Run tests with coverage | `npm run test:coverage` |
 | Run tests in watch mode | `npm run test:watch` |
 | Build | `npm run build` |
+| Upload Codecov bundle analysis from `dist/` | `npm run bundle:codecov` |
 | Build production container image | `npm run docker:build` |
 | Audit high-or-critical dependency advisories | `npm run audit:security` |
 | Advisory container vulnerability scan | `trivy image --exit-code 0 --severity HIGH,CRITICAL technical-interview-frontend` |
@@ -130,6 +131,13 @@ CI's `Test` step adds Vitest's JUnit reporter so Codecov can ingest test results
 ```powershell
 npm test -- --reporter=default --reporter=junit --outputFile.junit=../test-results/vitest.junit.xml
 ```
+
+CI uploads JavaScript bundle analysis to Codecov after `npm run build` by running
+`npm run bundle:codecov` against `dist/`. The analyzer package is optional and
+supports Linux and macOS runners; on Windows it is skipped during install, so treat
+this command as a CI/Linux evidence path unless the package is available locally.
+The upload uses GitHub OIDC from the CI job instead of a checked-in token or local
+secret.
 
 The selected local hardening command can also be run directly:
 
@@ -224,7 +232,9 @@ Implemented M13 checks:
   protected-branch, tag, release, and scheduled evidence. It writes Vitest JUnit
   output to `test-results/vitest.junit.xml` and publishes it to Codecov as
   `test_results`, then runs `npm run test:coverage` and publishes
-  `coverage/lcov.info` to Codecov with the `frontend` flag using GitHub OIDC.
+  `coverage/lcov.info` to Codecov with the `frontend` flag using GitHub OIDC. After
+  the production build, CI runs `npm run bundle:codecov` to upload `dist/` bundle
+  analysis to Codecov through the same GitHub OIDC permission.
 - `.github/workflows/codeql.yml` runs CodeQL for `javascript-typescript` and
   `actions` on pull requests, pushes to `main`, and a weekly schedule. Results
   upload to GitHub code scanning so alerts appear in the repository Security tab,
@@ -309,8 +319,8 @@ Deferred hardening candidates:
 - SBOM and license reporting: revisit when maintainers select a durable
   dependency/license inventory requirement for the published container package
   beyond the signed image itself.
-- Bundle-size and asset budgets: revisit when the project owns a reviewed size
-  threshold or production `dist/` growth becomes a repeated review concern.
+- Enforced bundle-size and asset budgets: revisit when the project owns a reviewed
+  size threshold or production `dist/` growth becomes a repeated review concern.
 - Authenticated browser smoke automation: revisit when the repository has agreed
   local credentials, identity seeding rules, backend profile, and a canonical
   command.
