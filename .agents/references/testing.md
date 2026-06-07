@@ -69,6 +69,16 @@ are Trivy for the production container image, kube-linter for rendered Kustomize
 Helm manifests, and a repo-owned runtime/Nginx check for `Dockerfile` plus
 `docker/nginx/` invariants.
 
+Selected commands:
+
+- `npm run hardening:runtime` checks the Dockerfile and Nginx template invariants.
+- `npm run hardening:kube-linter` renders Kustomize and Helm manifests under
+  ignored `temp/hardening/rendered` before invoking kube-linter.
+- `npm run hardening:trivy` scans the locally built `technical-interview-frontend`
+  image with Trivy and keeps vulnerability findings advisory with exit code `0`.
+- `npm run hardening:m20` runs the selected advisory checks in sequence when all
+  external tools are installed.
+
 Tool installation, rendering, or check configuration failures should be fixed or
 recorded as unavailable. Vulnerability, posture, and runtime findings should be
 triaged, but they are not release-blocking until a later roadmap row or release

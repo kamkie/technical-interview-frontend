@@ -104,8 +104,10 @@ promotion belong in deployment-owned overlays or platform policy.
 | Build | `npm run build` |
 | Build production container image | `npm run docker:build` |
 | Audit high-or-critical dependency advisories | `npm run audit:security` |
-| Advisory container vulnerability scan | `trivy image --exit-code 0 --severity HIGH,CRITICAL technical-interview-frontend` |
-| Advisory deployment posture check | Render `infra/` manifests and run `kube-linter lint temp/hardening` |
+| M20 advisory runtime/Nginx invariant check | `npm run hardening:runtime` |
+| M20 advisory rendered-manifest posture check | `npm run hardening:kube-linter` |
+| M20 advisory container vulnerability scan | `npm run hardening:trivy` |
+| M20 advisory hardening checks | `npm run hardening:m20` |
 | Generate API types | `npm run api:types` |
 | Verify API types without rewriting | `npm run api:types:check` |
 | Validate whitespace in the diff | `git diff --check` |
@@ -141,6 +143,7 @@ The selected local hardening command can also be run directly:
 
 ```powershell
 npm run audit:security
+npm run hardening:m20
 ```
 
 Use Corepack to invoke the repository package manager when plain `npm` resolves
@@ -176,7 +179,8 @@ release workflow only after maintainers accept the environment limitation.
 When M20 hardening tooling or runtime config changes, also run the selected
 advisory checks that apply to the changed artifact. Keep generated reports out of
 git during the first pass; local command output, pull-request logs, or workflow logs
-are the evidence location.
+are the evidence location. The rendered-manifest check writes scratch manifests
+under ignored `temp/hardening/rendered`.
 
 ## Backend Contract Refresh
 
@@ -258,34 +262,30 @@ Selected M20 advisory checks:
 
 - Container vulnerability scanning uses Trivy against the image built by
   `npm run docker:build`. The first pass is advisory and keeps Trivy's exit code at
-  `0` for vulnerability findings:
+  `0` for vulnerability findings. Set `FRONTEND_IMAGE` only when scanning a
+  deliberately different local tag:
 
   ```powershell
   npm run docker:build
-  trivy image --exit-code 0 --severity HIGH,CRITICAL technical-interview-frontend
+  npm run hardening:trivy
   ```
 
 - Deployment posture checks use kube-linter against rendered Kustomize and Helm
-  manifests. Write rendered manifests under ignored `temp/hardening`, review
-  findings, and delete the scratch directory when finished:
+  manifests, not the unrendered source templates alone. The repo-owned wrapper
+  renders the base and local Kustomize overlays plus the base and local Helm chart
+  outputs under ignored `temp/hardening/rendered`, then runs kube-linter against
+  that rendered directory:
 
   ```powershell
-  Remove-Item -Recurse -Force temp/hardening -ErrorAction SilentlyContinue
-  New-Item -ItemType Directory -Force temp/hardening | Out-Null
-  kubectl kustomize infra/k8s/base | Out-File -Encoding utf8 temp/hardening/kustomize-base.yaml
-  kubectl kustomize infra/k8s/overlays/local | Out-File -Encoding utf8 temp/hardening/kustomize-local.yaml
-  helm template technical-interview-frontend infra/helm/technical-interview-frontend | Out-File -Encoding utf8 temp/hardening/helm-base.yaml
-  helm template technical-interview-frontend infra/helm/technical-interview-frontend -f infra/helm/technical-interview-frontend/values-local.yaml | Out-File -Encoding utf8 temp/hardening/helm-local.yaml
-  kube-linter lint temp/hardening
-  Remove-Item -Recurse -Force temp/hardening
+  npm run hardening:kube-linter
   ```
 
-- Runtime/Nginx hardening uses a repo-owned check added by the M20 implementation.
-  It should cover the production `Dockerfile` and `docker/nginx/` template
-  invariants that this frontend owns, including use of the unprivileged Nginx image,
-  port `8080`, `/healthz`, same-origin `/api` proxying through
-  `FRONTEND_API_UPSTREAM`, and no browser CORS, JWT, bearer-token, or hard-coded
-  provider-path assumptions.
+- Runtime/Nginx hardening uses `npm run hardening:runtime`. It covers the
+  production `Dockerfile` and `docker/nginx/` template invariants that this
+  frontend owns, including the canonical Node 24 build stage, use of the
+  unprivileged Nginx image, port `8080`, `/healthz`, same-origin `/api` proxying
+  through `FRONTEND_API_UPSTREAM`, and no browser CORS, JWT, bearer-token, or
+  hard-coded provider-path assumptions.
 
 M20 findings are advisory until a later roadmap row or release decision selects a
 stable threshold. Tool installation or command/configuration failures should be
