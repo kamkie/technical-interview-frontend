@@ -255,6 +255,8 @@ npm run smoke:authenticated
 
 The command starts Vite in mock mode, forces an anonymous starting session, launches Playwright Chromium, and chooses an available localhost port starting at `127.0.0.1:5173`. Set `FRONTEND_AUTH_SMOKE_PORT` to request a different starting port, `FRONTEND_AUTH_SMOKE_STRICT_PORT=true` to fail instead of selecting the next open port, and `FRONTEND_SMOKE_HEADLESS=false` to watch the browser run.
 
+`npm run smoke:authenticated` prints the validation date, frontend URL, backend profile (`internal contract-backed mock API`), selected flow, route coverage, API coverage, pass/skip/fail semantics, and skipped authenticated steps. A passing run should report `Skipped authenticated steps: none`. Browser or mock-server prerequisite skips are environment evidence and still exit nonzero; do not treat them as a product pass.
+
 When prerequisites are available, the command verifies:
 
 - anonymous `GET /api/session` metadata and the advertised mock login provider

@@ -11,6 +11,9 @@ const SESSION_PATH = '/api/session'
 const ACCOUNT_ROUTE_PATH = '/account'
 const ADMIN_USERS_PATH = '/api/admin/users'
 const ADMIN_USERS_ROUTE_PATH = '/admin/users'
+const BACKEND_PROFILE = 'internal contract-backed mock API'
+const SELECTED_FLOW =
+  'contract-backed mock authenticated browser flow from anonymous session to mock admin session and logout'
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const results = []
@@ -19,6 +22,14 @@ class SmokeFailure extends Error {
   constructor(step, message) {
     super(message)
     this.name = 'SmokeFailure'
+    this.step = step
+  }
+}
+
+class SmokePrerequisiteUnavailable extends Error {
+  constructor(step, message) {
+    super(message)
+    this.name = 'SmokePrerequisiteUnavailable'
     this.step = step
   }
 }
@@ -37,6 +48,11 @@ function fail(step, detail) {
   throw new SmokeFailure(step, detail)
 }
 
+function skipPrerequisite(step, detail) {
+  record('skip', step, `prerequisite unavailable: ${detail}`)
+  throw new SmokePrerequisiteUnavailable(step, detail)
+}
+
 function assertCondition(condition, step, detail) {
   if (!condition) {
     fail(step, detail)
@@ -47,12 +63,15 @@ async function main() {
   const config = readConfig()
 
   console.log('Authenticated mock browser smoke')
-  console.log('Backend profile: internal contract-backed mock API')
+  console.log(`Validation date: ${config.validationDate}`)
+  console.log(`Backend profile: ${BACKEND_PROFILE}`)
+  console.log(`Selected flow: ${SELECTED_FLOW}`)
   console.log(`Timeout: ${config.timeoutMs}ms`)
 
   const mockServer = await startMockServer(config)
 
   try {
+    printEvidenceHeader(mockServer.origin)
     await runBrowserSmoke({ ...config, origin: mockServer.origin })
   } finally {
     await mockServer.close()
@@ -79,7 +98,21 @@ function readConfig() {
       Number.isFinite(timeoutMs) && timeoutMs > 0
         ? timeoutMs
         : DEFAULT_TIMEOUT_MS,
+    validationDate: new Date().toISOString(),
   }
+}
+
+function printEvidenceHeader(origin) {
+  console.log(`Frontend URL: ${origin}/`)
+  console.log(
+    `Route coverage: /catalog anonymous bootstrap, ${ACCOUNT_ROUTE_PATH} authenticated account route, ${ADMIN_USERS_ROUTE_PATH} authenticated admin route, and ${ACCOUNT_ROUTE_PATH} post-logout guard`,
+  )
+  console.log(
+    `API coverage: ${SESSION_PATH}, discovered loginProviders[].authorizationPath, discovered accountPath/logoutPath, ${ADMIN_USERS_PATH}, and same-origin /api/** request observation`,
+  )
+  console.log(
+    'Result semantics: pass means the smoke assertions passed; skip means a frontend/browser prerequisite was unavailable and the command exits nonzero; fail means an available smoke assertion failed',
+  )
 }
 
 async function startMockServer(config) {
@@ -102,7 +135,7 @@ async function startMockServer(config) {
     await viteServer.listen()
   } catch (error) {
     await viteServer.close()
-    fail(
+    skipPrerequisite(
       'mock frontend server',
       `could not start Vite mock server: ${error.message}`,
     )
@@ -127,7 +160,7 @@ async function runBrowserSmoke(config) {
   try {
     playwright = await import('playwright')
   } catch (error) {
-    fail(
+    skipPrerequisite(
       'browser automation',
       `Playwright is not installed or cannot be imported: ${error.message}`,
     )
@@ -140,7 +173,7 @@ async function runBrowserSmoke(config) {
       headless: process.env.FRONTEND_SMOKE_HEADLESS !== 'false',
     })
   } catch (error) {
-    fail(
+    skipPrerequisite(
       'browser automation',
       `Chromium is unavailable for Playwright. Run npx playwright install chromium and retry. ${error.message}`,
     )
@@ -395,6 +428,11 @@ async function verifyCsrfLogout(page, context, config, session) {
     `${session.accountPath} returned HTTP ${accountAfterLogout.status}; expected 401`,
   )
 
+  pass('post-logout session', `${SESSION_PATH} returned anonymous session state`)
+  pass(
+    'post-logout account guard',
+    `${session.accountPath} returned HTTP 401 after logout`,
+  )
   pass(
     'csrf-backed logout',
     `${session.logoutPath} returned 204 and the browser returned to anonymous session state`,
@@ -599,21 +637,40 @@ function formatValue(value) {
 
 function printSummary() {
   const counts = {
-    fail: results.filter((result) => result.status === 'fail').length,
     pass: results.filter((result) => result.status === 'pass').length,
+    skip: results.filter((result) => result.status === 'skip').length,
+    fail: results.filter((result) => result.status === 'fail').length,
   }
-  const overall = counts.fail > 0 ? 'FAILED' : 'PASSED'
+  const overall =
+    counts.fail > 0
+      ? 'FAILED'
+      : counts.skip > 0
+        ? 'PREREQUISITE SKIPPED'
+        : 'PASSED'
+  const skipped = results.filter((result) => result.status === 'skip')
 
   console.log('')
   console.log(
-    `Authenticated mock smoke summary: ${overall} (${counts.pass} passed, ${counts.fail} failed)`,
+    `Authenticated mock smoke summary: ${overall} (${counts.pass} passed, ${counts.skip} skipped, ${counts.fail} failed)`,
   )
+
+  if (skipped.length > 0) {
+    console.log('Skipped authenticated steps:')
+    for (const result of skipped) {
+      console.log(`- ${result.step}: ${result.detail}`)
+    }
+  } else {
+    console.log('Skipped authenticated steps: none')
+  }
 }
 
 try {
   await main()
 } catch (error) {
-  if (!(error instanceof SmokeFailure)) {
+  if (
+    !(error instanceof SmokeFailure) &&
+    !(error instanceof SmokePrerequisiteUnavailable)
+  ) {
     record('fail', 'unexpected error', error.stack ?? error.message ?? String(error))
   }
 
