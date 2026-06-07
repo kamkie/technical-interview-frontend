@@ -31,7 +31,15 @@ Use `docs/LOCAL_DEVELOPMENT.md` and `package.json` for current runtime, package 
 
 ## Instruction Map
 
-Start with this file and the user's request. Use `.agents/references/documentation.md` for the focused-reference and durable-owner map. Load only the owner files needed for the current task, and do not bulk-load generated contract files unless exact schema details are required.
+Start with this file and the user's request. Use `.agents/references/documentation.md` for the focused-reference and durable-owner map. Load only the owner files needed for the current task, and do not bulk-load AI guidance, generated contract files, source trees, or archives unless the current task, explicit audit scope, cross-document consistency check, or validation failure requires it.
+
+## Artifact Lookup
+
+- Treat `PLAN-<short-kebab-slug>` references as active-plan references and search `.agents/plans/` first, then `.agents/plans/archive/` when the active file is not found.
+- Treat `M-AREA-NNN`, `E-AREA-NNN`, and `T-AREA-NNN` references as roadmap references and search `ROADMAP.md` first, then `docs/ROADMAP_ARCHIVE.md` when the active roadmap does not contain the ID.
+- Treat `SPEC_<slug>` or `docs/specs/<name>` references as selected frontend behavior specs and search `docs/specs/`.
+- Treat named repository prompt references as prompt recipes and search `.agents/prompts/README.md` first, then load only the matching prompt file from `.agents/prompts/`.
+- Prefer exact filename lookup when a full filename is supplied. If only an ID or prefix is supplied, use a scoped search in the owning directory before falling back to repository-wide search.
 
 ## Execution Routing
 

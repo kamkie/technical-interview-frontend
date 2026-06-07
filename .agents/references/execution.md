@@ -36,6 +36,12 @@ Use this loop for ordinary tasks:
 7. Review the diff for owner drift using `.agents/references/documentation.md` and `.agents/references/reviews.md` when owner boundaries are crossed.
 8. Hand off with changed files, validation, skipped checks, and remaining risks.
 
+## Resume And Learning Capture
+
+After context compaction, resume, or summarized handoff, reread the latest user request, `AGENTS.md`, and the most specific governing artifact needed for the next action. Reconcile that resumed context with current worktree state, in-progress validation, active plan or roadmap gates, and newer user instructions before continuing.
+
+Run a learning-capture checkpoint before handoff when validation fails, retries repeat, CI fails, or the user corrects the agent. Decide whether the lesson belongs in an executable test, owner document, focused reference, prompt, active plan update, or no durable rule. Use `.agents/references/references-rules.md` before adding persistent AI guidance, and do not turn one-off mistakes into standing rules without a recurring trigger.
+
 ## Validation And Handoff
 
 Use `.agents/references/testing.md` to select validation. Do not run broad npm commands for guidance-only work unless the task changes source code, package scripts, workflows, generated files, or executable behavior.

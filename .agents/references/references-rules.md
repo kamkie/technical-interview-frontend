@@ -29,6 +29,13 @@ When adding a focused guide:
 - add or update `AGENTS.md` only when the root entry point needs to advertise the guide
 - run the validation selected by `.agents/references/testing.md`
 
+When learning from validation failure, repeated retries, CI failure, or a user correction:
+
+- first identify whether the recurring lesson belongs in a test, owner document, backend contract artifact, roadmap row, active plan, prompt, or focused reference
+- add focused-reference guidance only when the lesson is durable AI procedure with a recurring trigger
+- keep one-off observations in the handoff or active plan instead of creating standing rules
+- update `.agents/references/documentation.md`, `AGENTS.md`, or `.agents/prompts/README.md` only when routing or catalog behavior changes
+
 When removing or merging a focused guide:
 
 - move any still-valid rule into the remaining owner before deleting it

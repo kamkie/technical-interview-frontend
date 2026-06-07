@@ -36,7 +36,9 @@ Coordinator prompts should include only the context needed for the slice:
 - Roadmap work: `.agents/references/roadmap.md`.
 - Active-plan work: the plan file and `.agents/references/plan-execution.md`.
 
-Do not bulk-load generated contracts, source trees, or unrelated reference files unless exact schema, code placement, or owner detail is needed.
+Do not bulk-load AI guidance, generated contracts, source trees, archives, or unrelated reference files unless exact schema, code placement, owner detail, broad-audit scope, cross-document consistency, or validation failure triage requires it.
+
+After compaction, resume, or summarized worker handoff, reload only the latest user request, `AGENTS.md`, and the most specific governing artifact for the next action before continuing.
 
 ## Worker Handoff Requirements
 

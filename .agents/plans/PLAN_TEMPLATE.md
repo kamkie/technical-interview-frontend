@@ -42,6 +42,14 @@ Use `Ready` only when the slice can be assigned from the current repository stat
 | Focused references | `.agents/references/[file].md` | Procedure owner for [planning / execution / testing / reviews / documentation / other]                                        | [Current / Needs update / Read-only]       |
 | Specs or tests     | `[path]`                       | Executable or documented owner for changed behavior                                                                           | [Current / Needs update / Not applicable]  |
 
+## Artifact Lookup
+
+- Resolve `PLAN-<short-kebab-slug>` in `.agents/plans/` first, then `.agents/plans/archive/`.
+- Resolve `M-AREA-NNN`, `E-AREA-NNN`, and `T-AREA-NNN` in `ROADMAP.md` first, then `docs/ROADMAP_ARCHIVE.md`.
+- Resolve selected behavior specs under `docs/specs/`.
+- Resolve named repository prompts through `.agents/prompts/README.md`, then load only the matching prompt file.
+- Use scoped lookup in the owning directory before broad repository search.
+
 ## Summary
 
 [Briefly state the intended outcome, user-visible behavior or repository rule being changed, and why this plan exists.]
@@ -116,13 +124,14 @@ Implementation notes:
 
 ## Blockers And Replan Triggers
 
-| Trigger Or Blocker                                          | Response                                                                                                                | Owner               | Status |
-| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------- | ------ |
-| Backend contract conflict appears                           | Inspect or refresh imported backend artifacts only if API-facing behavior is changing; otherwise record as out of scope | [Coordinator]       | [Open] |
-| Unexpected dirty changes appear inside assigned write scope | Stop and report changed files, scope impact, and proposed next action                                                   | [Worker]            | [Open] |
-| Work requires edits outside assigned scope                  | Stop and replan or assign a new scoped worker                                                                           | [Coordinator]       | [Open] |
-| Durable rule would live only in this plan                   | Move the rule to its owner document, contract, test, reference, roadmap row, or source file before completion           | [Coordinator]       | [Open] |
-| Validation failure is routine and scoped                    | Fix, reassign, or record according to the task; do not treat it as a user blocker by default                            | [Responsible owner] | [Open] |
+| Trigger Or Blocker                                                 | Response                                                                                                                | Owner               | Status |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- | ------------------- | ------ |
+| Backend contract conflict appears                                  | Inspect or refresh imported backend artifacts only if API-facing behavior is changing; otherwise record as out of scope | [Coordinator]       | [Open] |
+| Unexpected dirty changes appear inside assigned write scope        | Stop and report changed files, scope impact, and proposed next action                                                   | [Worker]            | [Open] |
+| Work requires edits outside assigned scope                         | Stop and replan or assign a new scoped worker                                                                           | [Coordinator]       | [Open] |
+| Work requires an unassigned roadmap, decision, or owner-doc change | Stop and replan or assign that owner before implementation continues                                                    | [Coordinator]       | [Open] |
+| Durable rule would live only in this plan                          | Move the rule to its owner document, contract, test, reference, roadmap row, or source file before completion           | [Coordinator]       | [Open] |
+| Validation failure is routine and scoped                           | Fix, reassign, or record according to the task; do not treat it as a user blocker by default                            | [Responsible owner] | [Open] |
 
 ## Validation Plan
 
@@ -157,6 +166,8 @@ Each worker report must include:
 - whether `ROADMAP.md` was edited and which stable IDs or references changed
 - whether obsolete roadmap sections were recreated
 - remaining risks, contradictions, smoke gaps, contract gaps, or owner-drift concerns
+
+After resume, compaction, or summarized handoff, reread the latest user request, `AGENTS.md`, this plan, and the next slice's governing owner before continuing. If validation failed, retries repeated, CI failed, or the user corrected the agent during plan work, record whether the lesson belongs in a test, owner document, focused reference, prompt, active plan update, or no durable rule.
 
 Final handoff must include:
 
