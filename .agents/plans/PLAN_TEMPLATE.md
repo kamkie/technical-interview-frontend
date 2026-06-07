@@ -72,8 +72,9 @@ Out of scope:
 
 ## Contract And Repository Invariants
 
-- Preserve backend contract invariants: same-origin `/api/**`, session-cookie auth, `GET /api/session`, login providers from `loginProviders[]`, session metadata for account/logout/CSRF names, CSRF header mirroring for unsafe writes with a real current session, localized messages as display content, stable-field branching, Spring pagination, repeated filters, and book `version` on updates.
-- Do not invent endpoints, request fields, authentication headers, CORS-first behavior, JWT or bearer-token assumptions, alternate transports, or provider-specific OAuth paths.
+- Route API-facing behavior through `docs/backend/` and the imported backend contract artifacts before implementation.
+- Do not invent endpoints, request fields, authentication flows, transport assumptions, provider-specific OAuth paths, pagination/filter semantics, or update concurrency rules.
+- Preserve routine frontend/backend boundaries: same-origin `/api/**`, session-cookie auth, backend-provided session metadata, localized messages as display content, and stable-field branching.
 - Confirm implementation authorization before changing repository state unless this active plan and current user request explicitly authorize the scoped work.
 - Run `git status --short` before editing and treat existing or unexpected changes as user-owned.
 - Assign explicit write scopes to workers and keep unrelated user or parallel-worker changes intact.

@@ -25,7 +25,7 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 - Release phase: Post-`0.2.0` maintenance.
 - Next target version: Future maintenance release; final scope and version selected before release prep.
 - Current priority: M-UI-001: Production UI Foundation.
-- Active product plan: None checked in; create a focused plan from `.agents/plans/PLAN_TEMPLATE.md` when selected milestone work needs coordination.
+- Active product plan: `PLAN-workflow-polish` is checked in for `M-WORKFLOW-001` planning; execution waits for `M-UI-001`.
 - Selection policy: Breaking user-facing or backend-contract integration changes require a selected roadmap item.
 
 ## Product Direction
@@ -81,7 +81,9 @@ Acceptance Criteria:
 
 ### M-WORKFLOW-001: Workflow Polish
 
-Labels: `type:milestone`, `status:waiting`
+Labels: `type:milestone`, `status:waiting`, `plan:PLAN-workflow-polish`
+
+Plan ID: `PLAN-workflow-polish`
 
 Goal: Improve daily catalog, account, admin, and operator workflows after the production shell foundation lands.
 

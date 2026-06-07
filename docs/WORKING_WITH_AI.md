@@ -14,7 +14,7 @@ Tell the AI when it may commit, tag, push, or publish. If you do not grant that 
 
 ## Planning Requests
 
-Ask for a plan when work spans multiple owners, milestones, or commits. For ad hoc implementation work, expect the repository workflow to use a planning subagent before a separate implementation subagent. A useful planning request should ask the AI to identify:
+Ask for a plan when work spans multiple owners, milestones, or commits. Research, exploration, and planning subagents are optional for ad hoc work; use them when they reduce ambiguity, split ownership cleanly, or prepare a narrower implementation handoff. A useful planning request should ask the AI to identify:
 
 - the user-visible behavior or repository rule being changed
 - the owning contract, spec, test, or document
@@ -32,7 +32,9 @@ Active plans under `.agents/plans/` are execution contracts. When asking AI to i
 
 For implementation, give the AI a narrow ownership boundary and ask it to inspect the current worktree before editing. State whether existing user changes must be preserved, and call out any files that are read-only.
 
-For ad hoc implementation, expect one planning subagent and a separate implementation subagent unless the current task explicitly changes that workflow; `.agents/references/workflow.md` owns the AI role details.
+For repository-changing ad hoc implementation, expect a separate implementation worker subagent with an exact write scope, scoped validation, and stop conditions. Planning, research, and explorer subagents may be skipped when the coordinator already has enough context. `.agents/references/workflow.md` owns the AI role details.
+
+For active plan execution, expect the AI to follow `.agents/references/plan-execution.md`; active-plan tasks keep their plan dependency order, worker assignment rules, validation checkpoints, and commit checkpoint rules.
 
 For frontend API work, point the AI at `docs/backend/` before it changes clients, generated types, auth behavior, CSRF handling, or API error handling.
 

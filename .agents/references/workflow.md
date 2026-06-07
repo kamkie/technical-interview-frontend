@@ -10,7 +10,11 @@ This file owns delegation mechanics and role expectations for AI work in this fr
 - Reviewer: checks the completed diff for bugs, owner drift, contract drift, documentation drift, security risk, missing validation, and unhandled handoff obligations.
 - Verifier: runs or confirms the assigned validation and reports exact commands, results, environment limits, and residual smoke or contract risk.
 
-One person or agent may perform more than one role only when the active task allows it. Ad hoc implementation work still uses one planning subagent and a separate implementation subagent unless the user explicitly changes the repository workflow.
+Research, exploration, and planning subagents are optional for ad hoc work. Use them when the coordinator needs clearer ownership, source review, implementation steps, or risk discovery before assignment.
+
+Repository-changing implementation must be assigned to a separate implementation worker subagent with exact write scope, scoped validation, stop conditions, and handoff requirements. The coordinator may perform read-only coordination, research, planning, review, and final validation directly when the task allows it.
+
+Active-plan work follows `.agents/references/plan-execution.md`; this reference applies only where it does not conflict with the active plan execution contract.
 
 ## Delegation Rules
 

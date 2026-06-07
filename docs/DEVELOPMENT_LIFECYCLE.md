@@ -23,6 +23,7 @@ Stop and clarify when the intended behavior cannot be described clearly enough t
 | UI behavior                                   | Component/page code and user-facing tests                                                         | `docs/specs/` when behavior is broad or ambiguous                                   |
 | Product or design intent                      | `docs/DESIGN.md`                                                                                  | `ROADMAP.md` when selected scope, status, dependencies, or product non-goals change |
 | Setup, commands, local troubleshooting        | `docs/LOCAL_DEVELOPMENT.md`                                                                       | `SETUP.md`, package scripts, tool config                                            |
+| Validation selection                          | `.agents/references/testing.md`                                                                   | `docs/LOCAL_DEVELOPMENT.md` for command details, procedure, setup, and environment  |
 | Human AI collaboration guidance               | `docs/WORKING_WITH_AI.md`                                                                         | `CONTRIBUTING.md` and AI references when they exist                                 |
 | Product, roadmap, or release scope            | `ROADMAP.md`                                                                                      | `docs/DESIGN.md`, specs, `CHANGELOG.md`, release docs                               |
 | Completed roadmap summaries                   | `docs/ROADMAP_ARCHIVE.md`                                                                         | `ROADMAP.md` links to the archive and keeps only active, planned, or deferred work  |
@@ -60,5 +61,6 @@ Before handoff, confirm:
 - backend contract artifacts stayed authoritative for API-facing behavior
 - product and design intent stayed in `docs/DESIGN.md` while roadmap status and selected scope stayed in `ROADMAP.md`
 - entry-point docs link to owners instead of duplicating full procedures
-- validation matches the change type from `docs/LOCAL_DEVELOPMENT.md`
+- validation selection matches the change type from `.agents/references/testing.md`
+- command details, local procedure, and environment notes stay in `docs/LOCAL_DEVELOPMENT.md`
 - skipped validation is reported with the reason
