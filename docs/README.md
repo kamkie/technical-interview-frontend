@@ -16,6 +16,7 @@ repository.
 | Contributor entry point | [`CONTRIBUTING.md`](../CONTRIBUTING.md) |
 | Vulnerability reporting policy | [`SECURITY.md`](../SECURITY.md) |
 | Imported backend contract artifacts | [`docs/backend/`](backend/) |
+| Frontend API operation coverage audit | [`docs/API_COVERAGE.md`](API_COVERAGE.md) |
 | Selected behavior specs | [`docs/specs/`](specs/) |
 | Infrastructure deployment references | [`infra/`](../infra/) |
 
