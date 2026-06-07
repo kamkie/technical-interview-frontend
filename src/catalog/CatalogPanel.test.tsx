@@ -70,6 +70,8 @@ describe('CatalogPanel', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('Showing 1-2 of 2 books')).toBeInTheDocument()
     expect(screen.getByText('No filters applied')).toBeInTheDocument()
+    expect(screen.getByText('0 selected')).toBeInTheDocument()
+    expect(screen.getByText('2 visible')).toBeInTheDocument()
     expect(screen.getAllByText('Title A-Z')).toHaveLength(2)
     expect(screen.getByText('Page 1 of 1')).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(CATEGORIES_PATH, {
@@ -99,6 +101,7 @@ describe('CatalogPanel', () => {
     const { container } = renderCatalogRoute()
 
     expect(await screen.findByText('0 books')).toBeInTheDocument()
+    expect(screen.getByText('0 visible')).toBeInTheDocument()
     expect(container.querySelector('.state-block[data-state="empty"]')).not.toBeNull()
     expect(screen.getByText('No catalog results')).toBeInTheDocument()
     expect(

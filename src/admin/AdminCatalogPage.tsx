@@ -147,6 +147,11 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     () => parseCatalogSearchParams(searchParams),
     [searchParams],
   )
+  const currentSearch = searchParams.toString()
+  const canonicalSearch = useMemo(
+    () => catalogQueryToSearchParams(query).toString(),
+    [query],
+  )
   const [categoriesState, setCategoriesState] = useState<LoadState<Category[]>>({
     status: 'loading',
   })
@@ -243,6 +248,12 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
   )
   const primarySort = getPrimarySort(query)
 
+  useEffect(() => {
+    if (canonicalSearch !== currentSearch) {
+      setSearchParams(new URLSearchParams(canonicalSearch), { replace: true })
+    }
+  }, [canonicalSearch, currentSearch, setSearchParams])
+
   function refreshBooks() {
     setBooksState({ status: 'loading' })
     setBooksRefreshKey((key) => key + 1)
@@ -256,7 +267,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
   function updateCatalogQuery(nextQuery: CatalogQueryState) {
     const nextSearchParams = catalogQueryToSearchParams(nextQuery)
 
-    if (nextSearchParams.toString() !== searchParams.toString()) {
+    if (nextSearchParams.toString() !== currentSearch) {
       setSearchParams(nextSearchParams)
     }
   }
@@ -814,7 +825,16 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
         )}
 
         {booksState.status === 'ready' && (
+          <AdminCatalogQuerySummary
+            mode={bookFormMode}
+            page={booksState.value}
+            query={query}
+          />
+        )}
+
+        {booksState.status === 'ready' && (
           <AdminBookResults
+            editingBookId={bookFormMode.type === 'edit' ? bookFormMode.bookId : null}
             page={booksState.value}
             query={query}
             onDeleteBook={(book) => void deleteVisibleBook(book)}
@@ -931,6 +951,54 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
   )
 }
 
+function AdminCatalogQuerySummary({
+  mode,
+  page,
+  query,
+}: {
+  mode: BookFormMode
+  page: BookPage
+  query: CatalogQueryState
+}) {
+  const activeFilters = getActiveFilterSummary(query)
+
+  return (
+    <div className="catalog-summary admin-catalog-summary" aria-live="polite">
+      <p>{formatBookWindow(page, query)}</p>
+      <dl className="catalog-query-details" aria-label="Active admin book query">
+        <div>
+          <dt>Filters</dt>
+          <dd>
+            {activeFilters.length > 0
+              ? activeFilters.join('; ')
+              : 'No filters applied'}
+          </dd>
+        </div>
+        <div>
+          <dt>Sort</dt>
+          <dd>{getSortLabel(query)}</dd>
+        </div>
+        <div>
+          <dt>Page</dt>
+          <dd>{formatPageStatus(page, query)}</dd>
+        </div>
+        <div>
+          <dt>Rows</dt>
+          <dd>{query.size} per page</dd>
+        </div>
+        <div>
+          <dt>Selected</dt>
+          <dd>{formatAdminSelectionStatus(mode)}</dd>
+        </div>
+        <div>
+          <dt>Visible</dt>
+          <dd>{formatVisibleBookCount(page)}</dd>
+        </div>
+      </dl>
+    </div>
+  )
+}
+
 function BookManagementForm({
   categories,
   draft,
@@ -957,12 +1025,20 @@ function BookManagementForm({
 
   return (
     <form
-      className="book-management-form"
+      className={`book-management-form ${editing ? 'editing-book-form' : 'create-book-form'}`}
       aria-label={editing ? 'Edit book' : 'Create book'}
+      data-mode={mode.type}
       onSubmit={onSubmit}
     >
       <div className="form-heading-row">
-        <h4>{editing ? 'Edit book' : 'Create book'}</h4>
+        <div>
+          <h4>{editing ? 'Edit book' : 'Create book'}</h4>
+          <p className="form-context">
+            {editing
+              ? `Updating loaded version ${mode.version}`
+              : 'New books are saved with the selected categories.'}
+          </p>
+        </div>
         {editing && (
           <div className="section-actions">
             <button
@@ -1055,6 +1131,7 @@ function BookManagementForm({
 }
 
 function AdminBookResults({
+  editingBookId,
   onDeleteBook,
   onEditBook,
   onNextPage,
@@ -1064,6 +1141,7 @@ function AdminBookResults({
   page,
   query,
 }: {
+  editingBookId: number | null
   onDeleteBook: (book: Book) => void
   onEditBook: (book: Book) => void
   onNextPage: () => void
@@ -1149,6 +1227,7 @@ function AdminBookResults({
             {books.map((book) => (
               <AdminBookRow
                 book={book}
+                editing={book.id !== undefined && book.id === editingBookId}
                 key={book.id ?? `${book.title}-${book.isbn}`}
                 onDeleteBook={onDeleteBook}
                 onEditBook={onEditBook}
@@ -1177,10 +1256,12 @@ function AdminBookResults({
 
 function AdminBookRow({
   book,
+  editing,
   onDeleteBook,
   onEditBook,
 }: {
   book: Book
+  editing: boolean
   onDeleteBook: (book: Book) => void
   onEditBook: (book: Book) => void
 }) {
@@ -1200,11 +1281,11 @@ function AdminBookRow({
         <div className="row-actions admin-books-row-actions">
           <button
             type="button"
-            className="admin-books-action-button"
+            className={`admin-books-action-button ${editing ? 'selected-row-action' : ''}`}
             aria-label={`Edit ${title}`}
             onClick={() => onEditBook(book)}
           >
-            Edit
+            {editing ? 'Editing' : 'Edit'}
           </button>
           <button
             type="button"
@@ -1344,10 +1425,13 @@ function SortableColumnHeader({
     direction === 'ASC' ? 'ascending' : direction === 'DESC' ? 'descending' : 'none'
   const indicator =
     direction === 'ASC' ? 'ascending' : direction === 'DESC' ? 'descending' : 'not sorted'
+  const nextDirectionLabel = direction === 'ASC' ? 'descending' : 'ascending'
+  const sortButtonLabel = `Sort by ${label}; currently ${indicator}. Activate to sort ${nextDirectionLabel}.`
 
   return (
     <th aria-sort={ariaSort} scope="col">
       <button
+        aria-label={sortButtonLabel}
         className="column-sort-button"
         type="button"
         onClick={() => onSortByField(field)}
@@ -1435,6 +1519,76 @@ function sortCategories(categories: readonly Category[]) {
   return [...categories].sort((left, right) =>
     (left.name ?? '').localeCompare(right.name ?? ''),
   )
+}
+
+function getActiveFilterSummary(query: CatalogQueryState) {
+  const filters: string[] = []
+
+  if (query.title) {
+    filters.push(`Title: ${query.title}`)
+  }
+
+  if (query.author) {
+    filters.push(`Author: ${query.author}`)
+  }
+
+  if (query.isbn) {
+    filters.push(`ISBN: ${query.isbn}`)
+  }
+
+  if (query.categories.length > 0) {
+    filters.push(`Categories: ${query.categories.join(', ')}`)
+  }
+
+  return filters
+}
+
+function getSortLabel(query: CatalogQueryState) {
+  const primarySort = getPrimarySort(query)
+  const sortOption = SORT_OPTIONS.find((option) => option.value === primarySort)
+
+  return sortOption?.label ?? primarySort
+}
+
+function formatBookWindow(page: BookPage, query: CatalogQueryState) {
+  const totalElements = page.totalElements ?? 0
+  const numberOfElements = page.numberOfElements ?? page.content?.length ?? 0
+
+  if (totalElements <= 0 || numberOfElements <= 0) {
+    return formatBookCount(totalElements)
+  }
+
+  const pageNumber = page.number ?? query.page
+  const pageSize = page.size ?? query.size
+  const start = pageNumber * pageSize + 1
+  const end = Math.min(start + numberOfElements - 1, totalElements)
+
+  return `Showing ${start}-${end} of ${formatBookCount(totalElements)}`
+}
+
+function formatBookCount(count: number) {
+  return `${count} ${count === 1 ? 'book' : 'books'}`
+}
+
+function formatVisibleBookCount(page: BookPage) {
+  const count = page.numberOfElements ?? page.content?.length ?? 0
+
+  return `${count} visible`
+}
+
+function formatPageStatus(page: BookPage, query: CatalogQueryState) {
+  const pageNumber = (page.number ?? query.page) + 1
+  const totalPages = page.totalPages ?? 0
+
+  return totalPages > 0 ? `Page ${pageNumber} of ${totalPages}` : `Page ${pageNumber}`
+}
+
+function formatAdminSelectionStatus(mode: BookFormMode) {
+  if (mode.type === 'edit') {
+    return `Editing book ${mode.bookId}, version ${mode.version}`
+  }
+
+  return 'No book selected'
 }
 
 function createFilterDraftKey(draft: CatalogFilterDraft) {

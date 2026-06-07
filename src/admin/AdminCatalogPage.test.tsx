@@ -48,6 +48,20 @@ describe('AdminCatalogPage', () => {
     expect(
       within(statusSummary).getByText('Create, edit, delete'),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', {
+        name: 'Sort by Publication year; currently descending. Activate to sort ascending.',
+      }),
+    ).toBeInTheDocument()
+    const querySummary = screen.getByLabelText('Active admin book query')
+    expect(
+      within(querySummary).getByText(
+        'Title: clean; Author: martin; ISBN: 978; Categories: Java, Architecture',
+      ),
+    ).toBeInTheDocument()
+    expect(within(querySummary).getByText('Newest first')).toBeInTheDocument()
+    expect(within(querySummary).getByText('No book selected')).toBeInTheDocument()
+    expect(within(querySummary).getByText('2 visible')).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(ACCOUNT_PATH, {
       method: 'GET',
       credentials: 'same-origin',
@@ -85,9 +99,30 @@ describe('AdminCatalogPage', () => {
     renderAdminCatalog(`${ADMIN_CATALOG_ROUTE_PATH}?page=2`)
 
     expect(await screen.findByText('Effective Java')).toBeInTheDocument()
-    expect(screen.getByText(/Page 3\s+of 3/)).toBeInTheDocument()
+    expect(screen.getAllByText(/Page 3\s+of 3/)).toHaveLength(2)
     expect(screen.getByRole('button', { name: 'Previous' })).not.toBeDisabled()
     expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled()
+  })
+
+  it('canonicalizes invalid admin catalog query values before requesting books', async () => {
+    const fetchMock = mockAdminFetch()
+
+    const { router } = renderAdminCatalog(
+      `${ADMIN_CATALOG_ROUTE_PATH}?title=%20clean%20&category=Java&category=Java&category=&page=-2&size=999&sort=unknown,DESC`,
+    )
+
+    await screen.findByDisplayValue('clean')
+
+    await waitFor(() => {
+      expect(router.state.location.search).toBe('?title=clean&category=Java')
+    })
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${BOOKS_PATH}?title=clean&category=Java&page=0&size=10&sort=title%2CASC`,
+      expect.objectContaining({
+        credentials: 'same-origin',
+        method: 'GET',
+      }),
+    )
   })
 
   it('keeps long-title book row actions compact while preserving specific names', async () => {
@@ -271,6 +306,11 @@ describe('AdminCatalogPage', () => {
     fireEvent.change(within(form).getByLabelText('Book title'), {
       target: { value: 'Effective Java, Third Edition' },
     })
+    expect(within(form).getByText('Updating loaded version 3')).toBeInTheDocument()
+    expect(screen.getByText('Editing book 1, version 3')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Edit Effective Java' }),
+    ).toHaveTextContent(/^Editing$/)
     fireEvent.click(within(form).getByRole('button', { name: 'Save book' }))
 
     await waitFor(() => {

@@ -357,6 +357,14 @@ function CatalogQuerySummary({
           <dt>Rows</dt>
           <dd>{query.size} per page</dd>
         </div>
+        <div>
+          <dt>Selected</dt>
+          <dd>0 selected</dd>
+        </div>
+        <div>
+          <dt>Visible</dt>
+          <dd>{formatVisibleBookCount(page)}</dd>
+        </div>
       </dl>
     </div>
   )
@@ -574,6 +582,12 @@ function formatBookWindow(page: BookPage, query: CatalogQueryState) {
 
 function formatBookCount(count: number) {
   return `${count} ${count === 1 ? 'book' : 'books'}`
+}
+
+function formatVisibleBookCount(page: BookPage) {
+  const count = page.numberOfElements ?? page.content?.length ?? 0
+
+  return `${count} visible`
 }
 
 function formatPageStatus(page: BookPage, query: CatalogQueryState) {

@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN_workflow_polish.md`
 - Approved by:
 - Approved at:
 - Open questions: No.
-- Implementation progress: P0 through P2 are complete; P3-catalog-workflows is `Ready` and later implementation packets remain `Waiting`.
+- Implementation progress: P0 through P3 are complete; P4-admin-operator-workflows is `Ready` and later implementation packets remain `Waiting`.
 
 Use this plan after `M-UI-001` lands and the predecessor readiness packet confirms shell navigation, route context, and session-control behavior are stable enough for workflow polish. Creating or updating this plan is not implementation approval.
 
@@ -26,6 +26,7 @@ Use this plan after `M-UI-001` lands and the predecessor readiness packet confir
 - 2026-06-08T00:02:03+02:00: Draft -> In Progress by Codex; P0 confirmed `M-UI-001` readiness and promoted P1 to `Ready`.
 - 2026-06-08T00:10:01+02:00: P1 complete by Worker 1; shared state semantics implemented and P2 promoted to `Ready`.
 - 2026-06-08T00:19:27+02:00: P2 complete by Worker 2; page hierarchy and action placement polished and P3 promoted to `Ready`.
+- 2026-06-08T00:26:27+02:00: P3 complete by Worker 3; public and admin catalog workflow polish landed and P4 promoted to `Ready`.
 
 ## Goal
 
@@ -93,8 +94,8 @@ Load only the artifacts needed for the assigned packet. Do not bulk-load generat
 | P0-predecessor-readiness        | Complete | Coordinator | `M-UI-001` completion | 2026-06-08   | Confirmed shell/navigation and route context are stable before execution |
 | P1-state-semantics              | Complete | Worker      | P0                    | 2026-06-08   | Covers `E-STATE-001`; shared state blocks and messages implemented       |
 | P2-visual-hierarchy             | Complete | Worker      | P1                    | 2026-06-08   | Covers `E-WORKFLOW-001`; page hierarchy and action placement polished    |
-| P3-catalog-workflows            | Ready    | Worker      | P2                    | 2026-06-08   | Covers `E-CATALOG-001`                                                   |
-| P4-admin-operator-workflows     | Waiting  | Worker      | P3                    | 2026-06-07   | Covers `E-OPS-001`                                                       |
+| P3-catalog-workflows            | Complete | Worker      | P2                    | 2026-06-08   | Covers `E-CATALOG-001`; public and admin catalog workflows polished      |
+| P4-admin-operator-workflows     | Ready    | Worker      | P3                    | 2026-06-08   | Covers `E-OPS-001`                                                       |
 | P5-account-session-copy         | Waiting  | Worker      | P4                    | 2026-06-07   | Covers `E-AUTH-001`                                                      |
 | P6-final-review-milestone-close | Waiting  | Coordinator | P5                    | 2026-06-07   | Confirm owner drift, tests, and handoff evidence                         |
 
@@ -311,7 +312,7 @@ Result summary:
 - Validation evidence from `.agents/references/testing.md`: Worker passed targeted route/component tests for app, catalog, account, admin catalog, admin localization, admin users, and operator; passed `npm run lint`; passed `npm run typecheck`; passed `npm test`; passed `npm run build`; passed `git diff --check`. Coordinator reran `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, and `git diff --check`.
 - Browser review evidence: Worker reviewed `http://127.0.0.1:4173/` with `npm run dev:mock -- --port 4173` on `/catalog`, `/account`, `/admin/catalog`, `/admin/localizations`, `/admin/users`, and `/operator` at desktop `1280x720` and mobile `390x844`. Coordinator reran the same mock URL after the account-panel CSS fix; document widths stayed within viewport, route panels were unframed grids, and the only console issue was the Vite `/favicon.ico` 404.
 - Self-review evidence from `.agents/references/reviews.md`: Reviewed CSS hierarchy, account panel layout, section action wrappers, route guard/session preservation, no API/generated-type/request/auth/CSRF changes, and no owner-doc drift.
-- Commit: Pending P2 checkpoint commit after coordinator validation.
+- Commit: `1dd5ac8` (`Polish route visual hierarchy`).
 - Coordinator reconciliation: P2 deliverables match `E-WORKFLOW-001`; P3 can start after the checkpoint commit.
 - Changelog/docs/spec/roadmap updates: No `ROADMAP.md`, changelog, spec, or owner-doc update needed for P2.
 - Blockers: None.
@@ -380,17 +381,18 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence from `.agents/references/testing.md`:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Commit:
-- Coordinator reconciliation:
-- Changelog/docs/spec/roadmap updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: complete
+- Worker: Worker 3 (`019ea42c-873a-7570-ba4f-bb0529dfc6b1`).
+- Changed files or reviewed diff: Updated `src/catalog/CatalogPanel.tsx`, `src/catalog/CatalogPanel.test.tsx`, `src/admin/AdminCatalogPage.tsx`, `src/admin/AdminCatalogPage.test.tsx`, and focused `src/index.css` catalog/admin selectors.
+- Validation evidence from `.agents/references/testing.md`: Worker passed targeted catalog/admin route tests; passed `npm run lint`; passed `npm run typecheck`; passed `npm test`; passed `npm run build`; passed `git diff --check`. Coordinator reran `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, and `git diff --check`.
+- Browser review evidence: Worker reviewed `http://127.0.0.1:4173/` with `npm run dev:mock -- --port 4173 --host 127.0.0.1` on `/catalog` and `/admin/catalog` at desktop `1280x720` and mobile `390x844`; no page-level overflow, table overflow stayed inside scroll containers, summaries rendered, and no console errors were reported.
+- Self-review evidence from `.agents/references/reviews.md`: Reviewed catalog query canonicalization, repeated `category`, repeated `sort`, Spring `page`/`size`, admin version display and update coverage, no API/generated-type/auth/CSRF changes, localized messages as display content, and focused CSS table/form changes.
+- Commit: Pending P3 checkpoint commit after coordinator validation.
+- Coordinator reconciliation: P3 deliverables match `E-CATALOG-001`; P4 can start after the checkpoint commit.
+- Changelog/docs/spec/roadmap updates: No `ROADMAP.md`, changelog, spec, or owner-doc update needed for P3.
+- Blockers: None.
+- Review risks: Browser review used the mock API, not live sibling-backend smoke; wide tables continue to depend on existing horizontal scroll on mobile.
+- Handoff notes and next action: Create the P3 checkpoint commit, then dispatch P4-admin-operator-workflows to a fresh implementation worker.
 
 ### Task Packet: P4-admin-operator-workflows
 
@@ -628,14 +630,14 @@ Use this checkpoint before starting each dependent packet, before a pause or han
 
 - Resume docs reread:
   - After context compaction, interruption, resume, or handoff, reread the latest user request, `AGENTS.md`, this plan's header, `## Readiness`, `## Long-Run Continuity`, `## Execution Model`, the current task packet and result summary, `.agents/references/plan-execution.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and the next action's exact owner docs or source files.
-- Current task or wave: P3-catalog-workflows is ready after the P2 checkpoint.
-- Completed commits: `e4a2165` for P1-state-semantics; P2 checkpoint pending.
+- Current task or wave: P4-admin-operator-workflows is ready after the P3 checkpoint.
+- Completed commits: `e4a2165` for P1-state-semantics; `1dd5ac8` for P2-visual-hierarchy; P3 checkpoint pending.
 - Plan status and readiness: `In Progress`; P0 completed after `M-UI-001`.
-- Validation and self-review state: P0 docs-only validation passed; P1 and P2 validation passed.
-- Coordinator reconciliation state: P0 through P2 reconciliation complete; P3 pending dispatch after P2 checkpoint.
-- Changelog, docs, spec, roadmap, or plan updates: this plan migrated to task-packet template on 2026-06-07; P0, P1, and P2 status updated on 2026-06-08.
+- Validation and self-review state: P0 docs-only validation passed; P1 through P3 validation passed.
+- Coordinator reconciliation state: P0 through P3 reconciliation complete; P4 pending dispatch after P3 checkpoint.
+- Changelog, docs, spec, roadmap, or plan updates: this plan migrated to task-packet template on 2026-06-07; P0 through P3 status updated on 2026-06-08.
 - Blockers or open questions: none currently blocking P0.
-- Next action: create the P2 checkpoint commit, then dispatch P3-catalog-workflows.
+- Next action: create the P3 checkpoint commit, then dispatch P4-admin-operator-workflows.
 - Context handoff notes: do not start P2 until P1 lands, validates, and any required checkpoint is complete.
 
 ## Execution Graph
@@ -679,9 +681,9 @@ sequenceDiagram
 | ------------------------------- | -------- | -------------------------------- | -------- | ------------------------------------------------- | ---------------------------------------- |
 | P0-predecessor-readiness        | Complete | Coordinator-owned; no worker     | N/A      | Reconciled `M-UI-001` and `M-WORKFLOW-001` status | No implementation commit needed          |
 | P1-state-semantics              | Complete | Dispatched to Worker 1 after P0  | Complete | Reconciled shared state semantics and validation  | Checkpoint commit `e4a2165`              |
-| P2-visual-hierarchy             | Complete | Dispatched to Worker 2 after P1  | Complete | Reconciled hierarchy, browser review, validation  | Checkpoint commit pending                |
-| P3-catalog-workflows            | Ready    | Planned to Worker 3 after P2     | Pending  | Pending                                           | Checkpoint after validation if allowed   |
-| P4-admin-operator-workflows     | Waiting  | Planned to Worker 4 after P3     | Pending  | Pending                                           | Checkpoint after validation if allowed   |
+| P2-visual-hierarchy             | Complete | Dispatched to Worker 2 after P1  | Complete | Reconciled hierarchy, browser review, validation  | Checkpoint commit `1dd5ac8`              |
+| P3-catalog-workflows            | Complete | Dispatched to Worker 3 after P2  | Complete | Reconciled catalog workflows and validation       | Checkpoint commit pending                |
+| P4-admin-operator-workflows     | Ready    | Planned to Worker 4 after P3     | Pending  | Pending                                           | Checkpoint after validation if allowed   |
 | P5-account-session-copy         | Waiting  | Planned to Worker 5 after P4     | Pending  | Pending                                           | Checkpoint after validation if allowed   |
 | P6-final-review-milestone-close | Waiting  | Coordinator-owned after P5 lands | N/A      | Pending final validation and owner check          | Close milestone when authorized evidence |
 
@@ -711,7 +713,7 @@ sequenceDiagram
 
 ## Handoff Notes
 
-- P0 confirmed `M-UI-001` has landed; P1 implemented shared state semantics, P2 polished page hierarchy, and P3 is next.
+- P0 confirmed `M-UI-001` has landed; P1 implemented shared state semantics, P2 polished page hierarchy, P3 polished catalog workflows, and P4 is next.
 - Original plan authoring validation from 2026-06-07 passed `npm run lint:markdown` and `git diff --check`.
 - This migration preserves task order and scope while replacing the legacy plan-task tables with task packets.
 - Do not mark `M-WORKFLOW-001` done until implementation packets and required validation have landed.
