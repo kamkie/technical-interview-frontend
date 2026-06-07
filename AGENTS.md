@@ -94,6 +94,7 @@ Canonical npm commands:
 - production preview: `npm run preview`
 - lint: `npm run lint`
 - Markdown lint: `npm run lint:markdown`
+- Markdown format: `npm run format:markdown`
 - ESLint only: `npm run lint:eslint`
 - typecheck: `npm run typecheck`
 - tests: `npm test`
