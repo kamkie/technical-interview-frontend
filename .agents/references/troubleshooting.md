@@ -43,7 +43,7 @@ This file owns AI-facing validation failure triage and local problem-solving rou
 
 ## Smoke Evidence Limits
 
-Use `.agents/references/testing.md` for browser smoke evidence fields and `docs/LOCAL_DEVELOPMENT.md` for current local procedure. Anonymous smoke can cover shell and public catalog paths when selected. Authenticated smoke has a manual fake-OAuth procedure in `docs/LOCAL_AUTH_SMOKE.md`; automated authenticated smoke remains unavailable until the repository owns a canonical command.
+Use `.agents/references/testing.md` for browser smoke evidence fields and `docs/LOCAL_DEVELOPMENT.md` for current local procedure. Anonymous smoke can cover shell and public catalog paths when selected. Authenticated automation is `npm run smoke:authenticated` against the internal mock API; live sibling-backend fake-OAuth smoke remains documented in `docs/LOCAL_AUTH_SMOKE.md`.
 
 A manual screenshot or observed browser run is useful context but does not replace a selected repeatable smoke command unless the owner document or roadmap row accepts it. Do not promote a smoke gap into a release-blocking quality gate until `ROADMAP.md` or the relevant owner selects the command, threshold, evidence path, and failure owner.
 

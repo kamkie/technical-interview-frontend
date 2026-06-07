@@ -44,7 +44,7 @@ For UI work, ask for tests at the smallest useful layer and require visible stat
 
 ## Validation Requests
 
-Ask the AI to choose validation from `.agents/references/testing.md` and current commands from `docs/LOCAL_DEVELOPMENT.md`, unless the task already names commands. For browser smoke, require the AI to state whether the smoke is anonymous, authenticated manual fake-OAuth, or unavailable as automated authenticated smoke because no canonical command exists.
+Ask the AI to choose validation from `.agents/references/testing.md` and current commands from `docs/LOCAL_DEVELOPMENT.md`, unless the task already names commands. For browser smoke, require the AI to state whether the smoke is anonymous, authenticated automated mock, authenticated manual fake-OAuth, or skipped with a concrete prerequisite reason.
 
 The final handoff should list validation commands, results, skipped checks, and the reason for each skip.
 

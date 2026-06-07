@@ -16,5 +16,5 @@ The dev server binds to `http://127.0.0.1:5173/`. Use `npm run dev:mock` only fo
 ## Related Workflows
 
 - [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md) - canonical local workflow
-- [docs/LOCAL_AUTH_SMOKE.md](docs/LOCAL_AUTH_SMOKE.md) - manual same-origin auth smoke
+- [docs/LOCAL_AUTH_SMOKE.md](docs/LOCAL_AUTH_SMOKE.md) - live-backend same-origin auth smoke
 - [docs/backend/](docs/backend/) - imported backend contract artifacts

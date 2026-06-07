@@ -2,7 +2,7 @@
 
 Use this workflow to verify the local same-origin browser auth contract against the sibling backend checkout at `..\technical-interview-demo`.
 
-The canonical authenticated smoke path uses the backend fake-OAuth provider. It does not require external identity-provider credentials and it must still discover login, account, logout, and CSRF behavior from `GET /api/session`.
+The canonical automated authenticated smoke command is `npm run smoke:authenticated`; it starts this repository's contract-backed mock API and does not require the sibling backend. The canonical live-backend authenticated smoke path uses the backend fake-OAuth provider. It does not require external identity-provider credentials and it must still discover login, account, logout, and CSRF behavior from `GET /api/session`.
 
 ## Contract Under Test
 
@@ -188,7 +188,7 @@ Treat these as failures:
 
 ## Optional External Provider Smoke
 
-GitHub and OIDC checks are optional manual smoke paths. They are not the canonical frontend authenticated smoke path because they require external provider credentials.
+GitHub and OIDC checks are optional manual smoke paths. They are not the canonical local authenticated automation path because they require external provider credentials.
 
 Provider expectations from the backend operations guide:
 
@@ -212,8 +212,9 @@ Admin identity seeding for external providers uses `APP_BOOTSTRAP_INITIAL_ADMIN_
 ## Automation Policy
 
 - Anonymous browser automation may run without provider secrets. The canonical command is `npm run smoke:anonymous` from the frontend repository. It covers `GET /api/session`, public catalog reads, unauthenticated rendering, URL-backed public catalog filters, pagination, sorting, repeated category/sort query semantics, and reproducible localized public-read failures when the backend exposes them. Backend/frontend/browser prerequisite failures are reported as skips with explicit reasons.
-- Canonical authenticated browser automation should target the backend `local,oauth,fake-oauth` profile and the discovered `smoke` provider.
+- Authenticated mock browser automation may run without the sibling backend or provider secrets. The canonical command is `npm run smoke:authenticated` from the frontend repository. It starts Vite in mock mode and covers anonymous session bootstrap, metadata-driven login, account access, admin access, CSRF-backed logout, post-logout session state, and same-origin `/api/**` request shape.
+- Live-backend authenticated automation, if added beyond this manual workflow, should target the backend `local,oauth,fake-oauth` profile and the discovered `smoke` provider.
 - Authenticated browser automation must not require committed provider secrets, provider access tokens, bearer tokens, or hard-coded provider paths.
 - Authenticated automation must start login from the discovered `loginProviders[].authorizationPath` and must use `accountPath`, `logoutPath`, `csrf.cookieName`, and `csrf.headerName` from `GET /api/session`.
 - Unsafe-write automation must re-bootstrap the session after login/logout and mirror the readable CSRF cookie into the configured request header.
-- Until a canonical authenticated browser smoke command exists, this document is the manual source of truth for local auth verification.
+- This document remains the manual source of truth for live sibling-backend auth verification and the shared auth-smoke constraints.

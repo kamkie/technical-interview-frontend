@@ -50,7 +50,7 @@ Do not make a future hardening candidate release-blocking until it has a repeata
 
 For selected M13 checks, exceptions must be scoped to a finding or advisory and must include an owner, mitigation or planned fix, expiration or revisit trigger, and the release decision. Do not weaken a global threshold or disable a full workflow to work around a single finding.
 
-Authenticated browser smoke is manual through `docs/LOCAL_AUTH_SMOKE.md` until a canonical authenticated command exists. When the manual flow is not run, state whether the skip is because backend/frontend prerequisites were unavailable, the fake-OAuth provider/profile was absent, local admin data was non-canonical, or only the automated command is missing; do not imply credentials or procedure are undefined.
+Canonical automated authenticated browser smoke is `npm run smoke:authenticated`; it starts Vite mock mode and should record the backend profile as internal mock API. Use `docs/LOCAL_AUTH_SMOKE.md` when live sibling-backend fake-OAuth evidence is needed. When live fake-OAuth smoke is not run, state whether the skip is because backend/frontend prerequisites were unavailable, the fake-OAuth provider/profile was absent, local admin data was non-canonical, or external-provider credentials were unavailable.
 
 ## Handoff Format
 
