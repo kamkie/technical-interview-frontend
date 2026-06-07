@@ -8,8 +8,15 @@ import {
 } from '@codecov/bundler-plugin-core'
 import react from '@vitejs/plugin-react'
 import path from 'node:path'
-import type { Plugin } from 'vite'
+import type { Plugin, ProxyOptions } from 'vite'
 import { defineConfig } from 'vitest/config'
+
+const apiProxy = {
+  '^/api(?:$|/(?!.*\\.(?:ts|tsx|js|jsx|css|map)(?:\\?|$)).*)': {
+    target: 'http://localhost:8080',
+    changeOrigin: false,
+  },
+} satisfies Record<string, ProxyOptions>
 
 function codecovBundleAnalysisPlugin(): Plugin | false {
   if (process.env.GITHUB_ACTIONS !== 'true') {
@@ -147,16 +154,12 @@ export default defineConfig({
   server: {
     host: '127.0.0.1',
     port: 5173,
-    proxy: {
-      '^/api(?:$|/(?!.*\\.(?:ts|tsx|js|jsx|css|map)(?:\\?|$)).*)': {
-        target: 'http://localhost:8080',
-        changeOrigin: false,
-      },
-    },
+    proxy: apiProxy,
   },
   preview: {
     host: '127.0.0.1',
     port: 4173,
+    proxy: apiProxy,
   },
   test: {
     css: true,

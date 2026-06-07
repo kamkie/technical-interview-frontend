@@ -290,9 +290,13 @@ already exists.
 
 ## Automation Policy
 
-- Anonymous browser automation may run without provider secrets. It can cover
-  `GET /api/session`, public catalog reads, unauthenticated rendering, and the absence
-  or presence of `loginProviders[]` based on backend profile setup.
+- Anonymous browser automation may run without provider secrets. The canonical
+  command is `npm run smoke:anonymous` from the frontend repository. It covers
+  `GET /api/session`, public catalog reads, unauthenticated rendering, URL-backed
+  public catalog filters, pagination, sorting, repeated category/sort query
+  semantics, and reproducible localized public-read failures when the backend
+  exposes them. Backend/frontend/browser prerequisite failures are reported as
+  skips with explicit reasons.
 - Canonical authenticated browser automation should target the backend
   `local,oauth,fake-oauth` profile and the discovered `smoke` provider.
 - Authenticated browser automation must not require committed provider secrets,

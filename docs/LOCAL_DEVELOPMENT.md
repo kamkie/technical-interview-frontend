@@ -11,6 +11,7 @@ CI-owned hardening signals for the frontend repository.
 - Node.js 24.x
 - npm 11.x, matching `package.json` `packageManager` and `engines`
 - Docker, only when building or validating the production container image
+- Playwright Chromium, only when running the anonymous browser smoke command
 - Trivy, kube-linter, kubectl, and Helm when running the selected advisory M20
   hardening checks locally
 - Optional sibling backend checkout at `..\technical-interview-demo` for contract
@@ -46,6 +47,9 @@ Preview a production build locally:
 ```powershell
 npm run preview
 ```
+
+The preview server binds to `http://127.0.0.1:4173/` and uses the same local
+`/api/**` proxy target as the dev server.
 
 Build the production container image:
 
@@ -108,6 +112,7 @@ promotion belong in deployment-owned overlays or platform policy.
 | M20 advisory rendered-manifest posture check | `npm run hardening:kube-linter` |
 | M20 advisory container vulnerability scan | `npm run hardening:trivy` |
 | M20 advisory hardening checks | `npm run hardening:m20` |
+| Anonymous same-origin browser smoke | `npm run smoke:anonymous` |
 | Generate API types | `npm run api:types` |
 | Verify API types without rewriting | `npm run api:types:check` |
 | Validate whitespace in the diff | `git diff --check` |
@@ -214,10 +219,64 @@ Manual same-origin auth smoke is documented in
 bootstrap, login-provider rendering, account access, CSRF-backed logout, and local
 backend proxy behavior.
 
-Anonymous browser smoke can run without provider secrets and should stay on
-`http://127.0.0.1:5173/` so `/api/**` traffic uses the Vite proxy. Authenticated
-smoke remains manual until the repository has agreed local credentials, identity
-seeding rules, and a canonical command.
+Anonymous browser smoke can run without provider secrets:
+
+```powershell
+npm run smoke:anonymous
+```
+
+The default frontend URL is `http://127.0.0.1:5173/`. To smoke the Vite preview
+server or another same-origin frontend, set `FRONTEND_SMOKE_URL`, for example:
+
+```powershell
+$env:FRONTEND_SMOKE_URL = 'http://127.0.0.1:4173/'
+npm run smoke:anonymous
+```
+
+The target origin must serve the frontend and proxy `/api/**` to the sibling
+backend. The default Vite dev and preview servers proxy `/api/**` to
+`http://localhost:8080` with `changeOrigin: false`; do not point the browser or
+smoke command directly at the backend origin.
+
+Backend prerequisites for anonymous smoke:
+
+- The sibling backend is running locally on `http://localhost:8080`.
+- A normal local backend profile is enough for public reads, for example
+  `SPRING_PROFILES_ACTIVE=local`. OAuth or fake-OAuth profiles are optional for
+  this anonymous command.
+- Frontend dependencies have been installed with `npm install`.
+- Playwright's Chromium browser is installed. If the command reports Chromium as
+  unavailable, run:
+
+  ```powershell
+  npx playwright install chromium
+  ```
+
+`npm run smoke:anonymous` first probes the frontend origin, then
+`GET /api/session` through that same origin. If the frontend is not serving, or if
+the backend is unavailable through the frontend `/api` proxy, the command exits
+successfully with a clear `skip` summary rather than recording a false pass.
+
+When prerequisites are available, the command verifies:
+
+- anonymous `GET /api/session` metadata, including session-cookie and CSRF metadata
+- public `GET /api/categories`
+- public `GET /api/books` with Spring `page`, `size`, and repeated `sort`
+- URL-backed `/catalog` query state for title, author, ISBN, repeated `category`,
+  `page`, `size`, and repeated `sort`
+- browser-observed `/api/session`, `/api/categories`, and `/api/books` requests
+  stay on the frontend origin
+- a localized public-read failure using stable HTTP status, `messageKey`, and
+  resolved `language` when the backend reproduces the documented invalid
+  publication-year filter combination
+
+If the backend accepts that invalid publication-year combination with `HTTP 200`,
+only the localized-failure step is skipped. If the backend returns problem details,
+the smoke branches on status, `messageKey`, and endpoint context, not English
+message text.
+
+Authenticated smoke remains manual until the repository has agreed local
+credentials, identity seeding rules, and a canonical command.
 
 When recording smoke evidence, include the backend profile, frontend URL, browser
 flow covered, validation date, and any skipped authenticated steps with the reason.
