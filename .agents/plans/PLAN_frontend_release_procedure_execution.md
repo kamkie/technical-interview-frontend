@@ -13,8 +13,8 @@
 
 | Status | Current |
 | --- | --- |
-| Phase | M13-B Hardening Tooling Implementation |
-| Status | Ready For M13-B Hardening Implementation |
+| Phase | M12-B Final Release Cut |
+| Status | Ready For M12-B Release Metadata Preflight |
 | Last Updated | 2026-06-07 |
 
 ## Planning Readiness
@@ -24,7 +24,7 @@
 | Decision Complete | Yes for M12 release-readiness, M14 human docs, M15 AI references, and M13 selection-first hardening |
 | Blocking Open Questions | None for the next ready slice |
 | Accepted Fallbacks | Authenticated browser smoke remains manual until credentials and a canonical command exist; remote release publication requires an explicit current user request |
-| Ready For Execution | M13-B selected hardening tooling implementation |
+| Ready For Execution | M12-B final release cut and post-release cleanup |
 
 ## Summary
 
@@ -120,8 +120,8 @@ Out of scope:
 | 2 | M14 Human procedure documentation | Done | M12-A commit landed and validation passed |
 | 3 | M15 AI procedure reference layer | Done | M14 commit landed and validation passed |
 | 4 | M13-A Hardening selection and triage rules | Done | M14/M15 owners exist |
-| 5 | M13-B Selected hardening tooling implementation | Ready | M13-A selection is committed and unblocked |
-| 6 | M12-B Final release cut and post-release cleanup | Waiting | M13-B, M14, and M15 are complete; local `main` is at the release-candidate state |
+| 5 | M13-B Selected hardening tooling implementation | Done | M13-A selection is committed and unblocked |
+| 6 | M12-B Final release cut and post-release cleanup | Ready | M13-B, M14, and M15 are complete; local `main` is at the release-candidate state |
 
 ## Requirement Gaps And Open Questions
 
@@ -181,8 +181,8 @@ Status model:
 | 2: M14 Human procedure docs | Done | M14 worker | `c34a9fd` | Passed by worker and coordinator | Human procedure owners and entry-point links landed |
 | 3: M15 AI procedure references | Done | M15 worker | `40478d4` | Passed by worker and coordinator | AI procedure references landed |
 | 4: M13-A Hardening selection | Done | M13 worker | `d469976` | Passed by worker and coordinator | Selected hardening gates, deferrals, and triage rules documented |
-| 5: M13-B Hardening implementation | Ready | M13 worker | Pending | Selected hardening commands plus full baseline | M13-A selection landed |
-| 6: M12-B Release cut | Waiting | M12 worker for metadata edits; coordinator for validation, commit, tag, and plan recording | Pending | Full baseline, tag verification, clean git status | Waits for M13-B and synced `main` |
+| 5: M13-B Hardening implementation | Done | M13 worker | `324f462` | Passed by worker and coordinator | Selected hardening gates landed; CodeQL, dependency-review, and Dependabot are CI-owned signals |
+| 6: M12-B Release cut | Ready | M12 worker for metadata edits; coordinator for validation, commit, tag, and plan recording | Pending | Full baseline, selected M13 command, tag verification, clean git status | M13-B landed; preflight pending |
 
 ## Phase 1: M12-A Release-Readiness Audit
 
@@ -342,7 +342,7 @@ M13-A triage and exception rules for M13-B:
 
 | Field | Value |
 | --- | --- |
-| Status | Ready |
+| Status | Done |
 | Goal | Implement the M13-A selected hardening tool set in CI, package scripts, and owner docs |
 | Owned Files Or Packages | `.github/workflows/`, `.github/dependabot.yml`, `package.json`, `package-lock.json`, `docs/LOCAL_DEVELOPMENT.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, `ROADMAP.md` |
 | Context Required | M13-A selection output and current CI validation workflow |
@@ -364,7 +364,7 @@ M13-B implementation notes:
 
 | Field | Value |
 | --- | --- |
-| Status | Waiting |
+| Status | Ready |
 | Goal | Cut the first frontend release locally from synced `main` after selected roadmap hardening is complete |
 | Owned Files Or Packages | `CHANGELOG.md`, `ROADMAP.md`, package metadata if needed, this plan, git annotated tag |
 | Context Required | Completed M12-A, M13, M14, M15; release procedure in `ROADMAP.md`; `.gitmessage` |
