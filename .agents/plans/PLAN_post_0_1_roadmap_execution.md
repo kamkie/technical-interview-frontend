@@ -1,0 +1,417 @@
+# Plan: Post-0.1.0 Roadmap Execution
+
+## Provenance
+
+| Field | Value |
+| --- | --- |
+| Created By | Codex |
+| Created On | 2026-06-07 |
+| Source Request | User request to make an implementation plan for roadmap items |
+| Generation Context | `AGENTS.md`, `ROADMAP.md`, `docs/DEVELOPMENT_LIFECYCLE.md`, `docs/LOCAL_DEVELOPMENT.md`, `.agents/references/documentation.md`, `.agents/references/testing.md`, and archived `.agents/plans/` precedent |
+
+## Lifecycle
+
+| Field | Value |
+| --- | --- |
+| Phase | Active Planning Complete |
+| Status | Ready For Execution |
+| Last Updated | 2026-06-07 |
+
+## Planning Readiness
+
+| Field | Value |
+| --- | --- |
+| Decision Complete | Yes for M16 audit scope and selected M20 advisory hardening tools and policy |
+| Blocking Open Questions | M18 remains blocked by missing local authenticated smoke credentials and identity seeding rules |
+| Accepted Fallbacks | M20 findings are advisory-only during the first pass; generated hardening reports are not checked in; authenticated smoke stays manual until M18 is unblocked |
+| Ready For Execution | Yes for M16 and M20 |
+
+## Summary
+
+Execute the post-`0.1.0` roadmap from M16 through the next release preparation
+without inventing backend API behavior or treating future dependent work as a
+blocker for ready slices.
+
+The first executable scope is:
+
+- M16 contract coverage and scope audit.
+- M20 advisory container/deployment hardening refinement.
+
+After M16 lands, the coordinator promotes the next dependent slice that becomes
+ready: M17, M19, M21, M22, M23, or a narrowed follow-up. M18 remains blocked until
+the maintainer supplies credentials and identity seeding rules. M24 starts only
+after the selected implementation scope has landed with validation evidence.
+
+This plan is an execution contract. Durable product scope stays in `ROADMAP.md`;
+backend API rules stay in `docs/backend/`; local command and hardening procedure
+rules stay in `docs/LOCAL_DEVELOPMENT.md` and `.agents/references/testing.md`.
+
+## Execution Rules
+
+- The orchestrator owns this plan, status updates, worker assignment, integration
+  review, validation coordination, and final handoff.
+- Milestone and spec implementation must be delegated to workers with explicit file
+  ownership and scoped validation requirements.
+- Execute ready work in dependency order. Independent ready slices may be assigned
+  separately, but M16 findings control promotion of M17, M19, M21, M22, and M23.
+- Commit checkpoints in this plan authorize scoped commits only when the user later
+  asks to implement this active plan. This planning task itself does not create
+  commits.
+- Do not push branches, tags, packages, or releases unless the current user request
+  explicitly authorizes publication.
+- Keep unrelated user changes intact. If a worker encounters unrelated dirty files,
+  it must avoid staging or reverting them.
+
+## Scope
+
+In scope:
+
+- M16 API coverage audit and scope promotion.
+- M20 advisory hardening implementation with Trivy, kube-linter, and a repo-owned
+  runtime/Nginx check.
+- M17 anonymous smoke automation if selected or promoted after M16.
+- M21 login provider metadata guardrail after M16.
+- M22 backend-supported surface selection from M16 gaps.
+- M19 or M23 focused UX/design work only after M16 names an exact implemented-flow
+  scope.
+- M24 release preparation after selected implementation work lands.
+- Coordinator status tracking in this plan.
+
+Out of scope:
+
+- Backend repository changes.
+- New endpoints, request fields, auth headers, CORS support, JWT, bearer tokens, or
+  alternate transports.
+- Authenticated smoke automation until M18 is unblocked.
+- Environment-specific deployment promotion, backend operations, database work, and
+  platform policy beyond frontend-owned reference artifacts.
+- Making M20 vulnerability or posture findings release-blocking during the first
+  pass.
+
+## Source And Owner Artifacts
+
+| Artifact | Path | Role | Status |
+| --- | --- | --- | --- |
+| Roadmap | `ROADMAP.md` | Milestone source, product scope, release phase, and deferred scope owner | Current |
+| Backend contract | `docs/backend/approved-openapi.json`, `docs/backend/FRONTEND_AI_CONTRACT.md`, `docs/backend/README.md` | API shape and frontend integration invariant owners | Current unless M16 finds staleness |
+| API coverage doc | `docs/API_COVERAGE.md` | M16 operation classification owner | To create |
+| Local development doc | `docs/LOCAL_DEVELOPMENT.md` | Local commands, hardening commands, smoke workflow, and evidence guidance | Current for selected M20 policy |
+| AI validation reference | `.agents/references/testing.md` | Validation selection by change type | Current for M20 |
+| Existing specs | `docs/specs/` | Admin/operator selected behavior specs | Read as needed |
+| App API clients | `src/api/` | Existing endpoint client coverage | Read/update only when selected scope requires implementation |
+| Routes and UI | `src/`, especially catalog/auth/admin/account/operator areas | Existing visible surface and tests | Read/update only for selected user-visible slices |
+| Infrastructure refs | `infra/`, `Dockerfile`, `docker/nginx/` | M20 frontend-owned container/runtime/deployment artifacts | Current; M20 may add checks or scripts |
+
+## Current State
+
+- M0-M15 are complete and archived.
+- `v0.1.0` was cut locally on 2026-06-07 and was not published remotely.
+- Implemented user-visible surface includes session, public catalog, account, admin
+  catalog, admin localization, admin users, and operator views.
+- The validation baseline is `npm run lint`, `npm run typecheck`, `npm test`,
+  `npm run build`, and `git diff --check`.
+- M20 has maintainer decisions: Trivy, kube-linter, repo-owned runtime/Nginx check,
+  advisory-only first pass, local/CI output as evidence, and no checked-in generated
+  reports.
+
+## Decision Log
+
+| ID | Decision / Assumption | Source | Date | Revisit Trigger |
+| --- | --- | --- | --- | --- |
+| D1 | M16 is the first dependency-setting audit slice for post-`0.1.0` work | `ROADMAP.md` active milestones | 2026-06-07 | Roadmap status changes |
+| D2 | M20 first pass uses Trivy, kube-linter, and a repo-owned runtime/Nginx check | Maintainer decisions recorded in `ROADMAP.md` and `docs/LOCAL_DEVELOPMENT.md` | 2026-06-07 | A selected tool cannot provide repeatable local or CI evidence |
+| D3 | M20 findings are advisory until a later selected threshold exists | Maintainer decision and roadmap hardening policy | 2026-06-07 | One stable baseline exists and maintainers select severity/posture gates |
+| D4 | Generated scan reports are not checked in during M20 first pass | Maintainer evidence-location decision | 2026-06-07 | CI artifact/report upload becomes selected scope |
+| D5 | M18 is blocked until credentials and identity seeding rules are agreed | `ROADMAP.md` M18 status | 2026-06-07 | Maintainer supplies canonical local authenticated smoke setup |
+| D6 | Remote publication is not authorized by this plan alone | `AGENTS.md` git and release rules | 2026-06-07 | Current user request explicitly asks to push or publish |
+
+## Phase Map
+
+| Phase | Milestone / Slice | Status | Gate |
+| --- | --- | --- | --- |
+| 0 | Plan activation | Done | Plan file exists and docs-only validation passed |
+| 1 | M16 Contract Coverage And Scope Audit | Ready | Classify approved OpenAPI operations and promote next scope |
+| 2 | M20 Advisory Hardening Implementation | Ready | Add repeatable selected hardening checks and evidence docs |
+| 3 | M21 Login Provider Metadata Guardrail | Waiting on M16 | M16 coverage audit completed |
+| 4 | M22 Backend Surface Expansion Selection | Waiting on M16 | M16 coverage gaps classified |
+| 5 | M17 Anonymous Browser Smoke Automation | Waiting on M16 | M16 promotes smoke automation or leaves it selected |
+| 6 | M19 Public Catalog Workflow Polish | Waiting on M16 and selected polish scope | Exact visible states and tests named |
+| 7 | M23 Implemented Flow Visual Design Pass | Waiting on M16 and selected visual scope | Exact flows, accessibility goals, and browser evidence named |
+| 8 | M18 Authenticated Smoke Automation Readiness | Blocked | Credentials, backend profile, and identity seeding rules agreed |
+| 9 | M24 Post-`0.1.0` Release Preparation | Waiting on selected implementation scope | Selected M16-M23 work complete and validated |
+
+## Progress Tracker
+
+| Task | Status | Owner | Commit | Validation | Notes |
+| --- | --- | --- | --- | --- | --- |
+| 0: Plan activation | Done | Coordinator | N/A | `git diff --check` | Active plan created; no commit requested |
+| 1: M16 coverage audit | Ready | M16 worker | Pending | Pending | Start here |
+| 2: M20 advisory hardening | Ready | M20 worker | Pending | Pending | Can run after or beside M16; selected decisions are complete |
+| 3: M21 metadata guardrail | Waiting | M21 worker | Pending | Pending | Promote after M16 |
+| 4: M22 surface selection | Waiting | M22 worker | Pending | Pending | Promote after M16 coverage gaps are known |
+| 5: M17 anonymous smoke | Waiting | M17 worker | Pending | Pending | Promote after M16 if smoke is selected |
+| 6: M19 catalog polish | Waiting | M19 worker | Pending | Pending | Needs focused polish scope |
+| 7: M23 visual pass | Waiting | M23 worker | Pending | Pending | Needs focused visual scope |
+| 8: M18 auth smoke readiness | Blocked | M18 worker | Pending | Pending | Needs maintainer credentials/seeding decision |
+| 9: M24 release prep | Waiting | Release worker / coordinator | Pending | Pending | Starts after selected implementation scope |
+
+## Phase 1: M16 Contract Coverage And Scope Audit
+
+| Field | Value |
+| --- | --- |
+| Status | Ready |
+| Goal | Reconcile backend-approved operations with generated types, API clients, routes, tests, specs, and visible UI coverage |
+| Owned Files Or Packages | `docs/API_COVERAGE.md`, `ROADMAP.md`, this plan |
+| Read-Only Context | `docs/backend/approved-openapi.json`, `docs/backend/FRONTEND_AI_CONTRACT.md`, `docs/backend/README.md`, `src/api/generated/openapi.ts`, `src/api/`, `src/**/*.test.*`, `docs/specs/` |
+| Behavior To Preserve | No new endpoint, auth, CORS, CSRF, provider path, or request-field assumptions |
+| Deliverables | `docs/API_COVERAGE.md` classifies every approved OpenAPI operation as implemented, deferred, or needing follow-up; `ROADMAP.md` promotes the next slice based on the audit |
+| Validation Checkpoint | `git diff --check`; add broader validation only if executable files change |
+| Commit Checkpoint | One scoped M16 commit when plan execution is requested |
+
+Implementation notes:
+
+- Parse `docs/backend/approved-openapi.json` with a structured tool rather than
+  hand-copying operation lists.
+- Map each operation to the existing client, route/page, spec, or test when present.
+- Classify gaps without implementing them in this slice.
+- If the imported contract appears stale or conflicts with the sibling backend,
+  stop M16 implementation and refresh via `scripts/sync-backend-contract.ps1`
+  before continuing.
+- Promote exactly one next slice or a small ordered set of slices in `ROADMAP.md`;
+  do not make future review gates blockers for a ready slice.
+
+## Phase 2: M20 Advisory Hardening Implementation
+
+| Field | Value |
+| --- | --- |
+| Status | Ready |
+| Goal | Add repeatable advisory hardening checks for the frontend-owned container image, runtime/Nginx config, and reference deployment manifests |
+| Owned Files Or Packages | `package.json`, package lock if scripts change, `scripts/`, `docs/LOCAL_DEVELOPMENT.md`, `.agents/references/testing.md`, `ROADMAP.md`, `Dockerfile`, `docker/nginx/`, `infra/`, optional `.github/workflows/` if CI evidence is selected |
+| Context Required | M20 row in `ROADMAP.md`, M20 guidance in `docs/LOCAL_DEVELOPMENT.md`, current `Dockerfile`, Nginx template, Kustomize and Helm manifests |
+| Behavior To Preserve | Same-origin `/api/**`, `FRONTEND_API_UPSTREAM`, unprivileged Nginx on port `8080`, no browser CORS/JWT/bearer-token assumptions |
+| Deliverables | Local commands or package scripts for Trivy, kube-linter rendered-manifest checks, and runtime/Nginx checks; documented evidence and skip behavior; findings advisory-only |
+| Validation Checkpoint | Full baseline, `npm run docker:build`, selected Trivy scan, selected kube-linter rendered-manifest check, runtime/Nginx check, `git diff --check`; record unavailable tools explicitly |
+| Commit Checkpoint | One scoped M20 commit when plan execution is requested |
+
+Implementation notes:
+
+- Prefer small repo-owned scripts over long duplicated shell snippets in multiple
+  docs. Keep generated output under ignored `temp/` or workflow logs.
+- Use Trivy with exit code `0` for vulnerability findings during the first pass.
+- Render Kustomize and Helm outputs before kube-linter runs; do not lint unrendered
+  templates as the only evidence.
+- Runtime/Nginx check should assert frontend-owned invariants such as unprivileged
+  image, exposed port `8080`, `/healthz`, `/api` proxying through
+  `FRONTEND_API_UPSTREAM`, and absence of CORS/JWT/bearer-token/provider-path
+  assumptions.
+- If a finding indicates a real repo-owned misconfiguration and the fix is small,
+  fix it inside M20. If the fix is broad, record a follow-up roadmap row instead of
+  expanding the slice silently.
+
+## Phase 3: M21 Login Provider Metadata Guardrail
+
+| Field | Value |
+| --- | --- |
+| Status | Waiting on M16 |
+| Goal | Prove auth entry points render login providers only from `GET /api/session` metadata and prevent hard-coded provider path regressions |
+| Owned Files Or Packages | `src/auth/`, `src/api/session.*`, affected route tests, `docs/LOCAL_AUTH_SMOKE.md` or owner docs if guidance changes, this plan |
+| Context Required | M16 coverage findings, backend session contract, existing auth/session tests |
+| Behavior To Preserve | No hard-coded provider paths, no JWT or bearer-token assumptions, logout/session metadata stays backend-owned |
+| Deliverables | Audit evidence plus either focused tests or owner-doc guardrails; unsupported constants removed if found |
+| Validation Checkpoint | `git diff --check` for docs-only audit; relevant auth/session tests plus full baseline if source or test files change |
+| Commit Checkpoint | One scoped M21 commit when plan execution is requested and M21 is promoted |
+
+Implementation notes:
+
+- Use `rg` to scan source, docs, specs, and tests for provider path constants.
+- Prefer executable regression coverage if source code contains the behavior.
+- Treat examples copied from backend contract docs as examples only; do not branch on
+  provider URL strings in frontend code.
+
+## Phase 4: M22 Backend Surface Expansion Selection
+
+| Field | Value |
+| --- | --- |
+| Status | Waiting on M16 |
+| Goal | Convert M16 coverage gaps into one selected backend-supported surface slice before implementation |
+| Owned Files Or Packages | `docs/API_COVERAGE.md`, `ROADMAP.md`, optional `docs/specs/SPEC_*.md`, this plan |
+| Context Required | M16 operation classifications and existing specs |
+| Behavior To Preserve | Do not implement or invent endpoint behavior in this selection slice |
+| Deliverables | One selected operation group with user-visible behavior, route states, tests, and validation named; unselected surfaces remain classified for follow-up |
+| Validation Checkpoint | `git diff --check`; API-facing validation and full baseline only when implementation follows |
+| Commit Checkpoint | One scoped M22 selection commit when plan execution is requested and M22 is promoted |
+
+Implementation notes:
+
+- Choose a surface that is fully supported by `docs/backend/approved-openapi.json`.
+- Add or update a focused spec only when the roadmap row cannot clearly hold the
+  behavior, visible states, and tests.
+- Keep pagination, repeated filters, CSRF, localization, and session metadata rules
+  anchored in backend contract artifacts and tests.
+
+## Phase 5: M17 Anonymous Browser Smoke Automation
+
+| Field | Value |
+| --- | --- |
+| Status | Waiting on M16 |
+| Goal | Add a canonical anonymous same-origin browser smoke command for session bootstrap and public catalog flows |
+| Owned Files Or Packages | `package.json`, smoke script files, `docs/LOCAL_DEVELOPMENT.md`, `docs/LOCAL_AUTH_SMOKE.md` if shared smoke guidance changes, this plan |
+| Context Required | M16 coverage findings, current Vite proxy behavior, sibling backend prerequisites |
+| Behavior To Preserve | Anonymous smoke must run without credentials and through same-origin `/api/**`; authenticated steps remain skipped |
+| Deliverables | Documented npm command or script; prerequisites and skip behavior; public smoke evidence in test output or docs |
+| Validation Checkpoint | Smoke command plus `git diff --check`; full baseline if package scripts, tooling, or app code change |
+| Commit Checkpoint | One scoped M17 commit when plan execution is requested and M17 is promoted |
+
+Implementation notes:
+
+- Name backend profile and frontend URL prerequisites explicitly.
+- Cover `GET /api/session`, public categories/books, URL-backed filters,
+  pagination, sorting, and reproducible localized public-read failures where stable.
+- Report backend-unavailable states as skips, not false passes.
+
+## Phase 6: M19 Public Catalog Workflow Polish
+
+| Field | Value |
+| --- | --- |
+| Status | Waiting on M16 and selected polish scope |
+| Goal | Improve the implemented public catalog workflow without backend changes |
+| Owned Files Or Packages | `src/catalog/`, `src/ui/`, catalog route tests, optional focused spec or `ROADMAP.md`, this plan |
+| Context Required | M16 audit output and current catalog tests |
+| Behavior To Preserve | Existing backend-supported filters, pagination, sorting, and URL query semantics |
+| Deliverables | Exact polish scope named before UI edits; tests for changed visible states; smoke update if browser behavior changes |
+| Validation Checkpoint | Relevant tests plus full baseline for app changes; smoke command if changed workflow behavior is covered by M17 |
+| Commit Checkpoint | One scoped M19 commit when plan execution is requested and M19 is promoted |
+
+Implementation notes:
+
+- Scope should be concrete, for example focus behavior, accessible table controls, or
+  pagination affordances. Avoid a broad visual refresh in this slice.
+- Do not change backend request semantics unless M22 selected and implemented a
+  backend-supported API surface first.
+
+## Phase 7: M23 Implemented Flow Visual Design Pass
+
+| Field | Value |
+| --- | --- |
+| Status | Waiting on M16 and selected visual scope |
+| Goal | Apply visual design refinements only to already implemented flows with named evidence |
+| Owned Files Or Packages | Affected route/component files, styles, tests, optional focused spec or `ROADMAP.md`, this plan |
+| Context Required | M16 audit output, selected implemented flows, current tests |
+| Behavior To Preserve | No backend/API behavior changes; existing access rules and route semantics stay intact |
+| Deliverables | Selected flows, responsive/accessibility/focus goals, focused tests or browser evidence, and full baseline for app changes |
+| Validation Checkpoint | Relevant tests, browser screenshots or smoke for changed flows, full baseline, `git diff --check` |
+| Commit Checkpoint | One scoped M23 commit when plan execution is requested and M23 is promoted |
+
+Implementation notes:
+
+- Use this only for implemented public, account, admin, or operator flows.
+- Define browser evidence before changing UI.
+- Keep the pass focused enough for one coherent review.
+
+## Phase 8: M18 Authenticated Smoke Automation Readiness
+
+| Field | Value |
+| --- | --- |
+| Status | Blocked |
+| Goal | Define repeatable authenticated smoke prerequisites without hard-coding provider paths or secrets |
+| Owned Files Or Packages | `docs/LOCAL_AUTH_SMOKE.md`, `docs/LOCAL_DEVELOPMENT.md`, optional smoke script docs, this plan |
+| Blocking Inputs | Backend profile, credential source, ADMIN-capable identity seeding rule, and skip behavior for unavailable credentials |
+| Behavior To Preserve | Login-provider discovery from `GET /api/session`; logout CSRF handling; no secrets committed |
+| Deliverables | Owner docs name required environment variables or manual setup and skip behavior |
+| Validation Checkpoint | `git diff --check`; later executable smoke uses full baseline and selected smoke command |
+| Commit Checkpoint | One scoped M18 readiness commit only after maintainer unblocks the milestone |
+
+Implementation notes:
+
+- Do not start executable authenticated smoke automation from assumptions.
+- If the maintainer supplies credentials/seeding rules while this plan is active,
+  promote M18 to `Ready` and update this plan plus `ROADMAP.md`.
+
+## Phase 9: M24 Post-0.1.0 Release Preparation
+
+| Field | Value |
+| --- | --- |
+| Status | Waiting on selected M16-M23 implementation scope |
+| Goal | Prepare the next patch or minor release after selected implementation and validation evidence land |
+| Owned Files Or Packages | `CHANGELOG.md`, `ROADMAP.md`, package metadata when needed, release notes scripts if affected, this plan |
+| Context Required | Completed selected implementation scope, validation evidence, release rules in `ROADMAP.md`, `.agents/references/releases.md` |
+| Behavior To Preserve | Releases cut only from intended `main`; remote publication requires explicit current request |
+| Deliverables | Changelog promotion, roadmap cleanup, package metadata alignment if needed, validation evidence, completed milestone archive updates when selected |
+| Validation Checkpoint | Full baseline, `npm run audit:security`, `npm run docker:build`, selected smoke/hardening evidence or explicit skip rationale, `git diff --check` |
+| Commit Checkpoint | Scoped release-preparation commit and annotated tag only when release task explicitly requests that work |
+
+Implementation notes:
+
+- Select patch vs minor based on the landed scope.
+- Archive completed roadmap summaries only when release cleanup explicitly adopts
+  that step.
+- Do not publish the tag or GHCR package unless the current user request authorizes
+  remote publication.
+
+## Validation Plan
+
+- Docs/guidance-only slices:
+  - `git diff --check`
+- Backend contract refresh if M16 finds stale artifacts:
+  - `./scripts/sync-backend-contract.ps1`
+  - `npm run api:types`
+  - `git diff --check`
+- App/source/tooling slices:
+  - `npm run lint`
+  - `npm run typecheck`
+  - `npm test`
+  - `npm run build`
+  - `git diff --check`
+- M20 tooling or runtime slices:
+  - full baseline
+  - `npm run docker:build`
+  - selected Trivy image scan
+  - selected kube-linter rendered-manifest check
+  - selected runtime/Nginx check
+  - `git diff --check`
+- Browser smoke slices:
+  - selected smoke command
+  - backend profile, frontend URL, flow coverage, validation date, and skipped
+    authenticated steps with reasons
+- Release preparation:
+  - full baseline
+  - `npm run audit:security`
+  - `npm run docker:build`
+  - selected smoke and hardening evidence or explicit skip rationale
+
+## Review Strategy
+
+- Contract review checks that every API-facing change follows
+  `docs/backend/approved-openapi.json` and `docs/backend/FRONTEND_AI_CONTRACT.md`.
+- Documentation review checks that durable rules live in owners rather than only in
+  this plan.
+- Hardening review checks that M20 commands are repeatable, advisory, and scoped to
+  frontend-owned artifacts.
+- UI review checks accessibility, focus, responsive behavior, and test coverage for
+  any M19 or M23 changes.
+- Release review checks `CHANGELOG.md`, `ROADMAP.md`, package metadata, validation
+  evidence, and git state describe the same candidate.
+
+## Blockers And Replan Triggers
+
+| Trigger / Blocker | Response | Owner | Status |
+| --- | --- | --- | --- |
+| M16 finds stale imported backend artifacts | Refresh with `scripts/sync-backend-contract.ps1`, regenerate API types, then re-evaluate coverage | Coordinator / M16 worker | Open |
+| M16 finds a large uncovered surface | Select one coherent M22 slice and leave remaining gaps classified for follow-up | Coordinator / M22 worker | Open |
+| M20 selected tool cannot run locally or in CI | Record unavailability, keep findings advisory, and update owner docs with fallback evidence | M20 worker / coordinator | Open |
+| M20 finding needs broad runtime or infra changes | Open or update a follow-up roadmap row instead of silently expanding M20 | Coordinator | Open |
+| Authenticated smoke credentials become available | Promote M18 from blocked to ready and update `ROADMAP.md` plus this plan | Coordinator / maintainer | Open |
+| Release preparation is requested before selected scope lands | Stop M24 and report missing implementation/validation evidence | Coordinator | Open |
+| Remote publication is requested | Treat as a separate explicit publication task with push and workflow verification | Coordinator | Open |
+
+## Handoff Requirements
+
+When this plan is implemented, the final handoff must report:
+
+- changed files by milestone or slice
+- commits and tags actually created
+- validation commands and results
+- skipped validation with reasons
+- remaining smoke, contract, or hardening risk
+- M18 blocker status
+- any release publication work that was not requested or not performed
