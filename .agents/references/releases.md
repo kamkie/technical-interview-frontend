@@ -25,6 +25,24 @@ Before preparing a release, confirm:
 - browser smoke evidence is recorded, or unavailable authenticated smoke is called
   out with the reason
 
+## M13 Hardening Evidence
+
+After M13-B lands, release preparation must capture:
+
+- the full validation baseline for the exact release candidate
+- `npm run audit:security` passing at the selected high-or-critical advisory
+  threshold
+- successful CI-owned CodeQL and dependency-review signals for the release-candidate
+  commit, or a documented reason a CI-only signal was unavailable
+- current workflow configuration showing explicit permissions and concurrency
+- any scoped exception with the finding/advisory, affected package or path, owner,
+  mitigation or planned fix, expiration or revisit trigger, and release decision
+
+Dependabot configuration is release-readiness evidence that dependency maintenance is
+owned. Dependabot PR creation is not itself a release-blocking command, but a
+high-or-critical security update tied to a selected audit/dependency-review failure
+must be resolved or explicitly excepted before release.
+
 ## Version Choice
 
 Use semantic version tags:

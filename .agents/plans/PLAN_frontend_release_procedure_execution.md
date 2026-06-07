@@ -128,7 +128,7 @@ Out of scope:
 | ID | Question / Gap | Why It Matters | Owner | Status | Fallback / Decision | Blocks Ready? |
 | --- | --- | --- | --- | --- | --- | --- |
 | Q1 | Is local `main` synced to the exact release candidate? | M12-B must cut from the intended first-parent release state | Coordinator | Open until M12-B | Stop M12-B with concrete git state if not on synced `main` | No for M12-A |
-| Q2 | Which M13 tools are release-blocking? | M13 candidates vary in local reproducibility and maintenance cost | M13-A worker | Planned | Select the minimum repeatable set; document deferred candidates and triggers | No for M12-A |
+| Q2 | Which M13 tools are release-blocking? | M13 candidates vary in local reproducibility and maintenance cost | M13-A worker | Selected in M13-A output | Implement explicit workflow permissions/concurrency, CodeQL, dependency-review, npm audit, and Dependabot; defer artifact, threshold, credential, and custom-rule candidates until their triggers exist | No for M13-B |
 | Q3 | Are authenticated smoke credentials available? | Auth smoke cannot be automated without stable local identity and credentials | Coordinator / maintainer | Open | Keep manual smoke evidence documented; do not block docs/tooling slices | No |
 | Q4 | Are backend contract artifacts stale? | API-facing changes must follow imported contract owners | Coordinator | No conflict known | Refresh only if conflict appears during execution | No |
 | Q5 | Should the release be pushed or published remotely? | Local tag creation and remote publication are separate actions | User / maintainer | Not requested | Do not push tags, branches, or releases without explicit request | No |
@@ -139,7 +139,7 @@ Out of scope:
 | --- | --- | --- | --- | --- |
 | D1 | M12 is split into M12-A readiness and M12-B final release execution | `ROADMAP.md` release preconditions and near-term backlog | 2026-06-07 | Roadmap changes M12 done criteria |
 | D2 | M13 is treated as part of `0.1.0` hardening for the minimum repeatable tool set selected in M13-A | Current user request to plan implementation of roadmap milestones | 2026-06-07 | Maintainer explicitly defers M13 beyond `0.1.0` |
-| D3 | Candidate M13 tooling starts with workflow permissions/concurrency, CodeQL, dependency review, an npm-compatible audit command, and documented deferred checks | `ROADMAP.md` hardening candidates | 2026-06-07 | A candidate lacks stable CI support or creates unacceptable noise |
+| D3 | M13-B implementation scope is explicit workflow permissions/concurrency, CodeQL, dependency-review, an npm-compatible audit command, and Dependabot grouping; SBOM/license, bundle budgets, browser smoke automation, SHA pinning, custom rules, and report artifact upload stay deferred until their documented triggers exist | `ROADMAP.md` hardening selection | 2026-06-07 | A selected check lacks stable CI support or creates unacceptable noise |
 | D4 | M14 human docs should exist before M15 AI references point to them | `ROADMAP.md` procedure adoption scope | 2026-06-07 | AI references become standalone owners by explicit decision |
 | D5 | Remote release publication is not authorized by this plan alone | `AGENTS.md` git and handoff rules | 2026-06-07 | User explicitly asks to publish or push |
 
@@ -180,7 +180,7 @@ Status model:
 | 1: M12-A Release-readiness audit | Done | M12 worker | `7479a43` | Passed by worker and coordinator | No tag creation in this slice; auth smoke remains manual without credentials or a canonical command |
 | 2: M14 Human procedure docs | Done | M14 worker | `c34a9fd` | Passed by worker and coordinator | Human procedure owners and entry-point links landed |
 | 3: M15 AI procedure references | Done | M15 worker | `40478d4` | Passed by worker and coordinator | AI procedure references landed |
-| 4: M13-A Hardening selection | Ready | M13 worker | Pending | `git diff --check`; full baseline if package/workflow files change | M14/M15 owners exist |
+| 4: M13-A Hardening selection | Ready | M13 worker | Pending | `git diff --check`; full baseline if package/workflow files change | Selection output documented; coordinator commit pending |
 | 5: M13-B Hardening implementation | Waiting | M13 worker | Pending | Selected hardening commands plus full baseline | Waits for M13-A |
 | 6: M12-B Release cut | Waiting | M12 worker for metadata edits; coordinator for validation, commit, tag, and plan recording | Pending | Full baseline, tag verification, clean git status | Waits for M13-B and synced `main` |
 
@@ -188,7 +188,7 @@ Status model:
 
 | Field | Value |
 | --- | --- |
-| Status | Ready |
+| Status | Done |
 | Goal | Make the release procedure executable before final release metadata and tag work begins |
 | Owned Files Or Packages | `CHANGELOG.md`, `ROADMAP.md`, `README.md`, `SETUP.md`, `CONTRIBUTING.md`, `package.json`, `package-lock.json`, this plan |
 | Context Required | `AGENTS.md`, `ROADMAP.md` M12, current `CHANGELOG.md`, package metadata, existing validation scripts |
@@ -233,7 +233,7 @@ M12-A release-readiness audit notes:
 
 | Field | Value |
 | --- | --- |
-| Status | Waiting |
+| Status | Done |
 | Goal | Add human-facing owner docs for lifecycle, local development, AI collaboration, and documentation navigation |
 | Owned Files Or Packages | `docs/DEVELOPMENT_LIFECYCLE.md`, `docs/LOCAL_DEVELOPMENT.md`, `docs/WORKING_WITH_AI.md`, `docs/README.md`, `README.md`, `SETUP.md`, `CONTRIBUTING.md`, `ROADMAP.md` |
 | Context Required | `ROADMAP.md` M14 and Procedure Adoption Scope, M12-A audit results, existing setup/auth docs |
@@ -257,7 +257,7 @@ M14 implementation notes:
 
 | Field | Value |
 | --- | --- |
-| Status | Waiting |
+| Status | Done |
 | Goal | Move durable AI-facing procedure details into focused reference docs and keep `AGENTS.md` lean |
 | Owned Files Or Packages | `.agents/references/documentation.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, `.agents/references/releases.md`, `AGENTS.md`, `ROADMAP.md` |
 | Context Required | M14 docs, `ROADMAP.md` M15 and Procedure Adoption Scope, current `AGENTS.md` |
@@ -281,7 +281,7 @@ M15 implementation notes:
 
 | Field | Value |
 | --- | --- |
-| Status | Waiting |
+| Status | Ready |
 | Goal | Select the minimum M13 hardening checks that are useful, repeatable, and owned before adding tooling |
 | Owned Files Or Packages | `ROADMAP.md`, `docs/LOCAL_DEVELOPMENT.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, `.agents/references/releases.md`, this plan |
 | Context Required | M14/M15 procedure owners, `ROADMAP.md` hardening candidates, current CI workflow and package scripts |
@@ -290,17 +290,53 @@ M15 implementation notes:
 | Validation Checkpoint | `git diff --check`; run full baseline if package or workflow files change |
 | Commit Checkpoint | Commit using `.gitmessage`; record hash in Progress Tracker |
 
-Default M13 selection target:
+M13-A selection output for M13-B:
 
-- Add explicit GitHub Actions permissions and concurrency controls.
-- Add CodeQL for TypeScript/JavaScript and workflow analysis where supported.
-- Add dependency-review for pull requests.
-- Add an npm-compatible audit script with a documented threshold and exception
-  process.
-- Add Dependabot or equivalent dependency-update automation if the repository can
-  define useful grouping and reviewer expectations without extra credentials.
-- Defer SBOM/license reporting, bundle budgets, and authenticated browser smoke until
-  the repository owns a release artifact, size threshold, or credentials.
+- Add explicit GitHub Actions permissions and concurrency controls to every workflow.
+  Use least privilege per workflow/job. Cancel superseded pull-request runs, but do
+  not cancel protected branch or release/tag evidence.
+- Add CodeQL for TypeScript/JavaScript source and GitHub workflow analysis where the
+  CodeQL action supports it. Treat this as CI-owned code-scanning evidence.
+- Add dependency-review for pull requests that change dependency manifests or
+  lockfiles. Treat this as CI-owned pull-request evidence.
+- Add `npm run audit:security` as the selected local npm-compatible software
+  composition analysis command. It should wrap `npm audit --audit-level=high` unless
+  M13-B documents a narrower npm-native equivalent. High and critical advisories are
+  release-blocking unless fixed or excepted.
+- Add Dependabot for npm and GitHub Actions updates. Group runtime dependencies,
+  tooling/test dependencies, and Actions updates separately. Do not name individual
+  reviewers until the repository owns a stable reviewer team or `CODEOWNERS`.
+- Document report locations as GitHub code scanning for CodeQL, pull-request checks
+  for dependency-review, workflow logs for npm audit, and Dependabot pull requests
+  for dependency maintenance.
+
+M13-A deferred candidates and revisit triggers:
+
+- SBOM/license reporting waits for a published package, deployable artifact, or
+  release requirement for dependency/license inventory.
+- Bundle budgets wait for a reviewed threshold or repeated production `dist/` growth
+  concerns.
+- Authenticated browser smoke automation waits for agreed credentials, identity
+  seeding rules, backend profile, and a canonical command.
+- Anonymous browser smoke and accessibility automation wait for a canonical browser
+  command and stable failure thresholds.
+- GitHub Actions SHA pinning waits for a stricter supply-chain policy or automation
+  to keep pinned SHAs current.
+- Custom frontend security lint rules wait for a repeated issue pattern missed by
+  CodeQL or ESLint and a selected stable rule set.
+- Hardening report artifact uploads wait for selected checks that write stable report
+  files; until then use code-scanning alerts, PR annotations, and workflow logs.
+
+M13-A triage and exception rules for M13-B:
+
+- Repository maintainers own hardening failures until a dedicated team or
+  `CODEOWNERS` exists.
+- Prefer a source fix, dependency update, or lockfile refresh over an exception.
+- Each exception must name the finding/advisory, affected package or path, current
+  risk, owner, mitigation or planned fix, expiration or revisit trigger, and release
+  decision.
+- Skips must be scoped to a check or finding. Do not raise the audit threshold or
+  disable a whole workflow to hide one finding.
 
 ## Phase 5: M13-B Selected Hardening Tooling
 

@@ -20,7 +20,7 @@ This roadmap tracks the planned first-party browser frontend for the sibling
 | Implemented surface | Session, public catalog, account, admin catalog, admin localization, admin users, operator |
 | Hardening baseline  | ESLint, TypeScript, Vitest, API type freshness, build, and whitespace checks               |
 | Latest release      | No tagged frontend release yet                                                             |
-| Immediate action    | Prepare first release and hardening pass                                                    |
+| Immediate action    | Implement selected M13 hardening tooling before the final release cut                       |
 | Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`       |
 
 The app currently bootstraps browser session state with `GET /api/session`, renders
@@ -62,14 +62,14 @@ hardening and any newly selected backend-supported scope.
 | M10 - Operator Audit Surface       | Complete | Read-only operator overview plus pageable audit log with filters for target type, action, and actor                                                                                           | Operators can inspect runtime/status summaries, recent audit entries, filtered pageable audit rows, and audit details with tests for access, loading, empty, filtered, paginated, localized error, and partial-payload states |
 | M11 - Admin User Management        | Complete | Admin user list/detail with contract-backed role management                                                                                                                                   | Admins can review user profiles, roles, and role-grant provenance, then replace managed roles with CSRF handling and tests for access, empty, success, validation, localized error, and missing-CSRF states                   |
 | M12 - Release Procedure And `0.1.0` Hardening | Ready | Backend-style release preparation adapted to the frontend repo: version selection, changelog promotion, validation, annotated tag, publication checks, and post-release roadmap cleanup | Maintainers can cut the first frontend release from `main` using a documented procedure; `CHANGELOG.md`, `ROADMAP.md`, package metadata, validation evidence, and tag state agree |
-| M13 - Static Analysis And Hardening Tooling | Planned | Frontend hardening gates modeled after the backend repo: CodeQL, dependency/security scanning, SBOM or license reporting, accessibility/smoke checks, report artifacts, and documented triage rules | CI and local scripts expose the selected checks; release preconditions name required hardening evidence; docs explain false-positive handling, skip policy, and artifact locations |
+| M13 - Static Analysis And Hardening Tooling | Ready | Selected `0.1.0` hardening gates: explicit GitHub Actions permissions/concurrency, CodeQL, dependency-review, an npm audit script, Dependabot grouping, and documented triage/exception rules | CI and local scripts expose the selected checks; release preconditions name required hardening evidence; docs explain false-positive handling, skip policy, and artifact locations |
 | M14 - Human Procedure Documentation | Complete | Frontend procedure docs adapted from the backend repo: lifecycle/artifact routing, local development, AI collaboration, and documentation index | `docs/DEVELOPMENT_LIFECYCLE.md`, `docs/LOCAL_DEVELOPMENT.md`, `docs/WORKING_WITH_AI.md`, and `docs/README.md` exist; `README.md`, `SETUP.md`, and `CONTRIBUTING.md` link to the owners without duplicating them |
 | M15 - AI Procedure Reference Layer | Complete | Lean AI-facing owner guides for documentation routing, validation selection, review/security review, and release sequencing | `.agents/references/documentation.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and `.agents/references/releases.md` exist; `AGENTS.md` points to them; backend-only workflow state remains deferred |
 
 ## Near-Term Backlog
 
-1. Execute M13 as `0.1.0` release hardening by selecting the minimum repeatable tool
-   set for this frontend.
+1. Implement the selected M13 `0.1.0` hardening gates without adding deferred
+   artifact, credential, or threshold-dependent checks.
 2. Finish M12-B: promote the candidate `0.1.0` changelog section when tagging,
    verify package metadata, and follow the release procedure below.
 3. Add a canonical browser smoke or e2e command for same-origin session/auth flows
@@ -164,29 +164,36 @@ Keep deferred:
 
 ## Hardening Tooling Candidates
 
-M13 should choose the smallest useful set from this list and document any deferred
-tools with a trigger:
+M13-A selected the smallest useful set for the `0.1.0` hardening pass. M13-B should
+implement only these checks before M13 is marked complete:
 
-- CodeQL for TypeScript/JavaScript source and GitHub workflow analysis.
-- Explicit GitHub Actions permissions and concurrency controls.
-- A deliberate policy for pinning GitHub Actions by SHA, or a documented decision not
-  to pin them for this repository yet.
-- Dependency-review and lockfile checks for pull requests.
-- `npm audit` or another npm-compatible software composition analysis gate, with a
-  severity threshold and documented exception process.
-- Dependabot or equivalent dependency-update automation, including grouping and
-  reviewer expectations.
-- SBOM and license reporting for the production frontend package when a release or
-  deployment artifact exists.
-- Static checks for browser security footguns, such as unsafe URL handling,
-  unescaped HTML insertion, secret leakage in built assets, and overly broad workflow
-  permissions.
-- Accessibility and browser smoke coverage for critical routes, including anonymous
-  catalog flow and authenticated session routes when credentials are available.
-- Bundle-size or asset-budget checks if production build output grows beyond a
-  reviewed threshold.
-- CI artifact upload for hardening reports so failures can be inspected after the
-  workflow ends.
+- Explicit GitHub Actions permissions and concurrency controls on every workflow.
+- CodeQL for TypeScript/JavaScript source and GitHub workflow analysis where the
+  CodeQL action supports workflow analysis.
+- Dependency-review for pull requests, especially manifest and lockfile changes.
+- An npm-compatible audit script using a high-or-critical advisory threshold and a
+  documented exception process.
+- Dependabot for npm and GitHub Actions updates, with separate groups for runtime
+  dependencies, tooling/test dependencies, and Actions updates. Use the normal
+  maintainer review path until a stable reviewer team or `CODEOWNERS` exists.
+
+Deferred candidates and revisit triggers:
+
+- SBOM and license reporting: revisit when the frontend publishes a package,
+  deployable artifact, or release process requiring dependency/license inventory.
+- Bundle-size or asset-budget checks: revisit when a reviewed threshold exists or
+  production `dist/` growth becomes a repeated review issue.
+- Authenticated browser smoke automation: revisit when agreed local credentials,
+  identity seeding rules, backend profile, and a canonical command exist.
+- Anonymous browser smoke and accessibility automation: revisit when the repository
+  owns a canonical browser command and stable failure thresholds.
+- GitHub Actions SHA pinning: revisit when maintainers select a stricter
+  supply-chain policy or add automation that keeps pinned SHAs current.
+- Custom frontend security lint rules beyond CodeQL and ESLint: revisit when a
+  repeated issue pattern is not covered by the selected checks.
+- CI artifact upload for hardening reports: revisit when a selected check writes
+  stable report files; until then, use code-scanning alerts, pull-request check
+  annotations, and workflow logs.
 
 Do not add backend-only hardening gates, container image scans, deployment scans, or
 runtime infrastructure checks until the frontend repository owns a corresponding

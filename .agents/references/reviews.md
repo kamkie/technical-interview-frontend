@@ -67,6 +67,27 @@ For API-facing security questions, keep the frontend same-origin and
 session-cookie based. Do not add CORS-dependent behavior, JWT assumptions,
 bearer-token assumptions, hard-coded OAuth provider paths, or alternate transports.
 
+## Hardening Triage
+
+For selected M13 hardening gates:
+
+- Workflow permission and concurrency changes should be reviewed for least privilege,
+  no unexpected write scopes, and no concurrency rule that cancels protected branch
+  or release/tag evidence.
+- CodeQL alerts should be treated as actionable until the relevant data or control
+  flow is understood. Prefer source fixes; use a scoped exception only when the alert
+  is demonstrably not exploitable or cannot be fixed before the selected release.
+- Dependency-review and npm audit failures should be fixed through dependency
+  updates, lockfile refreshes, or a package replacement where practical. Exceptions
+  must name the advisory, package path, owner, mitigation, expiration or revisit
+  trigger, and release decision.
+- Dependabot grouping should reduce review noise without hiding security updates.
+  Do not require named individual reviewers until the repository owns a stable
+  reviewer team or `CODEOWNERS`.
+- A skipped or disabled hardening check must have a scoped rationale and an owner.
+  Do not raise the global audit threshold or disable the entire workflow for one
+  finding.
+
 ## Review Handoff
 
 A review handoff should include:

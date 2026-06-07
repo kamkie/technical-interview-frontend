@@ -16,7 +16,8 @@ skipped check with the reason.
 | Session, auth, CSRF, or logout behavior | Relevant tests or smoke evidence for the changed flow, plus the full baseline for executable changes |
 | Browser smoke evidence | Record frontend URL, backend profile when used, flow covered, validation date, and skipped authenticated steps with reasons |
 | Release metadata or release-readiness work | Full baseline for release candidate changes; docs-only release references may use `git diff --check` |
-| Hardening checks after M13 lands | Full baseline plus each selected local hardening command or documented CI-owned signal |
+| M13-A hardening selection docs | `git diff --check` |
+| Hardening checks after M13-B lands | Full baseline plus each selected local hardening command or documented CI-owned signal |
 
 The current full baseline is:
 
@@ -31,6 +32,22 @@ git diff --check
 `npm run typecheck` already includes API type freshness. Use `npm run api:types` to
 rewrite generated API types only after an intentional contract refresh.
 
+## Selected M13 Hardening Evidence
+
+After M13-B implements tooling, hardening validation is:
+
+- full baseline validation
+- `npm run audit:security`, expected to wrap `npm audit --audit-level=high`
+- CI evidence for explicit workflow permissions and concurrency
+- CI/code-scanning evidence for CodeQL TypeScript/JavaScript analysis and workflow
+  analysis where supported
+- CI pull-request evidence for dependency-review
+- Dependabot configuration review for grouped npm and GitHub Actions updates
+
+Dependabot PR creation is an operational maintenance signal, not a blocking command
+for every local validation run. A Dependabot security update tied to a high or
+critical advisory should be handled through the audit/dependency-review triage path.
+
 ## Validation Boundaries
 
 Run broader validation when a docs task also changes package scripts, workflows,
@@ -39,6 +56,11 @@ match executable evidence.
 
 Do not make a future hardening candidate release-blocking until it has a repeatable
 local command or a clearly owned CI signal with triage and skip rules.
+
+For selected M13 checks, exceptions must be scoped to a finding or advisory and must
+include an owner, mitigation or planned fix, expiration or revisit trigger, and the
+release decision. Do not weaken a global threshold or disable a full workflow to
+work around a single finding.
 
 Authenticated browser smoke remains manual until the repository has agreed local
 credentials, identity seeding rules, and a canonical command. When it cannot run,

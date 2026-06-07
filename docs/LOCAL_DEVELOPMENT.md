@@ -127,10 +127,68 @@ flow covered, validation date, and any skipped authenticated steps with the reas
 
 ## M13 Hardening Commands
 
-M13 has not landed yet. After M13 selects and implements hardening checks, record the
-local commands, CI-only checks, thresholds, report locations, triage owner, and skip
-policy in this section. Do not treat a hardening candidate as release-blocking until
-it has a repeatable local command or a clearly owned CI signal.
+M13-A selected the minimum hardening set for the `0.1.0` release hardening pass.
+M13-B must add the package scripts, GitHub Actions workflows, Dependabot
+configuration, and any report locations before these checks become release-blocking.
+
+Selected M13 checks:
+
+- Explicit GitHub Actions permissions and concurrency for every workflow. Use the
+  narrowest permissions each job needs, and cancel superseded pull-request runs
+  without interrupting protected branch or release/tag evidence.
+- CodeQL for TypeScript/JavaScript source, plus GitHub Actions workflow analysis
+  where the CodeQL action supports it. This is a CI-owned code-scanning signal, not
+  a local command.
+- Dependency review for pull requests that change dependency manifests or
+  lockfiles. This is a CI-owned pull-request signal.
+- An npm-compatible audit script named `npm run audit:security`, implemented as a
+  wrapper around `npm audit --audit-level=high` unless M13-B documents a narrower
+  npm-native equivalent. The threshold is high or critical advisories for the locked
+  dependency graph, including development dependencies because they participate in
+  build, test, and release validation.
+- Dependabot for npm and GitHub Actions updates. Group npm runtime dependencies,
+  npm tooling/test dependencies, and GitHub Actions updates separately. Until the
+  repository owns a stable reviewer team or `CODEOWNERS`, route review through the
+  normal maintainer review path instead of naming individual reviewers in config.
+
+Deferred hardening candidates:
+
+- SBOM and license reporting: revisit when the frontend publishes a package,
+  deployable artifact, or release process that needs a durable dependency/license
+  inventory.
+- Bundle-size and asset budgets: revisit when the project owns a reviewed size
+  threshold or production `dist/` growth becomes a repeated review concern.
+- Authenticated browser smoke automation: revisit when the repository has agreed
+  local credentials, identity seeding rules, backend profile, and a canonical
+  command.
+- Anonymous browser smoke and accessibility automation: revisit when the repository
+  owns a canonical browser command and stable failure thresholds.
+- CI artifact upload for hardening reports: revisit when a selected check writes a
+  stable report file. Until then, use GitHub code scanning, pull-request check
+  annotations, and workflow logs as the report locations.
+- GitHub Actions SHA pinning: revisit when maintainers select a stricter
+  supply-chain policy or add automation that keeps pinned SHAs current. M13-B should
+  keep trusted versioned actions, explicit permissions, and Dependabot action
+  updates.
+- Custom frontend security lint rules: revisit when CodeQL or ESLint misses a
+  repeated security issue pattern and a stable rule set is selected.
+
+Failure triage and exceptions:
+
+- Security and hardening failures are owned by the repository maintainers until a
+  dedicated team or `CODEOWNERS` file exists.
+- Prefer a source fix, dependency update, or lockfile refresh over an exception. For
+  CodeQL, inspect the data or control flow before dismissing an alert as not
+  applicable.
+- Each exception must name the finding or advisory, affected package/path, current
+  risk, owner, mitigation or planned fix, expiration or revisit trigger, and release
+  decision. Keep exceptions in this section until a dedicated exceptions file is
+  selected.
+- A skip must be scoped to the specific check or finding. Do not raise the audit
+  threshold, disable an entire workflow, or remove required workflow steps solely to
+  hide one failure.
+- Release candidates require passing selected checks, documented unavailability for
+  any CI-only signal that did not run, and no expired exceptions.
 
 ## Troubleshooting
 
