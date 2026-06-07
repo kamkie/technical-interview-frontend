@@ -80,9 +80,11 @@ implemented these checks without adding deferred artifact, credential, threshold
 custom-rule gates:
 
 - Explicit GitHub Actions permissions and concurrency controls on every workflow.
-- CodeQL for TypeScript/JavaScript source and GitHub workflow analysis where the
-  CodeQL action supports workflow analysis.
-- Dependency-review for pull requests, especially manifest and lockfile changes.
+- CodeQL for TypeScript/JavaScript source and GitHub workflow analysis, with SARIF
+  artifacts when GitHub code scanning upload is unavailable.
+- Dependency-review for pull requests, especially manifest and lockfile changes,
+  with private-repository advisory mode when the GitHub dependency-review API is
+  unavailable.
 - An npm-compatible audit script using a high-or-critical advisory threshold and a
   documented exception process.
 - Dependabot for npm and GitHub Actions updates, with separate groups for runtime

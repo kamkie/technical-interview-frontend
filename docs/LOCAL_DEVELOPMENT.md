@@ -152,12 +152,16 @@ Implemented M13 checks:
   concurrency that cancels superseded pull-request runs while preserving
   protected-branch, tag, release, and scheduled evidence.
 - `.github/workflows/codeql.yml` runs CodeQL for `javascript-typescript` and
-  `actions` on pull requests, pushes to `main`, and a weekly schedule. This is a
-  CI-owned code-scanning signal, not a local command. Reports live in GitHub code
-  scanning alerts, with run details in the CodeQL workflow logs.
+  `actions` on pull requests, pushes to `main`, and a weekly schedule. This private
+  repository writes SARIF artifacts instead of uploading to GitHub code scanning
+  until code scanning support is enabled, and the workflow emits a notice naming the
+  maintainer-side feature needed for Security-tab alerts.
 - `.github/workflows/dependency-review.yml` runs dependency review on pull
-  requests, using a high-or-critical severity gate. Failures appear in the pull
-  request check, annotations, and workflow logs.
+  requests, using a high-or-critical severity gate where the repository supports
+  the GitHub dependency-review API. In this private repository, unsupported runs
+  are advisory so the workflow stays green; use `npm run audit:security` as the
+  local fallback evidence. The workflow emits a warning if dependency-review needs
+  maintainer-side GitHub security features.
 - `npm run audit:security` wraps `npm audit --audit-level=high`. It is the selected
   local hardening command for high or critical advisories in the locked dependency
   graph, including development dependencies because they participate in build,
@@ -181,8 +185,8 @@ Deferred hardening candidates:
 - Anonymous browser smoke and accessibility automation: revisit when the repository
   owns a canonical browser command and stable failure thresholds.
 - CI artifact upload for hardening reports: revisit when a selected check writes a
-  stable report file. Until then, use GitHub code scanning, pull-request check
-  annotations, and workflow logs as the report locations.
+  stable report file beyond CodeQL SARIF. Until then, use pull-request check
+  annotations, workflow logs, and CodeQL SARIF artifacts as the report locations.
 - GitHub Actions SHA pinning: revisit when maintainers select a stricter
   supply-chain policy or add automation that keeps pinned SHAs current. M13-B should
   keep trusted versioned actions, explicit permissions, and Dependabot action
@@ -195,8 +199,8 @@ Failure triage and exceptions:
 - Security and hardening failures are owned by the repository maintainers until a
   dedicated team or `CODEOWNERS` file exists.
 - Prefer a source fix, dependency update, or lockfile refresh over an exception. For
-  CodeQL, inspect the data or control flow before dismissing an alert as not
-  applicable.
+  CodeQL, inspect the SARIF artifact and data/control flow before dismissing an
+  alert as not applicable.
 - Each exception must name the finding or advisory, affected package/path, current
   risk, owner, mitigation or planned fix, expiration or revisit trigger, and release
   decision. Keep exceptions in this section until a dedicated exceptions file is

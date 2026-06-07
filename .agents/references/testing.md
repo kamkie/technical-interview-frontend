@@ -45,10 +45,14 @@ After M13-B, hardening validation is:
 - workflow configuration review for explicit permissions and concurrency that
   cancels superseded pull-request runs without canceling protected branch, tag,
   release, or scheduled evidence
-- CI/code-scanning evidence for CodeQL `javascript-typescript` and `actions`
-  analysis; reports live in GitHub code scanning alerts and CodeQL workflow logs
-- CI pull-request evidence for dependency-review; failures live in the pull-request
-  check, annotations, and workflow logs
+- CI evidence for CodeQL `javascript-typescript` and `actions` analysis; this
+  private repository writes SARIF artifacts instead of uploading to GitHub code
+  scanning until code scanning support is enabled, and the workflow notice names
+  the maintainer-side feature needed for Security-tab alerts
+- CI pull-request evidence for dependency-review; private repositories without
+  dependency graph and GitHub Advanced Security support run in advisory mode and
+  should be paired with `npm run audit:security`; the workflow warning names the
+  maintainer-side features needed for enforcement
 - Dependabot configuration review for grouped npm runtime, npm tooling/test, and
   GitHub Actions updates
 

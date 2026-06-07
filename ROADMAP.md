@@ -51,6 +51,9 @@ backend-supported scope, smoke automation, or release workflow improvement.
 No post-`0.1.0` milestone is selected yet. Completed M0-M15 work is archived in
 `docs/ROADMAP_ARCHIVE.md`.
 
+Next action: select the next M16+ backend-supported scope, UX/workflow improvement,
+or browser smoke automation target.
+
 ## Near-Term Backlog
 
 1. Select the next M16+ backend-supported surface, UX polish slice, or release
@@ -135,9 +138,9 @@ Deferred candidates and revisit triggers:
   supply-chain policy or add automation that keeps pinned SHAs current.
 - Custom frontend security lint rules beyond CodeQL and ESLint: revisit when a
   repeated issue pattern is not covered by the selected checks.
-- CI artifact upload for hardening reports: revisit when a selected check writes
-  stable report files; until then, use code-scanning alerts, pull-request check
-  annotations, and workflow logs.
+- CI artifact upload for hardening reports beyond CodeQL SARIF: revisit when a
+  selected check writes stable report files; until then, use pull-request check
+  annotations, workflow logs, and CodeQL SARIF artifacts.
 
 Do not add backend-only hardening gates, container image scans, deployment scans, or
 runtime infrastructure checks until the frontend repository owns a corresponding

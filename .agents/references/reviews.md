@@ -75,15 +75,18 @@ For selected M13 hardening gates:
   no unexpected write scopes, and no concurrency rule that cancels protected branch
   or release/tag evidence. Pull-request runs may cancel superseded runs.
 - CodeQL alerts should be treated as actionable until the relevant data or control
-  flow is understood. Use GitHub code scanning alerts and the CodeQL workflow logs as
-  the report location. Prefer source fixes; use a scoped exception only when the
-  alert is demonstrably not exploitable or cannot be fixed before the selected
-  release.
+  flow is understood. Use SARIF artifacts and CodeQL workflow logs as the report
+  locations while this private repository runs without code scanning upload.
+  Prefer source fixes; use a scoped exception only when the alert is demonstrably
+  not exploitable or cannot be fixed before the selected release.
 - Dependency-review and npm audit failures should be fixed through dependency
   updates, lockfile refreshes, or a package replacement where practical. Use
   pull-request checks, annotations, workflow logs, and `npm run audit:security`
-  output as the report locations. Exceptions must name the advisory, package path,
-  owner, mitigation, expiration or revisit trigger, and release decision.
+  output as the report locations. In private-repository advisory mode, treat
+  unsupported dependency-review runs as a signal to rely on npm audit until
+  dependency graph and GitHub Advanced Security support are enabled. Exceptions
+  must name the advisory, package path, owner, mitigation, expiration or revisit
+  trigger, and release decision.
 - Dependabot grouping should reduce review noise without hiding security updates.
   Do not require named individual reviewers until the repository owns a stable
   reviewer team or `CODEOWNERS`.

@@ -5,7 +5,11 @@ until they are promoted for a release tag.
 
 ## [Unreleased]
 
-No unreleased changes yet.
+### Fixed
+
+- Refreshed the npm 11 lockfile metadata so canonical `npm ci` installs pass in CI.
+- Restored CodeQL and dependency-review workflows with private-repository-compatible
+  behavior for repositories without GitHub code scanning or Advanced Security.
 
 ## [0.1.0] - 2026-06-07
 

@@ -33,7 +33,7 @@ After M13-B lands, release preparation must capture:
 - `npm run audit:security` passing at the selected high-or-critical advisory
   threshold
 - successful CI-owned CodeQL and dependency-review signals for the release-candidate
-  commit, or a documented reason a CI-only signal was unavailable
+  commit, or a documented reason a CI-only signal was advisory-only or unavailable
 - current workflow configuration showing explicit permissions and concurrency
 - any scoped exception with the finding/advisory, affected package or path, owner,
   mitigation or planned fix, expiration or revisit trigger, and release decision
