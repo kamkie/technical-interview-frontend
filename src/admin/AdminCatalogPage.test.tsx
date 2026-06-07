@@ -41,6 +41,13 @@ describe('AdminCatalogPage', () => {
     )
 
     expect(await screen.findByText('Effective Java')).toBeInTheDocument()
+    const statusSummary = screen.getByLabelText('Admin catalog status summary')
+    expect(
+      within(statusSummary).getByText('Maintain books and categories'),
+    ).toBeInTheDocument()
+    expect(
+      within(statusSummary).getByText('Create, edit, delete'),
+    ).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(ACCOUNT_PATH, {
       method: 'GET',
       credentials: 'same-origin',
@@ -126,6 +133,7 @@ describe('AdminCatalogPage', () => {
 
     renderAdminCatalog()
 
+    expect(await screen.findByText('Admin role required')).toBeInTheDocument()
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Admin access is required for catalog management.',
     )

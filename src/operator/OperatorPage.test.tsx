@@ -32,6 +32,13 @@ describe('OperatorPage', () => {
 
     expect(await screen.findByText('Updated book title.')).toBeInTheDocument()
     expect(await screen.findByText('Created category Java.')).toBeInTheDocument()
+    const statusSummary = screen.getByLabelText('Operator status summary')
+    expect(
+      within(statusSummary).getByText('Review audit and runtime evidence'),
+    ).toBeInTheDocument()
+    expect(
+      within(statusSummary).getByText('Filter, paginate, inspect details'),
+    ).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(OPERATOR_SURFACE_PATH, {
       method: 'GET',
       credentials: 'same-origin',
@@ -151,6 +158,8 @@ describe('OperatorPage', () => {
     expect(
       await screen.findByText('No audit entries match these filters.'),
     ).toBeInTheDocument()
+    expect(screen.getByText('No audit rows found')).toBeInTheDocument()
+    expect(screen.getByText('No audit entry selected')).toBeInTheDocument()
     expect(screen.getByText('No recent audit entries available.')).toBeInTheDocument()
     expect(screen.getByText('Build details unavailable.')).toBeInTheDocument()
     expect(

@@ -36,6 +36,13 @@ describe('AdminUsersPage', () => {
     renderAdminUsers()
 
     expect(await screen.findByText('Admin User')).toBeInTheDocument()
+    const statusSummary = screen.getByLabelText('Admin users status summary')
+    expect(
+      within(statusSummary).getByText('Review users and role grants'),
+    ).toBeInTheDocument()
+    expect(
+      within(statusSummary).getByText('Inspect, replace roles'),
+    ).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(ACCOUNT_PATH, {
       method: 'GET',
       credentials: 'same-origin',
@@ -69,6 +76,7 @@ describe('AdminUsersPage', () => {
 
     renderAdminUsers()
 
+    expect(await screen.findByText('Admin role required')).toBeInTheDocument()
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Admin access is required for user management.',
     )
@@ -97,9 +105,12 @@ describe('AdminUsersPage', () => {
 
     renderAdminUsers()
 
+    expect(await screen.findByText('No users returned')).toBeInTheDocument()
     expect(await screen.findByText('No users are available.')).toBeInTheDocument()
+    const details = screen.getByRole('complementary', { name: 'User detail' })
+    expect(within(details).getByText('No user selected')).toBeInTheDocument()
     expect(
-      screen.getByText('Select a user to review roles and provenance.'),
+      within(details).getByText('Select a user to review roles and provenance.'),
     ).toBeInTheDocument()
   })
 

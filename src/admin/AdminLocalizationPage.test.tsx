@@ -40,6 +40,13 @@ describe('AdminLocalizationPage', () => {
     )
 
     expect(await screen.findByText('Konto')).toBeInTheDocument()
+    const statusSummary = screen.getByLabelText('Localization status summary')
+    expect(
+      within(statusSummary).getByText('Maintain localized messages'),
+    ).toBeInTheDocument()
+    expect(
+      within(statusSummary).getByText('Create, edit, delete'),
+    ).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(ACCOUNT_PATH, {
       method: 'GET',
       credentials: 'same-origin',
@@ -77,6 +84,7 @@ describe('AdminLocalizationPage', () => {
 
     renderAdminLocalization()
 
+    expect(await screen.findByText('Admin role required')).toBeInTheDocument()
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Admin access is required for localization management.',
     )
@@ -360,6 +368,9 @@ describe('AdminLocalizationPage', () => {
 
     renderAdminLocalization()
 
+    expect(
+      await screen.findByText('Localization rows could not be loaded'),
+    ).toBeInTheDocument()
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Nie masz dostepu do tlumaczen.',
     )

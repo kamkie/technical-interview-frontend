@@ -14,7 +14,7 @@ Filename: `.agents/plans/PLAN_production_ui_foundation.md`
 - Approved by: Current user request to implement `PLAN_production_ui_foundation.md`.
 - Approved at: 2026-06-07T23:05:20+02:00
 - Open questions: No blocking product questions identified from current owners.
-- Implementation progress: P1-shell-navigation checkpointed; P2-route-context-state complete and pending checkpoint.
+- Implementation progress: P1-shell-navigation and P2-route-context-state checkpointed; P3-coverage-hardening complete and pending checkpoint.
 
 Use `Status: Draft` while shaping the plan. Use `Status: Approved` only after explicit user approval is recorded. Creating or updating this plan is not implementation approval.
 
@@ -23,6 +23,7 @@ Use `Status: Draft` while shaping the plan. Use `Status: Approved` only after ex
 - 2026-06-07T22:57:00+02:00: none -> Draft by Codex; plan created for `M-UI-001`.
 - 2026-06-07T23:05:20+02:00: Draft -> Approved by Codex; current user request explicitly asked to implement this plan.
 - 2026-06-07T23:18:30+02:00: P1-shell-navigation completed and checkpointed in `598d68c`.
+- 2026-06-07T23:28:42+02:00: P2-route-context-state completed and checkpointed in `d23f676`.
 
 ## Goal
 
@@ -89,7 +90,7 @@ Load only the artifacts needed for the current packet. Do not bulk-load generate
 | ---------------------- | -------- | ----------- | ---------- | ------------ | --------------------------------------------------------- |
 | P1-shell-navigation    | Complete | worker      | None       | 2026-06-07   | Shell, navigation, admin separation, and session controls |
 | P2-route-context-state | Complete | worker      | P1         | 2026-06-07   | Route context and basic loading, empty, and error states  |
-| P3-coverage-hardening  | Waiting  | worker      | P2         | 2026-06-07   | Focused test coverage and visual/state regression cleanup |
+| P3-coverage-hardening  | Complete | worker      | P2         | 2026-06-07   | Focused test coverage and visual/state regression cleanup |
 | P4-final-validation    | Waiting  | Coordinator | P3         | 2026-06-07   | Full validation, review, and milestone handoff            |
 
 Use `Ready` only when the packet can be assigned from the current repository state. Use `Waiting` for normal predecessor dependency. Use `Blocked` only for unresolved product choices, backend contract conflicts, credentials, selected thresholds, failure owners, explicit user acceptance gates, or external state the plan cannot produce.
@@ -263,17 +264,17 @@ Expected output:
 
 Result summary:
 
-- Status: complete; checkpoint commit pending.
+- Status: complete.
 - Worker: Codex implementation worker.
 - Changed files or reviewed diff: `src/catalog/CatalogPanel.tsx`, `src/account/AccountProfile.tsx`, `src/admin/AdminCatalogPage.tsx`, `src/admin/AdminLocalizationPage.tsx`, `src/admin/AdminUsersPage.tsx`, `src/operator/OperatorPage.tsx`, `src/index.css`; this P2 result summary.
 - Validation evidence from `.agents/references/testing.md`: coordinator reran targeted affected route/component tests with `npm test -- src/catalog/CatalogPanel.test.tsx src/admin/AdminCatalogPage.test.tsx src/admin/AdminLocalizationPage.test.tsx src/admin/AdminUsersPage.test.tsx src/operator/OperatorPage.test.tsx` (5 files, 51 tests), `npm run lint`, `npm run typecheck` with API type freshness check, `npm test` (14 files, 146 tests), `npm run build`, and `git diff --check`; all passed.
 - Self-review evidence from `.agents/references/reviews.md`: coordinator reviewed route/query state, admin/operator/account flows, localization branching, documentation drift, and P2 scope after requesting a visible-copy revision. No API request serialization, route guard timing, CSRF behavior, pagination, repeated filters, repeated sort, localized-error rendering, or versioned book update behavior changed. State branches use existing async status fields and route/page context, not localized English backend messages.
-- Commit: pending coordinator checkpoint; worker did not commit.
+- Commit: `d23f676` (`feat(ui): add route context states`).
 - Coordinator reconciliation: accepted after copy revision. The scoped diff adds route-local descriptions, status summaries, and structured loading, empty, and error blocks across catalog, account, admin, and operator routes while keeping request behavior and protected-route behavior unchanged. P2 did not edit `src/App.tsx`, API clients, generated types, route guards, package scripts, roadmap, or specs.
 - Changelog/docs/spec/roadmap updates: no changelog, spec, docs, or roadmap updates by this worker; only this P2 result summary was updated.
 - Blockers: none.
 - Review risks: account route still has no dedicated component test owner; it is covered by App tests, typecheck, lint, build, and the full test baseline. Browser smoke was not run for P2 because this packet changed route-local presentation without smoke procedure or script changes.
-- Handoff notes and next action: create the P2 checkpoint commit, record its identifier, promote P3 to `Ready`, and dispatch P3.
+- Handoff notes and next action: P3 is ready for implementation worker dispatch.
 
 ### Task Packet: P3-coverage-hardening
 
@@ -349,17 +350,17 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Validation evidence from `.agents/references/testing.md`:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Commit:
-- Coordinator reconciliation:
-- Changelog/docs/spec/roadmap updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: complete; checkpoint commit pending.
+- Worker: Codex implementation worker.
+- Changed files or reviewed diff: `src/account/AccountProfile.test.tsx`, `src/catalog/CatalogPanel.test.tsx`, `src/admin/AdminCatalogPage.test.tsx`, `src/admin/AdminLocalizationPage.test.tsx`, `src/admin/AdminUsersPage.test.tsx`, `src/operator/OperatorPage.test.tsx`; this P3 result summary.
+- Validation evidence from `.agents/references/testing.md`: coordinator reran `npm test -- src/account/AccountProfile.test.tsx src/catalog/CatalogPanel.test.tsx src/admin/AdminCatalogPage.test.tsx src/admin/AdminLocalizationPage.test.tsx src/admin/AdminUsersPage.test.tsx src/operator/OperatorPage.test.tsx` (6 files, 54 tests), `npm run lint`, `npm run typecheck` with API type freshness check, `npm test` (15 files, 149 tests), `npm run build`, and `git diff --check`; all passed.
+- Self-review evidence from `.agents/references/reviews.md`: coordinator reviewed test gaps, owner drift, route/query state, admin/operator/account flows, localization branching, and security triggers. P3 added focused coverage for the previously unowned account profile component plus route status summaries and structured empty/error/loading labels; no source, CSS, API client, route guard, generated type, package script, roadmap, or spec edits were made. Assertions preserve API calls, repeated query behavior, CSRF metadata, and localized backend message display without using English backend messages as control-flow rules.
+- Commit: pending coordinator checkpoint; worker did not commit.
+- Coordinator reconciliation: accepted. The scoped diff is test-only plus this P3 summary, closes the account component coverage gap, and protects P1/P2 visible shell/state behavior without expanding into workflow polish, smoke, accessibility threshold, or responsive-hardening scope.
+- Changelog/docs/spec/roadmap updates: no changelog, spec, docs, or roadmap updates by this worker; only this P3 result summary was updated.
+- Blockers: none.
+- Review risks: browser smoke was not run because P3 changed component tests only and no responsive or visual regression required a local frontend URL. Account component coverage is focused on state presentation, profile rendering, CSRF-backed language updates, and localized error display; broader workflow polish remains out of scope.
+- Handoff notes and next action: create the P3 checkpoint commit, record its identifier, promote P4 to `Ready`, and run final validation.
 
 ### Task Packet: P4-final-validation
 
@@ -463,14 +464,14 @@ Use this checkpoint before starting each dependent task, before a pause or hando
 
 - Resume docs reread:
   - After context compaction, interruption, resume, or handoff, reread the latest user request, `AGENTS.md`, this plan's header, `## Readiness`, `## Long-Run Continuity`, `## Execution Model`, the current task packet and result summary, `.agents/references/plan-execution.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and the next action's exact owner docs or source files.
-- Current task or wave: `P2-route-context-state`; checkpoint pending.
-- Completed commits: `598d68c` for P1-shell-navigation.
+- Current task or wave: `P3-coverage-hardening`; checkpoint pending.
+- Completed commits: `598d68c` for P1-shell-navigation; `d23f676` for P2-route-context-state.
 - Plan status and readiness: `Approved`; current user request explicitly authorized implementation.
-- Validation and self-review state: P1 complete; P2 validation and self-review complete.
-- Coordinator reconciliation state: P1 scoped diff accepted and checkpointed; P2 scoped diff accepted and pending checkpoint.
+- Validation and self-review state: P1 and P2 complete; P3 validation and self-review complete.
+- Coordinator reconciliation state: P1 and P2 scoped diffs accepted and checkpointed; P3 scoped diff accepted and pending checkpoint.
 - Changelog, docs, spec, roadmap, or plan updates: `ROADMAP.md` should reference `PLAN-production-ui-foundation` while the milestone remains active.
-- Blockers or open questions: none currently blocking the P2 checkpoint.
-- Next action: create the P2 checkpoint commit, record it, promote P3 to `Ready`, and dispatch P3.
+- Blockers or open questions: none currently blocking the P3 checkpoint.
+- Next action: create the P3 checkpoint commit, record it, promote P4 to `Ready`, and run final validation.
 - Context handoff notes: `PLAN_workflow_polish.md` is downstream and waits for `M-UI-001`; do not promote it until this milestone lands and predecessor readiness is recorded.
 
 ## Execution Graph
