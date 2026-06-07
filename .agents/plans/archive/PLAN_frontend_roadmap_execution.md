@@ -13,8 +13,8 @@
 
 | Status | Current |
 | --- | --- |
-| Phase | Dependency-Ordered Roadmap Execution |
-| Status | Unblocked For Next Ready Milestone |
+| Phase | Archived Completed Roadmap Execution |
+| Status | Complete; Archived |
 
 ## Planning Readiness
 

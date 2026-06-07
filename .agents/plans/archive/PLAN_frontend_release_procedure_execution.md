@@ -7,14 +7,14 @@
 | Created By | Codex |
 | Created On | 2026-06-07 |
 | Source Request | User request to make a plan that will implement milestones from `ROADMAP.md` |
-| Generation Context | `AGENTS.md`, `ROADMAP.md`, `README.md`, `CHANGELOG.md`, `package.json`, `.github/workflows/ci.yml`, and `.agents/plans/PLAN_frontend_roadmap_execution.md` |
+| Generation Context | `AGENTS.md`, `ROADMAP.md`, `README.md`, `CHANGELOG.md`, `package.json`, `.github/workflows/ci.yml`, and `.agents/plans/archive/PLAN_frontend_roadmap_execution.md` |
 
 ## Lifecycle
 
 | Status | Current |
 | --- | --- |
-| Phase | M12-B Final Release Cut |
-| Status | Complete |
+| Phase | Archived Completed Release And Procedure Execution |
+| Status | Complete; Archived |
 | Last Updated | 2026-06-07 |
 
 ## Planning Readiness
@@ -90,7 +90,7 @@ Out of scope:
 | Artifact | Path | Role | Status |
 | --- | --- | --- | --- |
 | Roadmap | `ROADMAP.md` | Milestone source, release state, deferred scope, and post-release cleanup owner | Current |
-| Prior plan | `.agents/plans/PLAN_frontend_roadmap_execution.md` | Completed M0-M11 precedent and plan format | Complete |
+| Prior plan | `.agents/plans/archive/PLAN_frontend_roadmap_execution.md` | Completed M0-M11 precedent and plan format | Complete; Archived |
 | Changelog | `CHANGELOG.md` | Released history and `0.1.0` changelog promotion owner | `0.1.0` section prepared for local tag |
 | Package metadata | `package.json`, `package-lock.json` | Package name, version, runtime, scripts, and dependency baseline | Version is `0.1.0`; package manager is `npm@11.14.1`; engines require Node.js `>=24 <25` and npm `>=11 <12` |
 | CI workflow | `.github/workflows/ci.yml` | Current validation gate and target for M13 hardening | Baseline CI exists |
@@ -101,7 +101,7 @@ Out of scope:
 ## Current State
 
 - M0-M11 are complete and recorded in
-  `.agents/plans/PLAN_frontend_roadmap_execution.md`.
+  `.agents/plans/archive/PLAN_frontend_roadmap_execution.md`.
 - The app is a Vite, React, and TypeScript frontend using Node.js 24.x and npm 11.x.
 - Browser traffic targets same-origin `/api/**`.
 - `package.json` is already versioned as `0.1.0`.

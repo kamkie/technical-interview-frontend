@@ -19,6 +19,7 @@ changed. Then update the smallest owner that can hold the durable rule.
 | Human AI collaboration guidance | `docs/WORKING_WITH_AI.md` | `CONTRIBUTING.md` and AI references link to the same owner when relevant |
 | AI procedure guidance | `.agents/references/` | `AGENTS.md` links to the focused reference instead of duplicating the full rule |
 | Product, milestone, or release scope | `ROADMAP.md` | Specs, changelog, and release references agree when the selected scope changes |
+| Completed roadmap summaries | `docs/ROADMAP_ARCHIVE.md` | `ROADMAP.md` links to the archive and keeps only active, planned, or deferred work |
 | Shipped or release-candidate history | `CHANGELOG.md` | `ROADMAP.md`, package metadata, and release notes agree during release work |
 
 Do not leave durable rules only in plans, scratch notes, or final responses. Plans

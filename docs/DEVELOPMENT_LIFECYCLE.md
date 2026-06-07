@@ -27,6 +27,7 @@ test, document, or route to an owner.
 | Setup, commands, local troubleshooting | `docs/LOCAL_DEVELOPMENT.md` | `SETUP.md`, package scripts, tool config |
 | Human AI collaboration guidance | `docs/WORKING_WITH_AI.md` | `CONTRIBUTING.md` and AI references when they exist |
 | Product or release scope | `ROADMAP.md` | Specs, `CHANGELOG.md`, release docs |
+| Completed roadmap summaries | `docs/ROADMAP_ARCHIVE.md` | `ROADMAP.md` links to the archive and keeps only active, planned, or deferred work |
 | Shipped user-visible history | `CHANGELOG.md` | `ROADMAP.md` during release cleanup |
 
 Do not store durable rules only in plans, scratch notes, or final handoffs.
@@ -36,6 +37,9 @@ Do not store durable rules only in plans, scratch notes, or final handoffs.
 Use a `ROADMAP.md` row when work changes selected product scope, release scope, or a
 multi-step milestone. A roadmap row should name the scope and the condition for done;
 it should not carry endpoint schemas or long procedures.
+
+Use `docs/ROADMAP_ARCHIVE.md` when completed roadmap milestones leave the active
+roadmap. Keep released user-visible history in `CHANGELOG.md`.
 
 Use a spec under `docs/specs/` when user-visible behavior is too broad or ambiguous
 for a roadmap row. A good spec names the backend contract source, visible states,
