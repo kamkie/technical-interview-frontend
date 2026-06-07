@@ -48,9 +48,9 @@ Use `CHANGELOG.md` for shipped, user-visible history and release-relevant docume
 
 ## Contract-First Work
 
-API-facing frontend work starts from the imported backend artifacts in `docs/backend/`. If those artifacts appear stale or conflict with the sibling backend repository, refresh them before implementing API-facing behavior and regenerate the checked API types.
+API-facing frontend work starts from the imported backend artifacts in `docs/backend/`. If those artifacts appear stale or conflict with the sibling backend repository, use `docs/backend/README.md` to refresh them before implementing API-facing behavior.
 
-Frontend code must continue to use same-origin `/api/**` browser traffic, session cookies, metadata-driven login/logout paths, and configured CSRF cookie/header names. Do not invent endpoints, request fields, auth headers, CORS paths, bearer tokens, or alternate transports.
+Exact browser boundary, auth, CSRF, localization, pagination, request, and response rules stay in the imported backend artifacts, not in this lifecycle overview.
 
 ## Completion Checklist
 

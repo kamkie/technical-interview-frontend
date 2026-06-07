@@ -27,7 +27,7 @@ One person or agent may perform more than one role only when the active task all
 
 Coordinator prompts should include only the context needed for the slice:
 
-- Root rules: `AGENTS.md` for implementation authorization, dirty-worktree protection, backend contract invariants, delegation rules, validation, and git handoff.
+- Root rules: `AGENTS.md` for entry gates and truth priority.
 - Backend integration work: `docs/backend/approved-openapi.json`, `docs/backend/FRONTEND_AI_CONTRACT.md`, and `docs/backend/README.md`.
 - Product or design work: `docs/DESIGN.md`, selected `ROADMAP.md` rows, and any relevant specs.
 - Documentation routing: `.agents/references/documentation.md` and `.agents/references/references-rules.md`.

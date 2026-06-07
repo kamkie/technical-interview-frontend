@@ -49,7 +49,7 @@ Run a security-focused review when a change touches:
 - dependency changes, package scripts, workflow permissions, or hardening gates
 - release metadata or publication steps that could mislabel an artifact
 
-For API-facing security questions, keep the frontend same-origin and session-cookie based. Do not add CORS-dependent behavior, JWT assumptions, bearer-token assumptions, hard-coded OAuth provider paths, or alternate transports.
+For API-facing security questions, use `docs/backend/` as the source of truth and flag any frontend behavior that weakens the imported browser boundary, auth, CSRF, or transport contract.
 
 ## Hardening Triage
 

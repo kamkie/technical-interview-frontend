@@ -39,11 +39,7 @@ This file owns implementation-facing TypeScript, React, CSS, and edit-shape guid
 
 ## API-Facing UI Rules
 
-- Browser traffic targets same-origin `/api/**`; do not add CORS-dependent behavior as a supported integration path.
-- Auth uses backend session cookies and `GET /api/session`; do not introduce JWT or bearer-token assumptions.
-- Unsafe writes with a real current session must use the configured CSRF cookie and header names from session metadata.
-- Preserve pagination, repeated `sort`, repeated filters, localization behavior, and versioned book updates exactly as the backend contract describes.
-- Treat localized API messages as display copy only. Tests and UI logic should not depend on English text returned by the backend.
+Use `docs/backend/` for exact API, session, CSRF, pagination, filter, localization, and versioning rules. In UI code, keep backend-shaped data typed from generated types or API helpers, and do not branch on localized display copy.
 
 ## Tests And Fixtures
 

@@ -10,7 +10,7 @@ Before changing repository state:
 - If the request is critique, direction, desired outcome, or a proposed change list without explicit implementation authorization, respond with a proposed approach, affected files, and validation plan, then wait.
 - Identify the user-visible behavior, repository rule, product intent, or process rule being changed.
 - Identify the owner before editing: backend contract artifact, generated type, executable test, `docs/DESIGN.md`, `ROADMAP.md`, human doc, focused reference, or active plan.
-- For API-facing behavior, route exact contract detail to `docs/backend/` and do not invent endpoints, fields, authentication headers, CORS requirements, or alternate transports.
+- For API-facing behavior, route exact contract detail to `docs/backend/`.
 - Make the smallest coherent change that updates the owner before or alongside the implementation.
 
 ## Dirty Worktree Gate

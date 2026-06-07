@@ -30,23 +30,13 @@ For implementation, give the AI a narrow ownership boundary and ask it to inspec
 
 For ad hoc implementation, expect one planning subagent and a separate implementation subagent unless the current task explicitly changes that workflow; `.agents/references/workflow.md` owns the AI role details.
 
-For frontend API work, require the AI to read `docs/backend/approved-openapi.json`, `docs/backend/FRONTEND_AI_CONTRACT.md`, and `docs/backend/README.md` before changing clients, generated types, auth behavior, CSRF handling, or API error handling.
+For frontend API work, point the AI at `docs/backend/` before it changes clients, generated types, auth behavior, CSRF handling, or API error handling.
 
-For UI work, ask for tests at the smallest useful layer and require visible states to come from backend-supported behavior. Do not ask the AI to add CORS-first flows, JWT, bearer-token auth, hard-coded provider paths, or backend-only procedures.
+For UI work, ask for tests at the smallest useful layer and require visible states to come from backend-supported behavior.
 
 ## Validation Requests
 
-Ask the AI to choose validation from `docs/LOCAL_DEVELOPMENT.md` unless the task already names commands. For app or tooling changes, expect:
-
-```powershell
-npm run lint
-npm run typecheck
-npm test
-npm run build
-git diff --check
-```
-
-For docs-only changes, expect `npm run lint:markdown` plus `git diff --check`, unless a narrower explicit task says otherwise. For API type workflow changes, include `npm run api:types:check`. For browser smoke, require the AI to state whether the smoke is anonymous, authenticated manual, or unavailable because credentials and a canonical command do not exist.
+Ask the AI to choose validation from `.agents/references/testing.md` and current commands from `docs/LOCAL_DEVELOPMENT.md`, unless the task already names commands. For browser smoke, require the AI to state whether the smoke is anonymous, authenticated manual, or unavailable because credentials and a canonical command do not exist.
 
 The final handoff should list validation commands, results, skipped checks, and the reason for each skip.
 

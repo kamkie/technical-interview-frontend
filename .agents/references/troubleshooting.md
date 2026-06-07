@@ -27,22 +27,19 @@ This file owns AI-facing validation failure triage and local problem-solving rou
 
 - `npm run typecheck` includes `npm run api:types:check`; a failure can mean `src/api/generated/openapi.ts` is stale relative to `docs/backend/approved-openapi.json`.
 - Run `npm run api:types` only after an intentional backend contract refresh or when the task explicitly authorizes regenerating API types.
-- Do not hand-edit `src/api/generated/openapi.ts`. If imported backend artifacts conflict with the backend repository, refresh with `scripts/sync-backend-contract.ps1` before regenerating types.
+- Do not hand-edit `src/api/generated/openapi.ts`. If imported backend artifacts conflict with the backend repository, follow `docs/backend/README.md` before regenerating types.
 
 ## Auth, Session, CSRF, And Localization Symptoms
 
-- If the app appears logged out unexpectedly, start with `GET /api/session` behavior and session metadata before changing route guards or account UI.
-- If login options are missing or wrong, check that the UI renders `loginProviders[]` and each provider's `authorizationPath` from session metadata instead of hard-coded provider paths.
-- If logout or unsafe writes fail, check whether the current session is real and whether the readable CSRF cookie is mirrored into the configured CSRF header name from session metadata.
-- If account calls fail, confirm the UI only calls account endpoints after session bootstrap establishes the needed authenticated state.
-- If localized errors behave inconsistently, check whether code branches on localized English message text instead of stable fields such as status, `messageKey`, endpoint context, or route context.
+- Start from the session, auth, CSRF, and localization contract in `docs/backend/FRONTEND_AI_CONTRACT.md` before changing route guards, account UI, unsafe writes, or localized error handling.
+- If localized errors behave inconsistently, check whether code branches on localized display text instead of stable fields, endpoint context, route context, or typed data.
 
 ## Same-Origin And Proxy Issues
 
-- Supported browser traffic is same-origin `/api/**`; do not fix local problems by adding CORS-first behavior, bearer tokens, JWT assumptions, alternate transports, or direct backend-origin URLs.
+- Keep local fixes inside the browser boundary documented in `docs/backend/`; do not turn local proxy trouble into a new integration path.
 - For local setup or proxy procedure details, consult `docs/LOCAL_DEVELOPMENT.md` and package scripts instead of copying setup steps into this file.
 - If the frontend dev server works but API calls fail, separate frontend request shape problems from backend availability, backend profile, reverse-proxy, or mock-mode configuration.
-- Smoke environments may expose a `smoke` login provider through backend metadata. Discover it through `loginProviders[]`; do not hard-code test-support OAuth paths.
+- For smoke-provider behavior, follow backend session metadata rather than hard-coded provider paths.
 
 ## Smoke Evidence Limits
 
