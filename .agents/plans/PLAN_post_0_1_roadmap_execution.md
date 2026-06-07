@@ -21,10 +21,10 @@
 
 | Field | Value |
 | --- | --- |
-| Decision Complete | Yes for M16 audit scope and selected M20 advisory hardening tools and policy |
-| Blocking Open Questions | M18 remains blocked by missing local authenticated smoke credentials and identity seeding rules |
-| Accepted Fallbacks | M20 findings are advisory-only during the first pass; generated hardening reports are not checked in; authenticated smoke stays manual until M18 is unblocked |
-| Ready For Execution | Yes for M16 and M20 |
+| Decision Complete | Yes for M16 audit scope, M18 fake-OAuth readiness, and selected M20 advisory hardening tools and policy |
+| Blocking Open Questions | None for the next ready slices |
+| Accepted Fallbacks | M20 findings are advisory-only during the first pass; generated hardening reports are not checked in; external-provider authenticated smoke remains optional |
+| Ready For Execution | Yes for M16, M18, and M20 |
 
 ## Summary
 
@@ -35,12 +35,12 @@ blocker for ready slices.
 The first executable scope is:
 
 - M16 contract coverage and scope audit.
+- M18 fake-OAuth authenticated smoke readiness.
 - M20 advisory container/deployment hardening refinement.
 
 After M16 lands, the coordinator promotes the next dependent slice that becomes
-ready: M17, M19, M21, M22, M23, or a narrowed follow-up. M18 remains blocked until
-the maintainer supplies credentials and identity seeding rules. M24 starts only
-after the selected implementation scope has landed with validation evidence.
+ready: M17, M19, M21, M22, M23, or a narrowed follow-up. M24 starts only after the
+selected implementation scope has landed with validation evidence.
 
 This plan is an execution contract. Durable product scope stays in `ROADMAP.md`;
 backend API rules stay in `docs/backend/`; local command and hardening procedure
@@ -67,6 +67,7 @@ rules stay in `docs/LOCAL_DEVELOPMENT.md` and `.agents/references/testing.md`.
 In scope:
 
 - M16 API coverage audit and scope promotion.
+- M18 fake-OAuth authenticated smoke readiness using the backend `smoke` provider.
 - M20 advisory hardening implementation with Trivy, kube-linter, and a repo-owned
   runtime/Nginx check.
 - M17 anonymous smoke automation if selected or promoted after M16.
@@ -82,7 +83,8 @@ Out of scope:
 - Backend repository changes.
 - New endpoints, request fields, auth headers, CORS support, JWT, bearer tokens, or
   alternate transports.
-- Authenticated smoke automation until M18 is unblocked.
+- External provider authenticated smoke automation beyond the backend fake-OAuth
+  provider.
 - Environment-specific deployment promotion, backend operations, database work, and
   platform policy beyond frontend-owned reference artifacts.
 - Making M20 vulnerability or posture findings release-blocking during the first
@@ -122,7 +124,7 @@ Out of scope:
 | D2 | M20 first pass uses Trivy, kube-linter, and a repo-owned runtime/Nginx check | Maintainer decisions recorded in `ROADMAP.md` and `docs/LOCAL_DEVELOPMENT.md` | 2026-06-07 | A selected tool cannot provide repeatable local or CI evidence |
 | D3 | M20 findings are advisory until a later selected threshold exists | Maintainer decision and roadmap hardening policy | 2026-06-07 | One stable baseline exists and maintainers select severity/posture gates |
 | D4 | Generated scan reports are not checked in during M20 first pass | Maintainer evidence-location decision | 2026-06-07 | CI artifact/report upload becomes selected scope |
-| D5 | M18 is blocked until credentials and identity seeding rules are agreed | `ROADMAP.md` M18 status | 2026-06-07 | Maintainer supplies canonical local authenticated smoke setup |
+| D5 | M18 readiness uses the sibling backend `local,oauth,fake-oauth` profile, `smoke` provider, and `smoke:smoke-user` first-admin bootstrap identity | Maintainer update and refreshed `docs/backend/FRONTEND_AI_CONTRACT.md` | 2026-06-07 | Backend fake-OAuth contract changes |
 | D6 | Remote publication is not authorized by this plan alone | `AGENTS.md` git and release rules | 2026-06-07 | Current user request explicitly asks to push or publish |
 
 ## Phase Map
@@ -131,13 +133,13 @@ Out of scope:
 | --- | --- | --- | --- |
 | 0 | Plan activation | Done | Plan file exists and docs-only validation passed |
 | 1 | M16 Contract Coverage And Scope Audit | Ready | Classify approved OpenAPI operations and promote next scope |
-| 2 | M20 Advisory Hardening Implementation | Ready | Add repeatable selected hardening checks and evidence docs |
-| 3 | M21 Login Provider Metadata Guardrail | Waiting on M16 | M16 coverage audit completed |
-| 4 | M22 Backend Surface Expansion Selection | Waiting on M16 | M16 coverage gaps classified |
-| 5 | M17 Anonymous Browser Smoke Automation | Waiting on M16 | M16 promotes smoke automation or leaves it selected |
-| 6 | M19 Public Catalog Workflow Polish | Waiting on M16 and selected polish scope | Exact visible states and tests named |
-| 7 | M23 Implemented Flow Visual Design Pass | Waiting on M16 and selected visual scope | Exact flows, accessibility goals, and browser evidence named |
-| 8 | M18 Authenticated Smoke Automation Readiness | Blocked | Credentials, backend profile, and identity seeding rules agreed |
+| 2 | M18 Authenticated Smoke Automation Readiness | Ready | Fake-OAuth smoke profile and seed identity selected |
+| 3 | M20 Advisory Hardening Implementation | Ready | Add repeatable selected hardening checks and evidence docs |
+| 4 | M21 Login Provider Metadata Guardrail | Waiting on M16 | M16 coverage audit completed |
+| 5 | M22 Backend Surface Expansion Selection | Waiting on M16 | M16 coverage gaps classified |
+| 6 | M17 Anonymous Browser Smoke Automation | Waiting on M16 | M16 promotes smoke automation or leaves it selected |
+| 7 | M19 Public Catalog Workflow Polish | Waiting on M16 and selected polish scope | Exact visible states and tests named |
+| 8 | M23 Implemented Flow Visual Design Pass | Waiting on M16 and selected visual scope | Exact flows, accessibility goals, and browser evidence named |
 | 9 | M24 Post-`0.1.0` Release Preparation | Waiting on selected implementation scope | Selected M16-M23 work complete and validated |
 
 ## Progress Tracker
@@ -146,13 +148,13 @@ Out of scope:
 | --- | --- | --- | --- | --- | --- |
 | 0: Plan activation | Done | Coordinator | N/A | `git diff --check` | Active plan created; no commit requested |
 | 1: M16 coverage audit | Ready | M16 worker | Pending | Pending | Start here |
-| 2: M20 advisory hardening | Ready | M20 worker | Pending | Pending | Can run after or beside M16; selected decisions are complete |
-| 3: M21 metadata guardrail | Waiting | M21 worker | Pending | Pending | Promote after M16 |
-| 4: M22 surface selection | Waiting | M22 worker | Pending | Pending | Promote after M16 coverage gaps are known |
-| 5: M17 anonymous smoke | Waiting | M17 worker | Pending | Pending | Promote after M16 if smoke is selected |
-| 6: M19 catalog polish | Waiting | M19 worker | Pending | Pending | Needs focused polish scope |
-| 7: M23 visual pass | Waiting | M23 worker | Pending | Pending | Needs focused visual scope |
-| 8: M18 auth smoke readiness | Blocked | M18 worker | Pending | Pending | Needs maintainer credentials/seeding decision |
+| 2: M18 auth smoke readiness | Ready | M18 worker | Pending | Pending | Fake-OAuth decisions are complete |
+| 3: M20 advisory hardening | Ready | M20 worker | Pending | Pending | Can run after or beside M16; selected decisions are complete |
+| 4: M21 metadata guardrail | Waiting | M21 worker | Pending | Pending | Promote after M16 |
+| 5: M22 surface selection | Waiting | M22 worker | Pending | Pending | Promote after M16 coverage gaps are known |
+| 6: M17 anonymous smoke | Waiting | M17 worker | Pending | Pending | Promote after M16 if smoke is selected |
+| 7: M19 catalog polish | Waiting | M19 worker | Pending | Pending | Needs focused polish scope |
+| 8: M23 visual pass | Waiting | M23 worker | Pending | Pending | Needs focused visual scope |
 | 9: M24 release prep | Waiting | Release worker / coordinator | Pending | Pending | Starts after selected implementation scope |
 
 ## Phase 1: M16 Contract Coverage And Scope Audit
@@ -312,20 +314,26 @@ Implementation notes:
 
 | Field | Value |
 | --- | --- |
-| Status | Blocked |
-| Goal | Define repeatable authenticated smoke prerequisites without hard-coding provider paths or secrets |
+| Status | Ready |
+| Goal | Define repeatable authenticated smoke prerequisites using the backend fake-OAuth provider without hard-coding provider paths or secrets |
 | Owned Files Or Packages | `docs/LOCAL_AUTH_SMOKE.md`, `docs/LOCAL_DEVELOPMENT.md`, optional smoke script docs, this plan |
-| Blocking Inputs | Backend profile, credential source, ADMIN-capable identity seeding rule, and skip behavior for unavailable credentials |
+| Selected Inputs | Backend profile `local,oauth,fake-oauth`, `smoke` login provider discovered from `GET /api/session`, first-admin bootstrap identity `smoke:smoke-user`, default fake login `smoke-user` |
 | Behavior To Preserve | Login-provider discovery from `GET /api/session`; logout CSRF handling; no secrets committed |
-| Deliverables | Owner docs name required environment variables or manual setup and skip behavior |
+| Deliverables | Owner docs name fake-OAuth profile setup, default identity, optional `FAKE_OAUTH_*` overrides, admin seeding, login-provider discovery, and skip/fail behavior |
 | Validation Checkpoint | `git diff --check`; later executable smoke uses full baseline and selected smoke command |
-| Commit Checkpoint | One scoped M18 readiness commit only after maintainer unblocks the milestone |
+| Commit Checkpoint | One scoped M18 readiness commit when plan execution is requested |
 
 Implementation notes:
 
-- Do not start executable authenticated smoke automation from assumptions.
-- If the maintainer supplies credentials/seeding rules while this plan is active,
-  promote M18 to `Ready` and update this plan plus `ROADMAP.md`.
+- Start from `SPRING_PROFILES_ACTIVE=local,oauth,fake-oauth` and
+  `APP_BOOTSTRAP_INITIAL_ADMIN_IDENTITIES=smoke:smoke-user`.
+- Discover the `smoke` provider from `loginProviders[]` and start login through its
+  relative `authorizationPath`; do not hard-code `/test-support/oauth2/**`.
+- Treat backend unavailable or missing fake provider as a skip with a clear reason.
+- Treat successful login followed by missing CSRF metadata, failed account access,
+  failed logout, or failed ADMIN access with the configured admin seed as a failure.
+- Keep GitHub and OIDC provider smoke as optional manual checks, not the canonical
+  frontend smoke path.
 
 ## Phase 9: M24 Post-0.1.0 Release Preparation
 
@@ -400,7 +408,7 @@ Implementation notes:
 | M16 finds a large uncovered surface | Select one coherent M22 slice and leave remaining gaps classified for follow-up | Coordinator / M22 worker | Open |
 | M20 selected tool cannot run locally or in CI | Record unavailability, keep findings advisory, and update owner docs with fallback evidence | M20 worker / coordinator | Open |
 | M20 finding needs broad runtime or infra changes | Open or update a follow-up roadmap row instead of silently expanding M20 | Coordinator | Open |
-| Authenticated smoke credentials become available | Promote M18 from blocked to ready and update `ROADMAP.md` plus this plan | Coordinator / maintainer | Open |
+| Backend fake-OAuth contract changes | Update M18 owner docs, `ROADMAP.md`, and this plan before changing smoke automation | Coordinator / maintainer | Open |
 | Release preparation is requested before selected scope lands | Stop M24 and report missing implementation/validation evidence | Coordinator | Open |
 | Remote publication is requested | Treat as a separate explicit publication task with push and workflow verification | Coordinator | Open |
 
@@ -413,5 +421,5 @@ When this plan is implemented, the final handoff must report:
 - validation commands and results
 - skipped validation with reasons
 - remaining smoke, contract, or hardening risk
-- M18 blocker status
+- M18 fake-OAuth readiness status
 - any release publication work that was not requested or not performed

@@ -24,7 +24,7 @@ archived in `docs/ROADMAP_ARCHIVE.md`. Released history belongs in `CHANGELOG.md
 | Implemented surface | Session, public catalog, account, admin catalog, admin localization, admin users, operator |
 | Hardening baseline  | ESLint, TypeScript, Vitest, API type freshness, build, Codecov coverage/test/bundle uploads, Docker build, whitespace, npm audit, CodeQL, dependency-review, Dependabot, and release image signing/provenance |
 | Latest release      | Local `v0.1.0` release cut on 2026-06-07; not published remotely                           |
-| Immediate action    | Start M16 contract coverage and implement the selected advisory M20 container/deployment hardening refinement |
+| Immediate action    | Start M16 contract coverage, M18 fake-OAuth authenticated-smoke readiness, and selected advisory M20 hardening refinement |
 | Validation baseline | `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`       |
 
 The app currently bootstraps browser session state with `GET /api/session`, renders
@@ -69,7 +69,7 @@ Status terms:
 | --- | --- | --- | --- | --- |
 | M16 - Contract Coverage And Scope Audit | Ready | Reconcile `docs/backend/approved-openapi.json`, generated API types, API clients, routes, specs, and visible UI coverage after `0.1.0`. Decide whether the next implementation slice is missing backend-supported surface, smoke automation, or focused UX polish. | `docs/API_COVERAGE.md` records each approved OpenAPI operation as implemented, deferred, or needing follow-up; `ROADMAP.md` promotes the next slice based on that audit; no new endpoint or auth assumption is introduced. | `git diff --check`; add broader validation only if executable files change. |
 | M17 - Anonymous Browser Smoke Automation | Waiting on M16 | Add a canonical browser smoke path for anonymous same-origin flows against the sibling backend through the Vite `/api` proxy. Cover session bootstrap, public categories/books, URL-backed filters, pagination, sorting, and localized public-read failures where reproducible. | A documented npm command or script exists, names backend/profile prerequisites, reports skipped backend-dependent steps clearly, and can run without credentials. Public smoke evidence is recorded in docs or test output. | Smoke command plus `git diff --check`; full baseline if package scripts, tooling, or app code change. |
-| M18 - Authenticated Smoke Automation Readiness | Blocked by missing agreed local credentials and identity seeding rules | Define the credential, backend profile, and admin identity seeding contract needed for repeatable authenticated smoke. Do not hard-code provider paths or secrets. | Owner docs name required environment variables or manual setup, expected ADMIN-capable identity, login-provider discovery from `GET /api/session`, logout CSRF handling, and skip behavior when credentials are unavailable. | `git diff --check`; later executable smoke work uses the full baseline and the selected smoke command. |
+| M18 - Authenticated Smoke Automation Readiness | Ready | Define the fake-OAuth authenticated smoke readiness contract for the sibling backend profile `local,oauth,fake-oauth`. Use the backend-exposed `smoke` provider discovered from `GET /api/session` and first-admin bootstrap identity `smoke:smoke-user`; do not hard-code provider paths, `/test-support/oauth2/**`, or secrets. | Owner docs name the fake-OAuth backend profile, default smoke identity, optional `FAKE_OAUTH_*` overrides, `APP_BOOTSTRAP_INITIAL_ADMIN_IDENTITIES=smoke:smoke-user`, login-provider discovery, logout CSRF handling, account/admin checks, and skip/fail behavior when the fake provider or backend is unavailable. | `git diff --check`; later executable smoke work uses the full baseline and the selected smoke command. |
 | M19 - Public Catalog Workflow Polish | Waiting on M16 | Improve the already implemented public catalog workflow without backend changes: scan density, URL-state clarity, keyboard/focus behavior, accessible table controls, pagination/sort affordances, and localized loading/empty/error states. | A focused spec or roadmap note names the exact polish scope; component/route tests cover the changed visible states; anonymous smoke is updated if the workflow changes browser behavior. | Relevant tests plus full baseline for app changes. |
 | M20 - Container And Deployment Hardening Refinement | Ready | Implement the selected advisory first pass for frontend-owned hardening: Trivy scans the production container image, kube-linter checks rendered Kustomize and Helm manifests, and a repo-owned runtime/Nginx check covers `Dockerfile` plus `docker/nginx/` invariants. Exclude backend application operations, deployment promotion, and environment-specific platform policy. | Owner docs and scripts or CI signals name Trivy, kube-linter, the runtime/Nginx check, local command evidence, maintainer triage, exception handling, and advisory-only policy. Generated reports are not checked in during the first pass. Follow-on rows are opened before making findings release-blocking or adding persisted CI artifacts. | `git diff --check` for docs-only refinement; full baseline, `npm run docker:build`, Trivy image scan, kube-linter rendered-manifest checks, and the runtime/Nginx check when tooling or runtime files change. |
 | M21 - Login Provider Metadata Guardrail | Waiting on M16 | Audit login/session UI, docs, and tests for OAuth provider paths outside `GET /api/session` metadata. Remove unsupported constants if found and add focused coverage or owner-doc guidance that prevents regressions. | Auth entry points render providers from `loginProviders[]`; no provider path is hard-coded in frontend-owned code or docs outside backend-contract examples; coverage or owner docs make the constraint enforceable. | `git diff --check` for docs-only audit; relevant auth tests plus full baseline if source or test files change. |
@@ -79,9 +79,9 @@ Status terms:
 
 ## Near-Term Backlog
 
-1. Execute M16 and promote the next ready M17, M19, M20, M21, M22, or M23 slice
-   based on the coverage audit and selected hardening, auth, backend-surface, or
-   visual-design scope.
+1. Execute the ready M16, M18, and M20 slices, then promote the next ready M17, M19,
+   M21, M22, or M23 slice based on the coverage audit and selected smoke,
+   backend-surface, or visual-design scope.
 2. Implement M20 as the selected advisory Trivy, kube-linter, and runtime/Nginx
    hardening pass with local command evidence, maintainer triage, and no checked-in
    generated reports.
@@ -93,8 +93,8 @@ Status terms:
    evidence are named.
 6. Add a canonical browser smoke or e2e command for anonymous same-origin
    session/catalog flows against the sibling backend.
-7. Keep M18 blocked until authenticated smoke credentials and seeding rules are
-   agreed, then turn the readiness contract into an executable smoke command.
+7. Execute M18 readiness docs for the backend `fake-oauth` smoke provider, then turn
+   the readiness contract into an executable authenticated smoke command.
 8. Exercise the documented local auth smoke workflow against the sibling backend and
    move repeatable gaps into tests or owner docs.
 9. If remote publication of the existing local `v0.1.0` tag is requested, treat it
@@ -110,11 +110,12 @@ Status terms:
 - Public catalog browser smoke can run anonymously against the sibling backend at
   `..\technical-interview-demo`, validating session bootstrap, categories, books,
   filters, pagination, sorting, and localized read errors.
-- Authenticated browser smoke remains manual until there is a canonical command and
-  agreed local credentials. Once automated, it should exercise login-provider
-  rendering from session metadata, session refresh after login/logout, CSRF handling
-  for unsafe authenticated writes, and authenticated access for account,
-  admin/operator routes.
+- Authenticated browser smoke readiness can use the backend `local,oauth,fake-oauth`
+  profile without external provider secrets. The frontend must still discover and
+  start the `smoke` provider through `loginProviders[]`, then verify session refresh
+  after login/logout, CSRF handling for unsafe authenticated writes, and
+  authenticated access for account and admin/operator routes. Executable automation
+  waits for the M18 owner docs and selected smoke command.
 
 ## Implementation Defaults
 
@@ -183,8 +184,9 @@ Deferred candidates and revisit triggers:
   dependency/license inventory requirement for the published container package.
 - Enforced bundle-size or asset-budget checks: revisit when a reviewed threshold
   exists or production `dist/` growth becomes a repeated review issue.
-- Authenticated browser smoke automation: revisit when agreed local credentials,
-  identity seeding rules, backend profile, and a canonical command exist.
+- Authenticated browser smoke automation beyond M18 readiness: implement after the
+  fake-OAuth backend profile, smoke identity, skip/fail policy, and canonical command
+  are documented.
 - Anonymous browser smoke and accessibility automation: revisit when the repository
   owns a canonical browser command and stable failure thresholds.
 - GitHub Actions SHA pinning: revisit when maintainers select a stricter
