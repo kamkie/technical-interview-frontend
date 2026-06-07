@@ -7,6 +7,8 @@ const CATEGORIES_PATH = '/api/categories'
 const BOOKS_PATH = '/api/books'
 const CATALOG_ROUTE_PATH = '/catalog'
 const LOCALIZED_FAILURE_LANGUAGE = 'pl'
+const BACKEND_EXPECTATION =
+  'sibling backend reachable through the frontend /api proxy; SPRING_PROFILES_ACTIVE=local is sufficient and OAuth is not required'
 
 const defaultBookQuery = {
   page: 0,
@@ -39,6 +41,14 @@ class SmokeFailure extends Error {
   }
 }
 
+class SmokePrerequisiteUnavailable extends Error {
+  constructor(step, message) {
+    super(message)
+    this.name = 'SmokePrerequisiteUnavailable'
+    this.step = step
+  }
+}
+
 function record(status, step, detail) {
   results.push({ status, step, detail })
   console.log(`[${status}] ${step}: ${detail}`)
@@ -51,6 +61,11 @@ function pass(step, detail) {
 function fail(step, detail) {
   record('fail', step, detail)
   throw new SmokeFailure(step, detail)
+}
+
+function skipPrerequisite(step, detail) {
+  record('skip', step, `prerequisite unavailable: ${detail}`)
+  throw new SmokePrerequisiteUnavailable(step, detail)
 }
 
 function assertCondition(condition, step, detail) {
@@ -67,20 +82,33 @@ async function main() {
   const expectedLocalizedFailurePath = buildBookSearchPath(localizedFailureQuery)
 
   console.log('Anonymous browser smoke')
+  console.log(`Validation date: ${new Date().toISOString()}`)
   console.log(`Frontend URL: ${config.frontendUrl}`)
+  console.log(`Backend expectation: ${BACKEND_EXPECTATION}`)
+  console.log(
+    `Route coverage: / shell probe and ${expectedRoutePath} browser route`,
+  )
+  console.log(
+    `API coverage: ${SESSION_PATH}, ${CATEGORIES_PATH}, ${expectedDefaultBooksPath}, ${expectedRouteBooksPath}, ${expectedLocalizedFailurePath}`,
+  )
+  console.log(
+    'Flow covered: shell bootstrap, anonymous session metadata, public categories/books, URL-backed catalog filters, repeated category/sort, localized public-read failure fields, and same-origin /api/** observation',
+  )
+  console.log(
+    'Result semantics: pass means the smoke assertions passed; skip means a frontend/backend/browser prerequisite was unavailable and the command exits nonzero; fail means an available smoke assertion failed',
+  )
   console.log(`Timeout: ${config.timeoutMs}ms`)
-  console.log('Backend path: same-origin /api/** through the frontend origin')
 
   const frontendProbe = await fetchText(config, '/')
   if (frontendProbe.error) {
-    fail(
+    skipPrerequisite(
       'frontend availability',
       `cannot reach ${config.origin}/; start npm run dev or point FRONTEND_SMOKE_URL at a serving frontend origin (${frontendProbe.error.message})`,
     )
   }
 
   if (!isSuccessfulFrontendStatus(frontendProbe.status)) {
-    fail(
+    skipPrerequisite(
       'frontend availability',
       `${config.origin}/ returned HTTP ${frontendProbe.status}; expected a running frontend dev, preview, or container origin`,
     )
@@ -89,9 +117,9 @@ async function main() {
 
   const sessionProbe = await fetchJson(config, SESSION_PATH)
   if (isUnavailableJsonResult(sessionProbe)) {
-    fail(
+    skipPrerequisite(
       'backend availability',
-      `${SESSION_PATH} was unavailable through ${config.origin}; start the sibling backend and keep frontend traffic on the frontend origin`,
+      `${SESSION_PATH} was unavailable through ${config.origin}; start the sibling backend with ${BACKEND_EXPECTATION}`,
     )
   }
 
@@ -191,7 +219,7 @@ async function runBrowserCatalogSmoke(config, routePath, expectedBooksPath) {
   try {
     playwright = await import('playwright')
   } catch (error) {
-    fail(
+    skipPrerequisite(
       'browser automation',
       `Playwright is not installed or cannot be imported: ${error.message}`,
     )
@@ -203,7 +231,7 @@ async function runBrowserCatalogSmoke(config, routePath, expectedBooksPath) {
       headless: process.env.FRONTEND_SMOKE_HEADLESS !== 'false',
     })
   } catch (error) {
-    fail(
+    skipPrerequisite(
       'browser automation',
       `Chromium is unavailable for Playwright. Run npx playwright install chromium and retry. ${error.message}`,
     )
@@ -665,20 +693,29 @@ function formatValue(value) {
 function printSummary() {
   const counts = {
     pass: results.filter((result) => result.status === 'pass').length,
+    skip: results.filter((result) => result.status === 'skip').length,
     fail: results.filter((result) => result.status === 'fail').length,
   }
-  const overall = counts.fail > 0 ? 'FAILED' : 'PASSED'
+  const overall =
+    counts.fail > 0
+      ? 'FAILED'
+      : counts.skip > 0
+        ? 'PREREQUISITE SKIPPED'
+        : 'PASSED'
 
   console.log('')
   console.log(
-    `Anonymous smoke summary: ${overall} (${counts.pass} passed, ${counts.fail} failed)`,
+    `Anonymous smoke summary: ${overall} (${counts.pass} passed, ${counts.skip} skipped, ${counts.fail} failed)`,
   )
 }
 
 try {
   await main()
 } catch (error) {
-  if (!(error instanceof SmokeFailure)) {
+  if (
+    !(error instanceof SmokeFailure) &&
+    !(error instanceof SmokePrerequisiteUnavailable)
+  ) {
     record('fail', 'unexpected error', error.stack ?? error.message ?? String(error))
   }
 

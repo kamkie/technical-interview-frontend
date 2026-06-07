@@ -16,7 +16,7 @@ Filename: `.agents/plans/PLAN_responsive_layout_smoke_evidence.md`
 - Approved by:
 - Approved at:
 - Open questions: No blocking product questions identified from current owners.
-- Implementation progress: P2-responsive-layout-coverage is `Complete`; P3-anonymous-smoke-evidence is `Ready`; downstream packets remain `Waiting`.
+- Implementation progress: P3-anonymous-smoke-evidence is `Complete`; P4-authenticated-smoke-evidence is `Ready`; P5 remains `Waiting`.
 
 Use this plan after `M-WORKFLOW-001` lands and the predecessor readiness packet confirms workflow layout, route context, table actions, and session controls are stable enough for responsive and smoke evidence work. Creating or updating this plan is not implementation approval.
 
@@ -28,6 +28,7 @@ Use this plan after `M-WORKFLOW-001` lands and the predecessor readiness packet 
 - 2026-06-08T01:08:20+02:00: verifier worker declared for P2-P5 review, validation, and final evidence.
 - 2026-06-08T01:11:55+02:00: P1 selected responsive, anonymous smoke, and authenticated smoke targets; P2 promoted to `Ready`.
 - 2026-06-08T01:34:21+02:00: P2 responsive layout coverage completed with source/tests, browser evidence, verifier review, and baseline validation; P3 promoted to `Ready`.
+- 2026-06-08T01:41:23+02:00: P3 anonymous smoke evidence completed with command/docs updates, smoke pass, verifier review, and baseline validation; P4 promoted to `Ready`.
 
 ## Goal
 
@@ -112,8 +113,8 @@ Load only the artifacts needed for the current packet. Do not bulk-load generate
 | P0-predecessor-readiness        | Complete | Coordinator | `M-WORKFLOW-001` | 2026-06-08   | Confirmed workflow polish is complete before execution            |
 | P1-evidence-target-selection    | Complete | Coordinator | P0               | 2026-06-08   | Selected viewport, route, anonymous smoke, and auth smoke targets |
 | P2-responsive-layout-coverage   | Complete | Worker      | P1               | 2026-06-08   | Covers `E-RESP-001`                                               |
-| P3-anonymous-smoke-evidence     | Ready    | Worker      | P2               | 2026-06-08   | Covers `E-SMOKE-002`                                              |
-| P4-authenticated-smoke-evidence | Waiting  | Worker      | P3               | 2026-06-07   | Covers `E-SMOKE-001`                                              |
+| P3-anonymous-smoke-evidence     | Complete | Worker      | P2               | 2026-06-08   | Covers `E-SMOKE-002`                                              |
+| P4-authenticated-smoke-evidence | Ready    | Worker      | P3               | 2026-06-08   | Covers `E-SMOKE-001`                                              |
 | P5-final-review-milestone-close | Waiting  | Coordinator | P4               | 2026-06-07   | Confirm validation, smoke evidence, owner drift, and closeout     |
 
 Use `Waiting` for these packets until `M-WORKFLOW-001` is complete and predecessor readiness has been recorded. Do not promote downstream packets to `Ready` until their predecessor lands, validates, and any required checkpoint is complete.
@@ -335,7 +336,7 @@ Result summary:
 - Validation evidence from `.agents/references/testing.md`: Passed `npm test -- src/catalog/CatalogPanel.test.tsx src/account/AccountProfile.test.tsx src/admin/AdminCatalogPage.test.tsx src/admin/AdminUsersPage.test.tsx src/operator/OperatorPage.test.tsx` with 49 tests; passed `npm test -- src/admin/AdminCatalogPage.test.tsx src/admin/AdminUsersPage.test.tsx` after verifier fix with 25 tests; passed `npm run lint`; passed `npm run typecheck`; passed `npm test` with 154 tests; passed `npm run build`; passed `git diff --check`.
 - Self-review evidence from `.agents/references/reviews.md`: Reviewed for responsive overlap, clipped controls, table action discoverability, route/component test coverage, query-state drift, auth/session/CSRF/provider-path drift, and package/script/backend-contract scope leaks. No generated types, backend contract files, package scripts, smoke scripts, or docs changed for P2.
 - Clean verifier evidence: Verifier reviewed current ref `954f82f`, ran targeted tests, lint, typecheck, full tests, build, `git diff --check`, and browser responsive review; initial finding requested semantic row-action groups, which coordinator fixed; verifier follow-up reported no findings and confirmed `.agents/references/execution.md` was not dirty.
-- Commit: Pending P2 checkpoint commit.
+- Commit: `ece753a` (`feat(responsive): preserve workflow controls across viewports`).
 - Coordinator reconciliation: `E-RESP-001` responsive acceptance is covered for the selected matrix; P3 can start after the P2 checkpoint commit is created.
 - Changelog/docs/spec/roadmap updates: No `ROADMAP.md`, changelog, spec, backend, or durable design-doc update needed; implementation follows existing design direction.
 - Blockers: None for P3.
@@ -407,19 +408,19 @@ Expected output:
 
 Result summary:
 
-- Status: pending
-- Worker:
-- Changed files or reviewed diff:
-- Anonymous smoke evidence:
-- Validation evidence from `.agents/references/testing.md`:
-- Self-review evidence from `.agents/references/reviews.md`:
-- Clean verifier evidence:
-- Commit:
-- Coordinator reconciliation:
-- Changelog/docs/spec/roadmap updates:
-- Blockers:
-- Review risks:
-- Handoff notes and next action:
+- Status: complete
+- Worker: Worker 2 implementation lane.
+- Changed files or reviewed diff: Updated `scripts/smoke-anonymous.mjs` evidence output and prerequisite skip semantics; updated `docs/LOCAL_DEVELOPMENT.md` browser smoke workflow and `docs/LOCAL_AUTH_SMOKE.md` automation policy wording to match the command behavior.
+- Anonymous smoke evidence: `npm run smoke:anonymous` passed against `http://127.0.0.1:5173/`; command printed validation date `2026-06-07T23:39:36.758Z`, backend expectation `sibling backend reachable through the frontend /api proxy; SPRING_PROFILES_ACTIVE=local is sufficient and OAuth is not required`, route coverage `/` shell probe and `/catalog` with title/author/ISBN, repeated `category`, page/size, and repeated `sort`; summary was `PASSED (7 passed, 0 skipped, 0 failed)`.
+- Validation evidence from `.agents/references/testing.md`: Passed `npm run smoke:anonymous`; passed `npm run lint`; passed `npm run typecheck`; passed `npm test` with 154 tests; passed `npm run build`; passed `git diff --check`.
+- Self-review evidence from `.agents/references/reviews.md`: Reviewed same-origin `/api/**` traffic, frontend-origin browser navigation, stable localized failure assertions, explicit prerequisite skip semantics, docs alignment, and package/backend/generated-type scope. No CORS, JWT, bearer-token, direct backend-origin browser navigation, provider-path, or localized English branching was added.
+- Clean verifier evidence: Verifier reviewed current ref `ece753a`, confirmed expected dirty files only, ran `npm run smoke:anonymous`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, and `git diff --check`; no findings. Verifier smoke evidence printed validation date `2026-06-07T23:40:31.780Z` and passed with 7 passed, 0 skipped, 0 failed.
+- Commit: Pending P3 checkpoint commit.
+- Coordinator reconciliation: `E-SMOKE-002` anonymous smoke acceptance is covered for the selected flow; P4 can start after the P3 checkpoint commit is created.
+- Changelog/docs/spec/roadmap updates: No `ROADMAP.md`, changelog, spec, backend, generated type, or package-script update needed.
+- Blockers: None for P4.
+- Review risks: Smoke pass depends on local frontend/backend availability at `127.0.0.1:5173`; command reports backend profile as an expectation rather than introspecting the backend process.
+- Handoff notes and next action: Create the P3 checkpoint commit, then run P4-authenticated-smoke-evidence.
 
 ### Task Packet: P4-authenticated-smoke-evidence
 
@@ -598,14 +599,14 @@ Use this checkpoint before starting each dependent task, before a pause or hando
 
 - Resume docs reread:
   - After context compaction, interruption, resume, or handoff, reread the latest user request, `AGENTS.md`, this plan's header, `## Readiness`, `## Long-Run Continuity`, `## Execution Model`, the current task packet and result summary, `.agents/references/plan-execution.md`, `.agents/references/testing.md`, `.agents/references/reviews.md`, and the next action's exact owner docs or source files.
-- Current task or wave: P3-anonymous-smoke-evidence is ready after P2 completed responsive layout coverage.
-- Completed commits: P2 checkpoint pending creation.
-- Plan status and readiness: In Progress; P0 through P2 complete and P3 ready.
-- Validation and self-review state: P2 passed targeted tests, `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`, browser responsive review, and clean verifier follow-up.
-- Coordinator reconciliation state: P2 reconciliation complete; P3 anonymous smoke evidence is next after the P2 checkpoint commit.
-- Changelog, docs, spec, roadmap, or plan updates: this plan is the active coordination artifact; `ROADMAP.md` links to `PLAN-responsive-layout-smoke-evidence`; no roadmap edit was needed for P0 through P2.
+- Current task or wave: P4-authenticated-smoke-evidence is ready after P3 completed anonymous smoke evidence.
+- Completed commits: `ece753a` for P2-responsive-layout-coverage; P3 checkpoint pending creation.
+- Plan status and readiness: In Progress; P0 through P3 complete and P4 ready.
+- Validation and self-review state: P3 passed `npm run smoke:anonymous`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `git diff --check`, and clean verifier review.
+- Coordinator reconciliation state: P3 reconciliation complete; P4 authenticated smoke evidence is next after the P3 checkpoint commit.
+- Changelog, docs, spec, roadmap, or plan updates: this plan is the active coordination artifact; `ROADMAP.md` links to `PLAN-responsive-layout-smoke-evidence`; no roadmap edit was needed for P0 through P3.
 - Blockers or open questions: no blocking product questions.
-- Next action: create the P2 checkpoint commit, then dispatch P3-anonymous-smoke-evidence.
+- Next action: create the P3 checkpoint commit, then dispatch P4-authenticated-smoke-evidence.
 - Context handoff notes: keep authenticated smoke metadata-driven from `GET /api/session`; do not promote smoke gaps to quality gates without `M-QUALITY-001` owner decisions.
 
 ## Execution Graph
@@ -648,9 +649,9 @@ sequenceDiagram
 | ------------------------------- | -------- | -------------------------------- | ------- | ------------------------------------------------ | ----------------------------------------- |
 | P0-predecessor-readiness        | Complete | Coordinator-owned; no worker     | N/A     | Reconciled predecessor readiness                 | No implementation commit needed           |
 | P1-evidence-target-selection    | Complete | Coordinator-owned after P0 lands | N/A     | Target selection recorded                        | No implementation commit needed           |
-| P2-responsive-layout-coverage   | Complete | Planned to Worker 1 after P1     | Done    | Verifier finding fixed and accepted              | P2 checkpoint pending creation            |
-| P3-anonymous-smoke-evidence     | Ready    | Planned to Worker 2 after P2     | Pending | Pending verifier evidence and acceptance         | Checkpoint after validation if allowed    |
-| P4-authenticated-smoke-evidence | Waiting  | Planned to Worker 3 after P3     | Pending | Pending verifier evidence and acceptance         | Checkpoint after validation if allowed    |
+| P2-responsive-layout-coverage   | Complete | Planned to Worker 1 after P1     | Done    | Verifier finding fixed and accepted              | Checkpoint `ece753a` created              |
+| P3-anonymous-smoke-evidence     | Complete | Planned to Worker 2 after P2     | Done    | Verifier found no issues                         | P3 checkpoint pending creation            |
+| P4-authenticated-smoke-evidence | Ready    | Planned to Worker 3 after P3     | Pending | Pending verifier evidence and acceptance         | Checkpoint after validation if allowed    |
 | P5-final-review-milestone-close | Waiting  | Coordinator-owned after P4 lands | N/A     | Pending final verifier evidence and owner review | Close milestone when evidence is complete |
 
 ## Validation Plan

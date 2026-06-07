@@ -234,7 +234,7 @@ Backend prerequisites for anonymous smoke:
   npx playwright install chromium
   ```
 
-`npm run smoke:anonymous` first probes the frontend origin, then `GET /api/session` through that same origin. If the frontend is not serving, the backend is unavailable through the frontend `/api` proxy, browser tooling is unavailable, or a smoke assertion fails, the command exits nonzero and stops the workflow.
+`npm run smoke:anonymous` first prints the validation date, frontend URL, backend expectation, selected route coverage, API coverage, covered flow, and pass/skip/fail semantics. It then probes the frontend origin and `GET /api/session` through that same origin. If the frontend is not serving, the backend is unavailable through the frontend `/api` proxy, or browser tooling is unavailable, the command records a prerequisite `skip` and exits nonzero. If prerequisites are available but a smoke assertion fails, the command records `fail` and exits nonzero. A prerequisite skip is environment evidence, not a product pass.
 
 When prerequisites are available, the command verifies:
 
@@ -266,7 +266,7 @@ When prerequisites are available, the command verifies:
 - post-logout anonymous session state and account-route API protection
 - browser-observed authenticated `/api/**` requests stay on the frontend origin
 
-When recording smoke evidence, include the backend profile, frontend URL, browser flow covered, validation date, and any skipped authenticated steps with the reason.
+When recording smoke evidence, include the backend profile or availability expectation, frontend URL, browser flow covered, validation date, route coverage, and any skipped prerequisite or authenticated steps with the reason.
 
 ## Hardening Commands And Signals
 
@@ -313,7 +313,7 @@ Deferred hardening candidates:
 - SBOM and license reporting: revisit when maintainers select a durable dependency/license inventory requirement for the published container package beyond the signed image itself.
 - Enforced bundle-size and asset budgets: revisit when the project owns a reviewed size threshold or production `dist/` growth becomes a repeated review concern.
 - Live-backend authenticated smoke automation: revisit if maintainers want the automated authenticated command to start or require the sibling backend fake-OAuth profile instead of the internal mock API. External-provider automation still needs provider-specific credentials and identity seeding rules.
-- Anonymous browser smoke: `npm run smoke:anonymous` is the canonical anonymous command and must pass in the documented local smoke environment; missing frontend, backend, browser tooling, or smoke assertions are failures, not skips.
+- Anonymous browser smoke: `npm run smoke:anonymous` is the canonical anonymous command and must pass in the documented local smoke environment; missing frontend, backend, or browser tooling records a prerequisite skip and exits nonzero, while smoke assertion failures record `fail` and exit nonzero.
 - Accessibility automation: revisit when maintainers select the accessibility command, thresholds, skip rules, and failure owner.
 - CI artifact upload for hardening reports: revisit when M20 or a later selected check writes a stable report file. Until then, use GitHub code scanning, pull-request check annotations, local command output, and workflow logs as the report locations.
 - GitHub Actions SHA pinning: revisit when maintainers select a stricter supply-chain policy or add automation that keeps pinned SHAs current. M13-B should keep trusted versioned actions, explicit permissions, and Dependabot action updates.
