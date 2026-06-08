@@ -26,6 +26,7 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 - Next target version: Future maintenance release; final scope and version selected before release prep.
 - Current priority: No ready selected milestone; `M-QUALITY-001` remains blocked pending quality-gate decisions.
 - Active product plans: None; completed plan records and completed UI, workflow, and smoke milestones are archived in `docs/ROADMAP_ARCHIVE.md`.
+- Recent supporting work: Dev-server and browser-review hygiene is complete and archived; command details live in `docs/LOCAL_DEVELOPMENT.md` and validation guidance lives in `.agents/references/testing.md`.
 - Selection policy: Breaking user-facing or backend-contract integration changes require a selected roadmap item.
 
 ## Product Direction
@@ -72,7 +73,7 @@ Acceptance Criteria:
 
 Labels: `type:epic`, `milestone:M-QUALITY-001`, `status:blocked`
 
-Blocked by: No repeatable local smoke gap is currently documented.
+Blocked by: Canonical anonymous and authenticated smoke commands plus dev-server hygiene are in place; no repeatable local smoke gap is currently documented.
 
 Tasks:
 
@@ -113,4 +114,4 @@ These are deliberate product and integration boundaries for the current roadmap.
 - Backend-only operations and deployment runbooks until this frontend owns a deployment target or runtime operations responsibility.
 - Backend-specific Gradle, REST Docs, Flyway, restore-drill, application Helm, Kubernetes, and post-deploy smoke gates by default.
 - Environment-specific deployment promotion beyond the GHCR package, checked-in reference manifests, and GitHub Release workflow.
-- Generic command wrappers, broad workflow-state directories, and reusable execution scaffolding until repeated frontend work selects a concrete owner; repository prompt recipes remain narrow session starters, not roadmap scope.
+- Generic command wrappers, broad workflow-state directories, and reusable execution scaffolding remain non-goals unless selected by a concrete owner; the completed dev-server and smoke helpers are the current narrow exception owned by local-development docs and validation references.

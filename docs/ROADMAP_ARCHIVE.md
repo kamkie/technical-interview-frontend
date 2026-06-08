@@ -974,3 +974,21 @@ Acceptance Criteria:
 
 - M13-A selected the smallest useful hardening set for the `0.1.0` hardening pass.
 - M13-B implemented the checks without adding deferred artifact, credential, threshold, or custom-rule gates.
+
+### E-DEV-ARCHIVE-001: Dev Server And Browser Review Hygiene
+
+Labels: `type:epic`, `status:done`
+
+Tasks:
+
+- T-DEV-ARCHIVE-001: Add managed mock Vite server startup for intentional manual browser review.
+- T-DEV-ARCHIVE-002: Add repo-local dev-server list and cleanup commands with post-stop process and port checks.
+- T-DEV-ARCHIVE-003: Route authenticated mock smoke through the shared managed Vite lifecycle while preserving smoke evidence output.
+- T-DEV-ARCHIVE-004: Document browser-review server ownership, cleanup expectations, and validation routing.
+
+Acceptance Criteria:
+
+- `npm run dev:mock:managed`, `npm run dev:list`, and `npm run dev:cleanup` exist for managed interactive review.
+- Programmatic Vite-backed checks use `scripts/with-vite.mjs` so servers close after the check and stale state files are cleaned up.
+- `npm run smoke:authenticated` records the validation date, frontend URL, backend profile, selected flow, route coverage, API coverage, pass/skip/fail semantics, and skipped authenticated steps.
+- Browser-review hygiene lives in `docs/LOCAL_DEVELOPMENT.md` and `.agents/references/testing.md`, not in active roadmap procedure text.
