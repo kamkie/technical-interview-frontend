@@ -22,10 +22,10 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 
 ## Release Context
 
-- Release phase: Local `v0.3.0` release candidate prepared; remote publication is not selected.
-- Latest release: `v0.2.0`.
-- Next target version: `v0.3.0`; after publication, select the next maintenance target before more release prep.
-- Current priority: Review the local `v0.3.0` candidate, then create release commit, tag, and publication artifacts only after explicit authorization.
+- Release phase: `v0.3.0` is published; no next release candidate is selected.
+- Latest release: `v0.3.0`.
+- Next target version: Not selected; select the next maintenance target before more release prep.
+- Current priority: Select the next roadmap scope or maintenance target before preparing another release.
 - Active product plans: None; completed plan records and completed UI, workflow, and smoke milestones are archived in `docs/ROADMAP_ARCHIVE.md`.
 - Recent supporting work: Dev-server and browser-review hygiene is complete and archived; command details live in `docs/LOCAL_DEVELOPMENT.md` and validation guidance lives in `.agents/references/testing.md`.
 - Selection policy: Breaking user-facing or backend-contract integration changes require a selected roadmap item.
@@ -41,7 +41,32 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 
 ## Milestones
 
-No ready or waiting selected milestone is active. Completed UI, workflow, and smoke milestones are archived in `docs/ROADMAP_ARCHIVE.md`.
+### M-SMOKE-002: Smoke Gap Promotion
+
+Labels: `type:milestone`, `status:ready`
+
+Goal: Promote the selected anonymous smoke mock-mode gap into targeted frontend smoke or procedure coverage.
+
+#### E-SMOKE-003: Smoke Gap Promotion
+
+Labels: `type:epic`, `milestone:M-SMOKE-002`, `status:ready`
+
+Selected gap: Running anonymous smoke through managed mock Vite with an anonymous mock session passes frontend availability, session bootstrap, categories, books, and repeated query checks, then fails because the mock API accepts the localized public-read failure probe instead of returning problem details.
+
+Current evidence: `FRONTEND_MOCK_SESSION=anonymous FRONTEND_MOCK_API_SCENARIO=success node scripts/with-vite.mjs --mode mock -- npm run smoke:anonymous` fails on the localized public-read failure step.
+
+Tasks:
+
+- T-SMOKE-007: Classify the repeatable failure as frontend mock API, smoke script, or procedure behavior for the managed mock-mode target.
+- T-SMOKE-008: Turn the repeatable failure into targeted mock API, browser smoke, or documented procedure coverage.
+
+Acceptance Criteria:
+
+- The gap identifies a clear owner.
+- A targeted test or procedure covers the repeatable failure.
+- Anonymous smoke against the selected target either passes with localized failure evidence or rejects the unsupported target with an explicit prerequisite or procedure outcome.
+
+Completed UI, workflow, and smoke milestones are archived in `docs/ROADMAP_ARCHIVE.md`.
 
 ## Blocked Backlog
 
@@ -51,7 +76,7 @@ Blocked items are planned work, but they need a product choice, stable threshold
 
 Labels: `type:milestone`, `status:blocked`
 
-Goal: Add enforceable accessibility, smoke, and hardening evidence only after the repository has selected thresholds, owners, and failure behavior.
+Goal: Add enforceable accessibility and hardening evidence only after the repository has selected thresholds, owners, and failure behavior.
 
 #### E-A11Y-001: Accessibility Automation
 
@@ -69,22 +94,6 @@ Acceptance Criteria:
 
 - The selected command, threshold, skip rules, and failure owner are documented.
 - The check can run locally or in CI with actionable results.
-
-#### E-SMOKE-003: Smoke Gap Promotion
-
-Labels: `type:epic`, `milestone:M-QUALITY-001`, `status:blocked`
-
-Blocked by: Canonical anonymous and authenticated smoke commands plus dev-server hygiene are in place; no repeatable local smoke gap is currently documented.
-
-Tasks:
-
-- T-SMOKE-007: Identify whether a future repeatable failure belongs to the smoke script, frontend route/query behavior, backend contract artifact, or backend implementation.
-- T-SMOKE-008: Turn the repeatable failure into component, route, browser, or procedure coverage.
-
-Acceptance Criteria:
-
-- The gap identifies a clear owner.
-- A targeted test or procedure covers the repeatable failure.
 
 #### E-HARDEN-001: Hardening Thresholds
 
