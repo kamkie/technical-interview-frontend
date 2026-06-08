@@ -30,9 +30,9 @@ The first screen and primary navigation should put real user workflows first. Te
 
 ## Roadmap-Aligned Direction
 
-- `M-UI-001`: establish the production UI foundation with shell and navigation changes, admin separation, user-facing session controls, route context, and basic loading, empty, and error state handling.
-- `M-WORKFLOW-001`: polish daily workflows with stronger visual hierarchy, shared state semantics, catalog table and form improvements, admin and operator workflow grouping, and clearer account and session copy.
-- `M-SMOKE-001`: keep responsive layout and smoke evidence as planned waiting work covering deliberate responsive behavior, authenticated smoke for session bootstrap and logout, and anonymous smoke for shell and public catalog paths.
+- `M-UI-001`: archived completed work establishing the production UI foundation with shell and navigation changes, admin separation, user-facing session controls, route context, and basic loading, empty, and error state handling.
+- `M-WORKFLOW-001`: archived completed work polishing daily workflows with stronger visual hierarchy, shared state semantics, catalog table and form improvements, admin and operator workflow grouping, and clearer account and session copy.
+- `M-SMOKE-001`: archived completed work covering deliberate responsive behavior, authenticated smoke for session bootstrap and logout, and anonymous smoke for shell and public catalog paths.
 - `M-QUALITY-001`: keep quality gates blocked until owners, thresholds, failure behavior, and repeatable evidence are selected for accessibility automation, smoke gap promotion, and hardening thresholds.
 
 ## Contract And Security Boundaries

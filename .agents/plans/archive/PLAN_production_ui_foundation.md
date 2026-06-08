@@ -2,15 +2,15 @@
 
 Plan-ID: PLAN-production-ui-foundation
 
-Status: Complete
+Status: Complete; Archived
 
 Workers: 1
 
-Filename: `.agents/plans/PLAN_production_ui_foundation.md`
+Filename: `.agents/plans/archive/PLAN_production_ui_foundation.md`
 
 ## Readiness
 
-- Plan readiness: Ready for review; not approved for implementation until the user explicitly approves this plan or asks to implement it.
+- Plan readiness: Complete; `M-UI-001` implementation and roadmap closeout are complete.
 - Approved by: Current user request to implement `PLAN_production_ui_foundation.md`.
 - Approved at: 2026-06-07T23:05:20+02:00
 - Open questions: No blocking product questions identified from current owners.
@@ -26,6 +26,7 @@ Use `Status: Draft` while shaping the plan. Use `Status: Approved` only after ex
 - 2026-06-07T23:28:42+02:00: P2-route-context-state completed and checkpointed in `d23f676`.
 - 2026-06-07T23:36:14+02:00: P3-coverage-hardening completed and checkpointed in `252d3d5`.
 - 2026-06-07T23:38:14+02:00: P4-final-validation completed; `ROADMAP.md` moved current priority to `M-WORKFLOW-001` and `PLAN_workflow_polish.md` predecessor readiness was unblocked.
+- 2026-06-08T10:32:42+02:00: Plan archived after completed work moved out of the active roadmap.
 
 ## Goal
 

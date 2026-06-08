@@ -2,17 +2,17 @@
 
 Plan-ID: PLAN-responsive-layout-smoke-evidence
 
-Status: Complete
+Status: Complete; Archived
 
 Workers: 1 implementation lane
 
 Verifier worker: one dedicated read-only clean verifier for P2-P5 evidence.
 
-Filename: `.agents/plans/PLAN_responsive_layout_smoke_evidence.md`
+Filename: `.agents/plans/archive/PLAN_responsive_layout_smoke_evidence.md`
 
 ## Readiness
 
-- Plan readiness: In progress; `M-WORKFLOW-001` is complete and P0 confirmed predecessor readiness.
+- Plan readiness: Complete; `M-SMOKE-001` implementation and roadmap closeout are complete.
 - Approved by:
 - Approved at:
 - Open questions: No blocking product questions identified from current owners.
@@ -31,6 +31,7 @@ Use this plan after `M-WORKFLOW-001` lands and the predecessor readiness packet 
 - 2026-06-08T01:41:23+02:00: P3 anonymous smoke evidence completed with command/docs updates, smoke pass, verifier review, and baseline validation; P4 promoted to `Ready`.
 - 2026-06-08T01:47:37+02:00: P4 authenticated smoke evidence completed with command/docs updates, smoke pass, verifier review, and baseline validation; P5 promoted to `Ready`.
 - 2026-06-08T01:51:28+02:00: P5 final review completed; roadmap statuses updated to `done`; final validation and verifier review passed.
+- 2026-06-08T10:32:42+02:00: Plan archived after completed work moved out of the active roadmap.
 
 ## Goal
 

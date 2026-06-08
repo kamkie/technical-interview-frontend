@@ -2,13 +2,13 @@
 
 Plan-ID: PLAN-workflow-polish
 
-Status: Complete
+Status: Complete; Archived
 
 Workers: 1
 
 Clean verifier: Not used for completed P4-P6 evidence; reusable rules live in the plan template and focused references.
 
-Filename: `.agents/plans/PLAN_workflow_polish.md`
+Filename: `.agents/plans/archive/PLAN_workflow_polish.md`
 
 ## Readiness
 
@@ -33,6 +33,7 @@ Use this plan after `M-UI-001` lands and the predecessor readiness packet confir
 - 2026-06-08T00:35:32+02:00: P4 complete by Worker 4; admin/operator workflow grouping landed and P5 promoted to `Ready`.
 - 2026-06-08T00:48:20+02:00: P5 complete by Worker 5; account/session copy clarified and P6 promoted to `Ready`.
 - 2026-06-08T00:53:32+02:00: P6 complete by Codex; roadmap statuses reconciled and `M-SMOKE-001` promoted to current ready priority.
+- 2026-06-08T10:32:42+02:00: Plan archived after completed work moved out of the active roadmap.
 
 ## Goal
 
