@@ -27,7 +27,6 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 - Next target version: Not selected; select the next maintenance target before more release prep.
 - Current priority: Select the next maintenance target or roadmap scope before more release prep.
 - Active product plans: None.
-- Recent supporting work: Quality gates, dev-server, and browser-review hygiene are complete and archived; command details live in `docs/LOCAL_DEVELOPMENT.md` and validation guidance lives in `.agents/references/testing.md`.
 - Selection policy: Breaking user-facing or backend-contract integration changes require a selected roadmap item.
 
 ## Product Direction
