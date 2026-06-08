@@ -4,6 +4,8 @@ This project follows Keep a Changelog style. Release entries stay under `Unrelea
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-06-09
+
 ### Added
 
 - Added SPDX SBOM and report-only license release evidence, advisory bundle-budget reporting, SHA-pinned GitHub Actions workflows, and retained Trivy and CodeQL SARIF artifacts for the selected deferred hardening scope.
@@ -15,6 +17,7 @@ This project follows Keep a Changelog style. Release entries stay under `Unrelea
 ### Fixed
 
 - Aligned the contract-backed mock API with the public catalog filter contract so conflicting exact and range publication-year filters return localized problem details and managed mock anonymous smoke passes.
+- Installed Playwright Chromium in CI before the accessibility gate so selected accessibility automation can run on fresh GitHub-hosted runners.
 
 ## [0.3.0] - 2026-06-08
 

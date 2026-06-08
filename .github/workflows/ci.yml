@@ -104,6 +104,9 @@ jobs:
       - name: Bundle budget
         run: npm run hardening:bundle-budget
 
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
       - name: Accessibility
         run: npm run a11y
 

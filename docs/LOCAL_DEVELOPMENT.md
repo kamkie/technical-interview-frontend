@@ -330,7 +330,7 @@ The command starts Vite in mock mode through `scripts/with-vite.mjs`, launches P
 npx playwright install chromium
 ```
 
-Use `FRONTEND_A11Y_PORT` to request a starting port, `FRONTEND_A11Y_STRICT_PORT=true` to fail instead of selecting the next open port, `FRONTEND_A11Y_TIMEOUT_MS` for browser waits, and `FRONTEND_A11Y_HEADLESS=false` to watch the browser run. CI runs `npm run a11y` after `npm run build`; command output and workflow logs are the retained evidence for the first implementation. Accessibility failures are owned by the repository maintainers until a dedicated team or `CODEOWNERS` file exists.
+Use `FRONTEND_A11Y_PORT` to request a starting port, `FRONTEND_A11Y_STRICT_PORT=true` to fail instead of selecting the next open port, `FRONTEND_A11Y_TIMEOUT_MS` for browser waits, and `FRONTEND_A11Y_HEADLESS=false` to watch the browser run. CI installs Playwright Chromium, then runs `npm run a11y` after `npm run build`; command output and workflow logs are the retained evidence for the first implementation. Accessibility failures are owned by the repository maintainers until a dedicated team or `CODEOWNERS` file exists.
 
 ## Hardening Commands And Signals
 

@@ -22,8 +22,8 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 
 ## Release Context
 
-- Release phase: `v0.3.0` is published; no next release candidate is selected.
-- Latest release: `v0.3.0`.
+- Release phase: `v0.3.1` is published; no next release candidate is selected.
+- Latest release: `v0.3.1`.
 - Next target version: Not selected; select the next maintenance target before more release prep.
 - Current priority: Select the next maintenance target or roadmap scope before more release prep.
 - Active product plans: None; `M-QUALITY-001`, `E-A11Y-001`, `E-HARDEN-001`, and `E-HARDEN-002` are done.
