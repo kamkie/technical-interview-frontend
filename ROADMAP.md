@@ -41,13 +41,11 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 
 ## Milestones
 
-No active milestones are selected at this time.
+No planed milestones at this time.
 
 ## Blocked Backlog
 
-Blocked items are planned work, but they need a product choice, stable threshold, credential, owner, or repeatable failure before implementation can start.
-
-No blocked backlog items are selected at this time.
+No blocked backlog items at this time.
 
 ## Product Non-Goals
 
