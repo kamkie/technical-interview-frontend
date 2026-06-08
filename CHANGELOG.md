@@ -4,6 +4,10 @@ This project follows Keep a Changelog style. Release entries stay under `Unrelea
 
 ## [Unreleased]
 
+### Changed
+
+- Enforced selected hardening thresholds for high-or-critical npm audit advisories, runtime/Nginx invariant violations, and high-or-critical Trivy image findings while keeping kube-linter posture findings advisory.
+
 ### Fixed
 
 - Aligned the contract-backed mock API with the public catalog filter contract so conflicting exact and range publication-year filters return localized problem details and managed mock anonymous smoke passes.

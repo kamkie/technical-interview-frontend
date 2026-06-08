@@ -107,5 +107,8 @@ jobs:
       - name: Audit security
         run: npm run audit:security
 
+      - name: Runtime hardening
+        run: npm run hardening:runtime
+
       - name: Check whitespace
         run: git diff --check

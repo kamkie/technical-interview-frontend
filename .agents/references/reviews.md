@@ -55,7 +55,7 @@ For API-facing security questions, use `docs/backend/` as the source of truth an
 
 Use `.agents/references/testing.md` to select hardening validation and `docs/LOCAL_DEVELOPMENT.md` for current command procedures. Review workflow permissions, concurrency, CodeQL, dependency-review, npm audit, Dependabot grouping, runtime, container, and manifest findings for the selected threshold state.
 
-Prefer source, dependency, lockfile, or configuration fixes where practical. A skipped or disabled hardening check must have a scoped rationale and an owner. Exceptions must name the finding or advisory, affected package or path, owner, mitigation or planned fix, expiration or revisit trigger, and release decision. Do not weaken a global threshold or disable a full workflow to work around a single finding.
+Prefer source, dependency, lockfile, or configuration fixes where practical. A skipped or disabled hardening check must have a scoped rationale and an owner. Exceptions must name the finding or advisory, affected package or path, current risk, owner, mitigation or planned fix, expiration or revisit trigger, and release decision. Do not weaken a global threshold or disable a full workflow to work around a single finding.
 
 ## Review Handoff
 

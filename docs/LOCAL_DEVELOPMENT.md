@@ -10,7 +10,7 @@ This document owns local setup, npm commands, CI reproduction, troubleshooting, 
 - npm 11.x, matching `package.json` `packageManager` and `engines`
 - Docker, only when building or validating the production container image
 - Playwright Chromium, only when running browser smoke commands
-- Trivy, kube-linter, kubectl, and Helm when running the selected advisory M20 hardening checks locally
+- Trivy, kube-linter, kubectl, and Helm when running the selected hardening checks locally
 - Optional sibling backend checkout at `..\technical-interview-demo` for contract refreshes and local browser smoke
 
 Default sibling layout:
@@ -118,36 +118,36 @@ These manifests are reference assets. Deployment-specific TLS, DNS, ingress cont
 
 ## Canonical Commands
 
-| Task                                         | Command                                   |
-| -------------------------------------------- | ----------------------------------------- |
-| Install dependencies                         | `npm install`                             |
-| Run local dev server                         | `npm run dev`                             |
-| Run local dev server with mock API           | `npm run dev:mock`                        |
-| Run managed mock dev server                  | `npm run dev:mock:managed -- --port 5173` |
-| List repo-local dev servers                  | `npm run dev:list`                        |
-| Stop repo-local dev servers                  | `npm run dev:cleanup`                     |
-| Run production preview                       | `npm run preview`                         |
-| Lint                                         | `npm run lint`                            |
-| Lint Markdown only                           | `npm run lint:markdown`                   |
-| Format Markdown                              | `npm run format:markdown`                 |
-| Lint ESLint only                             | `npm run lint:eslint`                     |
-| Typecheck and API type freshness check       | `npm run typecheck`                       |
-| Run tests once                               | `npm test`                                |
-| Run tests with coverage                      | `npm run test:coverage`                   |
-| Run tests in watch mode                      | `npm run test:watch`                      |
-| Build                                        | `npm run build`                           |
-| Build production container image             | `npm run docker:build`                    |
-| Audit high-or-critical dependency advisories | `npm run audit:security`                  |
-| Accessibility automation                     | `npm run a11y`                            |
-| M20 advisory runtime/Nginx invariant check   | `npm run hardening:runtime`               |
-| M20 advisory rendered-manifest posture check | `npm run hardening:kube-linter`           |
-| M20 advisory container vulnerability scan    | `npm run hardening:trivy`                 |
-| M20 advisory hardening checks                | `npm run hardening:m20`                   |
-| Anonymous same-origin browser smoke          | `npm run smoke:anonymous`                 |
-| Authenticated mock browser smoke             | `npm run smoke:authenticated`             |
-| Generate API types                           | `npm run api:types`                       |
-| Verify API types without rewriting           | `npm run api:types:check`                 |
-| Validate whitespace in the diff              | `git diff --check`                        |
+| Task                                          | Command                                   |
+| --------------------------------------------- | ----------------------------------------- |
+| Install dependencies                          | `npm install`                             |
+| Run local dev server                          | `npm run dev`                             |
+| Run local dev server with mock API            | `npm run dev:mock`                        |
+| Run managed mock dev server                   | `npm run dev:mock:managed -- --port 5173` |
+| List repo-local dev servers                   | `npm run dev:list`                        |
+| Stop repo-local dev servers                   | `npm run dev:cleanup`                     |
+| Run production preview                        | `npm run preview`                         |
+| Lint                                          | `npm run lint`                            |
+| Lint Markdown only                            | `npm run lint:markdown`                   |
+| Format Markdown                               | `npm run format:markdown`                 |
+| Lint ESLint only                              | `npm run lint:eslint`                     |
+| Typecheck and API type freshness check        | `npm run typecheck`                       |
+| Run tests once                                | `npm test`                                |
+| Run tests with coverage                       | `npm run test:coverage`                   |
+| Run tests in watch mode                       | `npm run test:watch`                      |
+| Build                                         | `npm run build`                           |
+| Build production container image              | `npm run docker:build`                    |
+| Audit high-or-critical dependency advisories  | `npm run audit:security`                  |
+| Accessibility automation                      | `npm run a11y`                            |
+| Runtime/Nginx invariant gate                  | `npm run hardening:runtime`               |
+| Rendered-manifest posture advisory check      | `npm run hardening:kube-linter`           |
+| Container high-or-critical vulnerability gate | `npm run hardening:trivy`                 |
+| Selected hardening checks                     | `npm run hardening:m20`                   |
+| Anonymous same-origin browser smoke           | `npm run smoke:anonymous`                 |
+| Authenticated mock browser smoke              | `npm run smoke:authenticated`             |
+| Generate API types                            | `npm run api:types`                       |
+| Verify API types without rewriting            | `npm run api:types:check`                 |
+| Validate whitespace in the diff               | `git diff --check`                        |
 
 ## Reproduce CI Locally
 
@@ -161,6 +161,7 @@ npm run test:coverage
 npm run build
 npm run a11y
 npm run audit:security
+npm run hardening:runtime
 git diff --check
 ```
 
@@ -172,10 +173,19 @@ npm test -- --reporter=default --reporter=junit --outputFile.junit=../test-resul
 
 CI uploads JavaScript bundle analysis to Codecov during `npm run build` on GitHub Actions. The Vite config enables a CI-only Codecov upload plugin that reads Vite/Rolldown `generateBundle` assets, chunks, and modules, then uploads through GitHub OIDC from the CI job instead of a checked-in token or local secret. Local production builds do not upload bundle analysis.
 
-The selected local hardening command can also be run directly:
+The selected local hardening commands can also be run directly:
 
 ```powershell
 npm run audit:security
+npm run hardening:runtime
+npm run hardening:kube-linter
+npm run docker:build
+npm run hardening:trivy
+```
+
+The aggregate runtime, manifest, and image hardening command is:
+
+```powershell
 npm run hardening:m20
 ```
 
@@ -207,7 +217,7 @@ npm run docker:build
 
 If Docker is unavailable locally, record that explicitly and rely on the tag-driven release workflow only after maintainers accept the environment limitation.
 
-When M20 hardening tooling or runtime config changes, also run the selected advisory checks that apply to the changed artifact. Keep generated reports out of git during the first pass; local command output, pull-request logs, or workflow logs are the evidence location. The rendered-manifest check writes scratch manifests under ignored `temp/hardening/rendered`.
+When hardening tooling or runtime config changes, also run the selected checks that apply to the changed artifact. Keep generated reports out of git until a stable report format is selected; local command output, pull-request logs, or workflow logs are the evidence location. The rendered-manifest check writes scratch manifests under ignored `temp/hardening/rendered`.
 
 ## Backend Contract Refresh
 
@@ -329,9 +339,9 @@ Implemented M13 checks:
 - `npm run audit:security` wraps `npm audit --audit-level=high`. It is the selected local hardening command for high or critical advisories in the locked dependency graph, including development dependencies because they participate in build, test, and release validation. Failures appear in local command output and CI workflow logs.
 - `.github/dependabot.yml` checks npm, GitHub Actions, and Docker base-image dependencies weekly. It groups npm runtime dependencies, npm tooling/test dependencies, Actions updates, and Docker base-image updates separately. Until the repository owns a stable reviewer team or `CODEOWNERS`, review uses the normal maintainer path instead of named reviewers.
 
-Selected M20 advisory checks:
+Selected hardening checks:
 
-- Container vulnerability scanning uses Trivy against the image built by `npm run docker:build`. The first pass is advisory and keeps Trivy's exit code at `0` for vulnerability findings. Set `FRONTEND_IMAGE` only when scanning a deliberately different local tag:
+- Container vulnerability scanning uses Trivy against the image built by `npm run docker:build`. `npm run hardening:trivy` fails on high or critical vulnerability findings. Set `FRONTEND_IMAGE` only when scanning a deliberately different local tag:
 
   ```powershell
   npm run docker:build
@@ -344,16 +354,16 @@ Selected M20 advisory checks:
   npm run hardening:kube-linter
   ```
 
-- Runtime/Nginx hardening uses `npm run hardening:runtime`. It covers the production `Dockerfile` and `docker/nginx/` template invariants that this frontend owns, including the canonical Node 24 build stage, use of the unprivileged Nginx image, port `8080`, `/healthz`, same-origin `/api` proxying through `FRONTEND_API_UPSTREAM`, and no browser CORS, JWT, bearer-token, or hard-coded provider-path assumptions.
+- Runtime/Nginx hardening uses `npm run hardening:runtime`. CI runs it as an enforced check. It covers the production `Dockerfile` and `docker/nginx/` template invariants that this frontend owns, including the canonical Node 24 build stage, use of the unprivileged Nginx image, port `8080`, `/healthz`, same-origin `/api` proxying through `FRONTEND_API_UPSTREAM`, and no browser CORS, JWT, bearer-token, or hard-coded provider-path assumptions.
 
-M20 findings are advisory until a later roadmap row or release decision selects a stable threshold. Tool installation or command/configuration failures should be fixed or recorded as unavailable; vulnerability, posture, and runtime findings should be triaged through the exception path below but do not block a release candidate during the first pass.
+High or critical npm advisories, owned runtime/Nginx invariant violations, and high or critical Trivy vulnerability findings are enforced hardening failures. Rendered-manifest posture findings from `npm run hardening:kube-linter` stay advisory during the first pass. Tool installation or command/configuration failures should be fixed or recorded as unavailable, and blocking findings should be triaged through the exception path below before release work proceeds.
 
 ## Release And Container Publication
 
 The production image is a static Vite build served by unprivileged Nginx on port
 8080. Runtime browser traffic still targets same-origin `/api/**`; Nginx proxies those paths to `FRONTEND_API_UPSTREAM`, which defaults to `http://host.docker.internal:8080` for local Docker Desktop use.
 
-The tag-driven `Release` workflow runs for semantic tags matching `v*.*.*` when the tagged commit contains `.github/workflows/release.yml`. It runs the full frontend validation baseline plus `npm run audit:security`, builds and smoke-tests the container image, publishes both `vMAJOR.MINOR.PATCH[-PRERELEASE]` and `sha-<12-char-commit>` tags to GitHub Container Registry, signs the immutable digest with Cosign, publishes a GitHub provenance attestation, and creates the GitHub Release from `CHANGELOG.md` with container package links.
+The tag-driven `Release` workflow runs for semantic tags matching `v*.*.*` when the tagged commit contains `.github/workflows/release.yml`. It runs the full frontend validation baseline plus `npm run audit:security`, builds and smoke-tests the container image, publishes both `vMAJOR.MINOR.PATCH[-PRERELEASE]` and `sha-<12-char-commit>` tags to GitHub Container Registry, signs the immutable digest with Cosign, publishes a GitHub provenance attestation, and creates the GitHub Release from `CHANGELOG.md` with container package links. Release preparation should also capture `npm run hardening:runtime` and `npm run hardening:trivy` evidence for the exact candidate when Docker, image, and Trivy prerequisites are available.
 
 Remote publication is still explicit maintainer work: push `main` and the annotated tag only when the release task asks for remote publication. Use the immutable digest from the workflow summary for package verification, not a mutable GHCR tag alone.
 

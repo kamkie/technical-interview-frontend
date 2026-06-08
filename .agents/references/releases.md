@@ -14,12 +14,12 @@ Before preparing a release, confirm:
 - `CHANGELOG.md`, `ROADMAP.md`, `README.md`, `SETUP.md`, package metadata, and validation evidence describe the same candidate
 - the full validation baseline passed for the exact candidate
 - `npm run docker:build` passed for the exact candidate, or local Docker unavailability is explicitly recorded before relying on the tag-driven Release workflow for container evidence
-- selected M13 hardening checks have passed when they exist, or each exception has an owner and release decision
+- selected hardening checks have passed when prerequisites are available, or documented unavailability and each exception have an owner and release decision
 - browser smoke evidence is recorded, or unavailable authenticated smoke is called out with the reason
 
 ## Hardening Evidence
 
-Use `.agents/references/testing.md` for release validation selection and `docs/LOCAL_DEVELOPMENT.md` for current hardening command procedures. Release preparation must capture selected M13 evidence for the exact release candidate, including full baseline validation, `npm run audit:security`, CI-owned CodeQL and dependency-review signals when available, current workflow permission and concurrency evidence, and any scoped exception with the finding/advisory, affected package or path, owner, mitigation or planned fix, expiration or revisit trigger, and release decision.
+Use `.agents/references/testing.md` for release validation selection and `docs/LOCAL_DEVELOPMENT.md` for current hardening command procedures. Release preparation must capture selected hardening evidence for the exact release candidate, including full baseline validation, `npm run audit:security`, `npm run hardening:runtime`, `npm run hardening:trivy` when Docker, image, and Trivy prerequisites are available, CI-owned CodeQL and dependency-review signals when available, current workflow permission and concurrency evidence, and any scoped exception with the finding/advisory, affected package or path, current risk, owner, mitigation or planned fix, expiration or revisit trigger, and release decision.
 
 Dependabot configuration is release-readiness evidence that dependency maintenance is owned. Dependabot PR creation is not itself a release-blocking command, but a high-or-critical security update tied to a selected audit/dependency-review failure must be resolved or explicitly excepted before release.
 
