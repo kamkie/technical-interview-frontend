@@ -25,8 +25,8 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 - Release phase: `v0.3.0` is published; no next release candidate is selected.
 - Latest release: `v0.3.0`.
 - Next target version: Not selected; select the next maintenance target before more release prep.
-- Current priority: Implement the selected accessibility and hardening quality gates before preparing another release.
-- Active product plans: None; selected ready scope is `M-QUALITY-001` / `E-A11Y-001` and `E-HARDEN-001` and has no active plan yet.
+- Current priority: Implement the selected hardening quality gate before preparing another release.
+- Active product plans: None; selected ready scope is `M-QUALITY-001` / `E-HARDEN-001`; `E-A11Y-001` is done and has no active plan.
 - Recent supporting work: Dev-server and browser-review hygiene is complete and archived; command details live in `docs/LOCAL_DEVELOPMENT.md` and validation guidance lives in `.agents/references/testing.md`.
 - Selection policy: Breaking user-facing or backend-contract integration changes require a selected roadmap item.
 
@@ -49,7 +49,7 @@ Goal: Add enforceable accessibility and hardening evidence now that command scop
 
 #### E-A11Y-001: Accessibility Automation
 
-Labels: `type:epic`, `milestone:M-QUALITY-001`, `status:ready`
+Labels: `type:epic`, `milestone:M-QUALITY-001`, `status:done`
 
 Selected Decisions:
 

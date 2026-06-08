@@ -22,6 +22,7 @@
     "lint:markdown": "node scripts/check-markdown-line-endings.mjs && node scripts/check-mermaid-markdown.mjs && markdownlint-cli2",
     "format:markdown": "node scripts/format-markdown.mjs",
     "audit:security": "npm audit --audit-level=high",
+    "a11y": "node scripts/a11y.mjs",
     "hardening:m20": "npm run hardening:runtime && npm run hardening:kube-linter && npm run hardening:trivy",
     "hardening:runtime": "node scripts/check-runtime-nginx.mjs",
     "hardening:kube-linter": "node scripts/check-rendered-manifests.mjs",
@@ -41,6 +42,7 @@
     "react-router-dom": "^7.17.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
     "@codecov/bundler-plugin-core": "^2.0.1",
     "@eslint/js": "^10.0.1",
     "@testing-library/jest-dom": "^6.9.1",

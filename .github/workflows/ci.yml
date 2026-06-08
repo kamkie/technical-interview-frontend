@@ -101,6 +101,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Accessibility
+        run: npm run a11y
+
       - name: Audit security
         run: npm run audit:security
 

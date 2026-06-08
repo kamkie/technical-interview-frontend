@@ -138,6 +138,7 @@ These manifests are reference assets. Deployment-specific TLS, DNS, ingress cont
 | Build                                        | `npm run build`                           |
 | Build production container image             | `npm run docker:build`                    |
 | Audit high-or-critical dependency advisories | `npm run audit:security`                  |
+| Accessibility automation                     | `npm run a11y`                            |
 | M20 advisory runtime/Nginx invariant check   | `npm run hardening:runtime`               |
 | M20 advisory rendered-manifest posture check | `npm run hardening:kube-linter`           |
 | M20 advisory container vulnerability scan    | `npm run hardening:trivy`                 |
@@ -158,6 +159,7 @@ npm run typecheck
 npm test
 npm run test:coverage
 npm run build
+npm run a11y
 npm run audit:security
 git diff --check
 ```
@@ -297,6 +299,24 @@ When prerequisites are available, the command verifies:
 
 When recording smoke evidence, include the backend profile or availability expectation, frontend URL, browser flow covered, validation date, route coverage, and any skipped prerequisite or authenticated steps with the reason.
 
+## Accessibility Automation
+
+Accessibility automation can run without the sibling backend or provider secrets:
+
+```powershell
+npm run a11y
+```
+
+The command starts Vite in mock mode through `scripts/with-vite.mjs`, launches Playwright Chromium, and runs axe against the selected mock-browser route scope: anonymous catalog/home state, authenticated `/account`, and authenticated `/admin/users` with the mock admin session. It prints the validation date, frontend URL, backend profile (`internal contract-backed mock API`), route coverage, result semantics, and a summary.
+
+`npm run a11y` fails locally and in CI on serious or critical automated accessibility violations. Moderate, minor, or unknown-impact findings are printed as advisory output during the first pass and do not fail the command. Missing Playwright, Chromium, axe tooling, or mock-server prerequisites are prerequisite failures that exit nonzero; do not treat them as successful product evidence. If Chromium is unavailable, run:
+
+```powershell
+npx playwright install chromium
+```
+
+Use `FRONTEND_A11Y_PORT` to request a starting port, `FRONTEND_A11Y_STRICT_PORT=true` to fail instead of selecting the next open port, `FRONTEND_A11Y_TIMEOUT_MS` for browser waits, and `FRONTEND_A11Y_HEADLESS=false` to watch the browser run. CI runs `npm run a11y` after `npm run build`; command output and workflow logs are the retained evidence for the first implementation. Accessibility failures are owned by the repository maintainers until a dedicated team or `CODEOWNERS` file exists.
+
 ## Hardening Commands And Signals
 
 M13 implements the selected minimum hardening set for the `0.1.0` release hardening pass.
@@ -343,7 +363,6 @@ Deferred hardening candidates:
 - Enforced bundle-size and asset budgets: revisit when the project owns a reviewed size threshold or production `dist/` growth becomes a repeated review concern.
 - Live-backend authenticated smoke automation: revisit if maintainers want the automated authenticated command to start or require the sibling backend fake-OAuth profile instead of the internal mock API. External-provider automation still needs provider-specific credentials and identity seeding rules.
 - Anonymous browser smoke: `npm run smoke:anonymous` is the canonical anonymous command and must pass in the documented local smoke environment; missing frontend, backend, or browser tooling records a prerequisite skip and exits nonzero, while smoke assertion failures record `fail` and exit nonzero.
-- Accessibility automation: revisit when maintainers select the accessibility command, thresholds, skip rules, and failure owner.
 - CI artifact upload for hardening reports: revisit when M20 or a later selected check writes a stable report file. Until then, use GitHub code scanning, pull-request check annotations, local command output, and workflow logs as the report locations.
 - GitHub Actions SHA pinning: revisit when maintainers select a stricter supply-chain policy or add automation that keeps pinned SHAs current. M13-B should keep trusted versioned actions, explicit permissions, and Dependabot action updates.
 - Custom frontend security lint rules: revisit when CodeQL or ESLint misses a repeated security issue pattern and a stable rule set is selected.
