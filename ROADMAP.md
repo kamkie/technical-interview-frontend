@@ -25,8 +25,8 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 - Release phase: `v0.3.0` is published; no next release candidate is selected.
 - Latest release: `v0.3.0`.
 - Next target version: Not selected; select the next maintenance target before more release prep.
-- Current priority: Select the next maintenance target or roadmap scope before more release prep.
-- Active product plans: None; `E-A11Y-001` and `E-HARDEN-001` are done; `E-HARDEN-002` remains blocked.
+- Current priority: Implement the selected deferred hardening scope before preparing another release.
+- Active product plans: None; `E-A11Y-001` and `E-HARDEN-001` are done; selected ready scope is `M-QUALITY-001` / `E-HARDEN-002`.
 - Recent supporting work: Dev-server and browser-review hygiene is complete and archived; command details live in `docs/LOCAL_DEVELOPMENT.md` and validation guidance lives in `.agents/references/testing.md`.
 - Selection policy: Breaking user-facing or backend-contract integration changes require a selected roadmap item.
 
@@ -43,9 +43,9 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 
 ### M-QUALITY-001: Quality Gates
 
-Labels: `type:milestone`, `status:done`
+Labels: `type:milestone`, `status:ready`
 
-Goal: Add enforceable accessibility and hardening evidence now that command scope, thresholds, skip behavior, and failure ownership are selected; keep deferred hardening candidates blocked until their separate decisions are made.
+Goal: Add enforceable accessibility and hardening evidence now that command scope, thresholds, skip behavior, and failure ownership are selected; implement the selected deferred hardening scope now that its reporting, budget, pinning, and artifact decisions are made.
 
 #### E-A11Y-001: Accessibility Automation
 
@@ -107,29 +107,40 @@ Acceptance Criteria:
 - `npm run hardening:kube-linter` remains visible advisory evidence and does not fail release work during the first pass.
 - Documentation records command usage, CI behavior, exception requirements, report locations, and repository-maintainer ownership.
 
+#### E-HARDEN-002: Deferred Hardening Scope
+
+Labels: `type:epic`, `milestone:M-QUALITY-001`, `status:ready`
+
+Selected Decisions:
+
+- SBOM and license inventory: use SPDX JSON, publish the SBOM as a GitHub Release asset, attach SBOM evidence to the GHCR image through GitHub artifact attestation/provenance, and keep license findings report-only.
+- Bundle and asset budgets: add a soft advisory threshold based on the current build baseline plus 10% drift; budget warnings must not fail CI or release work during the first pass.
+- GitHub Actions pinning: pin workflow actions to commit SHAs and keep Dependabot GitHub Actions updates active so pinned references stay current.
+- Security lint scope: Trivy, CodeQL, and ESLint must stay clean; do not add custom security lint rules until a repeated issue pattern is missed by those selected tools.
+- Retained artifacts: upload Trivy reports and CodeQL SARIF as GitHub Actions artifacts with 14-day retention where those checks run; CodeQL code scanning remains the primary security surface.
+
+Tasks:
+
+- T-HARDEN-002: Add SPDX JSON SBOM and report-only license inventory evidence to release publication and GHCR image attestation/provenance.
+- T-HARDEN-003: Add soft bundle-size and asset-budget evidence using the current build baseline plus a 10% warning threshold.
+- T-HARDEN-004: Pin GitHub Actions workflow actions to commit SHAs while preserving Dependabot action-update maintenance.
+- T-HARDEN-005: Confirm the selected security lint scope stays limited to Trivy, CodeQL, and ESLint unless repeated misses justify a later custom rule set.
+- T-HARDEN-006: Upload retained Trivy report and CodeQL SARIF artifacts for GitHub Actions runs that produce those reports.
+
+Acceptance Criteria:
+
+- Release publication produces an SPDX JSON SBOM, attaches it to the GitHub Release, and attaches SBOM evidence to the GHCR image through GitHub artifact attestation/provenance.
+- License inventory findings remain report-only until a separate license allow/deny policy is selected.
+- Bundle and asset budget output warns on more than 10% drift from the selected baseline without failing CI or release work.
+- Workflow actions are pinned to commit SHAs and remain covered by Dependabot GitHub Actions updates.
+- Trivy, CodeQL, and ESLint remain the selected security lint surfaces; custom security rules stay out of scope until a repeated missed pattern is documented.
+- Trivy reports and CodeQL SARIF are retained as GitHub Actions artifacts for 14 days where those checks run.
+
 ## Blocked Backlog
 
 Blocked items are planned work, but they need a product choice, stable threshold, credential, owner, or repeatable failure before implementation can start.
 
-### E-HARDEN-002: Deferred Hardening Scope
-
-Labels: `type:epic`, `milestone:M-QUALITY-001`, `status:blocked`
-
-Blocked by: SBOM and license inventory requirements, bundle and asset budgets, GitHub Actions SHA pinning policy, custom security lint scope, retained report formats, and artifact paths are not selected.
-
-Tasks:
-
-- T-HARDEN-002: Select SBOM and license inventory format, publication path, and triage expectations.
-- T-HARDEN-003: Define any bundle-size or asset-budget thresholds and exception process.
-- T-HARDEN-004: Decide whether GitHub Actions SHA pinning is required and how pinned versions stay current.
-- T-HARDEN-005: Add custom frontend security lint rules only for repeated issue patterns not covered by selected tools.
-- T-HARDEN-006: Upload CI hardening artifacts only after reports are stable enough to retain.
-
-Acceptance Criteria:
-
-- SBOM/license, bundle/asset, Actions SHA pinning, custom lint, and retained artifact requirements are documented before they become release-blocking.
-- Selected commands or report files produce actionable local or CI evidence.
-- Deferred findings do not accidentally become release-blocking before thresholds are selected.
+No blocked backlog items are selected at this time.
 
 ## Product Non-Goals
 
