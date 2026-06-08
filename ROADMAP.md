@@ -16,10 +16,6 @@ Stable IDs:
 - Tasks use `T-AREA-NNN`.
 - Plans use `PLAN-short-kebab-slug`.
 
-Keep IDs stable when wording, status, ordering, or section placement changes. Do not renumber existing IDs. When work is split, keep the original ID for the closest surviving item and assign new IDs to new items. Do not reuse retired IDs for unrelated work.
-
-Labels use stable IDs so the hierarchy stays searchable without turning the roadmap into a table. Backend contract details, validation selection, and AI procedure rules stay in their owner documents instead of being repeated on every item.
-
 ## Release Context
 
 - Release phase: `v0.3.1` is published; no next release candidate is selected.

@@ -26,6 +26,8 @@ Preserve the current roadmap ID model:
 
 Keep IDs stable when wording, status, ordering, or section placement changes. Do not renumber existing IDs. When work is split, keep the original ID for the closest surviving item and assign new IDs to new items. Do not reuse retired IDs for unrelated work.
 
+Labels should use stable IDs so the hierarchy stays searchable without turning `ROADMAP.md` into a table.
+
 ## Current Sections
 
 Preserve the current roadmap shape unless the task explicitly changes roadmap structure:
