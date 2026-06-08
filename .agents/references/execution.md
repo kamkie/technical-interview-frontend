@@ -25,11 +25,10 @@ Run `git status --short` before any file edit.
 
 ## Branch And Worktree Requests
 
-When a user names a branch or Git worktree as the work target:
+`work in worktree` means use or create a linked worktree different from the current worktree.
 
-- Do not use `main`, the current branch, or the current worktree by default.
-- Use or create a non-current, non-`main` branch or linked worktree.
-- Use `main`, the current branch, or the current worktree only when the user explicitly asks for that target.
+- If the user names the branch, use or create the linked worktree for that branch.
+- If the user does not name the branch, choose a short `codex/<task-slug>` branch name from the task.
 
 ## Execution Loop
 
