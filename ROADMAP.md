@@ -25,8 +25,8 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 - Release phase: `v0.3.0` is published; no next release candidate is selected.
 - Latest release: `v0.3.0`.
 - Next target version: Not selected; select the next maintenance target before more release prep.
-- Current priority: Select the next roadmap scope or maintenance target before preparing another release.
-- Active product plans: None; completed plan records and completed UI, workflow, and smoke milestones are archived in `docs/ROADMAP_ARCHIVE.md`.
+- Current priority: Implement the selected accessibility and hardening quality gates before preparing another release.
+- Active product plans: None; selected ready scope is `M-QUALITY-001` / `E-A11Y-001` and `E-HARDEN-001` and has no active plan yet.
 - Recent supporting work: Dev-server and browser-review hygiene is complete and archived; command details live in `docs/LOCAL_DEVELOPMENT.md` and validation guidance lives in `.agents/references/testing.md`.
 - Selection policy: Breaking user-facing or backend-contract integration changes require a selected roadmap item.
 
@@ -41,44 +41,84 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 
 ## Milestones
 
-No ready or waiting selected milestone is active. Completed UI, workflow, and smoke milestones are archived in `docs/ROADMAP_ARCHIVE.md`.
+### M-QUALITY-001: Quality Gates
+
+Labels: `type:milestone`, `status:ready`
+
+Goal: Add enforceable accessibility and hardening evidence now that command scope, thresholds, skip behavior, and failure ownership are selected; keep deferred hardening candidates blocked until their separate decisions are made.
+
+#### E-A11Y-001: Accessibility Automation
+
+Labels: `type:epic`, `milestone:M-QUALITY-001`, `status:ready`
+
+Selected Decisions:
+
+- Command: add `npm run a11y`.
+- Tooling: use Playwright with `@axe-core/playwright`.
+- Runtime: reuse the existing mock Vite/auth pattern so the check can run without the sibling backend or provider credentials.
+- Route scope: cover anonymous catalog/home state, authenticated `/account`, and authenticated `/admin/users` with the mock admin session.
+- Failure threshold: fail local and CI checks on serious or critical automated accessibility violations.
+- Advisory handling: report moderate and minor findings without failing the command during the first pass.
+- Skip behavior: missing browser tooling is a prerequisite failure, not a product pass; CI should not silently skip the check.
+- Failure owner: repository maintainers.
+- Evidence: command output and CI logs are enough for the first implementation; retained artifacts can be selected later if the output proves useful.
+
+Tasks:
+
+- T-A11Y-001: Implement the selected accessibility command, threshold, skip rules, and failure owner.
+- T-A11Y-002: Wire the accessibility check to run locally and in CI.
+- T-A11Y-003: Document local and CI usage, advisory finding handling, and failure triage.
+
+Acceptance Criteria:
+
+- `npm run a11y` runs against the selected anonymous and authenticated mock-browser route scope.
+- Serious or critical automated accessibility violations fail the command locally and in CI.
+- Moderate and minor findings are visible as advisory output without failing the first-pass gate.
+- Missing browser prerequisites are reported as prerequisite failures instead of successful product evidence.
+- Documentation records command usage, CI behavior, skip semantics, and repository-maintainer ownership.
+
+#### E-HARDEN-001: Hardening Thresholds
+
+Labels: `type:epic`, `milestone:M-QUALITY-001`, `status:ready`
+
+Selected Decisions:
+
+- Enforced CI first pass: wire `npm run audit:security` and `npm run hardening:runtime` into CI.
+- Dependency audit threshold: fail on high or critical npm advisories.
+- Runtime/Nginx threshold: fail on owned runtime invariant violations.
+- Container vulnerability threshold: make high or critical Trivy vulnerability findings fail `npm run hardening:trivy` for local and release-prep image-scan evidence.
+- Manifest posture handling: keep `npm run hardening:kube-linter` advisory during the first pass.
+- Failure owner: repository maintainers.
+- Exception requirements: each exception must name the finding or advisory, affected package or path, current risk, owner, mitigation or planned fix, expiration or revisit trigger, and release decision.
+- Evidence: command output and CI logs are enough for the first implementation; retained hardening report artifacts can be selected later if stable report files are chosen.
+
+Tasks:
+
+- T-HARDEN-001: Implement selected failure behavior for high or critical npm advisories, runtime invariant violations, and high or critical Trivy findings.
+- T-HARDEN-007: Wire `npm run audit:security` and `npm run hardening:runtime` into CI as enforced checks.
+- T-HARDEN-008: Keep manifest posture findings advisory until a stable kube-linter failure threshold is selected.
+- T-HARDEN-009: Document hardening command usage, CI behavior, exception requirements, report locations, and repository-maintainer ownership.
+
+Acceptance Criteria:
+
+- CI fails on high or critical npm audit advisories.
+- CI fails on owned runtime/Nginx hardening invariant violations.
+- `npm run hardening:trivy` fails on high or critical Trivy vulnerability findings when Docker, image, and Trivy prerequisites are available.
+- `npm run hardening:kube-linter` remains visible advisory evidence and does not fail release work during the first pass.
+- Documentation records command usage, CI behavior, exception requirements, report locations, and repository-maintainer ownership.
 
 ## Blocked Backlog
 
 Blocked items are planned work, but they need a product choice, stable threshold, credential, owner, or repeatable failure before implementation can start.
 
-### M-QUALITY-001: Quality Gates
-
-Labels: `type:milestone`, `status:blocked`
-
-Goal: Add enforceable accessibility and hardening evidence only after the repository has selected thresholds, owners, and failure behavior.
-
-#### E-A11Y-001: Accessibility Automation
+### E-HARDEN-002: Deferred Hardening Scope
 
 Labels: `type:epic`, `milestone:M-QUALITY-001`, `status:blocked`
 
-Blocked by: Accessibility thresholds and failure ownership are not selected.
+Blocked by: SBOM and license inventory requirements, bundle and asset budgets, GitHub Actions SHA pinning policy, custom security lint scope, retained report formats, and artifact paths are not selected.
 
 Tasks:
 
-- T-A11Y-001: Select the accessibility command, threshold, skip rules, and failure owner.
-- T-A11Y-002: Decide whether the check runs locally, in CI, or both.
-- T-A11Y-003: Add the check only after results are actionable.
-
-Acceptance Criteria:
-
-- The selected command, threshold, skip rules, and failure owner are documented.
-- The check can run locally or in CI with actionable results.
-
-#### E-HARDEN-001: Hardening Thresholds
-
-Labels: `type:epic`, `milestone:M-QUALITY-001`, `status:blocked`
-
-Blocked by: Hardening thresholds, owners, report formats, and exception rules are not selected.
-
-Tasks:
-
-- T-HARDEN-001: Decide when container vulnerability, deployment posture, and runtime hardening findings should fail release work.
 - T-HARDEN-002: Select SBOM and license inventory format, publication path, and triage expectations.
 - T-HARDEN-003: Define any bundle-size or asset-budget thresholds and exception process.
 - T-HARDEN-004: Decide whether GitHub Actions SHA pinning is required and how pinned versions stay current.
@@ -87,9 +127,9 @@ Tasks:
 
 Acceptance Criteria:
 
-- Thresholds, owners, exception rules, and report paths are documented before checks become release-blocking.
-- Selected commands produce actionable local or CI evidence.
-- Advisory findings do not accidentally become release-blocking before thresholds are selected.
+- SBOM/license, bundle/asset, Actions SHA pinning, custom lint, and retained artifact requirements are documented before they become release-blocking.
+- Selected commands or report files produce actionable local or CI evidence.
+- Deferred findings do not accidentally become release-blocking before thresholds are selected.
 
 ## Product Non-Goals
 
