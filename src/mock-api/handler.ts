@@ -304,6 +304,12 @@ async function routeLogout(request: Request, state: MockApiState) {
 
 async function routeBooks(request: Request, state: MockApiState, url: URL) {
   if (request.method === 'GET') {
+    const publicationYearFilterProblem = validatePublicationYearFilters(request, url)
+
+    if (publicationYearFilterProblem) {
+      return publicationYearFilterProblem
+    }
+
     return json(pageBooks(filterBooks(state.books, url), url))
   }
 
@@ -735,6 +741,20 @@ function createOperatorSurface(state: MockApiState): OperatorSurface {
       readinessState: 'ACCEPTING_TRAFFIC',
     },
   }
+}
+
+function validatePublicationYearFilters(request: Request, url: URL) {
+  if (
+    url.searchParams.has('year') &&
+    (url.searchParams.has('yearFrom') || url.searchParams.has('yearTo'))
+  ) {
+    return problem(400, 'error.request.invalid_filter', request, {
+      detail: 'Exact publication year cannot be combined with yearFrom or yearTo.',
+      title: 'Invalid book filter',
+    })
+  }
+
+  return undefined
 }
 
 function filterBooks(books: readonly Book[], url: URL) {

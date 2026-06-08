@@ -939,6 +939,29 @@ Acceptance Criteria:
 - Long labels do not distort the table.
 - Edit/delete intent and safeguards remain unchanged.
 
+### M-SMOKE-002: Smoke Gap Promotion
+
+Labels: `type:milestone`, `status:done`
+
+Goal: Promote the selected anonymous smoke mock-mode gap into targeted frontend smoke coverage.
+
+#### E-SMOKE-003: Smoke Gap Promotion
+
+Labels: `type:epic`, `milestone:M-SMOKE-002`, `status:done`
+
+Current evidence: `FRONTEND_MOCK_SESSION=anonymous FRONTEND_MOCK_API_SCENARIO=success node scripts/with-vite.mjs --mode mock -- npm run smoke:anonymous` passes with localized public-read failure evidence.
+
+Tasks:
+
+- T-SMOKE-007: Classify the repeatable failure as frontend mock API behavior for the managed mock-mode target.
+- T-SMOKE-008: Return localized `400` problem details from the mock API when an exact `year` filter is combined with `yearFrom` or `yearTo`, and cover the behavior with a focused handler test.
+
+Acceptance Criteria:
+
+- The selected gap identifies the frontend mock API as owner.
+- `src/mock-api/handler.test.ts` covers the repeatable failure.
+- Managed mock anonymous smoke passes with localized failure evidence.
+
 ## Completed Supporting Work
 
 ### E-DOC-001: Procedure Adoption

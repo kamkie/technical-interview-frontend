@@ -79,6 +79,25 @@ describe('mock API handler', () => {
     ])
   })
 
+  it('returns localized problem details for conflicting publication-year filters', async () => {
+    const handler = createMockApiHandler({ session: 'anonymous' })
+    const response = await handler(
+      request('/api/books?year=2000&yearFrom=1990', {
+        headers: {
+          'Accept-Language': 'pl-PL,pl;q=0.9,en;q=0.8',
+        },
+      }),
+    )
+    const problem = await jsonBody<ApiProblem>(response)
+
+    expect(response?.status).toBe(400)
+    expect(problem).toMatchObject({
+      status: 400,
+      messageKey: 'error.request.invalid_filter',
+      language: 'pl',
+    })
+  })
+
   it('enforces CSRF on unsafe authenticated writes and increments book versions', async () => {
     const handler = createMockApiHandler()
     const updateBody = {

@@ -41,32 +41,7 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 
 ## Milestones
 
-### M-SMOKE-002: Smoke Gap Promotion
-
-Labels: `type:milestone`, `status:ready`
-
-Goal: Promote the selected anonymous smoke mock-mode gap into targeted frontend smoke or procedure coverage.
-
-#### E-SMOKE-003: Smoke Gap Promotion
-
-Labels: `type:epic`, `milestone:M-SMOKE-002`, `status:ready`
-
-Selected gap: Running anonymous smoke through managed mock Vite with an anonymous mock session passes frontend availability, session bootstrap, categories, books, and repeated query checks, then fails because the mock API accepts the localized public-read failure probe instead of returning problem details.
-
-Current evidence: `FRONTEND_MOCK_SESSION=anonymous FRONTEND_MOCK_API_SCENARIO=success node scripts/with-vite.mjs --mode mock -- npm run smoke:anonymous` fails on the localized public-read failure step.
-
-Tasks:
-
-- T-SMOKE-007: Classify the repeatable failure as frontend mock API, smoke script, or procedure behavior for the managed mock-mode target.
-- T-SMOKE-008: Turn the repeatable failure into targeted mock API, browser smoke, or documented procedure coverage.
-
-Acceptance Criteria:
-
-- The gap identifies a clear owner.
-- A targeted test or procedure covers the repeatable failure.
-- Anonymous smoke against the selected target either passes with localized failure evidence or rejects the unsupported target with an explicit prerequisite or procedure outcome.
-
-Completed UI, workflow, and smoke milestones are archived in `docs/ROADMAP_ARCHIVE.md`.
+No ready or waiting selected milestone is active. Completed UI, workflow, and smoke milestones are archived in `docs/ROADMAP_ARCHIVE.md`.
 
 ## Blocked Backlog
 
