@@ -14,12 +14,12 @@ Before preparing a release, confirm:
 - `CHANGELOG.md`, `ROADMAP.md`, `README.md`, `SETUP.md`, package metadata, and validation evidence describe the same candidate
 - the full validation baseline passed for the exact candidate
 - `npm run docker:build` passed for the exact candidate, or local Docker unavailability is explicitly recorded before relying on the tag-driven Release workflow for container evidence
-- selected hardening checks have passed when prerequisites are available, or documented unavailability and each exception have an owner and release decision
+- selected hardening checks and advisory hardening evidence have passed or been recorded when prerequisites are available, or documented unavailability and each exception have an owner and release decision
 - browser smoke evidence is recorded, or unavailable authenticated smoke is called out with the reason
 
 ## Hardening Evidence
 
-Use `.agents/references/testing.md` for release validation selection and `docs/LOCAL_DEVELOPMENT.md` for current hardening command procedures. Release preparation must capture selected hardening evidence for the exact release candidate, including full baseline validation, `npm run audit:security`, `npm run hardening:runtime`, `npm run hardening:trivy` when Docker, image, and Trivy prerequisites are available, CI-owned CodeQL and dependency-review signals when available, current workflow permission and concurrency evidence, and any scoped exception with the finding/advisory, affected package or path, current risk, owner, mitigation or planned fix, expiration or revisit trigger, and release decision.
+Use `.agents/references/testing.md` for release validation selection and `docs/LOCAL_DEVELOPMENT.md` for current hardening command procedures. Release preparation must capture selected hardening evidence for the exact release candidate, including full baseline validation, `npm run audit:security`, `npm run hardening:bundle-budget`, `npm run hardening:runtime`, `npm run hardening:sbom`, `npm run hardening:trivy` when Docker, image, and Trivy prerequisites are available, CI-owned CodeQL and dependency-review signals when available, retained CodeQL SARIF and Trivy report artifact availability, current workflow permission/concurrency/SHA-pinning evidence, and any scoped exception with the finding/advisory, affected package or path, current risk, owner, mitigation or planned fix, expiration or revisit trigger, and release decision.
 
 Dependabot configuration is release-readiness evidence that dependency maintenance is owned. Dependabot PR creation is not itself a release-blocking command, but a high-or-critical security update tied to a selected audit/dependency-review failure must be resolved or explicitly excepted before release.
 
@@ -52,13 +52,16 @@ Push `main`, push tags, publish container packages, or publish release notes onl
 For release tags whose commit contains `.github/workflows/release.yml`, the tag-driven `Release` workflow is expected to:
 
 - run the full frontend validation baseline plus `npm run audit:security`
+- record advisory bundle budget evidence
 - build and smoke-test the Docker image
+- scan the release image with Trivy and retain the JSON report artifact
 - publish `ghcr.io/<owner>/<repo>:vMAJOR.MINOR.PATCH[-PRERELEASE]` and `ghcr.io/<owner>/<repo>:sha-<12-char-commit>`
 - verify both tags resolve to the same immutable digest
 - sign the digest with Cosign `v3.0.5` using the workflow identity
 - publish a GitHub provenance attestation for the digest
+- publish an SPDX JSON SBOM attestation for the digest
 - render release notes from `CHANGELOG.md` using `scripts/release/render-release-notes.ps1`
-- create the GitHub Release with the container image, immutable image, and package page references
+- create the GitHub Release with the container image, immutable image, package page references, SPDX JSON SBOM, and report-only license inventory
 
 After publication, verify release notes match the released changelog section and use the immutable digest from the workflow summary as the authenticity anchor, not a mutable GHCR tag alone.
 

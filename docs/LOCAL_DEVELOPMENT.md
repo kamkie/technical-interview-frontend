@@ -139,7 +139,9 @@ These manifests are reference assets. Deployment-specific TLS, DNS, ingress cont
 | Build production container image              | `npm run docker:build`                    |
 | Audit high-or-critical dependency advisories  | `npm run audit:security`                  |
 | Accessibility automation                      | `npm run a11y`                            |
+| Advisory bundle and asset budget check        | `npm run hardening:bundle-budget`         |
 | Runtime/Nginx invariant gate                  | `npm run hardening:runtime`               |
+| Generate release SBOM and license inventory   | `npm run hardening:sbom`                  |
 | Rendered-manifest posture advisory check      | `npm run hardening:kube-linter`           |
 | Container high-or-critical vulnerability gate | `npm run hardening:trivy`                 |
 | Selected hardening checks                     | `npm run hardening:m20`                   |
@@ -159,6 +161,7 @@ npm run typecheck
 npm test
 npm run test:coverage
 npm run build
+npm run hardening:bundle-budget
 npm run a11y
 npm run audit:security
 npm run hardening:runtime
@@ -177,6 +180,8 @@ The selected local hardening commands can also be run directly:
 
 ```powershell
 npm run audit:security
+npm run hardening:bundle-budget
+npm run hardening:sbom
 npm run hardening:runtime
 npm run hardening:kube-linter
 npm run docker:build
@@ -217,7 +222,7 @@ npm run docker:build
 
 If Docker is unavailable locally, record that explicitly and rely on the tag-driven release workflow only after maintainers accept the environment limitation.
 
-When hardening tooling or runtime config changes, also run the selected checks that apply to the changed artifact. Keep generated reports out of git until a stable report format is selected; local command output, pull-request logs, or workflow logs are the evidence location. The rendered-manifest check writes scratch manifests under ignored `temp/hardening/rendered`.
+When hardening tooling or runtime config changes, also run the selected checks that apply to the changed artifact. Keep generated reports out of git; selected report files are written under ignored `temp/hardening/` and retained by GitHub Actions where the owning workflow uploads them. Local command output, pull-request logs, workflow logs, GitHub code scanning, GitHub Release assets, and workflow artifacts are the evidence locations. The rendered-manifest check writes scratch manifests under ignored `temp/hardening/rendered`.
 
 ## Backend Contract Refresh
 
@@ -333,11 +338,11 @@ M13 implements the selected minimum hardening set for the `0.1.0` release harden
 
 Implemented M13 checks:
 
-- `.github/workflows/ci.yml` has explicit read-only repository permissions and concurrency that cancels superseded pull-request runs while preserving protected-branch, tag, release, and scheduled evidence. It writes Vitest JUnit output to `test-results/vitest.junit.xml` and publishes it to Codecov as `test_results`, then runs `npm run test:coverage` and publishes `coverage/lcov.info` to Codecov with the `frontend` flag using GitHub OIDC. After the production build, the Vite config uploads bundle asset, chunk, and module metadata to Codecov through the same GitHub OIDC permission.
-- `.github/workflows/codeql.yml` runs CodeQL for `javascript-typescript` and `actions` on pull requests, pushes to `main`, and a weekly schedule. Results upload to GitHub code scanning so alerts appear in the repository Security tab, with run details in the CodeQL workflow logs.
+- `.github/workflows/ci.yml` has explicit read-only repository permissions and concurrency that cancels superseded pull-request runs while preserving protected-branch, tag, release, and scheduled evidence. It writes Vitest JUnit output to `test-results/vitest.junit.xml` and publishes it to Codecov as `test_results`, then runs `npm run test:coverage` and publishes `coverage/lcov.info` to Codecov with the `frontend` flag using GitHub OIDC. After the production build, the Vite config uploads bundle asset, chunk, and module metadata to Codecov through the same GitHub OIDC permission, and `npm run hardening:bundle-budget` records the selected soft budget evidence.
+- `.github/workflows/codeql.yml` runs CodeQL for `javascript-typescript` and `actions` on pull requests, pushes to `main`, and a weekly schedule. Results upload to GitHub code scanning so alerts appear in the repository Security tab, with run details in the CodeQL workflow logs. The workflow also uploads the generated SARIF as a 14-day GitHub Actions artifact for retained evidence.
 - `.github/workflows/dependency-review.yml` runs dependency review on pull requests, using a high-or-critical severity gate where the repository supports the GitHub dependency-review API. In this private repository, unsupported runs are advisory so the workflow stays green; use `npm run audit:security` as the local fallback evidence. The workflow emits a warning if dependency-review needs maintainer-side GitHub security features.
 - `npm run audit:security` wraps `npm audit --audit-level=high`. It is the selected local hardening command for high or critical advisories in the locked dependency graph, including development dependencies because they participate in build, test, and release validation. Failures appear in local command output and CI workflow logs.
-- `.github/dependabot.yml` checks npm, GitHub Actions, and Docker base-image dependencies weekly. It groups npm runtime dependencies, npm tooling/test dependencies, Actions updates, and Docker base-image updates separately. Until the repository owns a stable reviewer team or `CODEOWNERS`, review uses the normal maintainer path instead of named reviewers.
+- `.github/dependabot.yml` checks npm, GitHub Actions, and Docker base-image dependencies weekly. It groups npm runtime dependencies, npm tooling/test dependencies, Actions updates, and Docker base-image updates separately. Workflow actions are pinned to commit SHAs with version comments, and Dependabot keeps the pinned GitHub Actions references current. Until the repository owns a stable reviewer team or `CODEOWNERS`, review uses the normal maintainer path instead of named reviewers.
 
 Selected hardening checks:
 
@@ -348,6 +353,8 @@ Selected hardening checks:
   npm run hardening:trivy
   ```
 
+- Set `FRONTEND_TRIVY_REPORT=temp/hardening/trivy-image-report.json` to write a retained JSON report. The tag-driven Release workflow scans the built release image with Trivy and uploads that report as a 14-day GitHub Actions artifact.
+
 - Deployment posture checks use kube-linter against rendered Kustomize and Helm manifests, not the unrendered source templates alone. The repo-owned wrapper renders the base and local Kustomize overlays plus the base and local Helm chart outputs under ignored `temp/hardening/rendered`, then runs kube-linter against that rendered directory:
 
   ```powershell
@@ -356,25 +363,25 @@ Selected hardening checks:
 
 - Runtime/Nginx hardening uses `npm run hardening:runtime`. CI runs it as an enforced check. It covers the production `Dockerfile` and `docker/nginx/` template invariants that this frontend owns, including the canonical Node 24 build stage, use of the unprivileged Nginx image, port `8080`, `/healthz`, same-origin `/api` proxying through `FRONTEND_API_UPSTREAM`, and no browser CORS, JWT, bearer-token, or hard-coded provider-path assumptions.
 
-High or critical npm advisories, owned runtime/Nginx invariant violations, and high or critical Trivy vulnerability findings are enforced hardening failures. Rendered-manifest posture findings from `npm run hardening:kube-linter` stay advisory during the first pass. Tool installation or command/configuration failures should be fixed or recorded as unavailable, and blocking findings should be triaged through the exception path below before release work proceeds.
+- Bundle and asset budget checking uses `npm run hardening:bundle-budget` after `npm run build`. The selected baseline is `bundle-budget.config.json`, and the first-pass warning threshold is 10% above that baseline. Warnings are advisory and do not fail CI or release work. The report is written to `temp/hardening/bundle-budget-report.json` unless `FRONTEND_BUNDLE_BUDGET_REPORT` selects another path.
+
+- Release SBOM and license evidence uses `npm run hardening:sbom`. It writes an SPDX JSON SBOM and report-only license inventory under `temp/hardening/release/` unless `FRONTEND_RELEASE_EVIDENCE_DIR` selects another directory. License findings are inventory only until maintainers select a separate license allow or deny policy.
+
+High or critical npm advisories, owned runtime/Nginx invariant violations, and high or critical Trivy vulnerability findings are enforced hardening failures. Rendered-manifest posture findings from `npm run hardening:kube-linter`, bundle budget drift, and license inventory findings stay advisory during the first pass. Tool installation or command/configuration failures should be fixed or recorded as unavailable, and blocking findings should be triaged through the exception path below before release work proceeds.
 
 ## Release And Container Publication
 
 The production image is a static Vite build served by unprivileged Nginx on port
 8080. Runtime browser traffic still targets same-origin `/api/**`; Nginx proxies those paths to `FRONTEND_API_UPSTREAM`, which defaults to `http://host.docker.internal:8080` for local Docker Desktop use.
 
-The tag-driven `Release` workflow runs for semantic tags matching `v*.*.*` when the tagged commit contains `.github/workflows/release.yml`. It runs the full frontend validation baseline plus `npm run audit:security`, builds and smoke-tests the container image, publishes both `vMAJOR.MINOR.PATCH[-PRERELEASE]` and `sha-<12-char-commit>` tags to GitHub Container Registry, signs the immutable digest with Cosign, publishes a GitHub provenance attestation, and creates the GitHub Release from `CHANGELOG.md` with container package links. Release preparation should also capture `npm run hardening:runtime` and `npm run hardening:trivy` evidence for the exact candidate when Docker, image, and Trivy prerequisites are available.
+The tag-driven `Release` workflow runs for semantic tags matching `v*.*.*` when the tagged commit contains `.github/workflows/release.yml`. It runs the full frontend validation baseline plus `npm run audit:security`, records advisory bundle budget evidence, builds and smoke-tests the container image, scans the release image with Trivy, publishes both `vMAJOR.MINOR.PATCH[-PRERELEASE]` and `sha-<12-char-commit>` tags to GitHub Container Registry, signs the immutable digest with Cosign, publishes GitHub provenance and SPDX SBOM attestations, and creates the GitHub Release from `CHANGELOG.md` with container package links, the SPDX JSON SBOM, and the report-only license inventory. The release workflow retains the SBOM/license handoff artifact and Trivy report artifact for 14 days.
 
 Remote publication is still explicit maintainer work: push `main` and the annotated tag only when the release task asks for remote publication. Use the immutable digest from the workflow summary for package verification, not a mutable GHCR tag alone.
 
 Deferred hardening candidates:
 
-- SBOM and license reporting: revisit when maintainers select a durable dependency/license inventory requirement for the published container package beyond the signed image itself.
-- Enforced bundle-size and asset budgets: revisit when the project owns a reviewed size threshold or production `dist/` growth becomes a repeated review concern.
 - Live-backend authenticated smoke automation: revisit if maintainers want the automated authenticated command to start or require the sibling backend fake-OAuth profile instead of the internal mock API. External-provider automation still needs provider-specific credentials and identity seeding rules.
 - Anonymous browser smoke: `npm run smoke:anonymous` is the canonical anonymous command and must pass in the documented local smoke environment; missing frontend, backend, or browser tooling records a prerequisite skip and exits nonzero, while smoke assertion failures record `fail` and exit nonzero.
-- CI artifact upload for hardening reports: revisit when M20 or a later selected check writes a stable report file. Until then, use GitHub code scanning, pull-request check annotations, local command output, and workflow logs as the report locations.
-- GitHub Actions SHA pinning: revisit when maintainers select a stricter supply-chain policy or add automation that keeps pinned SHAs current. M13-B should keep trusted versioned actions, explicit permissions, and Dependabot action updates.
 - Custom frontend security lint rules: revisit when CodeQL or ESLint misses a repeated security issue pattern and a stable rule set is selected.
 
 Failure triage and exceptions:

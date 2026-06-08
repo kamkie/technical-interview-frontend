@@ -24,10 +24,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: 24.x
           cache: npm
@@ -56,7 +56,7 @@ jobs:
 
       - name: Upload test report artifact
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: frontend-test-results
           path: test-results/vitest.junit.xml
@@ -65,7 +65,7 @@ jobs:
 
       - name: Publish test report
         if: ${{ !cancelled() }}
-        uses: dorny/test-reporter@v3
+        uses: dorny/test-reporter@1cc81a5edf733718d4850df304aaa21c05cd7280 # v3
         with:
           name: Vitest Tests
           path: test-results/vitest.junit.xml
@@ -75,7 +75,7 @@ jobs:
 
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@a99c28d3f0da835de33ff2feb2e15691c7b9641f # v7
         with:
           disable_search: true
           fail_ci_if_error: true
@@ -89,7 +89,7 @@ jobs:
         run: npm run test:coverage
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@a99c28d3f0da835de33ff2feb2e15691c7b9641f # v7
         with:
           disable_search: true
           fail_ci_if_error: true
@@ -100,6 +100,9 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Bundle budget
+        run: npm run hardening:bundle-budget
 
       - name: Accessibility
         run: npm run a11y

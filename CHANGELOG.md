@@ -4,6 +4,10 @@ This project follows Keep a Changelog style. Release entries stay under `Unrelea
 
 ## [Unreleased]
 
+### Added
+
+- Added SPDX SBOM and report-only license release evidence, advisory bundle-budget reporting, SHA-pinned GitHub Actions workflows, and retained Trivy and CodeQL SARIF artifacts for the selected deferred hardening scope.
+
 ### Changed
 
 - Enforced selected hardening thresholds for high-or-critical npm audit advisories, runtime/Nginx invariant violations, and high-or-critical Trivy image findings while keeping kube-linter posture findings advisory.

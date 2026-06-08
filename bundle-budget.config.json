@@ -1,0 +1,10 @@
+{
+  "warningThresholdPercent": 10,
+  "baseline": {
+    "totalBytes": 385385,
+    "javascriptBytes": 347629,
+    "cssBytes": 36376,
+    "htmlBytes": 1380,
+    "assetBytes": 0
+  }
+}

@@ -40,13 +40,13 @@ Use Corepack to invoke the repository package manager when plain `npm` resolves 
 
 Use `docs/LOCAL_DEVELOPMENT.md` for current hardening command names, tool setup, and local evidence procedures. Use `.agents/references/reviews.md` for security-review triggers, advisory triage, and exception expectations. Use `.agents/references/releases.md` for release-candidate evidence and release-only preconditions.
 
-Selected hardening validation includes the full baseline plus `npm run audit:security`, `npm run hardening:runtime`, and `npm run hardening:trivy` when Docker, image, and Trivy prerequisites are available. CodeQL, dependency-review, and Dependabot remain CI-owned or maintainer-side signals. `npm run hardening:kube-linter` remains advisory for rendered-manifest posture findings during the first pass, but missing render or lint prerequisites are still prerequisite failures to fix or record.
+Selected hardening validation includes the full baseline plus `npm run audit:security`, `npm run hardening:bundle-budget`, `npm run hardening:runtime`, `npm run hardening:sbom`, and `npm run hardening:trivy` when Docker, image, and Trivy prerequisites are available. CodeQL, dependency-review, retained CodeQL SARIF, GitHub Actions SHA pinning, and Dependabot remain CI-owned or maintainer-side signals. `npm run hardening:kube-linter` remains advisory for rendered-manifest posture findings during the first pass, but missing render or lint prerequisites are still prerequisite failures to fix or record.
 
 ## Validation Boundaries
 
 Run broader validation when a docs task also changes package scripts, workflows, source code, generated files, test behavior, or release-candidate metadata that must match executable evidence.
 
-Do not make a future hardening candidate release-blocking until it has a repeatable local command or a clearly owned CI signal with triage and skip rules. E-HARDEN-001 selects enforced thresholds for high or critical npm advisories, owned runtime/Nginx invariant violations, and high or critical Trivy findings; deferred hardening candidates still need their own selected thresholds before promotion.
+Do not make a future hardening candidate release-blocking until it has a repeatable local command or a clearly owned CI signal with triage and skip rules. E-HARDEN-001 selects enforced thresholds for high or critical npm advisories, owned runtime/Nginx invariant violations, and high or critical Trivy findings. E-HARDEN-002 selects report-only SPDX/license evidence, soft bundle budget warnings, SHA-pinned workflow actions with Dependabot maintenance, and retained Trivy/CodeQL artifacts; those advisory findings must not fail CI or release work until a later threshold is selected.
 
 For selected hardening checks, exceptions must be scoped to a finding or advisory and must include the affected package or path, current risk, owner, mitigation or planned fix, expiration or revisit trigger, and the release decision. Do not weaken a global threshold or disable a full workflow to work around a single finding.
 

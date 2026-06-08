@@ -25,8 +25,8 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 - Release phase: `v0.3.0` is published; no next release candidate is selected.
 - Latest release: `v0.3.0`.
 - Next target version: Not selected; select the next maintenance target before more release prep.
-- Current priority: Implement the selected deferred hardening scope before preparing another release.
-- Active product plans: None; `E-A11Y-001` and `E-HARDEN-001` are done; selected ready scope is `M-QUALITY-001` / `E-HARDEN-002`.
+- Current priority: Select the next maintenance target or roadmap scope before more release prep.
+- Active product plans: None; `M-QUALITY-001`, `E-A11Y-001`, `E-HARDEN-001`, and `E-HARDEN-002` are done.
 - Recent supporting work: Dev-server and browser-review hygiene is complete and archived; command details live in `docs/LOCAL_DEVELOPMENT.md` and validation guidance lives in `.agents/references/testing.md`.
 - Selection policy: Breaking user-facing or backend-contract integration changes require a selected roadmap item.
 
@@ -43,7 +43,7 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 
 ### M-QUALITY-001: Quality Gates
 
-Labels: `type:milestone`, `status:ready`
+Labels: `type:milestone`, `status:done`
 
 Goal: Add enforceable accessibility and hardening evidence now that command scope, thresholds, skip behavior, and failure ownership are selected; implement the selected deferred hardening scope now that its reporting, budget, pinning, and artifact decisions are made.
 
@@ -109,7 +109,7 @@ Acceptance Criteria:
 
 #### E-HARDEN-002: Deferred Hardening Scope
 
-Labels: `type:epic`, `milestone:M-QUALITY-001`, `status:ready`
+Labels: `type:epic`, `milestone:M-QUALITY-001`, `status:done`
 
 Selected Decisions:
 

@@ -31,12 +31,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: 24.x
           cache: npm
@@ -62,8 +62,26 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Bundle budget
+        run: npm run hardening:bundle-budget
+
       - name: Audit security
         run: npm run audit:security
+
+      - name: Generate release SBOM
+        id: release-sbom
+        run: npm run hardening:sbom
+
+      - name: Upload release SBOM artifact
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: frontend-release-sbom
+          path: |
+            temp/hardening/release/technical-interview-frontend.sbom.spdx.json
+            temp/hardening/release/technical-interview-frontend.licenses.json
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Verify Docker availability
         run: docker version
@@ -85,7 +103,7 @@ jobs:
           } >> "${GITHUB_OUTPUT}"
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v4
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -97,6 +115,24 @@ jobs:
             -t "${{ steps.image.outputs.repository }}:${{ steps.image.outputs.tag }}" \
             -t "${{ steps.image.outputs.repository }}:${{ steps.image.outputs.sha_tag }}" \
             .
+
+      - name: Setup Trivy
+        uses: aquasecurity/setup-trivy@81e514348e19b6112ce2a7e3ecbafe19c1e1f567 # v0.3.1
+
+      - name: Scan release image with Trivy
+        env:
+          FRONTEND_IMAGE: ${{ steps.image.outputs.repository }}:${{ steps.image.outputs.tag }}
+          FRONTEND_TRIVY_REPORT: temp/hardening/trivy-image-report.json
+        run: npm run hardening:trivy
+
+      - name: Upload Trivy report artifact
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: frontend-trivy-report
+          path: temp/hardening/trivy-image-report.json
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Smoke test release image
         shell: bash
@@ -159,7 +195,7 @@ jobs:
           } >> "${GITHUB_OUTPUT}"
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v4.1.2
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
         with:
           cosign-release: v3.0.5
 
@@ -175,11 +211,20 @@ jobs:
             "${{ steps.digest.outputs.reference }}"
 
       - name: Publish provenance attestation
-        uses: actions/attest-build-provenance@v4
+        uses: actions/attest-build-provenance@b3e506e8c389afc651c5bacf2b8f2a1ea0557215 # v4
         with:
           push-to-registry: true
           subject-name: ${{ steps.image.outputs.repository }}
           subject-digest: ${{ steps.digest.outputs.digest }}
+
+      - name: Publish SBOM attestation
+        uses: actions/attest@281a49d4cbb0a72c9575a50d18f6deb515a11deb # v4
+        with:
+          subject-name: ${{ steps.image.outputs.repository }}
+          subject-digest: ${{ steps.digest.outputs.digest }}
+          subject-version: ${{ steps.image.outputs.tag }}
+          sbom-path: temp/hardening/release/technical-interview-frontend.sbom.spdx.json
+          push-to-registry: true
 
       - name: Summarize release identity handoff
         shell: bash
@@ -191,6 +236,8 @@ jobs:
             echo "- Immutable image: \`${{ steps.image.outputs.repository }}:${{ steps.image.outputs.sha_tag }}\`"
             echo "- Immutable digest: \`${{ steps.digest.outputs.reference }}\`"
             echo "- Package page: ${{ steps.image.outputs.package_page }}"
+            echo "- SBOM asset: \`technical-interview-frontend.sbom.spdx.json\`"
+            echo "- License inventory: \`technical-interview-frontend.licenses.json\`"
             echo "- Cosign verification line: \`v3.0.5\`"
             echo "- Cosign certificate identity: \`https://github.com/${GITHUB_REPOSITORY}/.github/workflows/release.yml@refs/tags/${GITHUB_REF_NAME}\`"
           } >> "${GITHUB_STEP_SUMMARY}"
@@ -200,13 +247,20 @@ jobs:
     runs-on: ubuntu-latest
     needs: publish-image
     permissions:
+      actions: read
       contents: write
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           fetch-depth: 0
+
+      - name: Download release SBOM artifact
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: frontend-release-sbom
+          path: release-assets
 
       - name: Detect prerelease tag
         id: release-kind
@@ -268,6 +322,8 @@ jobs:
           fi
 
           gh release create "${{ github.ref_name }}" \
+            release-assets/technical-interview-frontend.sbom.spdx.json \
+            release-assets/technical-interview-frontend.licenses.json \
             --title "${{ github.ref_name }}" \
             --notes-file release-notes.md \
             "${prerelease_flag[@]}"
