@@ -6,7 +6,7 @@ Technical Interview Frontend is the first-party browser UI for the sibling `tech
 
 ## Status
 
-The repository contains a Vite, React, and TypeScript app for the published `v0.2.0` release.
+The repository contains a Vite, React, and TypeScript app preparing the local `v0.3.0` release candidate; the latest published release is `v0.2.0`.
 
 Implemented surface includes session bootstrap, metadata-driven login/logout controls, public catalog flows, account profile and language preference flows, admin catalog/localization/user-management surfaces, and the operator overview/audit-log surface. The repo also includes anonymous and authenticated same-origin smoke automation, fake-OAuth auth-smoke readiness guidance, API coverage evidence, and advisory container/deployment hardening commands.
 

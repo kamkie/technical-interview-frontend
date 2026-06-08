@@ -10,6 +10,7 @@ RUN package_manager="$(node -p "require('./package.json').packageManager")" \
 RUN npm ci
 
 COPY eslint.config.js tsconfig.json tsconfig.app.json tsconfig.node.json vite.config.ts ./
+COPY docs/backend ./docs/backend
 COPY src ./src
 RUN npm run build
 

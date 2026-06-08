@@ -4,15 +4,23 @@ This project follows Keep a Changelog style. Release entries stay under `Unrelea
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-08
+
 ### Added
 
 - Added `npm run dev:mock`, an opt-in same-origin `/api/**` Vite mock API mode backed by generated OpenAPI types for frontend-only development without the sibling backend.
 - Added app-level light, dark, and system theme support with a visible persisted preference control across public, account, admin, and operator routes.
+- Added production shell, navigation, route-context, loading, empty, and error-state refinements across catalog, account, admin, and operator routes.
+- Added deliberate responsive layout coverage and repeatable anonymous and authenticated browser smoke evidence for the primary workflows.
+- Added `npm run smoke:authenticated` for self-contained authenticated browser smoke against the contract-backed mock API.
+- Added managed dev-server tooling with `npm run dev:mock:managed`, `npm run dev:list`, `npm run dev:cleanup`, and the shared `scripts/with-vite.mjs` Vite lifecycle helper.
 
 ### Changed
 
 - Polished the public catalog workflow with canonical route query replacement, visible active filter/sort/page summaries, and clearer accessible sort controls.
 - Moved Browser Session diagnostics into a hidden-by-default Session details surface while keeping metadata-driven sign-in, session bootstrap, and logout behavior intact.
+- Polished daily catalog, account, admin, and operator workflows with clearer state semantics, visual hierarchy, action grouping, and account/session copy.
+- Updated authenticated mock smoke to start Vite through the managed helper while preserving validation date, frontend URL, backend profile, route coverage, API coverage, pass/skip/fail semantics, and skipped-step evidence.
 
 ### Fixed
 

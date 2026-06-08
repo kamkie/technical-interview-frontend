@@ -22,9 +22,10 @@ Labels use stable IDs so the hierarchy stays searchable without turning the road
 
 ## Release Context
 
-- Release phase: Post-`0.2.0` maintenance.
-- Next target version: Future maintenance release; final scope and version selected before release prep.
-- Current priority: No ready selected milestone; `M-QUALITY-001` remains blocked pending quality-gate decisions.
+- Release phase: Local `v0.3.0` release candidate prepared; remote publication is not selected.
+- Latest release: `v0.2.0`.
+- Next target version: `v0.3.0`; after publication, select the next maintenance target before more release prep.
+- Current priority: Review the local `v0.3.0` candidate, then create release commit, tag, and publication artifacts only after explicit authorization.
 - Active product plans: None; completed plan records and completed UI, workflow, and smoke milestones are archived in `docs/ROADMAP_ARCHIVE.md`.
 - Recent supporting work: Dev-server and browser-review hygiene is complete and archived; command details live in `docs/LOCAL_DEVELOPMENT.md` and validation guidance lives in `.agents/references/testing.md`.
 - Selection policy: Breaking user-facing or backend-contract integration changes require a selected roadmap item.
