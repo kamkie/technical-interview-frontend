@@ -12,6 +12,16 @@ Before changing repository state, use `.agents/references/execution.md`; it owns
 
 Stop and clarify when the intended behavior cannot be described clearly enough to test, document, or route to an owner.
 
+## Agent Working Style
+
+For non-trivial changes, state the intended behavior and success criteria before implementation.
+
+Prefer the smallest contract-compatible change that satisfies the request. Do not add speculative abstractions, options, or features.
+
+Keep diffs surgical: every changed line should trace to the current task. Do not refactor, reformat, or clean up unrelated code. Remove only unused code created by the current change.
+
+If the request is ambiguous enough that behavior cannot be tested or routed to an owner, stop and clarify.
+
 ## Truth Priority
 
 Use this order when sources conflict:
