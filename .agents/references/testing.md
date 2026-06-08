@@ -50,7 +50,17 @@ Do not make a future hardening candidate release-blocking until it has a repeata
 
 For selected M13 checks, exceptions must be scoped to a finding or advisory and must include an owner, mitigation or planned fix, expiration or revisit trigger, and the release decision. Do not weaken a global threshold or disable a full workflow to work around a single finding.
 
-Canonical automated authenticated browser smoke is `npm run smoke:authenticated`; it starts Vite mock mode and should record the backend profile as internal mock API. Use `docs/LOCAL_AUTH_SMOKE.md` when live sibling-backend fake-OAuth evidence is needed. When live fake-OAuth smoke is not run, state whether the skip is because backend/frontend prerequisites were unavailable, the fake-OAuth provider/profile was absent, local admin data was non-canonical, or external-provider credentials were unavailable.
+Canonical automated authenticated browser smoke is `npm run smoke:authenticated`; it starts Vite mock mode through `scripts/with-vite.mjs` and should record the backend profile as internal mock API. Use `docs/LOCAL_AUTH_SMOKE.md` when live sibling-backend fake-OAuth evidence is needed. When live fake-OAuth smoke is not run, state whether the skip is because backend/frontend prerequisites were unavailable, the fake-OAuth provider/profile was absent, local admin data was non-canonical, or external-provider credentials were unavailable.
+
+## Browser Review Server Hygiene
+
+Before browser-review work that may start Vite, run `npm run dev:list` and treat any listed process as pre-existing unless the current task owns it. Use `scripts/with-vite.mjs` or smoke scripts that import it for programmatic checks that need Vite; do not start hidden detached Vite/npm servers with `Start-Process` unless the task explicitly asks to leave a server running after handoff.
+
+For manual browser review that intentionally leaves mock Vite running, use `npm run dev:mock:managed -- --port 5173` so PID and port are recorded. Any final handoff that leaves a server running must report the port, PID, command, and reason.
+
+At closeout for browser-review work, run `npm run dev:list` again. Stop servers owned by the task with `npm run dev:cleanup`; if anything remains, report exactly what remains. Any final handoff claiming a server was stopped must be backed by a post-stop port check from `npm run dev:cleanup`, `scripts/with-vite.mjs`, or an equivalent explicit port probe.
+
+Programmatic smoke scripts that start Vite should use `scripts/with-vite.mjs` or the same `createServer(...); try { ... } finally { await server.close() }` lifecycle shape. Avoid OS-level process lifecycles for smoke checks unless the task explicitly needs a long-running interactive server.
 
 ## Handoff Format
 
