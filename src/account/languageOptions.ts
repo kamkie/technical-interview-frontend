@@ -10,24 +10,6 @@ export const LANGUAGE_OPTIONS = [
 
 export type LanguageOption = (typeof LANGUAGE_OPTIONS)[number]
 
-// Resolves free text from the searchable language input to a supported
-// language code: '' for no preference, null when nothing matches.
-export function resolveLanguageInput(input: string): string | null {
-  const normalized = input.trim().toLowerCase()
-
-  if (!normalized) {
-    return ''
-  }
-
-  const match = LANGUAGE_OPTIONS.find(
-    (language) =>
-      language.value === normalized ||
-      language.label.toLowerCase() === normalized,
-  )
-
-  return match?.value ?? null
-}
-
 export function formatLanguagePreference(value: string | undefined) {
   const languageValue = value?.trim()
 

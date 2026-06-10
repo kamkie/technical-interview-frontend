@@ -16,7 +16,6 @@ import { StateBlock } from '../ui/StateBlock'
 import {
   LANGUAGE_OPTIONS,
   formatLanguagePreference,
-  resolveLanguageInput,
 } from './languageOptions'
 
 export function AccountProfile({ session }: { session: SessionResponse }) {
@@ -154,11 +153,13 @@ function LanguagePreferenceForm({
     status: 'idle',
   })
   const submitting = mutationState.status === 'submitting'
-  // The searchable input accepts a language name or code; null means the
-  // typed text matches no supported language.
-  const resolvedLanguage = resolveLanguageInput(languageInput)
-  const unchanged = resolvedLanguage === currentLanguage
+  const unchanged = languageInput === currentLanguage
   const canClear = Boolean(currentLanguage || languageInput)
+  // A stored preference outside the supported list still needs a visible,
+  // selectable entry so the select reflects the account state faithfully.
+  const unknownCurrentLanguage =
+    currentLanguage !== '' &&
+    !LANGUAGE_OPTIONS.some((language) => language.value === currentLanguage)
 
   async function submitLanguage(preferredLanguage: string) {
     setMutationState({ status: 'submitting' })
@@ -193,10 +194,7 @@ function LanguagePreferenceForm({
       aria-label="Language preference"
       onSubmit={(event) => {
         event.preventDefault()
-
-        if (resolvedLanguage !== null) {
-          void submitLanguage(resolvedLanguage)
-        }
+        void submitLanguage(languageInput)
       }}
     >
       <div className="language-preference-header">
@@ -210,38 +208,29 @@ function LanguagePreferenceForm({
 
       <div className="language-preference-controls">
         <label htmlFor="preferred-language">Language</label>
-        <input
-          autoComplete="off"
+        <select
           id="preferred-language"
-          list="preferred-language-options"
-          placeholder="Type a language name or code"
           value={languageInput}
           disabled={submitting}
           onChange={(event) => {
             setLanguageInput(event.currentTarget.value)
             setMutationState({ status: 'idle' })
           }}
-        />
-        <datalist id="preferred-language-options">
+        >
+          <option value="">No preference</option>
+          {unknownCurrentLanguage && (
+            <option value={currentLanguage}>{currentLanguage}</option>
+          )}
           {LANGUAGE_OPTIONS.map((language) => (
             <option key={language.value} value={language.value}>
-              {language.label}
+              {language.label} ({language.value})
             </option>
           ))}
-        </datalist>
+        </select>
       </div>
 
-      {resolvedLanguage === null && (
-        <p className="session-message muted">
-          No supported language matches the typed text.
-        </p>
-      )}
-
       <div className="language-preference-actions">
-        <button
-          type="submit"
-          disabled={submitting || unchanged || resolvedLanguage === null}
-        >
+        <button type="submit" disabled={submitting || unchanged}>
           {submitting ? 'Saving...' : 'Save language'}
         </button>
         <button
