@@ -166,6 +166,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     status: 'idle',
   })
   const [categoryDraft, setCategoryDraft] = useState('')
+  const [categoryFormOpen, setCategoryFormOpen] = useState(false)
   const [categoryEditState, setCategoryEditState] =
     useState<CategoryEditState | null>(null)
   const [categoryMutationState, setCategoryMutationState] =
@@ -587,6 +588,18 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     setBookMutationState({ status: 'idle' })
   }
 
+  function openCategoryCreate() {
+    setCategoryDraft('')
+    setCategoryFormOpen(true)
+    setCategoryMutationState({ status: 'idle' })
+  }
+
+  function closeCategoryCreate() {
+    setCategoryDraft('')
+    setCategoryFormOpen(false)
+    setCategoryMutationState({ status: 'idle' })
+  }
+
   async function handleCategoryCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setCategoryMutationState({ status: 'submitting' })
@@ -944,6 +957,14 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
           <div className="section-actions">
             <button
               type="button"
+              aria-expanded={categoryFormOpen}
+              className="compact-action"
+              onClick={openCategoryCreate}
+            >
+              New category
+            </button>
+            <button
+              type="button"
               aria-label="Refresh categories"
               className="secondary-button compact-action"
               onClick={refreshCategories}
@@ -953,24 +974,57 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
           </div>
         </div>
 
-        <form
-          className="category-create-form"
-          aria-label="Create category"
-          onSubmit={(event) => void handleCategoryCreate(event)}
-        >
-          <label htmlFor="new-category-name">Category name</label>
-          <input
-            id="new-category-name"
-            value={categoryDraft}
-            onChange={(event) => {
-              setCategoryDraft(event.currentTarget.value)
-              setCategoryMutationState({ status: 'idle' })
-            }}
-          />
-          <button type="submit" disabled={categoryMutationState.status === 'submitting'}>
-            Create category
-          </button>
-        </form>
+        {/* The create form stays collapsed behind New category, matching the
+            books tab's create flow. */}
+        {categoryFormOpen && (
+          <form
+            className="category-create-form"
+            aria-label="Create category"
+            onSubmit={(event) => void handleCategoryCreate(event)}
+          >
+            <div className="form-heading-row">
+              <div>
+                <h3>Create category</h3>
+                <p className="form-context">
+                  New categories become available for book tagging immediately.
+                </p>
+              </div>
+              <div className="section-actions">
+                <button
+                  type="button"
+                  className="secondary-button"
+                  disabled={categoryMutationState.status === 'submitting'}
+                  onClick={closeCategoryCreate}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+
+            <label>
+              <span>Category name</span>
+              <input
+                required
+                value={categoryDraft}
+                onChange={(event) => {
+                  setCategoryDraft(event.currentTarget.value)
+                  setCategoryMutationState({ status: 'idle' })
+                }}
+              />
+            </label>
+
+            <div className="admin-action-row">
+              <button
+                type="submit"
+                disabled={categoryMutationState.status === 'submitting'}
+              >
+                Create category
+              </button>
+            </div>
+
+            <MutationFeedback state={categoryMutationState} />
+          </form>
+        )}
 
         {categoriesState.status === 'loading' && (
           <StateBlock
@@ -991,7 +1045,13 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
         {categoriesState.status === 'ready' && (
           <CategoryManagementSection
             categories={categoriesState.value}
-            feedback={<MutationFeedback state={categoryMutationState} />}
+            feedback={
+              // While the create form is open it owns the feedback line, so
+              // messages do not render twice.
+              categoryFormOpen ? null : (
+                <MutationFeedback state={categoryMutationState} />
+              )
+            }
             editState={categoryEditState}
             onCancelEdit={() => setCategoryEditState(null)}
             onDeleteCategory={requestCategoryDelete}

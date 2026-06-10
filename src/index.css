@@ -731,7 +731,6 @@ input[type='radio'] {
 .logout-button,
 .login-link,
 .admin-action-row button,
-.category-create-form button,
 .row-actions button,
 .section-actions button:not(.secondary-button),
 .language-preference-actions button {
@@ -757,8 +756,6 @@ input[type='radio'] {
 .login-link:focus-visible,
 .admin-action-row button:hover,
 .admin-action-row button:focus-visible,
-.category-create-form button:hover,
-.category-create-form button:focus-visible,
 .row-actions button:hover,
 .row-actions button:focus-visible,
 .section-actions button:not(.secondary-button):hover,
@@ -770,7 +767,6 @@ input[type='radio'] {
 
 .logout-button:disabled,
 .admin-action-row button:disabled,
-.category-create-form button:disabled,
 .row-actions button:disabled,
 .language-preference-actions button:disabled {
   cursor: not-allowed;
@@ -1319,40 +1315,11 @@ h1 {
   border-top: 1px solid var(--color-border);
 }
 
-.operator-metadata-group summary {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  width: fit-content;
-  color: var(--color-muted);
-  cursor: pointer;
-  font-size: 0.84rem;
-  font-weight: 600;
-  border-radius: 4px;
-}
-
-.operator-metadata-group summary:hover {
+.operator-metadata-group h3 {
+  margin: 0;
   color: var(--color-heading);
-}
-
-.operator-metadata-group[open] summary {
-  color: var(--color-heading);
-}
-
-.metadata-count {
-  display: inline-flex;
-  min-width: 1.25rem;
-  height: 1.25rem;
-  align-items: center;
-  justify-content: center;
-  border-radius: 3px;
-  background: var(--color-surface-muted);
-  border: 1px solid var(--color-border);
-  color: var(--color-subtle);
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.875rem;
   font-weight: 600;
-  padding: 0 0.3rem;
 }
 
 .health-pill {
@@ -1834,7 +1801,6 @@ input[type='search']::-webkit-search-cancel-button:hover {
 }
 
 .admin-action-row,
-.category-create-form,
 .row-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1892,12 +1858,21 @@ input[type='search']::-webkit-search-cancel-button:hover {
   padding: 0 0.65rem;
 }
 
+/* The category create panel mirrors the book form card: collapsed behind a
+   New category button, accent-edged, with a sanely sized field. */
 .category-create-form {
-  align-items: end;
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent);
+  border-radius: 6px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
 }
 
 .category-create-form label {
-  min-width: min(100%, 18rem);
+  max-width: 28rem;
 }
 
 /* Localization ------------------------------------------------------------------ */
@@ -2912,18 +2887,12 @@ input[type='search']::-webkit-search-cancel-button:hover {
   .section-actions,
   .section-actions button,
   .admin-action-row button,
-  .category-create-form button,
   .row-actions button {
     width: 100%;
   }
 
   .admin-form-grid {
     grid-template-columns: 1fr;
-  }
-
-  .category-create-form {
-    align-items: stretch;
-    flex-direction: column;
   }
 
   .catalog-filters {
@@ -2964,6 +2933,7 @@ input[type='search']::-webkit-search-cancel-button:hover {
   .auth-guard,
   .workflow-group,
   .book-management-form,
+  .category-create-form,
   .list-card > form,
   .session-panel {
     padding: 0.875rem;

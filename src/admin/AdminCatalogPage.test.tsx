@@ -528,7 +528,7 @@ describe('AdminCatalogPage', () => {
     renderAdminCatalog(`${ADMIN_CATALOG_ROUTE_PATH}?tab=categories`)
 
     expect(
-      await screen.findByRole('form', { name: 'Create category' }),
+      await screen.findByRole('button', { name: 'New category' }),
     ).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Categories' })).toHaveAttribute(
       'aria-selected',
@@ -567,7 +567,7 @@ describe('AdminCatalogPage', () => {
       expect(router.state.location.search).toBe('?title=clean&tab=categories')
     })
     expect(
-      screen.getByRole('form', { name: 'Create category' }),
+      screen.getByRole('button', { name: 'New category' }),
     ).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('tab', { name: 'Books' }))
@@ -657,6 +657,7 @@ describe('AdminCatalogPage', () => {
 
     await screen.findByText('Effective Java')
     fireEvent.click(screen.getByRole('tab', { name: 'Categories' }))
+    fireEvent.click(screen.getByRole('button', { name: 'New category' }))
     const form = screen.getByRole('form', { name: 'Create category' })
 
     fireEvent.change(within(form).getByLabelText('Category name'), {
@@ -749,6 +750,7 @@ describe('AdminCatalogPage', () => {
 
     await screen.findByText('Effective Java')
     fireEvent.click(screen.getByRole('tab', { name: 'Categories' }))
+    fireEvent.click(screen.getByRole('button', { name: 'New category' }))
     const form = screen.getByRole('form', { name: 'Create category' })
 
     fireEvent.change(within(form).getByLabelText('Category name'), {

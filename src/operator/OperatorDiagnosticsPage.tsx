@@ -150,8 +150,12 @@ function OperatorOverview({ state }: { state: LoadState<OperatorSurface> }) {
       <div className="operator-overview-side">
         <OperationalStatus operations={surface.operations} />
         <AuditSummary audit={surface.audit} />
+        <DependenciesCard runtime={surface.runtime} />
       </div>
-      <RuntimeSummary runtime={surface.runtime} />
+      <div className="operator-overview-side">
+        <RuntimeSummary runtime={surface.runtime} />
+        <ConfigurationCard runtime={surface.runtime} />
+      </div>
     </div>
   )
 }
@@ -208,12 +212,57 @@ function RuntimeSummary({
     ['Java vendor', overview?.runtime?.javaVendor],
     ['Profiles', overview?.runtime?.activeProfiles?.join(', ')],
   ])
-  const dependencyItems = compactMetadataItems(
-    Object.entries(overview?.dependencies ?? {}).map(([name, version]) => [
-      name,
-      version,
-    ]),
+
+  return (
+    <section
+      className="operator-card operator-card-runtime"
+      aria-labelledby="runtime-summary-title"
+    >
+      <h2 id="runtime-summary-title">Runtime summary</h2>
+      <dl className="operator-metadata single-column">
+        <div>
+          <dt>Technical overview endpoint</dt>
+          <dd>{runtime?.technicalOverviewEndpoint ?? 'Unavailable'}</dd>
+        </div>
+      </dl>
+      <OperatorMetadataGroup title="Build" items={buildItems} />
+      <OperatorMetadataGroup title="Git" items={gitItems} />
+      <OperatorMetadataGroup title="Runtime" items={runtimeItems} />
+    </section>
   )
+}
+
+function DependenciesCard({
+  runtime,
+}: {
+  runtime: OperatorSurface['runtime']
+}) {
+  const dependencyItems = compactMetadataItems(
+    Object.entries(runtime?.technicalOverview?.dependencies ?? {}).map(
+      ([name, version]) => [name, version],
+    ),
+  )
+
+  return (
+    <section
+      className="operator-card operator-card-dependencies"
+      aria-labelledby="dependencies-summary-title"
+    >
+      <h2 id="dependencies-summary-title">Dependencies</h2>
+      <OperatorMetadataList
+        items={dependencyItems}
+        unavailable="Dependency details unavailable."
+      />
+    </section>
+  )
+}
+
+function ConfigurationCard({
+  runtime,
+}: {
+  runtime: OperatorSurface['runtime']
+}) {
+  const overview = runtime?.technicalOverview
   const configurationItems = compactMetadataItems([
     ['Default page size', overview?.configuration?.pagination?.defaultPageSize],
     ['Max page size', overview?.configuration?.pagination?.maxPageSize],
@@ -245,21 +294,14 @@ function RuntimeSummary({
 
   return (
     <section
-      className="operator-card operator-card-runtime"
-      aria-labelledby="runtime-summary-title"
+      className="operator-card operator-card-configuration"
+      aria-labelledby="configuration-summary-title"
     >
-      <h2 id="runtime-summary-title">Runtime summary</h2>
-      <dl className="operator-metadata single-column">
-        <div>
-          <dt>Technical overview endpoint</dt>
-          <dd>{runtime?.technicalOverviewEndpoint ?? 'Unavailable'}</dd>
-        </div>
-      </dl>
-      <OperatorMetadataGroup title="Build" items={buildItems} open />
-      <OperatorMetadataGroup title="Git" items={gitItems} />
-      <OperatorMetadataGroup title="Runtime" items={runtimeItems} />
-      <OperatorMetadataGroup title="Dependencies" items={dependencyItems} />
-      <OperatorMetadataGroup title="Configuration" items={configurationItems} />
+      <h2 id="configuration-summary-title">Configuration</h2>
+      <OperatorMetadataList
+        items={configurationItems}
+        unavailable="Configuration details unavailable."
+      />
     </section>
   )
 }
@@ -322,26 +364,19 @@ function OperationalStatus({
 
 function OperatorMetadataGroup({
   items,
-  open = false,
   title,
 }: {
   items: readonly [string, string][]
-  open?: boolean
   title: string
 }) {
   return (
-    <details className="operator-metadata-group" open={open}>
-      <summary>
-        {title}
-        <span className="metadata-count" aria-hidden="true">
-          {items.length}
-        </span>
-      </summary>
+    <div className="operator-metadata-group">
+      <h3>{title}</h3>
       <OperatorMetadataList
         items={items}
         unavailable={`${title} details unavailable.`}
       />
-    </details>
+    </div>
   )
 }
 
