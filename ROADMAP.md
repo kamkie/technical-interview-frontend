@@ -40,7 +40,7 @@ No planed milestones at this time.
 
 ## Blocked Backlog
 
-No blocked backlog items at this time.
+- `M-USERS-001` (Blocked): Admin block/unblock action on the user administration page — surface account status in the users list and inline detail, and add a block/unblock control with an operator reason beside role replacement. Blocked until the sibling backend ships its account block/unblock capability (captured as a Conceptualization candidate in the backend `ROADMAP.md`) and the imported contract artifacts under `docs/backend/` are refreshed to expose the status field and endpoint; today the strongest admin sanction is demoting a user to `USER`-only via role replacement.
 
 ## Product Non-Goals
 

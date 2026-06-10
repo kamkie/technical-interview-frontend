@@ -1,4 +1,10 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react'
+import {
+  FormEvent,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import { useCurrentAccount } from '../account/useCurrentAccount'
@@ -216,6 +222,11 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
   )
   const firstPage = currentPage <= 0
   const lastPage = totalPages === 0 || currentPage >= totalPages - 1
+  // Details expand inline under the selected row; the standalone panel below
+  // the list only covers selections whose row is not on the current page,
+  // such as deep links into a filtered or paginated-away view.
+  const selectedUserVisible =
+    selectedUser !== null && pageUsers.includes(selectedUser)
 
   function updateListQuery(nextQuery: AdminUsersListQuery) {
     const nextSearch = adminUsersQueryToSearchParams(nextQuery)
@@ -249,8 +260,12 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
 
     setRoleMutationState({ status: 'idle' })
     // Keep the list query in the URL so the filtered view survives selection.
+    // Selecting the already-open user collapses its inline detail row.
     navigate({
-      pathname: getAdminUserDetailPath(user.id),
+      pathname:
+        String(user.id) === selectedRouteId
+          ? ADMIN_USERS_ROUTE_PATH
+          : getAdminUserDetailPath(user.id),
       search: searchParams.toString(),
     })
   }
@@ -420,6 +435,17 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
               <AdminUserResults
                 hasUsers={usersState.value.length > 0}
                 listQuery={listQuery}
+                renderUserDetail={(user) => (
+                  <section aria-label="User detail">
+                    <AdminUserDetail
+                      mutationState={roleMutationState}
+                      user={user}
+                      onReplaceRoles={(target, request) =>
+                        void handleReplaceRoles(target, request)
+                      }
+                    />
+                  </section>
+                )}
                 selectedRouteId={selectedRouteId}
                 users={pageUsers}
                 onSelectUser={selectUser}
@@ -449,13 +475,15 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
         </div>
       </section>
 
-      <AdminUserDetailPanel
-        mutationState={roleMutationState}
-        selectedRouteId={selectedRouteId}
-        state={usersState}
-        user={selectedUser}
-        onReplaceRoles={(user, request) => void handleReplaceRoles(user, request)}
-      />
+      {selectedRouteId !== '' && !selectedUserVisible && (
+        <AdminUserDetailPanel
+          mutationState={roleMutationState}
+          selectedRouteId={selectedRouteId}
+          state={usersState}
+          user={selectedUser}
+          onReplaceRoles={(user, request) => void handleReplaceRoles(user, request)}
+        />
+      )}
     </div>
   )
 }
@@ -465,6 +493,7 @@ function AdminUserResults({
   listQuery,
   onSelectUser,
   onSortByField,
+  renderUserDetail,
   selectedRouteId,
   users,
 }: {
@@ -472,6 +501,7 @@ function AdminUserResults({
   listQuery: AdminUsersListQuery
   onSelectUser: (user: AdminUserAccount) => void
   onSortByField: (field: UsersSortField) => void
+  renderUserDetail: (user: AdminUserAccount) => ReactNode
   selectedRouteId: string
   users: readonly AdminUserAccount[]
 }) {
@@ -545,6 +575,7 @@ function AdminUserResults({
               <AdminUserRow
                 index={index}
                 key={createUserKey(user, index)}
+                renderUserDetail={renderUserDetail}
                 selected={selected}
                 user={user}
                 onSelectUser={onSelectUser}
@@ -560,50 +591,75 @@ function AdminUserResults({
 function AdminUserRow({
   index,
   onSelectUser,
+  renderUserDetail,
   selected,
   user,
 }: {
   index: number
   onSelectUser: (user: AdminUserAccount) => void
+  renderUserDetail: (user: AdminUserAccount) => ReactNode
   selected: boolean
   user: AdminUserAccount
 }) {
   const label = createUserLabel(user, index)
+  const detailRowId = `user-detail-row-${user.id ?? index}`
+
+  // The whole row toggles the detail; clicks that finish a text selection
+  // are ignored so copying cell content does not collapse the row.
+  function handleRowClick() {
+    if (window.getSelection()?.toString()) {
+      return
+    }
+
+    onSelectUser(user)
+  }
 
   return (
-    <tr>
-      <th scope="row">
-        <span>{label}</span>
-        <span className="table-subtext">
-          {user.login?.trim() ? user.login : 'Login unavailable'}
-        </span>
-      </th>
-      <td>{user.provider?.trim() ? user.provider : 'Unknown'}</td>
-      <td>{user.email?.trim() ? user.email : 'Unavailable'}</td>
-      <td>
-        <RolePills roles={user.roles} />
-      </td>
-      <td>{formatTimestamp(user.lastLoginAt)}</td>
-      <td>
-        <div
-          aria-label={`Actions for ${label}`}
-          className="row-actions"
-          role="group"
-        >
-          <button
-            aria-current={selected ? 'true' : undefined}
-            className={
-              selected ? 'secondary-button selected-row-action' : 'secondary-button'
-            }
-            type="button"
-            disabled={user.id === undefined}
-            onClick={() => onSelectUser(user)}
+    <>
+      <tr className="user-row" onClick={handleRowClick}>
+        <th scope="row">
+          <span>{label}</span>
+          <span className="table-subtext">
+            {user.login?.trim() ? user.login : 'Login unavailable'}
+          </span>
+        </th>
+        <td>{user.provider?.trim() ? user.provider : 'Unknown'}</td>
+        <td>{user.email?.trim() ? user.email : 'Unavailable'}</td>
+        <td>
+          <RolePills roles={user.roles} />
+        </td>
+        <td>{formatTimestamp(user.lastLoginAt)}</td>
+        <td>
+          <div
+            aria-label={`Actions for ${label}`}
+            className="row-actions"
+            role="group"
           >
-            View {label}
-          </button>
-        </div>
-      </td>
-    </tr>
+            <button
+              aria-controls={selected ? detailRowId : undefined}
+              aria-current={selected ? 'true' : undefined}
+              aria-expanded={selected}
+              className={
+                selected ? 'secondary-button selected-row-action' : 'secondary-button'
+              }
+              type="button"
+              disabled={user.id === undefined}
+              onClick={(event) => {
+                event.stopPropagation()
+                onSelectUser(user)
+              }}
+            >
+              View {label}
+            </button>
+          </div>
+        </td>
+      </tr>
+      {selected && (
+        <tr className="user-detail-row" id={detailRowId}>
+          <td colSpan={6}>{renderUserDetail(user)}</td>
+        </tr>
+      )}
+    </>
   )
 }
 
@@ -650,19 +706,11 @@ function AdminUserDetailPanel({
         />
       )}
 
-      {state.status === 'ready' && selectedRouteId && user === null && (
+      {state.status === 'ready' && user === null && (
         <StateBlock
           message={`No user was found for id ${selectedRouteId}.`}
           title="User not found"
           variant="error"
-        />
-      )}
-
-      {state.status === 'ready' && !selectedRouteId && user === null && (
-        <StateBlock
-          message="Select a user to review roles and provenance."
-          title="No user selected"
-          variant="empty"
         />
       )}
 

@@ -175,13 +175,12 @@ describe('AdminUsersPage', () => {
     expect(await screen.findByText('No users returned')).toBeInTheDocument()
     expect(
       container.querySelectorAll('.state-block[data-state="empty"]').length,
-    ).toBeGreaterThanOrEqual(2)
+    ).toBeGreaterThanOrEqual(1)
     expect(await screen.findByText('No users are available.')).toBeInTheDocument()
-    const details = screen.getByRole('region', { name: 'User detail' })
-    expect(within(details).getByText('No user selected')).toBeInTheDocument()
+    // Details only exist inline under a selected row; nothing is selected.
     expect(
-      within(details).getByText('Select a user to review roles and provenance.'),
-    ).toBeInTheDocument()
+      screen.queryByRole('region', { name: 'User detail' }),
+    ).not.toBeInTheDocument()
   })
 
   it('selects a user and renders detail with role-grant provenance', async () => {
@@ -191,9 +190,12 @@ describe('AdminUsersPage', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: 'View Admin User' }))
 
-    expect(await screen.findByRole('heading', { name: 'User detail' })).toBeInTheDocument()
-    const details = screen.getByRole('region', { name: 'User detail' })
+    const details = await screen.findByRole('region', { name: 'User detail' })
 
+    // The detail expands inline inside the users table, under its row.
+    expect(details.closest('table')).toBe(
+      screen.getByRole('table', { name: 'Admin users' }),
+    )
     expect(
       within(details).getByRole('heading', { name: 'Audit role grants' }),
     ).toBeInTheDocument()
@@ -209,6 +211,14 @@ describe('AdminUsersPage', () => {
     expect(within(details).getByText('ADMIN_MANAGED')).toBeInTheDocument()
     expect(within(details).getByText('owner-admin (ID 1)')).toBeInTheDocument()
     expect(within(details).getByText('Initial administrator')).toBeInTheDocument()
+
+    // Clicking anywhere on the selected row collapses the inline detail.
+    fireEvent.click(screen.getByRole('rowheader', { name: /Admin User/ }))
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('region', { name: 'User detail' }),
+      ).not.toBeInTheDocument()
+    })
   })
 
   it('loads a direct detail route from the list data', async () => {
@@ -216,11 +226,15 @@ describe('AdminUsersPage', () => {
 
     renderAdminUsers(`${ADMIN_USERS_ROUTE_PATH}/8`)
 
-    const details = await screen.findByRole('region', {
-      name: 'User detail',
-    })
+    // The list-backed fallback panel shows while users load; once the row is
+    // visible the detail renders inline instead.
+    await screen.findByRole('form', { name: 'Replace roles for Reviewer User' })
+    const details = screen.getByRole('region', { name: 'User detail' })
 
-    expect(await within(details).findByText('Reviewer User')).toBeInTheDocument()
+    expect(details.closest('table')).toBe(
+      screen.getByRole('table', { name: 'Admin users' }),
+    )
+    expect(within(details).getByText('Reviewer User')).toBeInTheDocument()
     expect(within(details).getByText('reviewer@example.test')).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(ADMIN_USERS_PATH, expect.any(Object))
     expect(
