@@ -37,6 +37,10 @@ npm run dev
 
 The dev server binds to `http://127.0.0.1:5173/` and proxies `/api/**` requests to the local backend during development.
 
+The dev server forwards browser `console.*` output, uncaught exceptions, and unhandled promise rejections to the dev server terminal via Vite's `server.forwardConsole`, so client-side logs appear in the CLI output without opening browser devtools. This applies to `npm run dev` and `npm run dev:mock`; production builds and `npm run preview` are unaffected.
+
+In development mode the frontend also logs every same-origin `/api/**` request to the browser console as `[api]` lines with a per-request number, method, path, status, duration, and problem details on failures (`src/api/debugLogging.ts`, installed from `src/main.tsx`). Combined with `server.forwardConsole`, these lines appear in the dev server terminal, so API traffic can be debugged from Node logs alone. The instrumentation is gated on `import.meta.env.DEV` and is excluded from production bundles.
+
 Start the Vite development server with the contract-backed mock API:
 
 ```powershell

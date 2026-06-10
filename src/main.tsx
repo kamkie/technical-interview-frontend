@@ -3,7 +3,12 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 
 import App from './App'
+import { installApiDebugLogging } from './api/debugLogging'
 import './index.css'
+
+if (import.meta.env.DEV) {
+  installApiDebugLogging()
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
