@@ -546,24 +546,26 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
         setBookFormMode({ type: 'closed' })
       }
 
-      setBooksState((current) => {
-        if (current.status !== 'ready') {
-          return current
-        }
+      // Deleting the last row of a later page steps back one page, which
+      // refetches; otherwise the row is removed from the loaded page locally.
+      const lastRowOnLaterPage =
+        booksState.status === 'ready' &&
+        (booksState.value.content ?? []).length <= 1 &&
+        query.page > 0
 
-        const content = current.value.content ?? []
+      if (lastRowOnLaterPage) {
+        goToPage(query.page - 1)
+      } else {
+        setBooksState((current) =>
+          current.status === 'ready'
+            ? {
+                status: 'ready',
+                value: removeBookFromPage(current.value, bookId),
+              }
+            : current,
+        )
+      }
 
-        if (content.length <= 1 && query.page > 0) {
-          goToPage(query.page - 1)
-
-          return current
-        }
-
-        return {
-          status: 'ready',
-          value: removeBookFromPage(current.value, bookId),
-        }
-      })
       setBookMutationState({
         status: 'success',
         message: 'Book deleted.',
