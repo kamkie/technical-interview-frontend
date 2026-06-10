@@ -1830,12 +1830,16 @@ function replaceBookInPage(page: BookPage, updatedBook: Book): BookPage {
 function removeBookFromPage(page: BookPage, bookId: number): BookPage {
   const content = (page.content ?? []).filter((book) => book.id !== bookId)
   const totalElements = Math.max(0, (page.totalElements ?? content.length) - 1)
+  const pageSize = page.size ?? 0
 
   return {
     ...page,
     content,
     numberOfElements: content.length,
     totalElements,
+    // Keep the pager honest when the removal empties the trailing page.
+    totalPages:
+      pageSize > 0 ? Math.ceil(totalElements / pageSize) : page.totalPages,
   }
 }
 
