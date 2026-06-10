@@ -67,9 +67,6 @@ describe('AccountProfile', () => {
     expect(screen.getByText('kamil@example.test')).toBeInTheDocument()
     expect(screen.getByText('User')).toBeInTheDocument()
     expect(screen.getAllByText('Polish')[0]).toBeInTheDocument()
-    const accountDetails = screen.getByText('Account details').closest('details')
-    expect(accountDetails).not.toBeNull()
-    expect(accountDetails).not.toHaveAttribute('open')
     expect(
       screen.getByText(
         'Choose the language used for account and workflow messages.',
@@ -86,8 +83,7 @@ describe('AccountProfile', () => {
       within(languageForm).getByRole('button', { name: 'Clear preference' }),
     ).toBeInTheDocument()
 
-    fireEvent.click(screen.getByText('Account details'))
-
+    // All profile fields render without a disclosure step.
     expect(screen.getByText('Login name')).toBeInTheDocument()
     expect(screen.getByText('kamkie')).toBeInTheDocument()
 

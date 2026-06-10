@@ -176,13 +176,15 @@ function OperatorOverview({
 
   return (
     <div className="operator-overview-grid">
-      <OperationalStatus operations={surface.operations} />
+      <div className="operator-overview-side">
+        <OperationalStatus operations={surface.operations} />
+        <RuntimeSummary runtime={surface.runtime} />
+      </div>
       <AuditSummary
         audit={surface.audit}
         selectedAuditEntry={selectedAuditEntry}
         onSelectEntry={onSelectEntry}
       />
-      <RuntimeSummary runtime={surface.runtime} />
     </div>
   )
 }

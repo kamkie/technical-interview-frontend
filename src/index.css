@@ -548,6 +548,13 @@ input[type='radio'] {
   color: var(--color-topbar-heading);
 }
 
+.account-menu-name {
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .account-menu-button:not(.sign-in, .connection-issue):hover,
 .account-menu-button:not(.sign-in, .connection-issue):focus-visible,
 .account-menu-button:not(.sign-in, .connection-issue)[aria-expanded='true'] {
@@ -606,6 +613,60 @@ input[type='radio'] {
   background: var(--color-accent-surface);
   color: var(--color-accent);
   font-weight: 600;
+}
+
+/* Quick language menu — wide-viewport shortcut in the topbar. */
+.language-menu .nav-menu-panel {
+  right: 0;
+  left: auto;
+  min-width: 11rem;
+}
+
+.language-code {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.language-flag {
+  flex: 0 0 auto;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.25);
+}
+
+.language-option-button {
+  display: flex;
+  min-height: 2.25rem;
+  width: 100%;
+  align-items: center;
+  gap: 0.5rem;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-control-text);
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0 0.7rem;
+  text-align: left;
+}
+
+.language-option-button:hover,
+.language-option-button:focus-visible {
+  background: var(--color-surface-hover);
+  color: var(--color-heading);
+}
+
+.language-option-button[aria-current] {
+  background: var(--color-accent-surface);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+@media (max-width: 960px) {
+  .language-menu {
+    display: none;
+  }
 }
 
 .nav-menu-panel a:focus-visible,
@@ -1175,6 +1236,56 @@ h1 {
   background: var(--color-surface-muted);
 }
 
+/* Whole audit rows toggle their details; the caret button stays as the
+   keyboard and screen-reader control. */
+.audit-row {
+  cursor: pointer;
+}
+
+.audit-row:hover td {
+  background: var(--color-surface-hover);
+}
+
+.audit-expand-cell {
+  width: 2.75rem;
+  min-width: 2.75rem;
+  text-align: center;
+}
+
+.row-expand-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid var(--color-control-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: var(--color-control-text);
+  cursor: pointer;
+  padding: 0;
+}
+
+.row-expand-button:hover,
+.row-expand-button:focus-visible {
+  background: var(--color-surface-muted);
+  color: var(--color-heading);
+}
+
+.row-expand-caret {
+  transition: transform 0.15s ease;
+}
+
+.row-expand-caret.open {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row-expand-caret {
+    transition: none;
+  }
+}
+
 .recent-audit-entry-details {
   margin-top: 0.5rem;
   padding: 0.875rem 1rem;
@@ -1191,27 +1302,19 @@ h1 {
   gap: 1rem;
 }
 
-/* Explicit areas keep the short status and runtime cards stacked beside the
-   tall audit card; auto-flow rows would strand runtime below a gap. */
+/* The status and runtime cards live in their own side column so a tall
+   expanded audit entry cannot inflate the gap between them. */
 .operator-overview-grid {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-areas:
-    'status audit'
-    'runtime audit';
   gap: 1.25rem;
   align-items: start;
 }
 
-.operator-card-status {
-  grid-area: status;
-}
-
-.operator-card-audit {
-  grid-area: audit;
-}
-
-.operator-card-runtime {
-  grid-area: runtime;
+.operator-overview-side {
+  display: grid;
+  gap: 1.25rem;
+  align-content: start;
+  min-width: 0;
 }
 
 .operator-card {
@@ -1398,21 +1501,12 @@ h1 {
   align-items: end;
 }
 
-.operator-filters label,
-.operator-controls label {
+.operator-filters label {
   display: grid;
   gap: 0.35rem;
   color: var(--color-control-text);
   font-size: 0.8125rem;
   font-weight: 500;
-}
-
-.operator-controls {
-  display: grid;
-  grid-template-columns: minmax(14rem, 24rem) minmax(9rem, 11rem);
-  justify-content: start;
-  gap: 1rem;
-  align-items: end;
 }
 
 .audit-detail-summary {
@@ -1455,10 +1549,12 @@ h1 {
   min-width: 0;
 }
 
+/* The selected user's detail expands full-width below the list, matching the
+   operator inline-details pattern, instead of a cramped side column. */
 .admin-users-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.45fr);
-  gap: 1.5rem 2rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
   align-items: start;
   min-width: 0;
 }
@@ -1469,12 +1565,10 @@ h1 {
 
 .admin-user-detail-panel {
   display: grid;
-  position: sticky;
-  top: 4.5rem;
   gap: 1rem;
   min-width: 0;
-  padding-left: 1.5rem;
-  border-left: 1px solid var(--color-border);
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
 }
 
 .admin-user-detail-content,
@@ -1617,8 +1711,8 @@ h1 {
 .workflow-group {
   display: grid;
   min-width: 0;
-  gap: 1rem;
-  padding: 1.25rem;
+  gap: 0.875rem;
+  padding: 1rem;
   border: 1px solid var(--color-border);
   border-radius: 6px;
   background: var(--color-surface);
@@ -1639,15 +1733,6 @@ h1 {
   font-family: var(--font-serif);
   font-size: 1rem;
   font-weight: 700;
-}
-
-.admin-workflow-summary {
-  background: var(--color-surface-muted);
-  box-shadow: none;
-}
-
-.compact-query-details {
-  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
 }
 
 .role-replacement-form.workflow-group {
@@ -1692,16 +1777,14 @@ h1 {
 .admin-user-reason-field textarea,
 .operator-filters input,
 .operator-filters select,
-.operator-controls select,
 .localization-filters input,
 .localization-filters select,
-.localization-controls select,
-.language-preference-controls select,
+.language-preference-controls input,
 .catalog-filters input,
-.catalog-controls select,
+.inline-sort select,
 .inline-page-size select {
   width: 100%;
-  min-height: 2.5rem;
+  min-height: 2.125rem;
   border: 1px solid var(--color-control-border);
   border-radius: 4px;
   background: var(--color-surface);
@@ -1710,6 +1793,19 @@ h1 {
   padding: 0 0.75rem;
   box-shadow: var(--shadow-control);
   transition: border-color 0.15s ease;
+}
+
+.coverage-stats {
+  align-self: center;
+  color: var(--color-subtle);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.localization-edit-row > td {
+  padding: 0.875rem;
+  background: var(--color-surface-muted);
 }
 
 .localization-message-field textarea {
@@ -1852,21 +1948,12 @@ h1 {
 }
 
 .localization-filters label,
-.localization-controls label,
 .localization-message-field {
   display: grid;
   gap: 0.35rem;
   color: var(--color-control-text);
   font-size: 0.8125rem;
   font-weight: 500;
-}
-
-.localization-controls {
-  display: grid;
-  grid-template-columns: minmax(14rem, 24rem) minmax(9rem, 11rem);
-  justify-content: start;
-  gap: 1rem;
-  align-items: end;
 }
 
 .localization-form-grid {
@@ -2039,39 +2126,6 @@ h1 {
   line-height: 1.5;
 }
 
-.account-technical-details {
-  display: grid;
-  gap: 0.9rem;
-}
-
-.account-technical-details summary {
-  display: inline-flex;
-  width: fit-content;
-  min-height: 2rem;
-  align-items: center;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  background: transparent;
-  color: var(--color-muted);
-  cursor: pointer;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  padding: 0 0.625rem;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
-}
-
-.account-technical-details summary:hover,
-.account-technical-details summary:focus-visible {
-  background: var(--color-surface-muted);
-  color: var(--color-heading);
-}
-
-.account-technical-details[open] summary {
-  margin-bottom: 0.9rem;
-}
-
 .language-preference {
   display: grid;
   gap: 1rem;
@@ -2119,17 +2173,16 @@ h1 {
 .catalog-filters {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
-  gap: 1rem;
+  gap: 0.75rem;
   align-items: end;
-  padding: 1.25rem;
+  padding: 0.875rem;
   border: 1px solid var(--color-border);
   border-radius: 6px;
   background: var(--color-surface);
   box-shadow: var(--shadow-card);
 }
 
-.catalog-filters label,
-.catalog-controls label {
+.catalog-filters label {
   display: grid;
   gap: 0.35rem;
   color: var(--color-control-text);
@@ -2138,18 +2191,55 @@ h1 {
 }
 
 .catalog-filters input:hover,
-.catalog-controls select:hover,
+.inline-sort select:hover,
 .inline-page-size select:hover {
   border-color: var(--color-subtle);
 }
 
-.catalog-controls {
-  display: grid;
-  grid-template-columns: minmax(14rem, 24rem) minmax(9rem, 11rem);
-  justify-content: start;
-  gap: 1rem;
-  align-items: end;
-  padding: 0 0.25rem;
+/* One-line table toolbar: chips on the left, sort + summary + pagination on
+   the right, wrapping only when the viewport runs out of room. */
+.catalog-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.catalog-toolbar .category-filter {
+  flex: 1 1 auto;
+}
+
+.catalog-toolbar-status {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: 0.625rem 1rem;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  margin-left: auto;
+}
+
+.inline-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--color-control-text);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.inline-sort select {
+  width: auto;
+}
+
+.toolbar-summary {
+  margin: 0;
+  color: var(--color-subtle);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .catalog-filter-actions,
@@ -2165,7 +2255,7 @@ h1 {
 }
 
 .catalog-filter-actions button {
-  min-height: 2.5rem;
+  min-height: 2.125rem;
 }
 
 /* Category chips — typed subject headings ------------------------------------- */
@@ -2231,56 +2321,6 @@ h1 {
   text-transform: uppercase;
 }
 
-.catalog-summary {
-  display: grid;
-  gap: 0.875rem;
-  padding: 1rem 1.25rem;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  background: var(--color-surface-muted);
-}
-
-.catalog-summary p {
-  margin: 0;
-  color: var(--color-heading);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.catalog-query-details {
-  display: grid;
-  grid-template-columns: minmax(12rem, 1.35fr) repeat(5, minmax(7rem, 0.55fr));
-  gap: 1rem;
-  margin: 0;
-  padding: 0;
-}
-
-.catalog-query-details div {
-  display: grid;
-  gap: 0.2rem;
-  min-width: 0;
-  align-content: start;
-}
-
-.catalog-query-details dt {
-  color: var(--color-subtle);
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.catalog-query-details dd {
-  margin: 0;
-  overflow-wrap: anywhere;
-  color: var(--color-text);
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 500;
-  line-height: 1.5;
-}
-
 /* ==========================================================================
    Tables — the drawer of records
    ========================================================================== */
@@ -2327,7 +2367,7 @@ h1 {
 
 .catalog-table th,
 .catalog-table td {
-  padding: 0.875rem 1rem;
+  padding: 0.625rem 0.875rem;
   border-bottom: 1px solid var(--color-border);
   overflow-wrap: anywhere;
   text-align: left;
@@ -2366,7 +2406,7 @@ h1 {
 }
 
 .catalog-table thead .plain-column-header {
-  padding: 0.75rem 1rem;
+  padding: 0.625rem 0.875rem;
 }
 
 .admin-books-table .admin-books-actions-header,
@@ -2414,7 +2454,7 @@ h1 {
 .column-sort-button {
   display: flex;
   width: 100%;
-  min-height: 2.75rem;
+  min-height: 2.25rem;
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
@@ -2426,7 +2466,7 @@ h1 {
   font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.12em;
-  padding: 0.75rem 1rem;
+  padding: 0.625rem 0.875rem;
   text-align: left;
   text-transform: uppercase;
   transition:
@@ -2482,8 +2522,8 @@ h1 {
 .admin-books-table td,
 .admin-categories-table th,
 .admin-categories-table td {
-  padding-bottom: 0.75rem;
-  padding-top: 0.75rem;
+  padding-bottom: 0.625rem;
+  padding-top: 0.625rem;
 }
 
 .catalog-table tbody tr {
@@ -2552,6 +2592,15 @@ h1 {
 
 .inline-page-size {
   display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.inline-page-size > span {
+  color: var(--color-subtle);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .inline-page-size select {
@@ -2560,12 +2609,28 @@ h1 {
   font-size: 0.8125rem;
 }
 
-.pagination-controls span {
+.pagination-controls > span {
   margin-right: auto;
   color: var(--color-subtle);
   font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
   font-weight: 500;
+}
+
+/* The toolbar variant lives in the one-line table toolbar and owns the
+   rows-per-page select; the bottom pager stays a plain page stepper. */
+.pagination-controls.toolbar {
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 0;
+}
+
+.pagination-controls.toolbar > span {
+  margin-right: 0;
+}
+
+.pagination-controls.toolbar button {
+  padding: 0 0.5rem;
 }
 
 /* ==========================================================================
@@ -2581,17 +2646,8 @@ h1 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .admin-users-layout {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
   .admin-user-detail-panel {
-    position: static;
-    padding-left: 0;
     padding-top: 1.25rem;
-    border-top: 1px solid var(--color-border);
-    border-left: 0;
   }
 
   .operator-filters {
@@ -2602,11 +2658,6 @@ h1 {
   .operator-filters .catalog-filter-actions {
     grid-column: 1 / -1;
   }
-
-  .catalog-query-details {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
 }
 
 @media (max-width: 720px) {
@@ -2734,49 +2785,30 @@ h1 {
     flex: 1 1 9rem;
   }
 
-  .catalog-controls {
-    grid-template-columns: 1fr;
-  }
-
-  .catalog-query-details {
-    grid-template-columns: 1fr;
-  }
-
-  .pagination-controls {
+  .pagination-controls:not(.toolbar) {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     justify-content: stretch;
   }
 
-  .pagination-controls span {
+  .pagination-controls:not(.toolbar) > span {
     grid-column: 1 / -1;
     margin-right: 0;
   }
 
-  .inline-page-size {
-    grid-column: 1 / -1;
-  }
-
-  .inline-page-size select,
-  .pagination-controls button {
+  .pagination-controls:not(.toolbar) button {
     width: 100%;
   }
 
   .localization-filters,
-  .localization-controls,
   .localization-form-grid,
   .operator-filters,
-  .operator-controls,
   .operator-metadata {
     grid-template-columns: 1fr;
   }
 
   .operator-overview-grid {
     grid-template-columns: 1fr;
-    grid-template-areas:
-      'status'
-      'audit'
-      'runtime';
   }
 }
 
@@ -2799,7 +2831,6 @@ h1 {
   .workflow-group,
   .book-management-form,
   .catalog-filters,
-  .catalog-summary,
   .session-panel {
     padding: 0.875rem;
   }

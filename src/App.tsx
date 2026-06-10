@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactElement,
+} from 'react'
 import {
   matchPath,
   Link,
@@ -11,6 +17,8 @@ import {
 } from 'react-router-dom'
 
 import { useCurrentAccount } from './account/useCurrentAccount'
+import { LANGUAGE_OPTIONS } from './account/languageOptions'
+import { updateAccountLanguage, type UserAccount } from './api/account'
 import {
   fetchCurrentSession,
   formatLoginProviderName,
@@ -44,10 +52,21 @@ import {
   OperatorDiagnosticsPage,
 } from './operator/OperatorDiagnosticsPage'
 import { OPERATOR_ROUTE_PATH, OperatorPage } from './operator/OperatorPage'
-import { getDisplayMessage } from './ui/asyncState'
+import { getDisplayMessage, type MutationState } from './ui/asyncState'
+import {
+  FlagDe,
+  FlagEn,
+  FlagEs,
+  FlagFr,
+  FlagNo,
+  FlagPl,
+  FlagUk,
+  type FlagProps,
+} from './ui/flags'
 import {
   IconBookOpen,
   IconChevronDown,
+  IconGlobe,
   IconMonitor,
   IconMoon,
   IconSun,
@@ -59,6 +78,16 @@ import {
 } from './ui/theme'
 
 const ACCOUNT_ROUTE_PATH = '/account'
+
+const LANGUAGE_FLAGS: Record<string, (props: FlagProps) => ReactElement> = {
+  de: FlagDe,
+  en: FlagEn,
+  es: FlagEs,
+  fr: FlagFr,
+  no: FlagNo,
+  pl: FlagPl,
+  uk: FlagUk,
+}
 
 type RouteContext = {
   area: string
@@ -251,6 +280,9 @@ export function App() {
           <ShellNavigation authenticated={authenticated} isAdmin={isAdmin} />
         </div>
         <div className="topbar-actions">
+          {authenticated && sessionState.status === 'ready' && (
+            <QuickLanguageMenu session={sessionState.session} />
+          )}
           <ThemePreferenceControl
             preference={preference}
             resolvedTheme={resolvedTheme}
@@ -423,6 +455,112 @@ function AdminMenu() {
   )
 }
 
+// Wide-viewport shortcut for the account language preference; the account
+// page keeps the full searchable control and the clear action.
+function QuickLanguageMenu({ session }: { session: SessionResponse }) {
+  const { containerRef, open, setOpen } = useDismissibleMenu()
+  const accountState = useCurrentAccount(session)
+  const [updatedAccount, setUpdatedAccount] = useState<UserAccount | null>(null)
+  const [updateState, setUpdateState] = useState<MutationState>({
+    status: 'idle',
+  })
+
+  if (accountState.status !== 'ready') {
+    return null
+  }
+
+  const account = updatedAccount ?? accountState.value
+  const currentLanguage = account.preferredLanguage?.trim() ?? ''
+  const currentOption =
+    LANGUAGE_OPTIONS.find((option) => option.value === currentLanguage) ?? null
+  const submitting = updateState.status === 'submitting'
+  const CurrentFlag = currentOption ? LANGUAGE_FLAGS[currentOption.value] : null
+  const panelId = 'language-menu-panel'
+
+  async function selectLanguage(value: string) {
+    if (value === currentLanguage) {
+      setOpen(false)
+
+      return
+    }
+
+    setUpdateState({ status: 'submitting' })
+
+    try {
+      const nextAccount = await updateAccountLanguage(session, value)
+
+      setUpdatedAccount(nextAccount)
+      setUpdateState({ status: 'idle' })
+      setOpen(false)
+    } catch (error: unknown) {
+      setUpdateState({
+        status: 'error',
+        message: getDisplayMessage(
+          error,
+          'Language preference could not be saved.',
+        ),
+      })
+    }
+  }
+
+  return (
+    <div className="nav-menu language-menu" ref={containerRef}>
+      <button
+        aria-controls={panelId}
+        aria-expanded={open}
+        aria-label={`Language preference, currently ${
+          currentOption?.label ?? 'no preference'
+        }`}
+        className="nav-menu-button language-menu-button"
+        id="language-menu-trigger"
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+      >
+        {CurrentFlag ? (
+          <CurrentFlag className="language-flag" />
+        ) : (
+          <IconGlobe height={14} width={14} />
+        )}
+        <span className="language-code">
+          {currentOption ? currentOption.value.toUpperCase() : '–'}
+        </span>
+        <IconChevronDown className="menu-caret" height={14} width={14} />
+      </button>
+      {open && (
+        <div
+          aria-labelledby="language-menu-trigger"
+          className="nav-menu-panel language-menu-panel"
+          id={panelId}
+          role="group"
+        >
+          {LANGUAGE_OPTIONS.map((option) => {
+            const Flag = LANGUAGE_FLAGS[option.value]
+
+            return (
+              <button
+                aria-current={option.value === currentLanguage || undefined}
+                className="language-option-button"
+                disabled={submitting}
+                key={option.value}
+                type="button"
+                onClick={() => void selectLanguage(option.value)}
+              >
+                <Flag className="language-flag" />
+                <span>{option.label}</span>
+              </button>
+            )
+          })}
+          {updateState.status === 'error' && (
+            <p className="session-message error" role="alert">
+              {updateState.message}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function RouteContextHeader({ context }: { context: RouteContext }) {
   useEffect(() => {
     document.title = `${context.title} · Library Console`
@@ -566,6 +704,11 @@ function SessionAccountMenu({
   state: SessionState
 }) {
   const { containerRef, open, setOpen } = useDismissibleMenu()
+  const accountState = useCurrentAccount(
+    state.status === 'ready' && state.session.authenticated === true
+      ? state.session
+      : null,
+  )
   const panelId = 'account-menu-panel'
 
   if (state.status === 'loading') {
@@ -643,6 +786,14 @@ function SessionAccountMenu({
   }
 
   const submitting = logoutState.status === 'submitting'
+  // The trigger names the signed-in user as soon as the cached account
+  // resolves; "Account" only bridges the initial load.
+  const accountLabel =
+    accountState.status === 'ready'
+      ? accountState.value.displayName?.trim() ||
+        accountState.value.login?.trim() ||
+        'Account'
+      : 'Account'
 
   return (
     <div className="account-menu" ref={containerRef}>
@@ -654,7 +805,7 @@ function SessionAccountMenu({
         type="button"
         onClick={() => setOpen((current) => !current)}
       >
-        Account
+        <span className="account-menu-name">{accountLabel}</span>
         <IconChevronDown className="menu-caret" height={14} width={14} />
       </button>
       {open && (

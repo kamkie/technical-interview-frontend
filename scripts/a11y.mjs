@@ -251,7 +251,9 @@ async function signInAsMockAdmin(page, config) {
   await page.waitForLoadState('domcontentloaded', {
     timeout: config.timeoutMs,
   })
-  await page.getByRole('button', { name: 'Account' }).waitFor({
+  // The trigger's accessible name is the signed-in user's display name, so
+  // target the stable element id instead of a fixed label.
+  await page.locator('#account-menu-trigger').waitFor({
     timeout: config.timeoutMs,
   })
 

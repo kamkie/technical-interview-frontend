@@ -197,7 +197,6 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
       <section className="admin-section" aria-labelledby="admin-users-list-title">
         <div className="admin-section-heading">
           <div>
-            <p className="eyebrow">Users</p>
             <h2 id="admin-users-list-title">Application users</h2>
             <p className="section-description">
               Select a user to review profile details, roles, and grant
@@ -234,11 +233,7 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
 
         {usersState.status === 'ready' && (
           <>
-            <AdminUsersWorkflowSummary
-              selectedRouteId={selectedRouteId}
-              selectedUser={selectedUser}
-              users={usersState.value}
-            />
+            <AdminUsersWorkflowSummary users={usersState.value} />
             <AdminUserResults
               selectedRouteId={selectedRouteId}
               users={usersState.value}
@@ -331,54 +326,15 @@ function AdminUserResults({
 }
 
 function AdminUsersWorkflowSummary({
-  selectedRouteId,
-  selectedUser,
   users,
 }: {
-  selectedRouteId: string
-  selectedUser: AdminUserAccount | null
   users: readonly AdminUserAccount[]
 }) {
-  const adminCount = users.filter((user) => user.roles?.includes('ADMIN')).length
-  const roleGrantCount = users.reduce(
-    (total, user) => total + (user.roleGrants?.length ?? 0),
-    0,
-  )
-
   return (
-    <div className="catalog-summary admin-workflow-summary" aria-live="polite">
-      <p>
-        Reviewing {users.length} {users.length === 1 ? 'user' : 'users'} from
-        the admin user list.
-      </p>
-      <dl
-        className="catalog-query-details compact-query-details"
-        aria-label="Admin users workflow"
-      >
-        <div>
-          <dt>Selected</dt>
-          <dd>
-            {selectedUser !== null
-              ? createUserLabel(selectedUser)
-              : selectedRouteId
-                ? `Missing user ${selectedRouteId}`
-                : 'None'}
-          </dd>
-        </div>
-        <div>
-          <dt>Admin roles</dt>
-          <dd>{adminCount}</dd>
-        </div>
-        <div>
-          <dt>Role grants</dt>
-          <dd>{roleGrantCount}</dd>
-        </div>
-        <div>
-          <dt>Operation</dt>
-          <dd>Replace roles</dd>
-        </div>
-      </dl>
-    </div>
+    <p aria-live="polite" className="toolbar-summary">
+      Reviewing {users.length} {users.length === 1 ? 'user' : 'users'} from
+      the admin user list.
+    </p>
   )
 }
 
@@ -455,11 +411,7 @@ function AdminUserDetailPanel({
     >
       <div className="admin-section-heading">
         <div>
-          <p className="eyebrow">Detail</p>
           <h2 id="admin-user-detail-title">User detail</h2>
-          <p className="section-description">
-            Detail content follows the selected user from the current list.
-          </p>
         </div>
       </div>
 
@@ -522,17 +474,7 @@ function AdminUserDetail({
 
   return (
     <div className="admin-user-detail-content">
-      <div className="workflow-group" aria-labelledby="admin-user-identity-title">
-        <div className="workflow-group-heading">
-          <div>
-            <h3 id="admin-user-identity-title">Identify selected user</h3>
-            <p className="section-description">
-              Confirm profile context before reviewing grants or replacing
-              roles.
-            </p>
-          </div>
-        </div>
-
+      <div className="workflow-group" aria-label="Selected user identity">
         <div className="account-summary">
           <div>
             <p className="account-name">{label}</p>
@@ -593,9 +535,6 @@ function RoleGrantProvenance({
       <div className="workflow-group-heading">
         <div>
           <h3 id="role-grants-title">Audit role grants</h3>
-          <p className="section-description">
-            Review source, operator, timestamp, and reason for each grant.
-          </p>
         </div>
       </div>
 

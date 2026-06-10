@@ -13,6 +13,11 @@ import {
 } from '../ui/asyncState'
 import { MutationFeedback } from '../ui/MutationFeedback'
 import { StateBlock } from '../ui/StateBlock'
+import {
+  LANGUAGE_OPTIONS,
+  formatLanguagePreference,
+  resolveLanguageInput,
+} from './languageOptions'
 
 export function AccountProfile({ session }: { session: SessionResponse }) {
   const [accountState, setAccountState] = useState<LoadState<UserAccount>>({
@@ -111,44 +116,28 @@ function AccountProfileDetails({
         </div>
       </div>
 
-      <dl className="account-metadata">
-        <ProfileField
-          label="Language preference"
-          value={preferredLanguage}
-        />
-      </dl>
-
-      <details className="account-technical-details">
-        <summary>Account details</summary>
-        <dl className="account-metadata">
-          <ProfileField label="Login name" value={account.login} />
-          <ProfileField label="Identity provider" value={account.provider} />
-          <ProfileField label="Account record" value={formatNumber(account.id)} />
-          <ProfileField label="Last sign-in" value={account.lastLoginAt} />
-          <ProfileField label="Created" value={account.createdAt} />
-          <ProfileField label="Updated" value={account.updatedAt} />
-        </dl>
-      </details>
-
       <LanguagePreferenceForm
         account={account}
         key={account.id ?? 'current'}
         session={session}
         onAccountChange={onAccountChange}
       />
+
+      <dl className="account-metadata">
+        <ProfileField
+          label="Language preference"
+          value={preferredLanguage}
+        />
+        <ProfileField label="Login name" value={account.login} />
+        <ProfileField label="Identity provider" value={account.provider} />
+        <ProfileField label="Account record" value={formatNumber(account.id)} />
+        <ProfileField label="Last sign-in" value={account.lastLoginAt} />
+        <ProfileField label="Created" value={account.createdAt} />
+        <ProfileField label="Updated" value={account.updatedAt} />
+      </dl>
     </div>
   )
 }
-
-const LANGUAGE_OPTIONS = [
-  { value: 'en', label: 'English' },
-  { value: 'es', label: 'Spanish' },
-  { value: 'de', label: 'German' },
-  { value: 'fr', label: 'French' },
-  { value: 'pl', label: 'Polish' },
-  { value: 'uk', label: 'Ukrainian' },
-  { value: 'no', label: 'Norwegian' },
-] as const
 
 function LanguagePreferenceForm({
   account,
@@ -160,13 +149,16 @@ function LanguagePreferenceForm({
   session: SessionResponse
 }) {
   const currentLanguage = account.preferredLanguage?.trim() ?? ''
-  const [selectedLanguage, setSelectedLanguage] = useState(currentLanguage)
+  const [languageInput, setLanguageInput] = useState(currentLanguage)
   const [mutationState, setMutationState] = useState<MutationState>({
     status: 'idle',
   })
   const submitting = mutationState.status === 'submitting'
-  const unchanged = selectedLanguage === currentLanguage
-  const canClear = Boolean(currentLanguage || selectedLanguage)
+  // The searchable input accepts a language name or code; null means the
+  // typed text matches no supported language.
+  const resolvedLanguage = resolveLanguageInput(languageInput)
+  const unchanged = resolvedLanguage === currentLanguage
+  const canClear = Boolean(currentLanguage || languageInput)
 
   async function submitLanguage(preferredLanguage: string) {
     setMutationState({ status: 'submitting' })
@@ -177,6 +169,7 @@ function LanguagePreferenceForm({
         preferredLanguage,
       )
       onAccountChange(updatedAccount)
+      setLanguageInput(updatedAccount.preferredLanguage?.trim() ?? '')
       setMutationState({
         status: 'success',
         message: preferredLanguage
@@ -200,7 +193,10 @@ function LanguagePreferenceForm({
       aria-label="Language preference"
       onSubmit={(event) => {
         event.preventDefault()
-        void submitLanguage(selectedLanguage)
+
+        if (resolvedLanguage !== null) {
+          void submitLanguage(resolvedLanguage)
+        }
       }}
     >
       <div className="language-preference-header">
@@ -214,26 +210,38 @@ function LanguagePreferenceForm({
 
       <div className="language-preference-controls">
         <label htmlFor="preferred-language">Language</label>
-        <select
+        <input
+          autoComplete="off"
           id="preferred-language"
-          value={selectedLanguage}
+          list="preferred-language-options"
+          placeholder="Type a language name or code"
+          value={languageInput}
           disabled={submitting}
           onChange={(event) => {
-            setSelectedLanguage(event.currentTarget.value)
+            setLanguageInput(event.currentTarget.value)
             setMutationState({ status: 'idle' })
           }}
-        >
-          <option value="">No preference</option>
+        />
+        <datalist id="preferred-language-options">
           {LANGUAGE_OPTIONS.map((language) => (
             <option key={language.value} value={language.value}>
               {language.label}
             </option>
           ))}
-        </select>
+        </datalist>
       </div>
 
+      {resolvedLanguage === null && (
+        <p className="session-message muted">
+          No supported language matches the typed text.
+        </p>
+      )}
+
       <div className="language-preference-actions">
-        <button type="submit" disabled={submitting || unchanged}>
+        <button
+          type="submit"
+          disabled={submitting || unchanged || resolvedLanguage === null}
+        >
           {submitting ? 'Saving...' : 'Save language'}
         </button>
         <button
@@ -241,7 +249,7 @@ function LanguagePreferenceForm({
           type="button"
           disabled={submitting || !canClear}
           onClick={() => {
-            setSelectedLanguage('')
+            setLanguageInput('')
             void submitLanguage('')
           }}
         >
@@ -271,19 +279,6 @@ function ProfileField({
 
 function formatNumber(value: number | undefined) {
   return value === undefined ? undefined : String(value)
-}
-
-function formatLanguagePreference(value: string | undefined) {
-  const languageValue = value?.trim()
-
-  if (!languageValue) {
-    return 'No preference'
-  }
-
-  return (
-    LANGUAGE_OPTIONS.find((language) => language.value === languageValue)
-      ?.label ?? languageValue
-  )
 }
 
 function formatRoleLabel(role: string) {

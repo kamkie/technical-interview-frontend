@@ -59,10 +59,9 @@ describe('CatalogPanel', () => {
       screen.getByRole('columnheader', { name: 'Categories' }),
     ).toBeInTheDocument()
     expect(screen.getByText('Showing 1-2 of 2 books')).toBeInTheDocument()
-    expect(screen.getByText('No filters applied')).toBeInTheDocument()
-    expect(screen.getByText('2 visible')).toBeInTheDocument()
-    expect(screen.getAllByText('Title A-Z')).toHaveLength(2)
-    expect(screen.getByText('Page 1 of 1')).toBeInTheDocument()
+    expect(screen.getAllByText('Title A-Z')).toHaveLength(1)
+    // The compact top and full bottom pagination both show the position.
+    expect(screen.getAllByText('Page 1 of 1')).toHaveLength(2)
     expect(fetchMock).toHaveBeenCalledWith(CATEGORIES_PATH, {
       method: 'GET',
       credentials: 'same-origin',
@@ -95,9 +94,8 @@ describe('CatalogPanel', () => {
     expect(within(filters).getByLabelText('Title')).toBeInTheDocument()
     expect(within(filters).getByLabelText('Author')).toBeInTheDocument()
     expect(within(filters).getByLabelText('ISBN')).toBeInTheDocument()
-    expect(
-      within(filters).getByRole('button', { name: 'Search' }),
-    ).toBeInTheDocument()
+    // Text filters apply live, so the form only offers Clear.
+    expect(within(filters).queryByRole('button', { name: 'Search' })).toBeNull()
     expect(
       within(filters).getByRole('button', { name: 'Clear' }),
     ).toBeInTheDocument()
@@ -112,15 +110,26 @@ describe('CatalogPanel', () => {
       within(tableRegion).getByRole('table', { name: 'Public books' }),
     ).toBeInTheDocument()
 
+    // The bottom pager only steps pages; the rows-per-page select lives in
+    // the top toolbar pagination.
     const pagination = screen.getByLabelText('Book pagination')
     expect(
       within(pagination).getByRole('button', { name: 'Previous' }),
     ).toBeInTheDocument()
     expect(
-      within(pagination).getByLabelText('Rows per page'),
+      within(pagination).getByRole('button', { name: 'Next' }),
+    ).toBeInTheDocument()
+    expect(within(pagination).queryByLabelText('Rows per page')).toBeNull()
+
+    const topPagination = screen.getByLabelText('Book pagination top')
+    expect(
+      within(topPagination).getByRole('button', { name: 'Previous page' }),
     ).toBeInTheDocument()
     expect(
-      within(pagination).getByRole('button', { name: 'Next' }),
+      within(topPagination).getByRole('button', { name: 'Next page' }),
+    ).toBeInTheDocument()
+    expect(
+      within(topPagination).getByLabelText('Rows per page'),
     ).toBeInTheDocument()
   })
 
@@ -130,7 +139,6 @@ describe('CatalogPanel', () => {
     const { container } = renderCatalogRoute()
 
     expect(await screen.findByText('0 books')).toBeInTheDocument()
-    expect(screen.getByText('0 visible')).toBeInTheDocument()
     expect(container.querySelector('.state-block[data-state="empty"]')).not.toBeNull()
     expect(screen.getByText('No catalog results')).toBeInTheDocument()
     expect(
@@ -224,7 +232,7 @@ describe('CatalogPanel', () => {
     expect(screen.getByRole('button', { name: 'Next' })).not.toBeDisabled()
   })
 
-  it('submits text and repeated category filters', async () => {
+  it('applies text and repeated category filters live without a submit', async () => {
     const fetchMock = mockCatalogFetch({
       books: (path) =>
         path.includes('title=clean') ? filteredBookPage : populatedBookPage,
@@ -250,7 +258,6 @@ describe('CatalogPanel', () => {
     fireEvent.change(authorInput, { target: { value: 'martin' } })
     fireEvent.click(screen.getByRole('button', { name: 'Java' }))
     fireEvent.click(screen.getByRole('button', { name: 'Architecture' }))
-    fireEvent.submit(titleInput.closest('form')!)
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(
@@ -263,9 +270,6 @@ describe('CatalogPanel', () => {
     })
     expect(await screen.findByText('Clean Code')).toBeInTheDocument()
     expect(screen.getByText('Showing 1-1 of 1 book')).toBeInTheDocument()
-    expect(
-      screen.getByText('Title: clean; Author: martin; Categories: Java, Architecture'),
-    ).toBeInTheDocument()
   })
 
   it('requests the next button-based page with Spring pagination parameters', async () => {
@@ -276,6 +280,7 @@ describe('CatalogPanel', () => {
     expect(await screen.findByText('Refactoring')).toBeInTheDocument()
     expect(screen.getAllByText(/Page 1\s+of 3/)).toHaveLength(2)
     expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Previous page' })).toBeDisabled()
 
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
 
@@ -307,6 +312,8 @@ describe('CatalogPanel', () => {
     expect(screen.getAllByText(/Page 3\s+of 3/)).toHaveLength(2)
     expect(screen.getByRole('button', { name: 'Previous' })).not.toBeDisabled()
     expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Previous page' })).not.toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled()
   })
 
   it('renders localized backend book error messages', async () => {

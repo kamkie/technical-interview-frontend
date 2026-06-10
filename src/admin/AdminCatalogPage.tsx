@@ -48,6 +48,7 @@ import { StateBlock } from '../ui/StateBlock'
 import { Tabs } from '../ui/Tabs'
 
 export const ADMIN_CATALOG_ROUTE_PATH = '/admin/catalog' as const
+const LIVE_FILTER_DEBOUNCE_MS = 300
 const EMPTY_CATEGORIES: readonly Category[] = []
 const CATALOG_TAB_PARAM = 'tab'
 const CATALOG_SECTIONS = ['books', 'categories'] as const
@@ -276,6 +277,42 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
       },
     })
   }
+
+  // Text filters apply live: a short typing pause pushes the trimmed draft
+  // into the URL-backed query. The draft is re-stored under the next route
+  // key so in-progress text (including trailing spaces) survives the URL
+  // change.
+  useEffect(() => {
+    if (
+      filterDraft.title.trim() === query.title &&
+      filterDraft.author.trim() === query.author &&
+      filterDraft.isbn.trim() === query.isbn
+    ) {
+      return undefined
+    }
+
+    const timer = window.setTimeout(() => {
+      const nextQuery: CatalogQueryState = {
+        ...query,
+        author: filterDraft.author.trim(),
+        isbn: filterDraft.isbn.trim(),
+        page: 0,
+        title: filterDraft.title.trim(),
+      }
+      const nextSearchParams = catalogQueryToSearchParams(nextQuery)
+
+      appendCatalogSectionParam(nextSearchParams, activeSection)
+      setFilterDraftState({
+        key: createFilterDraftKey(createCatalogFilterDraft(nextQuery)),
+        value: filterDraft,
+      })
+      setSearchParams(nextSearchParams)
+    }, LIVE_FILTER_DEBOUNCE_MS)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [activeSection, filterDraft, query, setSearchParams])
 
   function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -715,12 +752,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     <section className="admin-section" aria-labelledby="admin-books-title">
         <div className="admin-section-heading">
           <div>
-            <p className="eyebrow">Books</p>
             <h2 id="admin-books-title">Book management</h2>
-            <p className="section-description">
-              Use current filters to find records, then edit from the latest
-              catalog data.
-            </p>
           </div>
           <div className="section-actions">
             <button
@@ -773,50 +805,54 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
             />
           </label>
           <div className="catalog-filter-actions">
-            <button type="submit">Search</button>
             <button type="button" className="secondary-button" onClick={clearFilters}>
               Clear
             </button>
           </div>
         </form>
 
-        <CategoryFilter
-          ariaLabel="Admin category filters"
-          categories={namedCategories}
-          categoriesState={categoriesState}
-          selectedCategories={query.categories}
-          onToggleCategory={toggleFilterCategory}
-        />
-
-        <div className="catalog-controls" aria-label="Admin book table controls">
-          <label>
-            <span>Sort by</span>
-            <select
-              value={primarySort}
-              onChange={(event) => changeSort(event.target.value as SortValue)}
-            >
-              {SORT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span>Rows per page</span>
-            <select
-              value={query.size}
-              onChange={(event) =>
-                changePageSize(Number(event.target.value) as PageSize)
-              }
-            >
-              {PAGE_SIZE_OPTIONS.map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-          </label>
+        <div className="catalog-toolbar" aria-label="Admin book table controls">
+          <CategoryFilter
+            ariaLabel="Admin category filters"
+            categories={namedCategories}
+            categoriesState={categoriesState}
+            selectedCategories={query.categories}
+            onToggleCategory={toggleFilterCategory}
+          />
+          <div className="catalog-toolbar-status">
+            <label className="inline-sort">
+              <span>Sort by</span>
+              <select
+                value={primarySort}
+                onChange={(event) => changeSort(event.target.value as SortValue)}
+              >
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {booksState.status === 'ready' && (
+              <span aria-live="polite" className="toolbar-summary">
+                {formatBookWindow(booksState.value, query)}
+              </span>
+            )}
+            {bookFormMode.type === 'edit' && (
+              <span className="toolbar-summary">
+                {formatAdminSelectionStatus(bookFormMode)}
+              </span>
+            )}
+            {booksState.status === 'ready' && (
+              <AdminToolbarPagination
+                page={booksState.value}
+                query={query}
+                onNextPage={() => goToPage(query.page + 1)}
+                onPageSizeChange={changePageSize}
+                onPreviousPage={() => goToPage(query.page - 1)}
+              />
+            )}
+          </div>
         </div>
 
         {booksState.status === 'loading' && (
@@ -832,14 +868,6 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
             message={booksState.message}
             title="Books could not be loaded"
             variant="error"
-          />
-        )}
-
-        {booksState.status === 'ready' && (
-          <AdminCatalogQuerySummary
-            mode={bookFormMode}
-            page={booksState.value}
-            query={query}
           />
         )}
 
@@ -887,12 +915,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
       <section className="admin-section" aria-labelledby="admin-categories-title">
         <div className="admin-section-heading">
           <div>
-            <p className="eyebrow">Categories</p>
             <h2 id="admin-categories-title">Category management</h2>
-            <p className="section-description">
-              Category changes refresh the affected book view while preserving
-              current filters.
-            </p>
           </div>
           <div className="section-actions">
             <button
@@ -1003,51 +1026,39 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
   )
 }
 
-function AdminCatalogQuerySummary({
-  mode,
+function AdminToolbarPagination({
+  onNextPage,
+  onPageSizeChange,
+  onPreviousPage,
   page,
   query,
 }: {
-  mode: BookFormMode
+  onNextPage: () => void
+  onPageSizeChange: (size: PageSize) => void
+  onPreviousPage: () => void
   page: BookPage
   query: CatalogQueryState
 }) {
-  const activeFilters = getActiveFilterSummary(query)
+  const pageNumber = page.number ?? query.page
+  const totalPages = page.totalPages ?? 0
+  const first = page.first === true || pageNumber <= 0
+  const last =
+    page.last === true || (totalPages > 0 && pageNumber >= totalPages - 1)
 
   return (
-    <div className="catalog-summary admin-catalog-summary" aria-live="polite">
-      <p>{formatBookWindow(page, query)}</p>
-      <dl className="catalog-query-details" aria-label="Active admin book query">
-        <div>
-          <dt>Filters</dt>
-          <dd>
-            {activeFilters.length > 0
-              ? activeFilters.join('; ')
-              : 'No filters applied'}
-          </dd>
-        </div>
-        <div>
-          <dt>Sort</dt>
-          <dd>{getSortLabel(query)}</dd>
-        </div>
-        <div>
-          <dt>Page</dt>
-          <dd>{formatPageStatus(page, query)}</dd>
-        </div>
-        <div>
-          <dt>Rows</dt>
-          <dd>{query.size} per page</dd>
-        </div>
-        <div>
-          <dt>Selected</dt>
-          <dd>{formatAdminSelectionStatus(mode)}</dd>
-        </div>
-        <div>
-          <dt>Visible</dt>
-          <dd>{formatVisibleBookCount(page)}</dd>
-        </div>
-      </dl>
-    </div>
+    <PaginationControls
+      ariaLabel="Admin book pagination top"
+      first={first}
+      last={last}
+      pageNumber={pageNumber}
+      querySize={query.size}
+      totalPages={totalPages}
+      variant="toolbar"
+      onNextPage={onNextPage}
+      onPageSizeChange={(size) => onPageSizeChange(size as PageSize)}
+      onPreviousPage={onPreviousPage}
+      pageSizeOptions={PAGE_SIZE_OPTIONS}
+    />
   )
 }
 
@@ -1205,7 +1216,6 @@ function AdminBookResults({
 }) {
   const books = page.content ?? []
   const pageNumber = page.number ?? query.page
-  const pageSize = page.size ?? query.size
   const totalPages = page.totalPages ?? 0
   const first = page.first === true || pageNumber <= 0
   const last =
@@ -1222,7 +1232,6 @@ function AdminBookResults({
         <PaginationControls
           ariaLabel="Admin book pagination"
           pageNumber={pageNumber}
-          pageSize={pageSize}
           querySize={query.size}
           totalPages={totalPages}
           first={first}
@@ -1297,7 +1306,6 @@ function AdminBookResults({
       <PaginationControls
         ariaLabel="Admin book pagination"
         pageNumber={pageNumber}
-        pageSize={pageSize}
         querySize={query.size}
         totalPages={totalPages}
         first={first}
@@ -1557,35 +1565,6 @@ function sortCategories(categories: readonly Category[]) {
   )
 }
 
-function getActiveFilterSummary(query: CatalogQueryState) {
-  const filters: string[] = []
-
-  if (query.title) {
-    filters.push(`Title: ${query.title}`)
-  }
-
-  if (query.author) {
-    filters.push(`Author: ${query.author}`)
-  }
-
-  if (query.isbn) {
-    filters.push(`ISBN: ${query.isbn}`)
-  }
-
-  if (query.categories.length > 0) {
-    filters.push(`Categories: ${query.categories.join(', ')}`)
-  }
-
-  return filters
-}
-
-function getSortLabel(query: CatalogQueryState) {
-  const primarySort = getPrimarySort(query)
-  const sortOption = SORT_OPTIONS.find((option) => option.value === primarySort)
-
-  return sortOption?.label ?? primarySort
-}
-
 function formatBookWindow(page: BookPage, query: CatalogQueryState) {
   const totalElements = page.totalElements ?? 0
   const numberOfElements = page.numberOfElements ?? page.content?.length ?? 0
@@ -1604,19 +1583,6 @@ function formatBookWindow(page: BookPage, query: CatalogQueryState) {
 
 function formatBookCount(count: number) {
   return `${count} ${count === 1 ? 'book' : 'books'}`
-}
-
-function formatVisibleBookCount(page: BookPage) {
-  const count = page.numberOfElements ?? page.content?.length ?? 0
-
-  return `${count} visible`
-}
-
-function formatPageStatus(page: BookPage, query: CatalogQueryState) {
-  const pageNumber = (page.number ?? query.page) + 1
-  const totalPages = page.totalPages ?? 0
-
-  return totalPages > 0 ? `Page ${pageNumber} of ${totalPages}` : `Page ${pageNumber}`
 }
 
 function formatAdminSelectionStatus(mode: BookFormMode) {

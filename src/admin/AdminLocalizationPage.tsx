@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import { useCurrentAccount } from '../account/useCurrentAccount'
@@ -38,16 +38,11 @@ import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { MutationFeedback } from '../ui/MutationFeedback'
 import { PaginationControls } from '../ui/PaginationControls'
 import { StateBlock } from '../ui/StateBlock'
-import { Tabs } from '../ui/Tabs'
-
 export const ADMIN_LOCALIZATION_ROUTE_PATH = '/admin/localizations' as const
 
+const LIVE_FILTER_DEBOUNCE_MS = 300
 const EMPTY_LOCALIZATIONS: readonly LocalizationResponse[] = []
-const LOCALIZATION_TAB_PARAM = 'tab'
-const LOCALIZATION_SECTIONS = ['messages', 'coverage'] as const
-const DEFAULT_LOCALIZATION_SECTION: LocalizationSection = 'messages'
-
-type LocalizationSection = (typeof LOCALIZATION_SECTIONS)[number]
+const COVERAGE_HIDDEN_STORAGE_KEY = 'admin-localization-coverage-hidden'
 const PAGE_SIZE_OPTIONS = [10, 20, 50] as const
 const SORT_OPTIONS = [
   {
@@ -88,8 +83,11 @@ type LocalizationFilterDraft = Pick<
 >
 
 type LocalizationFormMode =
+  | { type: 'closed' }
   | { type: 'create' }
   | { type: 'edit'; id: number }
+
+type OpenLocalizationFormMode = Exclude<LocalizationFormMode, { type: 'closed' }>
 
 type LocalizationFormDraft = {
   description: string
@@ -140,17 +138,9 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
   const [formFocusToken, setFormFocusToken] = useState(0)
   const handledFormFocusTokenRef = useRef(0)
   const [searchParams, setSearchParams] = useSearchParams()
-  const activeSection = parseLocalizationSection(searchParams)
-  const querySearch = useMemo(() => {
-    const params = new URLSearchParams(searchParams)
-
-    params.delete(LOCALIZATION_TAB_PARAM)
-
-    return params.toString()
-  }, [searchParams])
   const query = useMemo(
-    () => parseLocalizationSearchParams(new URLSearchParams(querySearch)),
-    [querySearch],
+    () => parseLocalizationSearchParams(searchParams),
+    [searchParams],
   )
   const routeFilterDraft = createLocalizationFilterDraft(query)
   const routeFilterDraftKey = createFilterDraftKey(routeFilterDraft)
@@ -168,8 +158,11 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
     })
   const [refreshKey, setRefreshKey] = useState(0)
   const [formMode, setFormMode] = useState<LocalizationFormMode>({
-    type: 'create',
+    type: 'closed',
   })
+  const [coverageHidden, setCoverageHidden] = useState(
+    () => window.localStorage.getItem(COVERAGE_HIDDEN_STORAGE_KEY) === 'true',
+  )
   const [formDraft, setFormDraft] = useState<LocalizationFormDraft>(() =>
     createEmptyLocalizationDraft(),
   )
@@ -223,10 +216,6 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
     localizationsState.status === 'ready'
       ? localizationsState.value.number ?? query.page
       : query.page
-  const pageSize =
-    localizationsState.status === 'ready'
-      ? localizationsState.value.size ?? query.size
-      : query.size
   const totalPages =
     localizationsState.status === 'ready'
       ? localizationsState.value.totalPages ?? 0
@@ -240,24 +229,19 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
   function updateLocalizationQuery(nextQuery: LocalizationQueryState) {
     const nextSearchParams = localizationQueryToUrlSearchParams(nextQuery)
 
-    appendLocalizationSectionParam(nextSearchParams, activeSection)
-
     if (nextSearchParams.toString() !== searchParams.toString()) {
       setSearchParams(nextSearchParams)
     }
   }
 
-  function changeSection(sectionId: string) {
-    const nextSearchParams = localizationQueryToUrlSearchParams(query)
+  function toggleCoverageHidden() {
+    setCoverageHidden((current) => {
+      const next = !current
 
-    appendLocalizationSectionParam(
-      nextSearchParams,
-      normalizeLocalizationSection(sectionId),
-    )
+      window.localStorage.setItem(COVERAGE_HIDDEN_STORAGE_KEY, String(next))
 
-    if (nextSearchParams.toString() !== searchParams.toString()) {
-      setSearchParams(nextSearchParams, { replace: true })
-    }
+      return next
+    })
   }
 
   function updateFilterDraft(update: Partial<LocalizationFilterDraft>) {
@@ -269,6 +253,37 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
       },
     })
   }
+
+  // Filters apply live: a short typing pause pushes the trimmed draft into
+  // the URL-backed query. The draft is re-stored under the next route key so
+  // in-progress text (including trailing spaces) survives the URL change.
+  useEffect(() => {
+    if (
+      filterDraft.messageKey.trim() === query.messageKey &&
+      filterDraft.language === query.language
+    ) {
+      return undefined
+    }
+
+    const timer = window.setTimeout(() => {
+      const nextQuery: LocalizationQueryState = {
+        ...query,
+        language: filterDraft.language,
+        messageKey: filterDraft.messageKey.trim(),
+        page: 0,
+      }
+
+      setFilterDraftState({
+        key: createFilterDraftKey(createLocalizationFilterDraft(nextQuery)),
+        value: filterDraft,
+      })
+      setSearchParams(localizationQueryToUrlSearchParams(nextQuery))
+    }, LIVE_FILTER_DEBOUNCE_MS)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [filterDraft, query, setSearchParams])
 
   function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -321,21 +336,17 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
       }),
     )
     setMutationState({ status: 'idle' })
-    changeSection('messages')
     setFormFocusToken((token) => token + 1)
   }
 
   useEffect(() => {
     if (
       formFocusToken === 0 ||
-      formFocusToken === handledFormFocusTokenRef.current ||
-      activeSection !== 'messages'
+      formFocusToken === handledFormFocusTokenRef.current
     ) {
       return
     }
 
-    // The messages panel may mount in a later commit than the focus request
-    // because the tab switch travels through the router; retry on tab change.
     const messageKeyInput = document.getElementById(
       'localization-form-message-key',
     )
@@ -354,7 +365,7 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
       block: 'center',
     })
     messageKeyInput.focus({ preventScroll: true })
-  }, [activeSection, formFocusToken])
+  }, [formFocusToken])
 
   async function startEdit(row: LocalizationResponse) {
     if (row.id === undefined) {
@@ -459,7 +470,7 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
       await deleteLocalization(session, row.id)
 
       if (formMode.type === 'edit' && formMode.id === row.id) {
-        cancelEdit()
+        closeForm()
       }
 
       setMutationState({
@@ -483,25 +494,68 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
     setMutationState({ status: 'idle' })
   }
 
-  function cancelEdit() {
-    setFormMode({ type: 'create' })
+  function closeForm() {
+    setFormMode({ type: 'closed' })
     setFormDraft(createEmptyLocalizationDraft())
     setMutationState({ status: 'idle' })
   }
 
-  const messagesPanel = (
-    <>
+  const missingLocaleCount = coverage.reduce(
+    (total, group) =>
+      total + group.locales.filter((locale) => locale.status === 'missing').length,
+    0,
+  )
+
+  return (
+    <div className="admin-localization-layout">
+      {coverage.length > 0 && (
+        <section
+          className="workflow-group coverage-widget"
+          aria-labelledby="localization-coverage-title"
+        >
+          <div className="workflow-group-heading">
+            <div>
+              <h2 id="localization-coverage-title">Locale coverage</h2>
+            </div>
+            <div className="section-actions">
+              <span className="coverage-stats">
+                {coverage.length} {coverage.length === 1 ? 'key' : 'keys'} ·{' '}
+                {missingLocaleCount} missing
+              </span>
+              <button
+                type="button"
+                aria-expanded={!coverageHidden}
+                className="secondary-button compact-action"
+                onClick={toggleCoverageHidden}
+              >
+                {coverageHidden ? 'Show coverage' : 'Hide coverage'}
+              </button>
+            </div>
+          </div>
+
+          {!coverageHidden && (
+            <LocalizationCoverageTable
+              coverage={coverage}
+              onCreateMissing={startCreate}
+            />
+          )}
+        </section>
+      )}
+
       <section className="admin-section" aria-labelledby="localization-list-title">
         <div className="admin-section-heading">
           <div>
-            <p className="eyebrow">Messages</p>
             <h2 id="localization-list-title">Localization rows</h2>
-            <p className="section-description">
-              Filter by message key or language and review the matching
-              localized text.
-            </p>
           </div>
           <div className="section-actions">
+            <button
+              type="button"
+              aria-expanded={formMode.type === 'create'}
+              className="compact-action"
+              onClick={() => startCreate()}
+            >
+              New localization
+            </button>
             <button
               type="button"
               aria-label="Refresh localizations"
@@ -513,16 +567,22 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
           </div>
         </div>
 
-        <div className="workflow-group" aria-labelledby="localization-search-title">
-          <div className="workflow-group-heading">
-            <div>
-              <h3 id="localization-search-title">Find message rows</h3>
-              <p className="section-description">
-                Narrow by stable key and locale before editing individual rows.
-              </p>
-            </div>
-          </div>
+        {formMode.type === 'closed' && <MutationFeedback state={mutationState} />}
 
+        {formMode.type === 'create' && (
+          <div className="workflow-group" aria-label="Create localization panel">
+            <LocalizationForm
+              draft={formDraft}
+              mode={formMode}
+              mutationState={mutationState}
+              onClose={closeForm}
+              onDraftChange={updateDraft}
+              onSubmit={(event) => void handleFormSubmit(event)}
+            />
+          </div>
+        )}
+
+        <div className="workflow-group" aria-label="Localization filters">
           <form className="localization-filters" onSubmit={handleFilterSubmit}>
             <label>
               <span>Message key</span>
@@ -553,7 +613,6 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
               </select>
             </label>
             <div className="catalog-filter-actions">
-              <button type="submit">Search</button>
               <button type="button" className="secondary-button" onClick={clearFilters}>
                 Clear
               </button>
@@ -561,49 +620,48 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
           </form>
 
           <div
-            className="localization-controls"
+            className="catalog-toolbar"
             aria-label="Localization table controls"
           >
-            <label>
-              <span>Sort by</span>
-              <select
-                value={getSortOptionValue(query.sort)}
-                onChange={(event) => changeSort(event.currentTarget.value)}
-              >
-                {SORT_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span>Rows per page</span>
-              <select
-                value={query.size}
-                onChange={(event) =>
-                  changePageSize(Number(event.currentTarget.value) as PageSize)
-                }
-              >
-                {PAGE_SIZE_OPTIONS.map((size) => (
-                  <option key={size} value={size}>
-                    {size}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <div className="catalog-toolbar-status">
+              <label className="inline-sort">
+                <span>Sort by</span>
+                <select
+                  value={getSortOptionValue(query.sort)}
+                  onChange={(event) => changeSort(event.currentTarget.value)}
+                >
+                  {SORT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <span aria-live="polite" className="toolbar-summary">
+                {formatLocalizationSummary(localizationsState)}
+              </span>
+              {localizationsState.status === 'ready' && (
+                <PaginationControls
+                  ariaLabel="Localization pagination top"
+                  first={
+                    localizationsState.value.first === true || pageNumber <= 0
+                  }
+                  last={
+                    localizationsState.value.last === true ||
+                    (totalPages > 0 && pageNumber >= totalPages - 1)
+                  }
+                  pageNumber={pageNumber}
+                  querySize={query.size}
+                  totalPages={totalPages}
+                  variant="toolbar"
+                  onNextPage={() => goToPage(pageNumber + 1)}
+                  onPageSizeChange={(size) => changePageSize(size as PageSize)}
+                  onPreviousPage={() => goToPage(pageNumber - 1)}
+                  pageSizeOptions={PAGE_SIZE_OPTIONS}
+                />
+              )}
+            </div>
           </div>
-
-          <LocalizationWorkflowSummary
-            coverage={coverage}
-            page={
-              localizationsState.status === 'ready'
-                ? localizationsState.value
-                : null
-            }
-            query={query}
-            state={localizationsState.status}
-          />
         </div>
 
         {localizationsState.status === 'loading' && (
@@ -624,19 +682,24 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
 
         {localizationsState.status === 'ready' &&
           (rows.length > 0 ? (
-            <div className="workflow-group" aria-labelledby="localization-row-title">
-              <div className="workflow-group-heading">
-                <div>
-                  <h3 id="localization-row-title">Operate on rows</h3>
-                  <p className="section-description">
-                    Edit or delete one backend row at a time.
-                  </p>
-                </div>
-              </div>
+            <div className="workflow-group" aria-label="Localization rows table">
               <LocalizationResults
+                editingId={formMode.type === 'edit' ? formMode.id : null}
                 rows={rows}
                 onDeleteLocalization={requestLocalizationDelete}
                 onEditLocalization={(row) => void startEdit(row)}
+                renderEditForm={() =>
+                  formMode.type === 'edit' ? (
+                    <LocalizationForm
+                      draft={formDraft}
+                      mode={formMode}
+                      mutationState={mutationState}
+                      onClose={closeForm}
+                      onDraftChange={updateDraft}
+                      onSubmit={(event) => void handleFormSubmit(event)}
+                    />
+                  ) : null
+                }
               />
             </div>
           ) : (
@@ -656,7 +719,6 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
               (totalPages > 0 && pageNumber >= totalPages - 1)
             }
             pageNumber={pageNumber}
-            pageSize={pageSize}
             querySize={query.size}
             totalPages={totalPages}
             onNextPage={() => goToPage(pageNumber + 1)}
@@ -665,17 +727,6 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
             pageSizeOptions={PAGE_SIZE_OPTIONS}
           />
         )}
-      </section>
-
-      <section className="admin-section" aria-labelledby="localization-form-title">
-        <LocalizationForm
-          draft={formDraft}
-          mode={formMode}
-          mutationState={mutationState}
-          onCancelEdit={cancelEdit}
-          onDraftChange={updateDraft}
-          onSubmit={(event) => void handleFormSubmit(event)}
-        />
       </section>
 
       {pendingLocalizationDelete !== null && (
@@ -687,40 +738,6 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
           onConfirm={() => void confirmLocalizationDelete()}
         />
       )}
-    </>
-  )
-
-  const coveragePanel = (
-    <div className="workflow-group" aria-labelledby="localization-coverage-title">
-      <div className="workflow-group-heading">
-        <div>
-          <h2 id="localization-coverage-title">Review locale coverage</h2>
-          <p className="section-description">
-            Scan supported locales and create missing rows from stable message
-            keys.
-          </p>
-        </div>
-      </div>
-
-      <LocalizationCoverageTable
-        coverage={coverage}
-        onCreateMissing={startCreate}
-      />
-    </div>
-  )
-
-  return (
-    <div className="admin-localization-layout">
-      <Tabs
-        activeTab={activeSection}
-        ariaLabel="Localization administration sections"
-        idPrefix="admin-localization"
-        onTabChange={changeSection}
-        tabs={[
-          { id: 'messages', label: 'Messages', panel: messagesPanel },
-          { id: 'coverage', label: 'Coverage', panel: coveragePanel },
-        ]}
-      />
     </div>
   )
 }
@@ -792,75 +809,30 @@ function LocalizationCoverageTable({
   )
 }
 
-function LocalizationWorkflowSummary({
-  coverage,
-  page,
-  query,
-  state,
-}: {
-  coverage: readonly LocalizationKeyCoverage[]
-  page: LocalizationPage | null
-  query: LocalizationQueryState
-  state: LoadState<LocalizationPage>['status']
-}) {
-  const activeFilters = getLocalizationFilterSummary(query)
-  const totalRows = page?.totalElements
-  const rowCount = page?.numberOfElements ?? page?.content?.length
-  const missingLocaleCount =
-    state === 'error'
-      ? undefined
-      : coverage.reduce(
-          (total, group) =>
-            total +
-            group.locales.filter((locale) => locale.status === 'missing').length,
-          0,
-        )
+function formatLocalizationSummary(state: LoadState<LocalizationPage>) {
+  if (state.status !== 'ready') {
+    return `Localization rows are ${formatLoadStatus(state.status).toLowerCase()}.`
+  }
 
-  return (
-    <div className="catalog-summary admin-workflow-summary" aria-live="polite">
-      <p>
-        {page
-          ? `Showing ${rowCount ?? 0}${
-              totalRows !== undefined ? ` of ${totalRows}` : ''
-            } localization rows.`
-          : `Localization rows are ${formatLoadStatus(state).toLowerCase()}.`}
-      </p>
-      <dl
-        className="catalog-query-details compact-query-details"
-        aria-label="Active localization workflow"
-      >
-        <div>
-          <dt>Filters</dt>
-          <dd>{activeFilters.length > 0 ? activeFilters.join(' / ') : 'None'}</dd>
-        </div>
-        <div>
-          <dt>Sort</dt>
-          <dd>{query.sort.join(' / ')}</dd>
-        </div>
-        <div>
-          <dt>Page size</dt>
-          <dd>{query.size}</dd>
-        </div>
-        <div>
-          <dt>Coverage keys</dt>
-          <dd>{state === 'error' ? 'Unknown' : coverage.length}</dd>
-        </div>
-        <div>
-          <dt>Missing locales</dt>
-          <dd>{missingLocaleCount ?? 'Unknown'}</dd>
-        </div>
-      </dl>
-    </div>
-  )
+  const totalRows = state.value.totalElements
+  const rowCount = state.value.numberOfElements ?? state.value.content?.length
+
+  return `Showing ${rowCount ?? 0}${
+    totalRows !== undefined ? ` of ${totalRows}` : ''
+  } localization rows.`
 }
 
 function LocalizationResults({
+  editingId,
   onDeleteLocalization,
   onEditLocalization,
+  renderEditForm,
   rows,
 }: {
+  editingId: number | null
   onDeleteLocalization: (row: LocalizationResponse, opener: HTMLElement) => void
   onEditLocalization: (row: LocalizationResponse) => void
+  renderEditForm: () => ReactNode
   rows: readonly LocalizationResponse[]
 }) {
   return (
@@ -890,14 +862,20 @@ function LocalizationResults({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
-            <LocalizationRow
-              key={row.id ?? `${row.messageKey}-${row.language}-${row.messageText}`}
-              row={row}
-              onDeleteLocalization={onDeleteLocalization}
-              onEditLocalization={onEditLocalization}
-            />
-          ))}
+          {rows.map((row) => {
+            const editing = row.id !== undefined && row.id === editingId
+
+            return (
+              <LocalizationRow
+                editing={editing}
+                key={row.id ?? `${row.messageKey}-${row.language}-${row.messageText}`}
+                row={row}
+                onDeleteLocalization={onDeleteLocalization}
+                onEditLocalization={onEditLocalization}
+                renderEditForm={renderEditForm}
+              />
+            )
+          })}
         </tbody>
       </table>
     </div>
@@ -905,44 +883,58 @@ function LocalizationResults({
 }
 
 function LocalizationRow({
+  editing,
   onDeleteLocalization,
   onEditLocalization,
+  renderEditForm,
   row,
 }: {
+  editing: boolean
   onDeleteLocalization: (row: LocalizationResponse, opener: HTMLElement) => void
   onEditLocalization: (row: LocalizationResponse) => void
+  renderEditForm: () => ReactNode
   row: LocalizationResponse
 }) {
   const label = createLocalizationLabel(row)
+  const editRowId = `localization-edit-row-${row.id ?? 'unsaved'}`
 
   return (
-    <tr>
-      <th scope="row">{row.messageKey ?? 'Unknown key'}</th>
-      <td>{row.language ?? 'Unknown'}</td>
-      <td>{row.messageText?.trim() ? row.messageText : 'Blank message'}</td>
-      <td>{row.description?.trim() ? row.description : 'No description'}</td>
-      <td>{row.updatedAt ?? 'Unknown'}</td>
-      <td>
-        <div className="row-actions">
-          <button
-            type="button"
-            className="secondary-button"
-            aria-label={`Edit ${label}`}
-            onClick={() => onEditLocalization(row)}
-          >
-            Edit
-          </button>
-          <button
-            type="button"
-            className="danger-button"
-            aria-label={`Delete ${label}`}
-            onClick={(event) => onDeleteLocalization(row, event.currentTarget)}
-          >
-            Delete
-          </button>
-        </div>
-      </td>
-    </tr>
+    <>
+      <tr>
+        <th scope="row">{row.messageKey ?? 'Unknown key'}</th>
+        <td>{row.language ?? 'Unknown'}</td>
+        <td>{row.messageText?.trim() ? row.messageText : 'Blank message'}</td>
+        <td>{row.description?.trim() ? row.description : 'No description'}</td>
+        <td>{row.updatedAt ?? 'Unknown'}</td>
+        <td>
+          <div className="row-actions">
+            <button
+              type="button"
+              aria-controls={editing ? editRowId : undefined}
+              aria-expanded={editing}
+              className="secondary-button"
+              aria-label={`Edit ${label}`}
+              onClick={() => onEditLocalization(row)}
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              className="danger-button"
+              aria-label={`Delete ${label}`}
+              onClick={(event) => onDeleteLocalization(row, event.currentTarget)}
+            >
+              Delete
+            </button>
+          </div>
+        </td>
+      </tr>
+      {editing && (
+        <tr className="localization-edit-row" id={editRowId}>
+          <td colSpan={6}>{renderEditForm()}</td>
+        </tr>
+      )}
+    </>
   )
 }
 
@@ -950,14 +942,14 @@ function LocalizationForm({
   draft,
   mode,
   mutationState,
-  onCancelEdit,
+  onClose,
   onDraftChange,
   onSubmit,
 }: {
   draft: LocalizationFormDraft
-  mode: LocalizationFormMode
+  mode: OpenLocalizationFormMode
   mutationState: MutationState
-  onCancelEdit: () => void
+  onClose: () => void
   onDraftChange: (update: Partial<LocalizationFormDraft>) => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
 }) {
@@ -972,25 +964,20 @@ function LocalizationForm({
     >
       <div className="form-heading-row">
         <div>
-          <h2 id="localization-form-title">
+          <h3 id="localization-form-title">
             {editing ? 'Edit localization' : 'Create localization'}
-          </h2>
-          <p className="section-description">
-            Use message keys and supported language codes for each row.
-          </p>
+          </h3>
         </div>
-        {editing && (
-          <div className="section-actions">
-            <button
-              type="button"
-              className="secondary-button"
-              disabled={submitting}
-              onClick={onCancelEdit}
-            >
-              Cancel edit
-            </button>
-          </div>
-        )}
+        <div className="section-actions">
+          <button
+            type="button"
+            className="secondary-button"
+            disabled={submitting}
+            onClick={onClose}
+          >
+            {editing ? 'Cancel edit' : 'Close'}
+          </button>
+        </div>
       </div>
 
       <div className="admin-form-grid localization-form-grid">
@@ -1194,29 +1181,6 @@ function normalizeSupportedLanguage(
     : 'en'
 }
 
-function normalizeLocalizationSection(
-  value: string | null | undefined,
-): LocalizationSection {
-  const normalized = value?.trim() ?? ''
-
-  return LOCALIZATION_SECTIONS.includes(normalized as LocalizationSection)
-    ? (normalized as LocalizationSection)
-    : DEFAULT_LOCALIZATION_SECTION
-}
-
-function parseLocalizationSection(searchParams: URLSearchParams) {
-  return normalizeLocalizationSection(searchParams.get(LOCALIZATION_TAB_PARAM))
-}
-
-function appendLocalizationSectionParam(
-  searchParams: URLSearchParams,
-  section: LocalizationSection,
-) {
-  if (section !== DEFAULT_LOCALIZATION_SECTION) {
-    searchParams.set(LOCALIZATION_TAB_PARAM, section)
-  }
-}
-
 function normalizeQueryLanguage(language: string | null) {
   const normalized = language?.trim().toLowerCase() ?? ''
 
@@ -1233,20 +1197,6 @@ function parsePageSize(value: string | null): PageSize {
   return PAGE_SIZE_OPTIONS.includes(parsed as PageSize)
     ? (parsed as PageSize)
     : DEFAULT_LOCALIZATION_QUERY.size
-}
-
-function getLocalizationFilterSummary(query: LocalizationQueryState) {
-  const filters: string[] = []
-
-  if (query.messageKey) {
-    filters.push(`Message key: ${query.messageKey}`)
-  }
-
-  if (query.language) {
-    filters.push(`Language: ${query.language}`)
-  }
-
-  return filters
 }
 
 function createFilterDraftKey(draft: LocalizationFilterDraft) {

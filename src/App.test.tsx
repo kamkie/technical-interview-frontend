@@ -340,7 +340,10 @@ describe('App', () => {
 
     renderApp('/account')
 
-    const accountButton = await screen.findByRole('button', { name: 'Account' })
+    // The account trigger shows the signed-in user's name once loaded.
+    const accountButton = await screen.findByRole('button', {
+      name: 'Kamil Kiewisz',
+    })
     fireEvent.click(accountButton)
 
     expect(
@@ -386,7 +389,7 @@ describe('App', () => {
     expect(
       within(primaryNavigation).getByRole('link', { name: 'Diagnostics' }),
     ).toHaveAttribute('href', '/operator/diagnostics')
-    expect(await screen.findByText('Kamil Kiewisz')).toBeInTheDocument()
+    expect((await screen.findAllByText('Kamil Kiewisz')).length).toBeGreaterThan(1)
     expect(screen.getByText('kamkie')).toBeInTheDocument()
     expect(screen.getByText('kamil@example.test')).toBeInTheDocument()
     expect(screen.getAllByText('Polish')[0]).toBeInTheDocument()
@@ -501,6 +504,48 @@ describe('App', () => {
     ).toBeInTheDocument()
   })
 
+  it('updates the language preference from the topbar quick menu', async () => {
+    document.cookie = 'XSRF-TOKEN=token'
+    const fetchMock = mockAppFetch({
+      languageResponse: createAccount({
+        preferredLanguage: 'de',
+        updatedAt: '2026-06-07T09:40:00Z',
+      }),
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    renderApp()
+
+    const trigger = await screen.findByRole('button', {
+      name: 'Language preference, currently Polish',
+    })
+
+    fireEvent.click(trigger)
+    fireEvent.click(screen.getByRole('button', { name: 'German' }))
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(ACCOUNT_LANGUAGE_PATH, {
+        method: 'PUT',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'X-XSRF-TOKEN': 'token',
+        },
+        body: JSON.stringify({
+          preferredLanguage: 'de',
+        }),
+      })
+    })
+    expect(
+      await screen.findByRole('button', {
+        name: 'Language preference, currently German',
+      }),
+    ).toBeInTheDocument()
+  })
+
   it('renders localized backend language validation errors', async () => {
     document.cookie = 'XSRF-TOKEN=token'
     mockAppFetch({
@@ -597,7 +642,9 @@ describe('App', () => {
 
     renderApp('/catalog')
 
-    expect(await screen.findByRole('button', { name: 'Account' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('button', { name: 'Kamil Kiewisz' }),
+    ).toBeInTheDocument()
     expect(await screen.findByText('Clean Code')).toBeInTheDocument()
     await waitFor(() => {
       expect(
@@ -669,7 +716,7 @@ describe('App', () => {
 
     renderApp('/account')
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Account' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Kamil Kiewisz' }))
     fireEvent.click(screen.getByRole('button', { name: 'Sign out' }))
 
     await waitFor(() => {
@@ -702,7 +749,7 @@ describe('App', () => {
 
     renderApp('/account')
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Account' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Kamil Kiewisz' }))
     fireEvent.click(screen.getByRole('button', { name: 'Sign out' }))
 
     await waitFor(() => {
@@ -1018,7 +1065,9 @@ describe('App', () => {
       screen.getByRole('heading', { level: 1, name: 'Book catalog' }),
     ).not.toHaveFocus()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Account' }))
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Kamil Kiewisz' }),
+    )
     fireEvent.click(screen.getByRole('link', { name: 'Account settings' }))
 
     await waitFor(() => {

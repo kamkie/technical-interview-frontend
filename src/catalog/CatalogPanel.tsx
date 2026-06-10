@@ -30,6 +30,8 @@ import {
   type SortValue,
 } from './catalogQuery'
 
+const LIVE_FILTER_DEBOUNCE_MS = 300
+
 export function CatalogPanel() {
   const [searchParams, setSearchParams] = useSearchParams()
   const query = useMemo(
@@ -141,6 +143,40 @@ export function CatalogPanel() {
     })
   }
 
+  // Text filters apply live: a short typing pause pushes the trimmed draft
+  // into the URL-backed query. The draft is re-stored under the next route
+  // key so in-progress text (including trailing spaces) survives the URL
+  // change.
+  useEffect(() => {
+    if (
+      filterDraft.title.trim() === query.title &&
+      filterDraft.author.trim() === query.author &&
+      filterDraft.isbn.trim() === query.isbn
+    ) {
+      return undefined
+    }
+
+    const timer = window.setTimeout(() => {
+      const nextQuery: CatalogQueryState = {
+        ...query,
+        author: filterDraft.author.trim(),
+        isbn: filterDraft.isbn.trim(),
+        page: 0,
+        title: filterDraft.title.trim(),
+      }
+
+      setFilterDraftState({
+        key: createFilterDraftKey(createCatalogFilterDraft(nextQuery)),
+        value: filterDraft,
+      })
+      setSearchParams(catalogQueryToSearchParams(nextQuery))
+    }, LIVE_FILTER_DEBOUNCE_MS)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [filterDraft, query, setSearchParams])
+
   function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     updateCatalogQuery({
@@ -231,48 +267,51 @@ export function CatalogPanel() {
           />
         </label>
         <div className="catalog-filter-actions">
-          <button type="submit">Search</button>
           <button type="button" className="secondary-button" onClick={clearFilters}>
             Clear
           </button>
         </div>
       </form>
 
-      <CategoryFilter
-        ariaLabel="Category filters"
-        categories={categories}
-        categoriesState={categoriesState}
-        selectedCategories={query.categories}
-        onToggleCategory={toggleCategory}
-      />
-
-      <div className="catalog-controls" aria-label="Catalog table controls">
-        <label>
-          <span>Sort by</span>
-          <select
-            value={primarySort}
-            onChange={(event) => changeSort(event.target.value as SortValue)}
-          >
-            {SORT_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span>Rows per page</span>
-          <select
-            value={query.size}
-            onChange={(event) => changePageSize(Number(event.target.value) as PageSize)}
-          >
-            {PAGE_SIZE_OPTIONS.map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
-        </label>
+      <div className="catalog-toolbar" aria-label="Catalog table controls">
+        <CategoryFilter
+          ariaLabel="Category filters"
+          categories={categories}
+          categoriesState={categoriesState}
+          selectedCategories={query.categories}
+          onToggleCategory={toggleCategory}
+        />
+        <div className="catalog-toolbar-status">
+          <label className="inline-sort">
+            <span>Sort by</span>
+            <select
+              value={primarySort}
+              onChange={(event) => changeSort(event.target.value as SortValue)}
+            >
+              {SORT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          {booksState.status === 'ready' && (
+            <span aria-live="polite" className="toolbar-summary">
+              {formatBookWindow(booksState.value, query)}
+            </span>
+          )}
+          {booksState.status === 'ready' && (
+            <ToolbarPagination
+              ariaLabel="Book pagination top"
+              disabled={isFetchingBooks}
+              page={booksState.value}
+              query={query}
+              onNextPage={() => goToPage(query.page + 1)}
+              onPageSizeChange={changePageSize}
+              onPreviousPage={() => goToPage(query.page - 1)}
+            />
+          )}
+        </div>
       </div>
 
       <p className="catalog-fetch-status" role="status">
@@ -280,10 +319,6 @@ export function CatalogPanel() {
           ? 'Updating results…'
           : null}
       </p>
-
-      {booksState.status === 'ready' && (
-        <CatalogQuerySummary page={booksState.value} query={query} />
-      )}
 
       {booksState.status === 'loading' && (
         <StateBlock
@@ -327,45 +362,44 @@ function hasActiveQuery(query: CatalogQueryState) {
   )
 }
 
-function CatalogQuerySummary({
+function ToolbarPagination({
+  ariaLabel,
+  disabled,
+  onNextPage,
+  onPageSizeChange,
+  onPreviousPage,
   page,
   query,
 }: {
+  ariaLabel: string
+  disabled: boolean
+  onNextPage: () => void
+  onPageSizeChange: (size: PageSize) => void
+  onPreviousPage: () => void
   page: BookPage
   query: CatalogQueryState
 }) {
-  const activeFilters = getActiveFilterSummary(query)
+  const pageNumber = page.number ?? query.page
+  const totalPages = page.totalPages ?? 0
+  const first = page.first === true || pageNumber <= 0
+  const last =
+    page.last === true || (totalPages > 0 && pageNumber >= totalPages - 1)
 
   return (
-    <div className="catalog-summary" aria-live="polite">
-      <p>{formatBookWindow(page, query)}</p>
-      <dl className="catalog-query-details" aria-label="Active catalog query">
-        <div>
-          <dt>Filters</dt>
-          <dd>
-            {activeFilters.length > 0
-              ? activeFilters.join('; ')
-              : 'No filters applied'}
-          </dd>
-        </div>
-        <div>
-          <dt>Sort</dt>
-          <dd>{getSortLabel(query)}</dd>
-        </div>
-        <div>
-          <dt>Page</dt>
-          <dd>{formatPageStatus(page, query)}</dd>
-        </div>
-        <div>
-          <dt>Rows</dt>
-          <dd>{query.size} per page</dd>
-        </div>
-        <div>
-          <dt>Visible</dt>
-          <dd>{formatVisibleBookCount(page)}</dd>
-        </div>
-      </dl>
-    </div>
+    <PaginationControls
+      ariaLabel={ariaLabel}
+      disabled={disabled}
+      first={first}
+      last={last}
+      pageNumber={pageNumber}
+      querySize={query.size}
+      totalPages={totalPages}
+      variant="toolbar"
+      onNextPage={onNextPage}
+      onPageSizeChange={(size) => onPageSizeChange(size as PageSize)}
+      onPreviousPage={onPreviousPage}
+      pageSizeOptions={PAGE_SIZE_OPTIONS}
+    />
   )
 }
 
@@ -392,7 +426,6 @@ function BookResults({
 }) {
   const books = page.content ?? []
   const pageNumber = page.number ?? query.page
-  const pageSize = page.size ?? query.size
   const totalPages = page.totalPages ?? 0
   const first = page.first === true || pageNumber <= 0
   const last =
@@ -419,7 +452,6 @@ function BookResults({
           ariaLabel="Book pagination"
           disabled={busy}
           pageNumber={pageNumber}
-          pageSize={pageSize}
           querySize={query.size}
           totalPages={totalPages}
           first={first}
@@ -490,7 +522,6 @@ function BookResults({
         ariaLabel="Book pagination"
         disabled={busy}
         pageNumber={pageNumber}
-        pageSize={pageSize}
         querySize={query.size}
         totalPages={totalPages}
         first={first}
@@ -520,35 +551,6 @@ function BookTableRow({ book }: { book: Book }) {
   )
 }
 
-function getActiveFilterSummary(query: CatalogQueryState) {
-  const filters: string[] = []
-
-  if (query.title) {
-    filters.push(`Title: ${query.title}`)
-  }
-
-  if (query.author) {
-    filters.push(`Author: ${query.author}`)
-  }
-
-  if (query.isbn) {
-    filters.push(`ISBN: ${query.isbn}`)
-  }
-
-  if (query.categories.length > 0) {
-    filters.push(`Categories: ${query.categories.join(', ')}`)
-  }
-
-  return filters
-}
-
-function getSortLabel(query: CatalogQueryState) {
-  const primarySort = getPrimarySort(query)
-  const sortOption = SORT_OPTIONS.find((option) => option.value === primarySort)
-
-  return sortOption?.label ?? primarySort
-}
-
 function formatBookWindow(page: BookPage, query: CatalogQueryState) {
   const totalElements = page.totalElements ?? 0
   const numberOfElements = page.numberOfElements ?? page.content?.length ?? 0
@@ -567,19 +569,6 @@ function formatBookWindow(page: BookPage, query: CatalogQueryState) {
 
 function formatBookCount(count: number) {
   return `${count} ${count === 1 ? 'book' : 'books'}`
-}
-
-function formatVisibleBookCount(page: BookPage) {
-  const count = page.numberOfElements ?? page.content?.length ?? 0
-
-  return `${count} visible`
-}
-
-function formatPageStatus(page: BookPage, query: CatalogQueryState) {
-  const pageNumber = (page.number ?? query.page) + 1
-  const totalPages = page.totalPages ?? 0
-
-  return totalPages > 0 ? `Page ${pageNumber} of ${totalPages}` : `Page ${pageNumber}`
 }
 
 function createFilterDraftKey(draft: CatalogFilterDraft) {

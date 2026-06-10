@@ -26,6 +26,7 @@ import {
   type LoadState,
 } from '../ui/asyncState'
 import { formatTimestamp } from '../ui/format'
+import { IconChevronDown } from '../ui/icons'
 import { PaginationControls } from '../ui/PaginationControls'
 import { StateBlock } from '../ui/StateBlock'
 import {
@@ -43,6 +44,7 @@ import {
 
 export const OPERATOR_ROUTE_PATH = '/operator' as const
 
+const LIVE_FILTER_DEBOUNCE_MS = 300
 const PAGE_SIZE_OPTIONS = [10, 20, 50] as const
 const EMPTY_AUDIT_ROWS: readonly AuditLog[] = []
 
@@ -175,6 +177,39 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
     })
   }
 
+  // Filters apply live: a short typing pause pushes the trimmed draft into
+  // the URL-backed query. The draft is re-stored under the next route key so
+  // in-progress text (including trailing spaces) survives the URL change.
+  useEffect(() => {
+    if (
+      filterDraft.actorLogin.trim() === query.actorLogin &&
+      filterDraft.action === query.action &&
+      filterDraft.targetType === query.targetType
+    ) {
+      return undefined
+    }
+
+    const timer = window.setTimeout(() => {
+      const nextQuery: AuditQueryState = {
+        ...query,
+        action: filterDraft.action,
+        actorLogin: filterDraft.actorLogin.trim(),
+        page: 0,
+        targetType: filterDraft.targetType,
+      }
+
+      setFilterDraftState({
+        key: createFilterDraftKey(createAuditFilterDraft(nextQuery)),
+        value: filterDraft,
+      })
+      setSearchParams(auditQueryToUrlSearchParams(nextQuery))
+    }, LIVE_FILTER_DEBOUNCE_MS)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [filterDraft, query, setSearchParams])
+
   function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     updateAuditQuery({
@@ -253,27 +288,11 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
       <section className="operator-section" aria-labelledby="audit-log-title">
         <div className="admin-section-heading">
           <div>
-            <p className="eyebrow">Audit log</p>
             <h2 id="audit-log-title">Audit rows</h2>
-            <p className="section-description">
-              Review audit entries with filters, sorting, and pagination.
-              Expand a row to inspect the structured audit payload without
-              changing the current filters.
-            </p>
           </div>
         </div>
 
-        <div className="workflow-group" aria-labelledby="audit-search-title">
-          <div className="workflow-group-heading">
-            <div>
-              <h3 id="audit-search-title">Find audit entries</h3>
-              <p className="section-description">
-                Keep URL-backed filters, sort, and page size aligned with
-                the audit query.
-              </p>
-            </div>
-          </div>
-
+        <div className="workflow-group" aria-label="Audit query controls">
           <form
             aria-label="Audit filters"
             className="operator-filters"
@@ -329,66 +348,53 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
               />
             </label>
             <div className="catalog-filter-actions">
-              <button type="submit">Search audit logs</button>
               <button type="button" className="secondary-button" onClick={clearFilters}>
                 Clear
               </button>
             </div>
           </form>
 
-          <div className="operator-controls" aria-label="Audit table controls">
-            <label>
-              <span>Sort by</span>
-              <select
-                value={getSortOptionValue(query.sort)}
-                onChange={(event) => changeSort(event.currentTarget.value)}
-              >
-                {isCustomSort(query.sort) && (
-                  <option value={query.sort.join('|')}>Custom sort</option>
-                )}
-                {SORT_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span>Rows per page</span>
-              <select
-                value={query.size}
-                onChange={(event) =>
-                  changePageSize(Number(event.currentTarget.value))
-                }
-              >
-                {!PAGE_SIZE_OPTIONS.includes(query.size as PageSizeOption) && (
-                  <option value={query.size}>{query.size}</option>
-                )}
-                {PAGE_SIZE_OPTIONS.map((size) => (
-                  <option key={size} value={size}>
-                    {size}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <AuditWorkflowSummary
-            query={query}
-            selectedAuditEntry={selectedAuditEntry}
-            state={auditPageState}
-          />
-        </div>
-
-        <div className="workflow-group" aria-labelledby="audit-review-title">
-          <div className="workflow-group-heading">
-            <div>
-              <h3 id="audit-review-title">Review audit rows</h3>
-              <p className="section-description">
-                Open read-only details from the pageable audit table.
-              </p>
+          <div className="catalog-toolbar" aria-label="Audit table controls">
+            <div className="catalog-toolbar-status">
+              <label className="inline-sort">
+                <span>Sort by</span>
+                <select
+                  value={getSortOptionValue(query.sort)}
+                  onChange={(event) => changeSort(event.currentTarget.value)}
+                >
+                  {isCustomSort(query.sort) && (
+                    <option value={query.sort.join('|')}>Custom sort</option>
+                  )}
+                  {SORT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <span aria-live="polite" className="toolbar-summary">
+                {formatAuditSummary(auditPageState)}
+              </span>
+              {auditPageState.status === 'ready' && (
+                <AuditPaginationControls
+                  ariaLabel="Audit pagination top"
+                  page={auditPageState.value}
+                  query={query}
+                  variant="toolbar"
+                  onNextPage={() =>
+                    goToPage((auditPageState.value.number ?? query.page) + 1)
+                  }
+                  onPageSizeChange={changePageSize}
+                  onPreviousPage={() =>
+                    goToPage((auditPageState.value.number ?? query.page) - 1)
+                  }
+                />
+              )}
             </div>
           </div>
+        </div>
+
+        <div className="workflow-group" aria-label="Audit results">
           <AuditLogResults
             query={query}
             state={auditPageState}
@@ -490,8 +496,8 @@ function AuditLogResults({
                 <th className="plain-column-header" scope="col">
                   Summary
                 </th>
-                <th className="plain-column-header" scope="col">
-                  Details
+                <th className="plain-column-header audit-expand-cell" scope="col">
+                  <span className="visually-hidden">Details</span>
                 </th>
               </tr>
             </thead>
@@ -520,63 +526,17 @@ function AuditLogResults({
   )
 }
 
-function AuditWorkflowSummary({
-  query,
-  selectedAuditEntry,
-  state,
-}: {
-  query: AuditQueryState
-  selectedAuditEntry: SelectedAuditEntry | null
-  state: LoadState<AuditLogPage>
-}) {
-  const activeFilters = getAuditFilterSummary(query)
-  const page = state.status === 'ready' ? state.value : null
-  const rowCount = page?.numberOfElements ?? page?.content?.length
-  const totalElements = page?.totalElements
+function formatAuditSummary(state: LoadState<AuditLogPage>) {
+  if (state.status !== 'ready') {
+    return `Audit rows are ${formatLoadStatus(state.status).toLowerCase()}.`
+  }
 
-  return (
-    <div className="catalog-summary admin-workflow-summary" aria-live="polite">
-      <p>
-        {page
-          ? `Showing ${rowCount ?? 0}${
-              totalElements !== undefined ? ` of ${totalElements}` : ''
-            } audit entries.`
-          : `Audit rows are ${formatLoadStatus(state.status).toLowerCase()}.`}
-      </p>
-      <dl
-        className="catalog-query-details compact-query-details"
-        aria-label="Active audit workflow"
-      >
-        <div>
-          <dt>Filters</dt>
-          <dd>{activeFilters.length > 0 ? activeFilters.join(' / ') : 'None'}</dd>
-        </div>
-        <div>
-          <dt>Sort</dt>
-          <dd>{query.sort.join(' / ')}</dd>
-        </div>
-        <div>
-          <dt>Page</dt>
-          <dd>{query.page + 1}</dd>
-        </div>
-        <div>
-          <dt>Page size</dt>
-          <dd>{query.size}</dd>
-        </div>
-        <div>
-          <dt>Selected</dt>
-          <dd>
-            {selectedAuditEntry !== null
-              ? createAuditEntryLabel(
-                  selectedAuditEntry.entry,
-                  selectedAuditEntry.index,
-                )
-              : 'None'}
-          </dd>
-        </div>
-      </dl>
-    </div>
-  )
+  const rowCount = state.value.numberOfElements ?? state.value.content?.length
+  const totalElements = state.value.totalElements
+
+  return `Showing ${rowCount ?? 0}${
+    totalElements !== undefined ? ` of ${totalElements}` : ''
+  } audit entries.`
 }
 
 function AuditLogRow({
@@ -593,9 +553,19 @@ function AuditLogRow({
   const entryLabel = createAuditEntryLabel(entry, index)
   const detailRowId = `audit-entry-details-${index}`
 
+  // The whole row toggles details; clicks that finish a text selection are
+  // ignored so copying cell content does not collapse the row.
+  function handleRowClick() {
+    if (window.getSelection()?.toString()) {
+      return
+    }
+
+    onSelectEntry(entry, index)
+  }
+
   return (
     <>
-      <tr>
+      <tr className="audit-row" onClick={handleRowClick}>
         <td>{formatTimestamp(entry.createdAt)}</td>
         <td>
           {formatEnumValue(entry.targetType)}
@@ -604,16 +574,23 @@ function AuditLogRow({
         <td>{formatEnumValue(entry.action)}</td>
         <td>{formatActor(entry.actorLogin)}</td>
         <td>{formatSummary(entry.summary)}</td>
-        <td>
+        <td className="audit-expand-cell">
           <button
             aria-controls={detailRowId}
             aria-expanded={expanded}
-            className="secondary-button"
+            className="row-expand-button"
             type="button"
             aria-label={`Details for ${entryLabel}`}
-            onClick={() => onSelectEntry(entry, index)}
+            onClick={(event) => {
+              event.stopPropagation()
+              onSelectEntry(entry, index)
+            }}
           >
-            Details
+            <IconChevronDown
+              className={`row-expand-caret${expanded ? ' open' : ''}`}
+              height={15}
+              width={15}
+            />
           </button>
         </td>
       </tr>
@@ -629,20 +606,23 @@ function AuditLogRow({
 }
 
 function AuditPaginationControls({
+  ariaLabel = 'Audit pagination',
   onNextPage,
   onPageSizeChange,
   onPreviousPage,
   page,
   query,
+  variant,
 }: {
+  ariaLabel?: string
   onNextPage: () => void
   onPageSizeChange: (size: number) => void
   onPreviousPage: () => void
   page: AuditLogPage
   query: AuditQueryState
+  variant?: 'pager' | 'toolbar'
 }) {
   const pageNumber = page.number ?? query.page
-  const pageSize = page.size ?? query.size
   const totalPages = page.totalPages ?? 0
   const first = page.first === true || pageNumber <= 0
   const last =
@@ -650,17 +630,17 @@ function AuditPaginationControls({
 
   return (
     <PaginationControls
-      ariaLabel="Audit pagination"
+      ariaLabel={ariaLabel}
       first={first}
       last={last}
       onNextPage={onNextPage}
       onPageSizeChange={onPageSizeChange}
       onPreviousPage={onPreviousPage}
       pageNumber={pageNumber}
-      pageSize={pageSize}
       pageSizeOptions={PAGE_SIZE_OPTIONS}
       querySize={query.size}
       totalPages={totalPages}
+      variant={variant}
     />
   )
 }
@@ -673,8 +653,6 @@ const DEFAULT_AUDIT_QUERY: AuditQueryState = {
   sort: DEFAULT_AUDIT_SORT,
   targetType: '',
 }
-
-type PageSizeOption = (typeof PAGE_SIZE_OPTIONS)[number]
 
 function parseAuditSearchParams(searchParams: URLSearchParams): AuditQueryState {
   const sort = trimmedValues(searchParams.getAll('sort'))
@@ -744,24 +722,6 @@ function normalizeAuditAction(value: string | null): AuditAction | '' {
   return AUDIT_ACTIONS.includes(normalized as AuditAction)
     ? (normalized as AuditAction)
     : ''
-}
-
-function getAuditFilterSummary(query: AuditQueryState) {
-  const filters: string[] = []
-
-  if (query.targetType) {
-    filters.push(`Target: ${formatEnumValue(query.targetType)}`)
-  }
-
-  if (query.action) {
-    filters.push(`Action: ${formatEnumValue(query.action)}`)
-  }
-
-  if (query.actorLogin) {
-    filters.push(`Actor: ${query.actorLogin}`)
-  }
-
-  return filters
 }
 
 function isCustomSort(sort: readonly string[]) {

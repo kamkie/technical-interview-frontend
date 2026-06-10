@@ -274,7 +274,9 @@ async function runMetadataDrivenLogin(page, config, provider) {
   await page.waitForLoadState('domcontentloaded', {
     timeout: config.timeoutMs,
   })
-  await page.getByRole('button', { name: 'Account' }).waitFor({
+  // The trigger's accessible name is the signed-in user's display name, so
+  // target the stable element id instead of a fixed label.
+  await page.locator('#account-menu-trigger').waitFor({
     timeout: config.timeoutMs,
   })
 
@@ -363,7 +365,7 @@ async function verifyCsrfLogout(page, context, config, session) {
     `browser cookie jar must include ${csrf.cookieName}`,
   )
 
-  const accountButton = page.getByRole('button', { name: 'Account' })
+  const accountButton = page.locator('#account-menu-trigger')
 
   if ((await accountButton.getAttribute('aria-expanded')) !== 'true') {
     await accountButton.click()

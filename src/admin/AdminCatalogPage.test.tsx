@@ -46,15 +46,6 @@ describe('AdminCatalogPage', () => {
         name: 'Sort by Publication year; currently descending. Activate to sort ascending.',
       }),
     ).toBeInTheDocument()
-    const querySummary = screen.getByLabelText('Active admin book query')
-    expect(
-      within(querySummary).getByText(
-        'Title: clean; Author: martin; ISBN: 978; Categories: Java, Architecture',
-      ),
-    ).toBeInTheDocument()
-    expect(within(querySummary).getByText('Newest first')).toBeInTheDocument()
-    expect(within(querySummary).getByText('No book selected')).toBeInTheDocument()
-    expect(within(querySummary).getByText('2 visible')).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(ACCOUNT_PATH, {
       method: 'GET',
       credentials: 'same-origin',
@@ -95,6 +86,7 @@ describe('AdminCatalogPage', () => {
     expect(screen.getAllByText(/Page 3\s+of 3/)).toHaveLength(2)
     expect(screen.getByRole('button', { name: 'Previous' })).not.toBeDisabled()
     expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled()
   })
 
   it('canonicalizes invalid admin catalog query values before requesting books', async () => {

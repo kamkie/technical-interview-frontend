@@ -30,21 +30,12 @@ describe('OperatorPage', () => {
 
     expect(await screen.findByText('Created category Java.')).toBeInTheDocument()
     expect(
-      screen.getByRole('heading', { name: 'Find audit entries' }),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole('heading', { name: 'Review audit rows' }),
+      screen.getByRole('heading', { name: 'Audit rows' }),
     ).toBeInTheDocument()
     const filters = screen.getByRole('form', { name: 'Audit filters' })
     expect(within(filters).getByLabelText('Target type')).toBeInTheDocument()
     expect(within(filters).getByLabelText('Action')).toBeInTheDocument()
     expect(within(filters).getByLabelText('Actor login')).toBeInTheDocument()
-    const workflowSummary = screen.getByLabelText('Active audit workflow')
-    expect(
-      within(workflowSummary).getByText(
-        'Target: BOOK / Action: UPDATE / Actor: admin',
-      ),
-    ).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(
       `${AUDIT_LOGS_PATH}?targetType=BOOK&action=UPDATE&actorLogin=admin&page=2&size=50&sort=createdAt%2CDESC&sort=id%2CDESC`,
       {
@@ -90,7 +81,6 @@ describe('OperatorPage', () => {
     fireEvent.change(screen.getByLabelText('Actor login'), {
       target: { value: ' system ' },
     })
-    fireEvent.click(screen.getByRole('button', { name: 'Search audit logs' }))
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(
@@ -102,7 +92,8 @@ describe('OperatorPage', () => {
       )
     })
     expect(screen.getByLabelText('Target type')).toHaveValue('AUTHENTICATION')
-    expect(screen.getByLabelText('Actor login')).toHaveValue('system')
+    // The query trims the value while the input keeps the typed text.
+    expect(screen.getByLabelText('Actor login')).toHaveValue(' system ')
   })
 
   it('keeps repeated sort values through browser back and forward navigation', async () => {
@@ -201,6 +192,22 @@ describe('OperatorPage', () => {
     fireEvent.click(detailsToggle)
 
     expect(detailsToggle).toHaveAttribute('aria-expanded', 'false')
+    expect(container.querySelector('.audit-detail-row')).toBeNull()
+  })
+
+  it('toggles inline details from a click anywhere in the row', async () => {
+    mockOperatorFetch()
+
+    const { container } = renderOperator()
+
+    const summaryCell = await screen.findByText('Created category Java.')
+
+    fireEvent.click(summaryCell)
+
+    expect(container.querySelector('.audit-detail-row')).not.toBeNull()
+
+    fireEvent.click(summaryCell)
+
     expect(container.querySelector('.audit-detail-row')).toBeNull()
   })
 

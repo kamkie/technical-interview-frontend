@@ -41,14 +41,7 @@ describe('AdminLocalizationPage', () => {
 
     expect(await screen.findByText('Konto')).toBeInTheDocument()
     expect(
-      screen.getByRole('heading', { name: 'Find message rows' }),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole('heading', { name: 'Operate on rows' }),
-    ).toBeInTheDocument()
-    const workflowSummary = screen.getByLabelText('Active localization workflow')
-    expect(
-      within(workflowSummary).getByText('Message key: account.title / Language: pl'),
+      screen.getByRole('heading', { name: 'Localization rows' }),
     ).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(ACCOUNT_PATH, {
       method: 'GET',
@@ -67,9 +60,8 @@ describe('AdminLocalizationPage', () => {
 
     expect(screen.getAllByLabelText('Rows per page')[0]).toHaveValue('50')
 
-    fireEvent.click(screen.getByRole('tab', { name: 'Coverage' }))
     expect(
-      screen.getByRole('heading', { name: 'Review locale coverage' }),
+      screen.getByRole('heading', { name: 'Locale coverage' }),
     ).toBeInTheDocument()
     const coverageTable = screen.getByRole('table', {
       name: 'Localization coverage',
@@ -106,73 +98,51 @@ describe('AdminLocalizationPage', () => {
     ).toBe(false)
   })
 
-  it('deep links the coverage tab through the tab search param', async () => {
+  it('tolerates a stale tab search param from old deep links', async () => {
     mockAdminLocalizationFetch()
 
     renderAdminLocalization(`${ADMIN_LOCALIZATION_ROUTE_PATH}?tab=coverage`)
 
     expect(
-      await screen.findByRole('heading', { name: 'Review locale coverage' }),
+      await screen.findByRole('heading', { name: 'Localization rows' }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: 'Coverage' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    )
+    expect(
+      await screen.findByRole('heading', { name: 'Locale coverage' }),
+    ).toBeInTheDocument()
   })
 
-  it('falls back to the messages tab for unknown tab values', async () => {
+  it('hides and restores the coverage widget from its toggle', async () => {
     mockAdminLocalizationFetch()
 
-    renderAdminLocalization(`${ADMIN_LOCALIZATION_ROUTE_PATH}?tab=bogus`)
+    renderAdminLocalization()
 
     expect(
-      await screen.findByRole('heading', { name: 'Find message rows' }),
+      await screen.findByRole('table', { name: 'Localization coverage' }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: 'Messages' })).toHaveAttribute(
-      'aria-selected',
+
+    fireEvent.click(screen.getByRole('button', { name: 'Hide coverage' }))
+
+    expect(
+      screen.queryByRole('table', { name: 'Localization coverage' }),
+    ).not.toBeInTheDocument()
+    expect(window.localStorage.getItem('admin-localization-coverage-hidden')).toBe(
       'true',
     )
-  })
 
-  it('updates the tab search param when switching sections without refetching rows', async () => {
-    const fetchMock = mockAdminLocalizationFetch()
+    fireEvent.click(screen.getByRole('button', { name: 'Show coverage' }))
 
-    const { router } = renderAdminLocalization(
-      `${ADMIN_LOCALIZATION_ROUTE_PATH}?messageKey=account.title`,
-    )
-
-    await screen.findByText('Konto')
-    fireEvent.click(screen.getByRole('tab', { name: 'Coverage' }))
-
-    await waitFor(() => {
-      expect(router.state.location.search).toBe(
-        '?messageKey=account.title&tab=coverage',
-      )
-    })
     expect(
-      screen.getByRole('heading', { name: 'Review locale coverage' }),
+      screen.getByRole('table', { name: 'Localization coverage' }),
     ).toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('tab', { name: 'Messages' }))
-
-    await waitFor(() => {
-      expect(router.state.location.search).toBe('?messageKey=account.title')
-    })
-    expect(
-      fetchMock.mock.calls.filter(([input]) =>
-        String(input).startsWith(`${LOCALIZATIONS_PATH}?`),
-      ),
-    ).toHaveLength(1)
   })
 
-  it('returns to the messages tab and focuses the message key input from coverage', async () => {
+  it('opens a prefilled create form from coverage and focuses the message key input', async () => {
     mockAdminLocalizationFetch()
 
     renderAdminLocalization(
       `${ADMIN_LOCALIZATION_ROUTE_PATH}?messageKey=account.title`,
     )
 
-    fireEvent.click(await screen.findByRole('tab', { name: 'Coverage' }))
     fireEvent.click(
       await screen.findByRole('button', { name: 'Add de for account.title' }),
     )
@@ -180,10 +150,6 @@ describe('AdminLocalizationPage', () => {
     const form = await screen.findByRole('form', { name: 'Create localization' })
     const messageKeyInput = within(form).getByLabelText('Message key')
 
-    expect(screen.getByRole('tab', { name: 'Messages' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    )
     expect(messageKeyInput).toHaveValue('account.title')
     await waitFor(() => {
       expect(messageKeyInput).toHaveFocus()
@@ -230,7 +196,6 @@ describe('AdminLocalizationPage', () => {
 
     renderAdminLocalization(`${ADMIN_LOCALIZATION_ROUTE_PATH}?messageKey=account.title`)
 
-    fireEvent.click(await screen.findByRole('tab', { name: 'Coverage' }))
     fireEvent.click(await screen.findByRole('button', { name: 'Add de for account.title' }))
 
     const form = screen.getByRole('form', { name: 'Create localization' })
@@ -326,7 +291,7 @@ describe('AdminLocalizationPage', () => {
         }),
       })
     })
-    expect(screen.getByText('Localization updated.')).toBeInTheDocument()
+    expect(await screen.findByText('Localization updated.')).toBeInTheDocument()
     expect(await screen.findAllByText('Account settings')).not.toHaveLength(0)
     expect(localizationReads).toBeGreaterThanOrEqual(2)
   })
@@ -389,7 +354,7 @@ describe('AdminLocalizationPage', () => {
         body: undefined,
       })
     })
-    expect(screen.getByText('Localization deleted.')).toBeInTheDocument()
+    expect(await screen.findByText('Localization deleted.')).toBeInTheDocument()
     await waitFor(() => {
       expect(
         screen.queryByRole('button', { name: 'Delete account.title en' }),
@@ -447,7 +412,6 @@ describe('AdminLocalizationPage', () => {
 
     renderAdminLocalization(`${ADMIN_LOCALIZATION_ROUTE_PATH}?messageKey=account.title`)
 
-    fireEvent.click(await screen.findByRole('tab', { name: 'Coverage' }))
     fireEvent.click(await screen.findByRole('button', { name: 'Add de for account.title' }))
     const form = screen.getByRole('form', { name: 'Create localization' })
     fireEvent.change(within(form).getByLabelText('Message text'), {
@@ -503,7 +467,6 @@ describe('AdminLocalizationPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Nie masz dostepu do tlumaczen.',
     )
-    fireEvent.click(screen.getByRole('tab', { name: 'Coverage' }))
     expect(screen.getAllByText('unknown').length).toBeGreaterThan(0)
   })
 })
