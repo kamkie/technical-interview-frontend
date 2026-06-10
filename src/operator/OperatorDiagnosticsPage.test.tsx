@@ -49,6 +49,25 @@ describe('OperatorDiagnosticsPage', () => {
     })
   })
 
+  it('reuses the cached operator surface when remounting with the same session', async () => {
+    const fetchMock = mockSurfaceFetch()
+    const session = createSession()
+
+    const { unmount } = renderDiagnostics(session)
+
+    expect(await screen.findByText('Updated book title.')).toBeInTheDocument()
+    unmount()
+
+    renderDiagnostics(session)
+
+    expect(screen.getByText('Updated book title.')).toBeInTheDocument()
+    expect(
+      fetchMock.mock.calls.filter(
+        ([input]) => String(input) === OPERATOR_SURFACE_PATH,
+      ),
+    ).toHaveLength(1)
+  })
+
   it('opens details from a recent entry', async () => {
     mockSurfaceFetch()
 

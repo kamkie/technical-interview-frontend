@@ -48,6 +48,11 @@ import { Tabs } from '../ui/Tabs'
 
 export const ADMIN_CATALOG_ROUTE_PATH = '/admin/catalog' as const
 const EMPTY_CATEGORIES: readonly Category[] = []
+const CATALOG_TAB_PARAM = 'tab'
+const CATALOG_SECTIONS = ['books', 'categories'] as const
+const DEFAULT_CATALOG_SECTION: CatalogSection = 'books'
+
+type CatalogSection = (typeof CATALOG_SECTIONS)[number]
 
 type BookFormMode =
   | { type: 'create' }
@@ -102,17 +107,27 @@ export function AdminCatalogPage({ session }: { session: SessionResponse }) {
 }
 
 function AdminCatalogManager({ session }: { session: SessionResponse }) {
-  const [activeSection, setActiveSection] = useState('books')
   const [searchParams, setSearchParams] = useSearchParams()
+  const activeSection = parseCatalogSection(searchParams)
+  const querySearch = useMemo(() => {
+    const params = new URLSearchParams(searchParams)
+
+    params.delete(CATALOG_TAB_PARAM)
+
+    return params.toString()
+  }, [searchParams])
   const query = useMemo(
-    () => parseCatalogSearchParams(searchParams),
-    [searchParams],
+    () => parseCatalogSearchParams(new URLSearchParams(querySearch)),
+    [querySearch],
   )
   const currentSearch = searchParams.toString()
-  const canonicalSearch = useMemo(
-    () => catalogQueryToSearchParams(query).toString(),
-    [query],
-  )
+  const canonicalSearch = useMemo(() => {
+    const params = catalogQueryToSearchParams(query)
+
+    appendCatalogSectionParam(params, activeSection)
+
+    return params.toString()
+  }, [activeSection, query])
   const [categoriesState, setCategoriesState] = useState<LoadState<Category[]>>({
     status: 'loading',
   })
@@ -228,8 +243,20 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
   function updateCatalogQuery(nextQuery: CatalogQueryState) {
     const nextSearchParams = catalogQueryToSearchParams(nextQuery)
 
+    appendCatalogSectionParam(nextSearchParams, activeSection)
+
     if (nextSearchParams.toString() !== currentSearch) {
       setSearchParams(nextSearchParams)
+    }
+  }
+
+  function changeSection(sectionId: string) {
+    const nextSearchParams = catalogQueryToSearchParams(query)
+
+    appendCatalogSectionParam(nextSearchParams, normalizeCatalogSection(sectionId))
+
+    if (nextSearchParams.toString() !== currentSearch) {
+      setSearchParams(nextSearchParams, { replace: true })
     }
   }
 
@@ -895,7 +922,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
         activeTab={activeSection}
         ariaLabel="Catalog administration sections"
         idPrefix="admin-catalog"
-        onTabChange={setActiveSection}
+        onTabChange={changeSection}
         tabs={[
           { id: 'books', label: 'Books', panel: booksPanel },
           { id: 'categories', label: 'Categories', panel: categoriesPanel },
@@ -1523,6 +1550,27 @@ function formatAdminSelectionStatus(mode: BookFormMode) {
   }
 
   return 'No book selected'
+}
+
+function normalizeCatalogSection(value: string | null | undefined): CatalogSection {
+  const normalized = value?.trim() ?? ''
+
+  return CATALOG_SECTIONS.includes(normalized as CatalogSection)
+    ? (normalized as CatalogSection)
+    : DEFAULT_CATALOG_SECTION
+}
+
+function parseCatalogSection(searchParams: URLSearchParams) {
+  return normalizeCatalogSection(searchParams.get(CATALOG_TAB_PARAM))
+}
+
+function appendCatalogSectionParam(
+  searchParams: URLSearchParams,
+  section: CatalogSection,
+) {
+  if (section !== DEFAULT_CATALOG_SECTION) {
+    searchParams.set(CATALOG_TAB_PARAM, section)
+  }
 }
 
 function createFilterDraftKey(draft: CatalogFilterDraft) {

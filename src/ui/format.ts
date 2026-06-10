@@ -1,3 +1,8 @@
+const TIMESTAMP_FORMATTER = new Intl.DateTimeFormat(undefined, {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+})
+
 export function formatTimestamp(value: string | undefined) {
   if (!value) {
     return 'Unknown'
@@ -9,8 +14,5 @@ export function formatTimestamp(value: string | undefined) {
     return value
   }
 
-  return new Intl.DateTimeFormat(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(timestamp)
+  return TIMESTAMP_FORMATTER.format(timestamp)
 }

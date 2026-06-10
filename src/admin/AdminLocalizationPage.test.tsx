@@ -106,6 +106,90 @@ describe('AdminLocalizationPage', () => {
     ).toBe(false)
   })
 
+  it('deep links the coverage tab through the tab search param', async () => {
+    mockAdminLocalizationFetch()
+
+    renderAdminLocalization(`${ADMIN_LOCALIZATION_ROUTE_PATH}?tab=coverage`)
+
+    expect(
+      await screen.findByRole('heading', { name: 'Review locale coverage' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Coverage' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+  })
+
+  it('falls back to the messages tab for unknown tab values', async () => {
+    mockAdminLocalizationFetch()
+
+    renderAdminLocalization(`${ADMIN_LOCALIZATION_ROUTE_PATH}?tab=bogus`)
+
+    expect(
+      await screen.findByRole('heading', { name: 'Find message rows' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Messages' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+  })
+
+  it('updates the tab search param when switching sections without refetching rows', async () => {
+    const fetchMock = mockAdminLocalizationFetch()
+
+    const { router } = renderAdminLocalization(
+      `${ADMIN_LOCALIZATION_ROUTE_PATH}?messageKey=account.title`,
+    )
+
+    await screen.findByText('Konto')
+    fireEvent.click(screen.getByRole('tab', { name: 'Coverage' }))
+
+    await waitFor(() => {
+      expect(router.state.location.search).toBe(
+        '?messageKey=account.title&tab=coverage',
+      )
+    })
+    expect(
+      screen.getByRole('heading', { name: 'Review locale coverage' }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Messages' }))
+
+    await waitFor(() => {
+      expect(router.state.location.search).toBe('?messageKey=account.title')
+    })
+    expect(
+      fetchMock.mock.calls.filter(([input]) =>
+        String(input).startsWith(`${LOCALIZATIONS_PATH}?`),
+      ),
+    ).toHaveLength(1)
+  })
+
+  it('returns to the messages tab and focuses the message key input from coverage', async () => {
+    mockAdminLocalizationFetch()
+
+    renderAdminLocalization(
+      `${ADMIN_LOCALIZATION_ROUTE_PATH}?messageKey=account.title`,
+    )
+
+    fireEvent.click(await screen.findByRole('tab', { name: 'Coverage' }))
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Add de for account.title' }),
+    )
+
+    const form = await screen.findByRole('form', { name: 'Create localization' })
+    const messageKeyInput = within(form).getByLabelText('Message key')
+
+    expect(screen.getByRole('tab', { name: 'Messages' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+    expect(messageKeyInput).toHaveValue('account.title')
+    await waitFor(() => {
+      expect(messageKeyInput).toHaveFocus()
+    })
+  })
+
   it('creates a missing locale row and refreshes visible coverage', async () => {
     document.cookie = 'XSRF-TOKEN=token%201'
     let localizationReads = 0

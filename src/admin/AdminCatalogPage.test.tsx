@@ -469,6 +469,66 @@ describe('AdminCatalogPage', () => {
     expect(screen.getByText('Effective Java')).toBeInTheDocument()
   })
 
+  it('deep links the categories tab through the tab search param', async () => {
+    mockAdminFetch()
+
+    renderAdminCatalog(`${ADMIN_CATALOG_ROUTE_PATH}?tab=categories`)
+
+    expect(
+      await screen.findByRole('form', { name: 'Create category' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Categories' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+  })
+
+  it('falls back to the books tab for unknown tab values', async () => {
+    mockAdminFetch()
+
+    const { router } = renderAdminCatalog(`${ADMIN_CATALOG_ROUTE_PATH}?tab=bogus`)
+
+    expect(
+      await screen.findByRole('form', { name: 'Admin book filters' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Books' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    )
+    await waitFor(() => {
+      expect(router.state.location.search).toBe('')
+    })
+  })
+
+  it('updates the tab search param when switching sections without refetching books', async () => {
+    const fetchMock = mockAdminFetch()
+
+    const { router } = renderAdminCatalog(
+      `${ADMIN_CATALOG_ROUTE_PATH}?title=clean`,
+    )
+
+    await screen.findByText('Effective Java')
+    fireEvent.click(screen.getByRole('tab', { name: 'Categories' }))
+
+    await waitFor(() => {
+      expect(router.state.location.search).toBe('?title=clean&tab=categories')
+    })
+    expect(
+      screen.getByRole('form', { name: 'Create category' }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Books' }))
+
+    await waitFor(() => {
+      expect(router.state.location.search).toBe('?title=clean')
+    })
+    expect(
+      fetchMock.mock.calls.filter(([input]) =>
+        String(input).startsWith(BOOKS_PATH),
+      ),
+    ).toHaveLength(1)
+  })
+
   it('creates, updates, and deletes categories successfully', async () => {
     document.cookie = 'XSRF-TOKEN=token'
     vi.spyOn(window, 'confirm').mockReturnValue(true)

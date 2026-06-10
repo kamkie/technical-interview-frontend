@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import { useCurrentAccount } from '../account/useCurrentAccount'
@@ -42,6 +42,11 @@ import { Tabs } from '../ui/Tabs'
 export const ADMIN_LOCALIZATION_ROUTE_PATH = '/admin/localizations' as const
 
 const EMPTY_LOCALIZATIONS: readonly LocalizationResponse[] = []
+const LOCALIZATION_TAB_PARAM = 'tab'
+const LOCALIZATION_SECTIONS = ['messages', 'coverage'] as const
+const DEFAULT_LOCALIZATION_SECTION: LocalizationSection = 'messages'
+
+type LocalizationSection = (typeof LOCALIZATION_SECTIONS)[number]
 const PAGE_SIZE_OPTIONS = [10, 20, 50] as const
 const SORT_OPTIONS = [
   {
@@ -131,12 +136,20 @@ export function AdminLocalizationPage({ session }: { session: SessionResponse })
 }
 
 function AdminLocalizationManager({ session }: { session: SessionResponse }) {
-  const [activeSection, setActiveSection] = useState('messages')
   const [formFocusToken, setFormFocusToken] = useState(0)
+  const handledFormFocusTokenRef = useRef(0)
   const [searchParams, setSearchParams] = useSearchParams()
+  const activeSection = parseLocalizationSection(searchParams)
+  const querySearch = useMemo(() => {
+    const params = new URLSearchParams(searchParams)
+
+    params.delete(LOCALIZATION_TAB_PARAM)
+
+    return params.toString()
+  }, [searchParams])
   const query = useMemo(
-    () => parseLocalizationSearchParams(searchParams),
-    [searchParams],
+    () => parseLocalizationSearchParams(new URLSearchParams(querySearch)),
+    [querySearch],
   )
   const routeFilterDraft = createLocalizationFilterDraft(query)
   const routeFilterDraftKey = createFilterDraftKey(routeFilterDraft)
@@ -223,8 +236,23 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
   function updateLocalizationQuery(nextQuery: LocalizationQueryState) {
     const nextSearchParams = localizationQueryToUrlSearchParams(nextQuery)
 
+    appendLocalizationSectionParam(nextSearchParams, activeSection)
+
     if (nextSearchParams.toString() !== searchParams.toString()) {
       setSearchParams(nextSearchParams)
+    }
+  }
+
+  function changeSection(sectionId: string) {
+    const nextSearchParams = localizationQueryToUrlSearchParams(query)
+
+    appendLocalizationSectionParam(
+      nextSearchParams,
+      normalizeLocalizationSection(sectionId),
+    )
+
+    if (nextSearchParams.toString() !== searchParams.toString()) {
+      setSearchParams(nextSearchParams, { replace: true })
     }
   }
 
@@ -289,28 +317,40 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
       }),
     )
     setMutationState({ status: 'idle' })
-    setActiveSection('messages')
+    changeSection('messages')
     setFormFocusToken((token) => token + 1)
   }
 
   useEffect(() => {
-    if (formFocusToken === 0) {
+    if (
+      formFocusToken === 0 ||
+      formFocusToken === handledFormFocusTokenRef.current ||
+      activeSection !== 'messages'
+    ) {
       return
     }
 
+    // The messages panel may mount in a later commit than the focus request
+    // because the tab switch travels through the router; retry on tab change.
     const messageKeyInput = document.getElementById(
       'localization-form-message-key',
     )
 
+    if (!messageKeyInput) {
+      return
+    }
+
+    handledFormFocusTokenRef.current = formFocusToken
+
     const prefersReducedMotion =
       window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
 
-    messageKeyInput?.scrollIntoView?.({
+    messageKeyInput.scrollIntoView?.({
       behavior: prefersReducedMotion ? 'auto' : 'smooth',
       block: 'center',
     })
-    messageKeyInput?.focus({ preventScroll: true })
-  }, [formFocusToken])
+    messageKeyInput.focus({ preventScroll: true })
+  }, [activeSection, formFocusToken])
 
   async function startEdit(row: LocalizationResponse) {
     if (row.id === undefined) {
@@ -639,7 +679,7 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
         activeTab={activeSection}
         ariaLabel="Localization administration sections"
         idPrefix="admin-localization"
-        onTabChange={setActiveSection}
+        onTabChange={changeSection}
         tabs={[
           { id: 'messages', label: 'Messages', panel: messagesPanel },
           { id: 'coverage', label: 'Coverage', panel: coveragePanel },
@@ -1116,6 +1156,29 @@ function normalizeSupportedLanguage(
   )
     ? (normalized as SupportedLocalizationLanguage)
     : 'en'
+}
+
+function normalizeLocalizationSection(
+  value: string | null | undefined,
+): LocalizationSection {
+  const normalized = value?.trim() ?? ''
+
+  return LOCALIZATION_SECTIONS.includes(normalized as LocalizationSection)
+    ? (normalized as LocalizationSection)
+    : DEFAULT_LOCALIZATION_SECTION
+}
+
+function parseLocalizationSection(searchParams: URLSearchParams) {
+  return normalizeLocalizationSection(searchParams.get(LOCALIZATION_TAB_PARAM))
+}
+
+function appendLocalizationSectionParam(
+  searchParams: URLSearchParams,
+  section: LocalizationSection,
+) {
+  if (section !== DEFAULT_LOCALIZATION_SECTION) {
+    searchParams.set(LOCALIZATION_TAB_PARAM, section)
+  }
 }
 
 function normalizeQueryLanguage(language: string | null) {

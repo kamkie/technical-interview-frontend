@@ -423,14 +423,12 @@ input[type='radio'] {
 /* Dropdown menus ------------------------------------------------------------ */
 
 .nav-menu,
-.account-menu,
-.session-menu {
+.account-menu {
   position: relative;
 }
 
 .nav-menu-button,
-.account-menu-button,
-.session-menu-button {
+.account-menu-button {
   display: inline-flex;
   min-height: 2.125rem;
   align-items: center;
@@ -451,8 +449,7 @@ input[type='radio'] {
     color 0.15s ease;
 }
 
-.account-menu-button,
-.session-menu-button {
+.account-menu-button {
   border: 1px solid var(--color-control-border);
   background: var(--color-surface);
   color: var(--color-control-text);
@@ -509,17 +506,13 @@ input[type='radio'] {
 
 .account-menu-button:not(.sign-in, .connection-issue):hover,
 .account-menu-button:not(.sign-in, .connection-issue):focus-visible,
-.account-menu-button:not(.sign-in, .connection-issue)[aria-expanded='true'],
-.session-menu-button:hover,
-.session-menu-button:focus-visible,
-.session-menu-button[aria-expanded='true'] {
+.account-menu-button:not(.sign-in, .connection-issue)[aria-expanded='true'] {
   background: var(--color-surface-muted);
   color: var(--color-heading);
 }
 
 .nav-menu-panel,
-.account-menu-panel,
-.session-menu-panel {
+.account-menu-panel {
   position: absolute;
   top: calc(100% + 0.5rem);
   right: 0;
@@ -628,23 +621,7 @@ input[type='radio'] {
   color: var(--color-heading);
 }
 
-.session-menu-panel {
-  width: min(90vw, 32rem);
-  padding: 1.25rem;
-}
-
 .account-menu-panel .session-metadata {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.session-menu-panel .session-panel {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.session-menu-panel .session-metadata {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -1061,10 +1038,6 @@ h1 {
 .catalog-panel {
   gap: 1.5rem;
   box-shadow: none;
-}
-
-.catalog-panel .section-heading {
-  grid-template-columns: minmax(0, 1fr);
 }
 
 /* Operator ------------------------------------------------------------------- */
@@ -1809,8 +1782,7 @@ h1 {
 
 /* Auth guard ---------------------------------------------------------------------- */
 
-.auth-guard,
-.protected-panel {
+.auth-guard {
   display: grid;
   gap: 1rem;
   padding: 1.25rem;
@@ -2504,13 +2476,8 @@ h1 {
     width: 100%;
   }
 
-  .session-menu {
-    width: 100%;
-  }
-
   .nav-menu-panel,
-  .account-menu-panel,
-  .session-menu-panel {
+  .account-menu-panel {
     position: static;
     width: 100%;
     margin-top: 0.75rem;
@@ -2638,7 +2605,6 @@ h1 {
 
   .account-menu-panel,
   .auth-guard,
-  .protected-panel,
   .workflow-group,
   .book-management-form,
   .catalog-filters,

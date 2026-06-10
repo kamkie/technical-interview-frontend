@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import type { AuditLog } from '../api/operator'
 import { formatTimestamp } from '../ui/format'
 import { StateBlock } from '../ui/StateBlock'
@@ -24,6 +26,14 @@ export function AuditDetailsPanel({
   onCloseDetails: () => void
   selected: SelectedAuditEntry | null
 }) {
+  const structuredDetailsJson = useMemo(() => {
+    const details = selected?.entry.details
+
+    return hasStructuredDetails(details)
+      ? JSON.stringify(details, null, 2)
+      : null
+  }, [selected])
+
   return (
     <section
       className="operator-details-panel"
@@ -88,8 +98,8 @@ export function AuditDetailsPanel({
           </div>
           <div className="audit-detail-json">
             <h3>Structured details</h3>
-            {hasStructuredDetails(selected.entry.details) ? (
-              <pre>{JSON.stringify(selected.entry.details, null, 2)}</pre>
+            {structuredDetailsJson !== null ? (
+              <pre>{structuredDetailsJson}</pre>
             ) : (
               <p className="session-message muted">
                 No structured details available.

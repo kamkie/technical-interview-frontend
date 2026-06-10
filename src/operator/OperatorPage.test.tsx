@@ -10,10 +10,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
   AUDIT_LOGS_PATH,
-  OPERATOR_SURFACE_PATH,
   type AuditLog,
   type AuditLogPage,
-  type OperatorSurface,
 } from '../api/operator'
 import type { SessionResponse } from '../api/session'
 import { OPERATOR_ROUTE_PATH, OperatorPage } from './OperatorPage'
@@ -23,7 +21,7 @@ describe('OperatorPage', () => {
     vi.unstubAllGlobals()
   })
 
-  it('loads overview and audit rows from URL-backed filters', async () => {
+  it('loads audit rows from URL-backed filters', async () => {
     const fetchMock = mockOperatorFetch()
 
     renderOperator(
@@ -258,17 +256,11 @@ function renderOperatorWithEntries(
 
 function mockOperatorFetch({
   auditPage = createAuditPage(),
-  surface = createSurface(),
 }: {
   auditPage?: AuditLogPage | Response | ((path: string) => AuditLogPage | Response)
-  surface?: OperatorSurface | Response
 } = {}) {
   const fetchMock = vi.fn().mockImplementation((input: RequestInfo | URL) => {
     const path = String(input)
-
-    if (path === OPERATOR_SURFACE_PATH) {
-      return Promise.resolve(toResponse(surface))
-    }
 
     if (path.startsWith(AUDIT_LOGS_PATH)) {
       return Promise.resolve(toResponse(resolveValue(auditPage, path)))
@@ -280,81 +272,6 @@ function mockOperatorFetch({
   vi.stubGlobal('fetch', fetchMock)
 
   return fetchMock
-}
-
-function createSurface(overrides: OperatorSurface = {}): OperatorSurface {
-  return {
-    audit: {
-      auditLogEndpoint: AUDIT_LOGS_PATH,
-      totalEntries: 5,
-      recentEntries: [
-        createAuditLog({
-          id: 1,
-          summary: 'Updated book title.',
-          details: {
-            title: {
-              after: 'Domain-Driven Design',
-              before: 'Domain Driven Design',
-            },
-          },
-        }),
-      ],
-    },
-    runtime: {
-      technicalOverviewEndpoint: '/',
-      technicalOverview: {
-        build: {
-          artifact: 'technical-interview-demo',
-          name: 'technical-interview-demo',
-          version: '1.0.0',
-        },
-        configuration: {
-          documentation: {
-            openApiVersion: '3.0.1',
-          },
-          observability: {
-            exposedEndpoints: ['health', 'info'],
-            healthProbesEnabled: true,
-          },
-          pagination: {
-            defaultPageSize: 20,
-            maxPageSize: 100,
-          },
-          security: {
-            csrfEnabled: true,
-            publicApiPathPattern: '/api/**',
-          },
-          session: {
-            cookieName: 'technical-interview-demo-session',
-            storeType: 'jdbc',
-            timeout: '30m',
-          },
-        },
-        dependencies: {
-          postgresql: '42.7.7',
-        },
-        git: {
-          branch: 'main',
-          shortCommitId: 'abc1234',
-        },
-        runtime: {
-          activeProfiles: ['local'],
-          applicationName: 'technical-interview-demo',
-          javaVendor: 'Eclipse Adoptium',
-          javaVersion: '24',
-        },
-      },
-    },
-    operations: {
-      actuatorHealthEndpoint: '/actuator/health',
-      actuatorInfoEndpoint: '/actuator/info',
-      actuatorPrometheusEndpoint: '/actuator/prometheus',
-      applicationHealthStatus: 'UP',
-      livenessState: 'CORRECT',
-      readinessState: 'ACCEPTING_TRAFFIC',
-    },
-    ...overrides,
-  }
 }
 
 function createAuditPage(overrides: AuditLogPage = {}): AuditLogPage {
@@ -441,6 +358,6 @@ function resolveValue<T, TArgs extends unknown[]>(
     : value
 }
 
-function toResponse(value: AuditLogPage | OperatorSurface | Response) {
+function toResponse(value: AuditLogPage | Response) {
   return value instanceof Response ? value : Response.json(value)
 }

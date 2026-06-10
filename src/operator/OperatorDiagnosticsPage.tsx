@@ -30,14 +30,55 @@ const HEALTHY_OPERATIONAL_VALUES = new Set([
   'ACCEPTING_TRAFFIC',
 ])
 
+type SurfaceCacheEntry = {
+  promise: Promise<OperatorSurface>
+  session: SessionResponse
+  value?: OperatorSurface
+}
+
+// The operator surface payload is immutable per deployment, so one fetch per
+// session avoids refetching when the diagnostics route remounts.
+let surfaceCache: SurfaceCacheEntry | null = null
+
+function loadOperatorSurface(session: SessionResponse) {
+  if (surfaceCache?.session === session) {
+    return surfaceCache.promise
+  }
+
+  const entry: SurfaceCacheEntry = {
+    session,
+    promise: fetchOperatorSurface().then(
+      (surface) => {
+        entry.value = surface
+
+        return surface
+      },
+      (error: unknown) => {
+        if (surfaceCache === entry) {
+          surfaceCache = null
+        }
+
+        throw error
+      },
+    ),
+  }
+
+  surfaceCache = entry
+
+  return entry.promise
+}
+
 export function OperatorDiagnosticsPage({
   session,
 }: {
   session: SessionResponse
 }) {
-  const [overviewState, setOverviewState] = useState<LoadState<OperatorSurface>>({
-    status: 'loading',
-  })
+  const [overviewState, setOverviewState] = useState<LoadState<OperatorSurface>>(
+    () =>
+      surfaceCache?.session === session && surfaceCache.value !== undefined
+        ? { status: 'ready', value: surfaceCache.value }
+        : { status: 'loading' },
+  )
   const [selectedAuditEntry, setSelectedAuditEntry] =
     useState<SelectedAuditEntry | null>(null)
   const detailsReturnFocusRef = useRef<HTMLElement | null>(null)
@@ -49,7 +90,7 @@ export function OperatorDiagnosticsPage({
 
     let ignore = false
 
-    fetchOperatorSurface()
+    loadOperatorSurface(session)
       .then((surface) => {
         if (!ignore) {
           setOverviewState({ status: 'ready', value: surface })
