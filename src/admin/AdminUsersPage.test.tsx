@@ -63,8 +63,8 @@ describe('AdminUsersPage', () => {
       within(tableRegion).getByRole('table', { name: 'Admin users' }),
     ).toBeInTheDocument()
     expect(
-      within(tableRegion).getByRole('group', {
-        name: 'Actions for Admin User',
+      within(tableRegion).getByRole('button', {
+        name: 'Details for Admin User',
       }),
     ).toBeInTheDocument()
     expect(screen.getAllByText('USER').length).toBeGreaterThan(0)
@@ -188,7 +188,9 @@ describe('AdminUsersPage', () => {
 
     renderAdminUsers()
 
-    fireEvent.click(await screen.findByRole('button', { name: 'View Admin User' }))
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Details for Admin User' }),
+    )
 
     const details = await screen.findByRole('region', { name: 'User detail' })
 
@@ -264,7 +266,9 @@ describe('AdminUsersPage', () => {
 
     renderAdminUsers()
 
-    fireEvent.click(await screen.findByRole('button', { name: 'View Reviewer User' }))
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Details for Reviewer User' }),
+    )
     const form = await screen.findByRole('form', {
       name: 'Replace roles for Reviewer User',
     })

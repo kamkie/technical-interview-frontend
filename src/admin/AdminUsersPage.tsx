@@ -31,6 +31,7 @@ import {
 } from '../ui/asyncState'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { formatTimestamp } from '../ui/format'
+import { IconChevronDown } from '../ui/icons'
 import { MutationFeedback } from '../ui/MutationFeedback'
 import { PaginationControls } from '../ui/PaginationControls'
 import { SortToggleHeader } from '../ui/SortableColumnHeader'
@@ -652,8 +653,8 @@ function AdminUserResults({
               label="Last login"
               onSort={() => onSortByField('lastLogin')}
             />
-            <th className="plain-column-header" scope="col">
-              Details
+            <th className="plain-column-header audit-expand-cell" scope="col">
+              <span className="visually-hidden">Details</span>
             </th>
           </tr>
         </thead>
@@ -720,29 +721,25 @@ function AdminUserRow({
           <RolePills roles={user.roles} />
         </td>
         <td>{formatTimestamp(user.lastLoginAt)}</td>
-        <td>
-          <div
-            aria-label={`Actions for ${label}`}
-            className="row-actions"
-            role="group"
+        <td className="audit-expand-cell">
+          <button
+            aria-controls={selected ? detailRowId : undefined}
+            aria-expanded={selected}
+            aria-label={`Details for ${label}`}
+            className="row-expand-button"
+            type="button"
+            disabled={user.id === undefined}
+            onClick={(event) => {
+              event.stopPropagation()
+              onSelectUser(user)
+            }}
           >
-            <button
-              aria-controls={selected ? detailRowId : undefined}
-              aria-current={selected ? 'true' : undefined}
-              aria-expanded={selected}
-              className={
-                selected ? 'secondary-button selected-row-action' : 'secondary-button'
-              }
-              type="button"
-              disabled={user.id === undefined}
-              onClick={(event) => {
-                event.stopPropagation()
-                onSelectUser(user)
-              }}
-            >
-              View {label}
-            </button>
-          </div>
+            <IconChevronDown
+              className={`row-expand-caret${selected ? ' open' : ''}`}
+              height={15}
+              width={15}
+            />
+          </button>
         </td>
       </tr>
       {selected && (

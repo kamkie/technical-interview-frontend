@@ -345,7 +345,7 @@ async function verifyAdminAccess(page, config, account) {
   await page.getByRole('heading', { name: 'User administration' }).waitFor({
     timeout: config.timeoutMs,
   })
-  await page.getByRole('button', { name: 'View Mock Admin' }).waitFor({
+  await page.getByRole('button', { name: 'Details for Mock Admin' }).waitFor({
     timeout: config.timeoutMs,
   })
 
