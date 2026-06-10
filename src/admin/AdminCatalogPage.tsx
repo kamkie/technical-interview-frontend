@@ -1454,18 +1454,20 @@ function CategoryManagementList({
                         <button
                           type="button"
                           className="secondary-button"
+                          aria-label={`Edit ${label}`}
                           onClick={() => onEditCategory(category)}
                         >
-                          Edit {label}
+                          Edit
                         </button>
                         <button
                           type="button"
                           className="danger-button"
+                          aria-label={`Delete ${label}`}
                           onClick={(event) =>
                             onDeleteCategory(category, event.currentTarget)
                           }
                         >
-                          Delete {label}
+                          Delete
                         </button>
                       </>
                     )}

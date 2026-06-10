@@ -567,8 +567,6 @@ function SessionAccountMenu({
 }) {
   const { containerRef, open, setOpen } = useDismissibleMenu()
   const panelId = 'account-menu-panel'
-  const detailsId = 'connection-details-panel'
-  const [showDetails, setShowDetails] = useState(false)
 
   if (state.status === 'loading') {
     return (
@@ -637,20 +635,7 @@ function SessionAccountMenu({
             </div>
             <SessionLoginActions session={state.session} />
             <SessionStatusSummary session={state.session} />
-            <button
-              aria-controls={detailsId}
-              aria-expanded={showDetails}
-              className="connection-details-button"
-              type="button"
-              onClick={() => setShowDetails((current) => !current)}
-            >
-              Connection details
-            </button>
-            {showDetails && (
-              <div id={detailsId}>
-                <SessionDetails session={state.session} showStatus={false} />
-              </div>
-            )}
+            <SessionDetails session={state.session} showStatus={false} />
           </div>
         )}
       </div>
@@ -706,20 +691,7 @@ function SessionAccountMenu({
               {logoutState.message}
             </p>
           )}
-          <button
-            aria-controls={detailsId}
-            aria-expanded={showDetails}
-            className="connection-details-button"
-            type="button"
-            onClick={() => setShowDetails((current) => !current)}
-          >
-            Connection details
-          </button>
-          {showDetails && (
-            <div id={detailsId}>
-              <SessionDetails session={state.session} />
-            </div>
-          )}
+          <SessionDetails session={state.session} />
         </div>
       )}
     </div>

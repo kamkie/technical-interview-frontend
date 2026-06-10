@@ -650,33 +650,17 @@ input[type='radio'] {
   line-height: 1.3;
 }
 
-.connection-details-button {
-  display: inline-flex;
-  justify-self: start;
-  align-items: center;
-  min-height: 2rem;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  background: transparent;
-  color: var(--color-muted);
-  cursor: pointer;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  padding: 0 0.625rem;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
-}
-
-.connection-details-button:hover,
-.connection-details-button:focus-visible,
-.connection-details-button[aria-expanded='true'] {
-  background: var(--color-surface-muted);
-  color: var(--color-heading);
-}
-
+/* Connection details render as bordered record cells, always visible. */
 .account-menu-panel .session-metadata {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.account-menu-panel .session-metadata > div {
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-background);
 }
 
 /* ==========================================================================
@@ -783,7 +767,7 @@ input[type='radio'] {
   display: grid;
   align-content: start;
   gap: 1.75rem;
-  width: min(100%, 1200px);
+  width: min(100%, 1440px);
   margin: 0 auto;
   padding: 2rem 2rem 4rem;
 }
@@ -1207,10 +1191,27 @@ h1 {
   gap: 1rem;
 }
 
+/* Explicit areas keep the short status and runtime cards stacked beside the
+   tall audit card; auto-flow rows would strand runtime below a gap. */
 .operator-overview-grid {
-  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    'status audit'
+    'runtime audit';
   gap: 1.25rem;
   align-items: start;
+}
+
+.operator-card-status {
+  grid-area: status;
+}
+
+.operator-card-audit {
+  grid-area: audit;
+}
+
+.operator-card-runtime {
+  grid-area: runtime;
 }
 
 .operator-card {
@@ -1408,7 +1409,8 @@ h1 {
 
 .operator-controls {
   display: grid;
-  grid-template-columns: minmax(14rem, 1fr) minmax(9rem, 0.35fr);
+  grid-template-columns: minmax(14rem, 24rem) minmax(9rem, 11rem);
+  justify-content: start;
   gap: 1rem;
   align-items: end;
 }
@@ -1861,7 +1863,8 @@ h1 {
 
 .localization-controls {
   display: grid;
-  grid-template-columns: minmax(14rem, 1fr) minmax(9rem, 0.35fr);
+  grid-template-columns: minmax(14rem, 24rem) minmax(9rem, 11rem);
+  justify-content: start;
   gap: 1rem;
   align-items: end;
 }
@@ -2142,7 +2145,8 @@ h1 {
 
 .catalog-controls {
   display: grid;
-  grid-template-columns: minmax(14rem, 0.65fr) minmax(9rem, 0.25fr);
+  grid-template-columns: minmax(14rem, 24rem) minmax(9rem, 11rem);
+  justify-content: start;
   gap: 1rem;
   align-items: end;
   padding: 0 0.25rem;
@@ -2331,9 +2335,18 @@ h1 {
 }
 
 .admin-books-table,
-.admin-users-table,
-.operator-audit-table {
+.admin-users-table {
   min-width: 880px;
+}
+
+/* Wide enough that enum tokens and logins never split mid-word; the scroll
+   region absorbs the overflow on narrow screens. */
+.operator-audit-table {
+  min-width: 64rem;
+}
+
+.operator-audit-table td:nth-child(-n + 4) {
+  overflow-wrap: normal;
 }
 
 .role-grants-table {
@@ -2756,6 +2769,14 @@ h1 {
   .operator-controls,
   .operator-metadata {
     grid-template-columns: 1fr;
+  }
+
+  .operator-overview-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'status'
+      'audit'
+      'runtime';
   }
 }
 

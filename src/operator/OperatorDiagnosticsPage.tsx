@@ -200,7 +200,10 @@ function AuditSummary({
   const recentEntries = audit?.recentEntries ?? EMPTY_AUDIT_ROWS
 
   return (
-    <section className="operator-card" aria-labelledby="audit-summary-title">
+    <section
+      className="operator-card operator-card-audit"
+      aria-labelledby="audit-summary-title"
+    >
       <h2 id="audit-summary-title">Audit summary</h2>
       <dl className="operator-metadata">
         <div>
@@ -310,7 +313,10 @@ function RuntimeSummary({
   ])
 
   return (
-    <section className="operator-card" aria-labelledby="runtime-summary-title">
+    <section
+      className="operator-card operator-card-runtime"
+      aria-labelledby="runtime-summary-title"
+    >
       <h2 id="runtime-summary-title">Runtime summary</h2>
       <dl className="operator-metadata single-column">
         <div>
@@ -344,7 +350,10 @@ function OperationalStatus({
   ])
 
   return (
-    <section className="operator-card" aria-labelledby="operations-summary-title">
+    <section
+      className="operator-card operator-card-status"
+      aria-labelledby="operations-summary-title"
+    >
       <h2 id="operations-summary-title">Operational status</h2>
       {healthItems.length === 0 && endpointItems.length === 0 ? (
         <p className="session-message muted">Operational status unavailable.</p>

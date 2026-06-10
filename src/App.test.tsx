@@ -210,17 +210,6 @@ describe('App', () => {
       within(signInMenu).getByText('Browsing as guest'),
     ).toBeInTheDocument()
     expect(
-      within(signInMenu).queryByText(
-        'Cookie XSRF-TOKEN; header X-XSRF-TOKEN',
-      ),
-    ).not.toBeInTheDocument()
-    const connectionDetailsButton = within(signInMenu).getByRole('button', {
-      name: 'Connection details',
-    })
-    expect(connectionDetailsButton).toHaveAttribute('aria-expanded', 'false')
-    fireEvent.click(connectionDetailsButton)
-    expect(connectionDetailsButton).toHaveAttribute('aria-expanded', 'true')
-    expect(
       within(signInMenu).getByText(
         'Cookie XSRF-TOKEN; header X-XSRF-TOKEN',
       ),
