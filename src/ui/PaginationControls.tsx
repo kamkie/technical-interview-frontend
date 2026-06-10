@@ -2,6 +2,7 @@ import { IconChevronLeft, IconChevronRight } from './icons'
 
 export function PaginationControls({
   ariaLabel,
+  disabled = false,
   first,
   last,
   onNextPage,
@@ -15,6 +16,7 @@ export function PaginationControls({
   totalPages,
 }: {
   ariaLabel: string
+  disabled?: boolean
   first: boolean
   last: boolean
   onNextPage: () => void
@@ -36,6 +38,7 @@ export function PaginationControls({
       <label className="inline-page-size">
         <span className="visually-hidden">Rows per page</span>
         <select
+          disabled={disabled}
           value={querySize}
           onChange={(event) => onPageSizeChange(Number(event.currentTarget.value))}
         >
@@ -49,11 +52,15 @@ export function PaginationControls({
           ))}
         </select>
       </label>
-      <button type="button" disabled={first} onClick={onPreviousPage}>
+      <button
+        type="button"
+        disabled={disabled || first}
+        onClick={onPreviousPage}
+      >
         <IconChevronLeft height={15} width={15} />
         Previous
       </button>
-      <button type="button" disabled={last} onClick={onNextPage}>
+      <button type="button" disabled={disabled || last} onClick={onNextPage}>
         Next
         <IconChevronRight height={15} width={15} />
       </button>

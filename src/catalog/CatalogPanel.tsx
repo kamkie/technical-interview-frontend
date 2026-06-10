@@ -11,7 +11,7 @@ import {
 import { getDisplayMessage, type LoadState } from '../ui/asyncState'
 import { PaginationControls } from '../ui/PaginationControls'
 import { SortableColumnHeader } from '../ui/SortableColumnHeader'
-import { StateBlock } from '../ui/StateBlock'
+import { StateBlock, StateMessage } from '../ui/StateBlock'
 import { CategoryFilter } from './CategoryFilter'
 import {
   DEFAULT_CATALOG_QUERY,
@@ -47,6 +47,11 @@ export function CatalogPanel() {
   const [booksState, setBooksState] = useState<LoadState<BookPage>>({
     status: 'loading',
   })
+  // The fetching flag is derived by comparing the active query against the
+  // last query whose request settled, so no effect has to set state twice.
+  const [settledBooksQueryKey, setSettledBooksQueryKey] = useState<
+    string | null
+  >(null)
   const routeFilterDraft = createCatalogFilterDraft(query)
   const routeFilterDraftKey = createFilterDraftKey(routeFilterDraft)
   const [filterDraftState, setFilterDraftState] = useState(() => ({
@@ -83,15 +88,18 @@ export function CatalogPanel() {
 
   useEffect(() => {
     let ignore = false
+    const queryKey = catalogQueryToSearchParams(query).toString()
 
     fetchBooks(catalogQueryToBookSearchParams(query))
       .then((books) => {
         if (!ignore) {
+          setSettledBooksQueryKey(queryKey)
           setBooksState({ status: 'ready', value: books })
         }
       })
       .catch((error: unknown) => {
         if (!ignore) {
+          setSettledBooksQueryKey(queryKey)
           setBooksState({
             status: 'error',
             message: getDisplayMessage(error, 'Books could not be loaded.'),
@@ -107,6 +115,7 @@ export function CatalogPanel() {
   const categories =
     categoriesState.status === 'ready' ? categoriesState.value : []
   const primarySort = getPrimarySort(query)
+  const isFetchingBooks = settledBooksQueryKey !== canonicalSearch
 
   useEffect(() => {
     if (canonicalSearch !== currentSearch) {
@@ -266,6 +275,12 @@ export function CatalogPanel() {
         </label>
       </div>
 
+      <p className="catalog-fetch-status" role="status">
+        {isFetchingBooks && booksState.status === 'ready'
+          ? 'Updating results…'
+          : null}
+      </p>
+
       {booksState.status === 'ready' && (
         <CatalogQuerySummary page={booksState.value} query={query} />
       )}
@@ -288,8 +303,11 @@ export function CatalogPanel() {
 
       {booksState.status === 'ready' && (
         <BookResults
+          busy={isFetchingBooks}
+          hasActiveQuery={hasActiveQuery(query)}
           page={booksState.value}
           query={query}
+          onClearFilters={clearFilters}
           onNextPage={() => goToPage(query.page + 1)}
           onPageSizeChange={changePageSize}
           onPreviousPage={() => goToPage(query.page - 1)}
@@ -297,6 +315,15 @@ export function CatalogPanel() {
         />
       )}
     </section>
+  )
+}
+
+function hasActiveQuery(query: CatalogQueryState) {
+  return (
+    query.title !== '' ||
+    query.author !== '' ||
+    query.isbn !== '' ||
+    query.categories.length > 0
   )
 }
 
@@ -334,10 +361,6 @@ function CatalogQuerySummary({
           <dd>{query.size} per page</dd>
         </div>
         <div>
-          <dt>Selected</dt>
-          <dd>0 selected</dd>
-        </div>
-        <div>
           <dt>Visible</dt>
           <dd>{formatVisibleBookCount(page)}</dd>
         </div>
@@ -347,6 +370,9 @@ function CatalogQuerySummary({
 }
 
 function BookResults({
+  busy,
+  hasActiveQuery,
+  onClearFilters,
   onNextPage,
   onPageSizeChange,
   onPreviousPage,
@@ -354,6 +380,9 @@ function BookResults({
   page,
   query,
 }: {
+  busy: boolean
+  hasActiveQuery: boolean
+  onClearFilters: () => void
   onNextPage: () => void
   onPageSizeChange: (size: PageSize) => void
   onPreviousPage: () => void
@@ -372,13 +401,23 @@ function BookResults({
   if (books.length === 0) {
     return (
       <div className="book-results">
-        <StateBlock
-          message="No books match these filters."
-          title="No catalog results"
-          variant="empty"
-        />
+        <StateBlock title="No catalog results" variant="empty">
+          <StateMessage variant="empty">
+            No books match these filters.
+          </StateMessage>
+          {hasActiveQuery && (
+            <button
+              className="secondary-button state-block-action"
+              type="button"
+              onClick={onClearFilters}
+            >
+              Clear filters
+            </button>
+          )}
+        </StateBlock>
         <PaginationControls
           ariaLabel="Book pagination"
+          disabled={busy}
           pageNumber={pageNumber}
           pageSize={pageSize}
           querySize={query.size}
@@ -397,6 +436,7 @@ function BookResults({
   return (
     <div className="book-results">
       <div
+        aria-busy={busy || undefined}
         aria-label="Scrollable public books table"
         className="catalog-table-scroll"
         role="region"
@@ -448,6 +488,7 @@ function BookResults({
 
       <PaginationControls
         ariaLabel="Book pagination"
+        disabled={busy}
         pageNumber={pageNumber}
         pageSize={pageSize}
         querySize={query.size}

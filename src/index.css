@@ -1057,6 +1057,11 @@ h1 {
   background: var(--color-positive-surface);
 }
 
+.state-block-action {
+  margin-top: 0.6rem;
+  justify-self: center;
+}
+
 .state-spinner {
   display: inline-block;
   width: 1.25rem;
@@ -2211,6 +2216,19 @@ h1 {
 }
 
 /* Result summary ------------------------------------------------------------- */
+
+/* Mounted permanently so the live region exists before the text toggles;
+   fixed height keeps the layout steady while results refresh. */
+.catalog-fetch-status {
+  min-height: 1.1rem;
+  margin: 0;
+  color: var(--color-eyebrow);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
 
 .catalog-summary {
   display: grid;

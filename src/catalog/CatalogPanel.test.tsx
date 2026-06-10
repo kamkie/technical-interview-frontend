@@ -60,7 +60,6 @@ describe('CatalogPanel', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('Showing 1-2 of 2 books')).toBeInTheDocument()
     expect(screen.getByText('No filters applied')).toBeInTheDocument()
-    expect(screen.getByText('0 selected')).toBeInTheDocument()
     expect(screen.getByText('2 visible')).toBeInTheDocument()
     expect(screen.getAllByText('Title A-Z')).toHaveLength(2)
     expect(screen.getByText('Page 1 of 1')).toBeInTheDocument()
@@ -137,6 +136,92 @@ describe('CatalogPanel', () => {
     expect(
       screen.getByText('No books match these filters.'),
     ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Clear filters' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('offers a clear-filters action in the empty state when filters are active', async () => {
+    const fetchMock = mockCatalogFetch({
+      books: (path) =>
+        path.includes('title=') ? emptyBookPage : populatedBookPage,
+    })
+
+    const { router } = renderCatalogRoute(`${CATALOG_ROUTE_PATH}?title=nomatch`)
+
+    expect(await screen.findByText('No catalog results')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }))
+
+    await waitFor(() => {
+      expect(router.state.location.search).toBe('')
+    })
+    expect(await screen.findByText('Effective Java')).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${BOOKS_PATH}?page=0&size=10&sort=title%2CASC`,
+      expect.objectContaining({
+        credentials: 'same-origin',
+        method: 'GET',
+      }),
+    )
+  })
+
+  it('keeps stale rows visible with a busy status while results refresh', async () => {
+    let resolveSecondBooksRequest: ((response: Response) => void) | undefined
+    let bookRequests = 0
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation((input: RequestInfo | URL) => {
+        const path = String(input)
+
+        if (path === CATEGORIES_PATH) {
+          return Promise.resolve(Response.json(catalogCategories))
+        }
+
+        if (path.startsWith(BOOKS_PATH)) {
+          bookRequests += 1
+
+          if (bookRequests === 1) {
+            return Promise.resolve(Response.json(paginatedBookPage))
+          }
+
+          return new Promise<Response>((resolve) => {
+            resolveSecondBooksRequest = resolve
+          })
+        }
+
+        return Promise.resolve(new Response(null, { status: 404 }))
+      }),
+    )
+
+    renderCatalogRoute()
+
+    expect(await screen.findByText('Refactoring')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+
+    expect(await screen.findByText('Updating results…')).toBeInTheDocument()
+    expect(screen.getByText('Refactoring')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled()
+    expect(
+      screen.getByRole('region', { name: 'Scrollable public books table' }),
+    ).toHaveAttribute('aria-busy', 'true')
+
+    await act(async () => {
+      resolveSecondBooksRequest?.(
+        Response.json({ ...paginatedBookPage, first: false, number: 1 }),
+      )
+    })
+
+    await waitFor(() => {
+      expect(screen.queryByText('Updating results…')).not.toBeInTheDocument()
+    })
+    expect(
+      screen.getByRole('region', { name: 'Scrollable public books table' }),
+    ).not.toHaveAttribute('aria-busy')
+    expect(screen.getByRole('button', { name: 'Next' })).not.toBeDisabled()
   })
 
   it('submits text and repeated category filters', async () => {
