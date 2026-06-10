@@ -6,6 +6,7 @@ import {
   type UserAccount,
 } from '../api/account'
 import type { SessionResponse } from '../api/session'
+import { publishAccountUpdate } from './useCurrentAccount'
 import {
   getDisplayMessage,
   type LoadState,
@@ -169,6 +170,7 @@ function LanguagePreferenceForm({
         session,
         preferredLanguage,
       )
+      publishAccountUpdate(session, updatedAccount)
       onAccountChange(updatedAccount)
       setLanguageInput(updatedAccount.preferredLanguage?.trim() ?? '')
       setMutationState({

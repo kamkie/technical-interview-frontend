@@ -546,6 +546,43 @@ describe('App', () => {
     ).toBeInTheDocument()
   })
 
+  it('syncs the topbar quick language menu after an account page change', async () => {
+    document.cookie = 'XSRF-TOKEN=token'
+    mockAppFetch({
+      languageResponse: createAccount({
+        preferredLanguage: 'de',
+        updatedAt: '2026-06-07T09:40:00Z',
+      }),
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    renderApp('/account')
+
+    expect(
+      await screen.findByRole('button', {
+        name: 'Language preference, currently Polish',
+      }),
+    ).toBeInTheDocument()
+
+    fireEvent.change(await screen.findByLabelText('Language'), {
+      target: {
+        value: 'de',
+      },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Save language' }))
+
+    expect(
+      await screen.findByText('Language preference updated.'),
+    ).toBeInTheDocument()
+    expect(
+      await screen.findByRole('button', {
+        name: 'Language preference, currently German',
+      }),
+    ).toBeInTheDocument()
+  })
+
   it('renders localized backend language validation errors', async () => {
     document.cookie = 'XSRF-TOKEN=token'
     mockAppFetch({

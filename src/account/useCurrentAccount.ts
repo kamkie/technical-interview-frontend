@@ -12,6 +12,24 @@ type AccountRequest = {
 }
 
 let activeRequest: AccountRequest | null = null
+const accountUpdateListeners = new Set<() => void>()
+
+// Account mutations publish their response here so every mounted consumer
+// (topbar menus, admin gates) re-reads the fresh account instead of the
+// session-lifetime cache entry captured at bootstrap.
+export function publishAccountUpdate(
+  session: SessionResponse,
+  account: UserAccount,
+) {
+  activeRequest = {
+    promise: Promise.resolve(account),
+    session,
+  }
+
+  for (const listener of [...accountUpdateListeners]) {
+    listener()
+  }
+}
 
 function loadCurrentAccount(session: SessionResponse) {
   if (activeRequest?.session !== session) {
@@ -47,31 +65,41 @@ export function useCurrentAccount(
       return undefined
     }
 
+    const activeSession = session
     let ignore = false
 
-    loadCurrentAccount(session)
-      .then((account) => {
-        if (!ignore) {
-          setLoaded({ session, state: { status: 'ready', value: account } })
-        }
-      })
-      .catch((error: unknown) => {
-        if (!ignore) {
-          setLoaded({
-            session,
-            state: {
-              status: 'error',
-              message: getDisplayMessage(
-                error,
-                'Account details could not be loaded.',
-              ),
-            },
-          })
-        }
-      })
+    function applyCurrentAccount() {
+      loadCurrentAccount(activeSession)
+        .then((account) => {
+          if (!ignore) {
+            setLoaded({
+              session: activeSession,
+              state: { status: 'ready', value: account },
+            })
+          }
+        })
+        .catch((error: unknown) => {
+          if (!ignore) {
+            setLoaded({
+              session: activeSession,
+              state: {
+                status: 'error',
+                message: getDisplayMessage(
+                  error,
+                  'Account details could not be loaded.',
+                ),
+              },
+            })
+          }
+        })
+    }
+
+    applyCurrentAccount()
+    accountUpdateListeners.add(applyCurrentAccount)
 
     return () => {
       ignore = true
+      accountUpdateListeners.delete(applyCurrentAccount)
     }
   }, [refreshKey, session])
 

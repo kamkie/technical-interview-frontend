@@ -16,9 +16,12 @@ import {
   useNavigationType,
 } from 'react-router-dom'
 
-import { useCurrentAccount } from './account/useCurrentAccount'
+import {
+  publishAccountUpdate,
+  useCurrentAccount,
+} from './account/useCurrentAccount'
 import { LANGUAGE_OPTIONS } from './account/languageOptions'
-import { updateAccountLanguage, type UserAccount } from './api/account'
+import { updateAccountLanguage } from './api/account'
 import {
   fetchCurrentSession,
   formatLoginProviderName,
@@ -460,7 +463,6 @@ function AdminMenu() {
 function QuickLanguageMenu({ session }: { session: SessionResponse }) {
   const { containerRef, open, setOpen } = useDismissibleMenu()
   const accountState = useCurrentAccount(session)
-  const [updatedAccount, setUpdatedAccount] = useState<UserAccount | null>(null)
   const [updateState, setUpdateState] = useState<MutationState>({
     status: 'idle',
   })
@@ -469,7 +471,7 @@ function QuickLanguageMenu({ session }: { session: SessionResponse }) {
     return null
   }
 
-  const account = updatedAccount ?? accountState.value
+  const account = accountState.value
   const currentLanguage = account.preferredLanguage?.trim() ?? ''
   const currentOption =
     LANGUAGE_OPTIONS.find((option) => option.value === currentLanguage) ?? null
@@ -489,7 +491,7 @@ function QuickLanguageMenu({ session }: { session: SessionResponse }) {
     try {
       const nextAccount = await updateAccountLanguage(session, value)
 
-      setUpdatedAccount(nextAccount)
+      publishAccountUpdate(session, nextAccount)
       setUpdateState({ status: 'idle' })
       setOpen(false)
     } catch (error: unknown) {
