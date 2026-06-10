@@ -404,11 +404,23 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
 
   async function handleBookSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+
+    // The year was previously coerced to 0 on unparseable input instead of
+    // surfacing a validation error before the request.
+    const publicationYear = parsePublicationYear(bookDraft.publicationYear)
+
+    if (publicationYear === undefined) {
+      setBookMutationState({
+        status: 'error',
+        message: 'Publication year must be a whole number.',
+      })
+
+      return
+    }
+
     setBookMutationState({ status: 'submitting' })
 
     try {
-      const publicationYear = parsePublicationYear(bookDraft.publicationYear)
-
       if (bookFormMode.type === 'edit') {
         const updatedBook = await updateBook(
           session,
@@ -1785,9 +1797,15 @@ function createBookDraft(book: Book): BookFormDraft {
 }
 
 function parsePublicationYear(value: string) {
-  const parsed = Number(value)
+  const trimmed = value.trim()
 
-  return Number.isFinite(parsed) ? parsed : 0
+  if (!trimmed) {
+    return undefined
+  }
+
+  const parsed = Number(trimmed)
+
+  return Number.isInteger(parsed) ? parsed : undefined
 }
 
 function getEditableBookVersion(book: Book) {

@@ -252,6 +252,39 @@ describe('AdminCatalogPage', () => {
     )
   })
 
+  it('rejects non-integer publication years before sending the request', async () => {
+    document.cookie = 'XSRF-TOKEN=token 1'
+    const fetchMock = mockAdminFetch()
+
+    renderAdminCatalog()
+
+    await screen.findByText('Effective Java')
+    fireEvent.click(screen.getByRole('button', { name: 'New book' }))
+    const form = screen.getByRole('form', { name: 'Create book' })
+
+    fireEvent.change(within(form).getByLabelText('Book title'), {
+      target: { value: 'Clean Architecture' },
+    })
+    fireEvent.change(within(form).getByLabelText('Book author'), {
+      target: { value: 'Robert C. Martin' },
+    })
+    fireEvent.change(within(form).getByLabelText('Book ISBN'), {
+      target: { value: '9780134494166' },
+    })
+    fireEvent.change(within(form).getByLabelText('Publication year'), {
+      target: { value: '2017.5' },
+    })
+    fireEvent.submit(form)
+
+    expect(
+      await screen.findByText('Publication year must be a whole number.'),
+    ).toBeInTheDocument()
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      BOOKS_PATH,
+      expect.objectContaining({ method: 'POST' }),
+    )
+  })
+
   it('keeps book create input values after localized validation failures', async () => {
     document.cookie = 'XSRF-TOKEN=token'
     mockAdminFetch({
