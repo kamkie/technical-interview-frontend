@@ -730,10 +730,10 @@ input[type='radio'] {
 
 .logout-button,
 .login-link,
-.catalog-filter-actions button,
 .admin-action-row button,
 .category-create-form button,
 .row-actions button,
+.section-actions button:not(.secondary-button),
 .language-preference-actions button {
   display: inline-flex;
   min-height: 2.375rem;
@@ -755,14 +755,14 @@ input[type='radio'] {
 .logout-button:focus-visible,
 .login-link:hover,
 .login-link:focus-visible,
-.catalog-filter-actions button:hover,
-.catalog-filter-actions button:focus-visible,
 .admin-action-row button:hover,
 .admin-action-row button:focus-visible,
 .category-create-form button:hover,
 .category-create-form button:focus-visible,
 .row-actions button:hover,
 .row-actions button:focus-visible,
+.section-actions button:not(.secondary-button):hover,
+.section-actions button:not(.secondary-button):focus-visible,
 .language-preference-actions button:hover,
 .language-preference-actions button:focus-visible {
   background: var(--color-accent-hover);
@@ -839,30 +839,16 @@ input[type='radio'] {
   gap: 0.45rem;
 }
 
-/* The route header is a drawer card: typed call number, serif title over the
-   red rule, and the punched rod hole at the bottom edge. */
+/* The route header is a drawer card: typed call number and serif title over
+   the red rule. */
 .route-context {
   position: relative;
-  padding: 1.25rem 1.5rem 2.125rem;
+  padding: 1.25rem 1.5rem;
   border: 1px solid var(--color-border);
   border-radius: 6px;
   background: var(--color-surface);
   box-shadow: var(--shadow-card);
   animation: card-pull 0.24s ease-out;
-}
-
-.route-context::after {
-  content: '';
-  position: absolute;
-  bottom: 0.5rem;
-  left: 50%;
-  width: 0.875rem;
-  height: 0.875rem;
-  transform: translateX(-50%);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  background: var(--color-background);
-  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.18);
 }
 
 .route-context h1 {
@@ -1211,14 +1197,13 @@ h1 {
 .audit-results,
 .audit-detail-content,
 .operator-card,
-.recent-audit-list,
 .role-grant-section,
 .role-replacement-form {
   grid-template-columns: minmax(0, 1fr);
 }
 
 .catalog-panel {
-  gap: 1.5rem;
+  gap: 1.25rem;
   box-shadow: none;
 }
 
@@ -1284,14 +1269,6 @@ h1 {
   .row-expand-caret {
     transition: none;
   }
-}
-
-.recent-audit-entry-details {
-  margin-top: 0.5rem;
-  padding: 0.875rem 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  background: var(--color-surface-muted);
 }
 
 .operator-overview-grid,
@@ -1406,13 +1383,6 @@ h1 {
   color: var(--color-warning);
 }
 
-.recent-audit-list h3 {
-  margin: 0;
-  color: var(--color-muted);
-  font-size: 0.84rem;
-  font-weight: 600;
-}
-
 .operator-metadata {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1448,39 +1418,16 @@ h1 {
   line-height: 1.5;
 }
 
-.recent-audit-list {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.recent-audit-list ul {
-  display: grid;
-  gap: 0.5rem;
+.audit-summary-link {
   margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.recent-audit-list button {
-  display: grid;
-  width: 100%;
-  gap: 0.2rem;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  background: var(--color-surface);
-  color: var(--color-heading);
-  cursor: pointer;
   font-size: 0.875rem;
-  font-weight: 500;
-  padding: 0.7rem 0.85rem;
-  text-align: left;
-  box-shadow: var(--shadow-control);
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease;
 }
 
-.recent-audit-list button span + span,
+.audit-summary-link a {
+  color: var(--color-accent);
+  font-weight: 500;
+}
+
 .table-subtext {
   display: block;
   color: var(--color-subtle);
@@ -1488,15 +1435,9 @@ h1 {
   font-weight: 400;
 }
 
-.recent-audit-list button:hover,
-.recent-audit-list button:focus-visible {
-  border-color: var(--color-control-border);
-  background: var(--color-surface-muted);
-}
-
 .operator-filters {
   display: grid;
-  grid-template-columns: minmax(10rem, 0.4fr) minmax(10rem, 0.4fr) minmax(12rem, 1fr) auto;
+  grid-template-columns: minmax(10rem, 0.4fr) minmax(10rem, 0.4fr) minmax(12rem, 1fr);
   gap: 1rem;
   align-items: end;
 }
@@ -1781,6 +1722,8 @@ h1 {
 .localization-filters select,
 .language-preference-controls input,
 .catalog-filters input,
+.admin-list-filters input,
+.admin-list-filters select,
 .inline-sort select,
 .inline-page-size select {
   width: 100%;
@@ -1795,6 +1738,27 @@ h1 {
   transition: border-color 0.15s ease;
 }
 
+/* The native search-clear ✕ is a tiny target; redraw it as a 22px hit area
+   around a 12px glyph so clearing a filter does not demand pixel hunting. */
+input[type='search']::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.375rem;
+  height: 1.375rem;
+  flex-shrink: 0;
+  margin: 0 0 0 0.25rem;
+  cursor: pointer;
+  background-color: var(--color-control-text);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' d='m6 6 12 12M18 6 6 18'/%3E%3C/svg%3E")
+    no-repeat center / 0.75rem;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' d='m6 6 12 12M18 6 6 18'/%3E%3C/svg%3E")
+    no-repeat center / 0.75rem;
+}
+
+input[type='search']::-webkit-search-cancel-button:hover {
+  background-color: var(--color-accent);
+}
+
 .coverage-stats {
   align-self: center;
   color: var(--color-subtle);
@@ -1803,7 +1767,8 @@ h1 {
   white-space: nowrap;
 }
 
-.localization-edit-row > td {
+.localization-edit-row > td,
+.book-edit-row > td {
   padding: 0.875rem;
   background: var(--color-surface-muted);
 }
@@ -1879,7 +1844,6 @@ h1 {
 
 .admin-action-row .secondary-button,
 .row-actions .secondary-button,
-.catalog-filter-actions .secondary-button,
 .language-preference-actions .secondary-button {
   border: 1px solid var(--color-control-border);
   background: var(--color-surface);
@@ -1892,8 +1856,6 @@ h1 {
 .admin-action-row .secondary-button:focus-visible,
 .row-actions .secondary-button:hover,
 .row-actions .secondary-button:focus-visible,
-.catalog-filter-actions .secondary-button:hover,
-.catalog-filter-actions .secondary-button:focus-visible,
 .language-preference-actions .secondary-button:hover,
 .language-preference-actions .secondary-button:focus-visible {
   background: var(--color-surface-muted);
@@ -1942,7 +1904,7 @@ h1 {
 
 .localization-filters {
   display: grid;
-  grid-template-columns: minmax(16rem, 1fr) minmax(9rem, 0.3fr) auto;
+  grid-template-columns: minmax(16rem, 1fr) minmax(9rem, 0.3fr);
   gap: 1rem;
   align-items: end;
 }
@@ -2170,19 +2132,74 @@ h1 {
    Catalog filters and controls
    ========================================================================== */
 
-.catalog-filters {
+/* One drawer card fuses a list page's filter form, chip toolbar, table, and
+   pager so the region reads as a single component instead of floating
+   blocks. Zones separate with hairline rules; only the card owns chrome. */
+.list-card {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
-  gap: 0.75rem;
-  align-items: end;
-  padding: 0.875rem;
+  grid-template-columns: minmax(0, 1fr);
+  overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: 6px;
   background: var(--color-surface);
   box-shadow: var(--shadow-card);
 }
 
-.catalog-filters label {
+.list-card > form {
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.list-card > .catalog-toolbar {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.list-card .catalog-table-scroll {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* The scroll region sits flush with the card edge, so its focus ring draws
+   inward instead of clipping against the card's overflow boundary. */
+.list-card .catalog-table-scroll:focus-visible {
+  outline-offset: -2px;
+}
+
+.list-card .state-block {
+  border: 0;
+  border-radius: 0;
+}
+
+.list-card .book-results,
+.list-card .audit-results {
+  gap: 0;
+}
+
+.list-card .pagination-controls.pager {
+  padding: 0.5rem 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.catalog-filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+}
+
+/* Client-side list filters share the catalog filter grid; auto-fit lets
+   one or two controls fill the row without reserving empty tracks. */
+.admin-list-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.catalog-filters label,
+.admin-list-filters label {
   display: grid;
   gap: 0.35rem;
   color: var(--color-control-text);
@@ -2191,23 +2208,26 @@ h1 {
 }
 
 .catalog-filters input:hover,
+.admin-list-filters input:hover,
+.admin-list-filters select:hover,
 .inline-sort select:hover,
 .inline-page-size select:hover {
   border-color: var(--color-subtle);
 }
 
 /* One-line table toolbar: chips on the left, sort + summary + pagination on
-   the right, wrapping only when the viewport runs out of room. */
+   the right. The chip group's box dissolves into the toolbar's flex flow so
+   the status slides into free space beside the last chip row instead of
+   always reserving a whole row for itself. */
 .catalog-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem 1.25rem;
+  gap: 0.5rem;
   align-items: center;
-  justify-content: space-between;
 }
 
 .catalog-toolbar .category-filter {
-  flex: 1 1 auto;
+  display: contents;
 }
 
 .catalog-toolbar-status {
@@ -2242,20 +2262,11 @@ h1 {
   font-variant-numeric: tabular-nums;
 }
 
-.catalog-filter-actions,
 .pagination-controls {
   display: flex;
   gap: 0.625rem;
   align-items: center;
   flex-wrap: wrap;
-}
-
-.catalog-filter-actions {
-  min-width: 0;
-}
-
-.catalog-filter-actions button {
-  min-height: 2.125rem;
 }
 
 /* Category chips — typed subject headings ------------------------------------- */
@@ -2304,21 +2315,6 @@ h1 {
   background: var(--color-accent);
   color: var(--color-on-accent);
   font-weight: 600;
-}
-
-/* Result summary ------------------------------------------------------------- */
-
-/* Mounted permanently so the live region exists before the text toggles;
-   fixed height keeps the layout steady while results refresh. */
-.catalog-fetch-status {
-  min-height: 1.1rem;
-  margin: 0;
-  color: var(--color-eyebrow);
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 /* ==========================================================================
@@ -2526,6 +2522,19 @@ h1 {
   padding-top: 0.625rem;
 }
 
+/* Inline category edits must not reflow the table: the actions column is
+   pinned so Save/Cancel and Edit/Delete occupy the same track, and the name
+   input matches the row-action button height so the row never grows. */
+.admin-categories-table .admin-categories-actions-header,
+.admin-categories-table .admin-categories-actions-cell {
+  width: 11rem;
+  min-width: 11rem;
+}
+
+.admin-categories-table tbody input {
+  min-height: 2rem;
+}
+
 .catalog-table tbody tr {
   transition: background-color 0.1s ease;
 }
@@ -2580,12 +2589,14 @@ h1 {
   color: var(--color-heading);
 }
 
-.pagination-controls button:disabled {
+.pagination-controls button:disabled,
+.pagination-controls button[aria-disabled='true'] {
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-.pagination-controls button:disabled:hover {
+.pagination-controls button:disabled:hover,
+.pagination-controls button[aria-disabled='true']:hover {
   background: var(--color-surface);
   color: var(--color-control-text);
 }
@@ -2651,7 +2662,8 @@ h1 {
   color: var(--color-heading);
 }
 
-.pagination-controls.pager button:disabled:hover {
+.pagination-controls.pager button:disabled:hover,
+.pagination-controls.pager button[aria-disabled='true']:hover {
   background: transparent;
   color: var(--color-control-text);
 }
@@ -2693,11 +2705,6 @@ h1 {
 
   .operator-filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .catalog-filter-actions,
-  .operator-filters .catalog-filter-actions {
-    grid-column: 1 / -1;
   }
 }
 
@@ -2766,7 +2773,7 @@ h1 {
   }
 
   .route-context {
-    padding: 1rem 1rem 1.875rem;
+    padding: 1rem;
   }
 
   .account-menu-panel .session-metadata,
@@ -2818,14 +2825,6 @@ h1 {
     grid-template-columns: 1fr;
   }
 
-  .catalog-filter-actions {
-    align-items: stretch;
-  }
-
-  .catalog-filter-actions button {
-    flex: 1 1 9rem;
-  }
-
   .pagination-controls.pager {
     gap: 0.125rem;
   }
@@ -2860,7 +2859,7 @@ h1 {
   .auth-guard,
   .workflow-group,
   .book-management-form,
-  .catalog-filters,
+  .list-card > form,
   .session-panel {
     padding: 0.875rem;
   }

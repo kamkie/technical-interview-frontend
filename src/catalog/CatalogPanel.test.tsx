@@ -59,9 +59,10 @@ describe('CatalogPanel', () => {
       screen.getByRole('columnheader', { name: 'Categories' }),
     ).toBeInTheDocument()
     expect(screen.getByText('Showing 1-2 of 2 books')).toBeInTheDocument()
-    expect(screen.getAllByText('Title A-Z')).toHaveLength(1)
-    // The top toolbar shows the position; the bottom pager numbers the pages.
-    expect(screen.getByText('Page 1 of 1')).toBeInTheDocument()
+    // Sorting is owned by the column headers; the toolbar repeats neither a
+    // sort select nor the page position the bottom pager already numbers.
+    expect(screen.queryByLabelText('Sort by')).not.toBeInTheDocument()
+    expect(screen.queryByText('Page 1 of 1')).not.toBeInTheDocument()
     expect(
       within(screen.getByLabelText('Book pagination')).getByRole('button', {
         name: 'Page 1',
@@ -99,11 +100,9 @@ describe('CatalogPanel', () => {
     expect(within(filters).getByLabelText('Title')).toBeInTheDocument()
     expect(within(filters).getByLabelText('Author')).toBeInTheDocument()
     expect(within(filters).getByLabelText('ISBN')).toBeInTheDocument()
-    // Text filters apply live, so the form only offers Clear.
-    expect(within(filters).queryByRole('button', { name: 'Search' })).toBeNull()
-    expect(
-      within(filters).getByRole('button', { name: 'Clear' }),
-    ).toBeInTheDocument()
+    // Text filters apply live through search inputs that clear themselves,
+    // so the form renders no buttons that would shift the layout.
+    expect(within(filters).queryByRole('button')).toBeNull()
 
     expect(screen.getByLabelText('Category filters')).toBeInTheDocument()
     expect(screen.getByLabelText('Catalog table controls')).toBeInTheDocument()
@@ -218,13 +217,24 @@ describe('CatalogPanel', () => {
 
     expect(await screen.findByText('Updating results…')).toBeInTheDocument()
     expect(screen.getByText('Refactoring')).toBeInTheDocument()
+    // Busy paging keeps the buttons focusable with aria-disabled and guarded
+    // clicks; a disabled attribute would drop keyboard focus mid-refetch.
+    // Only the structural first/last boundaries hard-disable.
     expect(
       within(pager).getByRole('button', { name: 'Next page' }),
-    ).toBeDisabled()
+    ).not.toBeDisabled()
+    expect(
+      within(pager).getByRole('button', { name: 'Next page' }),
+    ).toHaveAttribute('aria-disabled', 'true')
     expect(
       within(pager).getByRole('button', { name: 'Previous page' }),
     ).toBeDisabled()
-    expect(within(pager).getByRole('button', { name: 'Page 2' })).toBeDisabled()
+    expect(
+      within(pager).getByRole('button', { name: 'Page 2' }),
+    ).toHaveAttribute('aria-disabled', 'true')
+
+    fireEvent.click(within(pager).getByRole('button', { name: 'Page 3' }))
+    expect(bookRequests).toBe(2)
     expect(
       screen.getByRole('region', { name: 'Scrollable public books table' }),
     ).toHaveAttribute('aria-busy', 'true')
@@ -245,7 +255,7 @@ describe('CatalogPanel', () => {
       within(screen.getByLabelText('Book pagination')).getByRole('button', {
         name: 'Next page',
       }),
-    ).not.toBeDisabled()
+    ).not.toHaveAttribute('aria-disabled')
   })
 
   it('applies text and repeated category filters live without a submit', async () => {
@@ -294,7 +304,6 @@ describe('CatalogPanel', () => {
     renderCatalogRoute()
 
     expect(await screen.findByText('Refactoring')).toBeInTheDocument()
-    expect(screen.getByText(/Page 1\s+of 3/)).toBeInTheDocument()
     const pager = screen.getByLabelText('Book pagination')
     const topPager = screen.getByLabelText('Book pagination top')
     expect(
@@ -348,7 +357,6 @@ describe('CatalogPanel', () => {
     renderCatalogRoute(`${CATALOG_ROUTE_PATH}?page=2`)
 
     expect(await screen.findByText('Refactoring')).toBeInTheDocument()
-    expect(screen.getByText(/Page 3\s+of 3/)).toBeInTheDocument()
     const pager = screen.getByLabelText('Book pagination')
     expect(
       within(pager).getByRole('button', { name: 'Previous page' }),
@@ -504,18 +512,16 @@ describe('CatalogPanel', () => {
       expect(router.state.location.search).toBe('?title=clean&category=Java')
     })
 
-    fireEvent.change(screen.getByLabelText('Sort by'), {
-      target: { value: 'publicationYear,DESC' },
-    })
+    fireEvent.click(screen.getByRole('button', { name: /Publication year/ }))
 
     await waitFor(() => {
       expect(router.state.location.search).toBe(
-        '?title=clean&category=Java&sort=publicationYear%2CDESC',
+        '?title=clean&category=Java&sort=publicationYear%2CASC',
       )
     })
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(
-        `${BOOKS_PATH}?title=clean&category=Java&page=0&size=10&sort=publicationYear%2CDESC`,
+        `${BOOKS_PATH}?title=clean&category=Java&page=0&size=10&sort=publicationYear%2CASC`,
         expect.objectContaining({
           credentials: 'same-origin',
           method: 'GET',
@@ -530,7 +536,11 @@ describe('CatalogPanel', () => {
     await waitFor(() => {
       expect(router.state.location.search).toBe('?title=clean&category=Java')
     })
-    expect(screen.getByLabelText('Sort by')).toHaveValue('title,ASC')
+    expect(
+      screen.getByRole('button', {
+        name: 'Sort by Title; currently ascending. Activate to sort descending.',
+      }),
+    ).toBeInTheDocument()
 
     await act(async () => {
       await router.navigate(-1)

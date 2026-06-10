@@ -1,4 +1,11 @@
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  FormEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import {
@@ -20,18 +27,16 @@ import type { SessionResponse } from '../api/session'
 import { hasAdminRole } from '../auth/roles'
 import { CategoryFilter } from '../catalog/CategoryFilter'
 import {
-  DEFAULT_CATALOG_QUERY,
   PAGE_SIZE_OPTIONS,
-  SORT_OPTIONS,
   catalogQueryToBookSearchParams,
   catalogQueryToSearchParams,
   createCatalogFilterDraft,
-  getPrimarySort,
   nextSortForField,
   parseCatalogSearchParams,
   type CatalogFilterDraft,
   type CatalogQueryState,
   type PageSize,
+  type SortDirection,
   type SortField,
   type SortValue,
 } from '../catalog/catalogQuery'
@@ -43,7 +48,7 @@ import {
 import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { MutationFeedback } from '../ui/MutationFeedback'
 import { PaginationControls } from '../ui/PaginationControls'
-import { SortableColumnHeader } from '../ui/SortableColumnHeader'
+import { SortableColumnHeader, SortToggleHeader } from '../ui/SortableColumnHeader'
 import { StateBlock } from '../ui/StateBlock'
 import { Tabs } from '../ui/Tabs'
 
@@ -57,8 +62,11 @@ const DEFAULT_CATALOG_SECTION: CatalogSection = 'books'
 type CatalogSection = (typeof CATALOG_SECTIONS)[number]
 
 type BookFormMode =
+  | { type: 'closed' }
   | { type: 'create' }
   | { type: 'edit'; bookId: number; version: number }
+
+type OpenBookFormMode = Exclude<BookFormMode, { type: 'closed' }>
 
 type BookFormDraft = {
   author: string
@@ -152,7 +160,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     createEmptyBookDraft(),
   )
   const [bookFormMode, setBookFormMode] = useState<BookFormMode>({
-    type: 'create',
+    type: 'closed',
   })
   const [bookMutationState, setBookMutationState] = useState<MutationState>({
     status: 'idle',
@@ -230,8 +238,6 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
       ),
     [categories],
   )
-  const primarySort = getPrimarySort(query)
-
   useEffect(() => {
     if (canonicalSearch !== currentSearch) {
       setSearchParams(new URLSearchParams(canonicalSearch), { replace: true })
@@ -325,11 +331,6 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     })
   }
 
-  function clearFilters() {
-    updateFilterDraft(createCatalogFilterDraft(DEFAULT_CATALOG_QUERY))
-    updateCatalogQuery(DEFAULT_CATALOG_QUERY)
-  }
-
   function toggleFilterCategory(categoryName: string) {
     const categories = query.categories.includes(categoryName)
       ? query.categories.filter((name) => name !== categoryName)
@@ -420,7 +421,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
             : current,
         )
         setBookDraft(createEmptyBookDraft())
-        setBookFormMode({ type: 'create' })
+        setBookFormMode({ type: 'closed' })
         setBookMutationState({
           status: 'success',
           message: 'Book updated.',
@@ -539,6 +540,11 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     try {
       await deleteBook(session, book.id)
 
+      if (bookFormMode.type === 'edit' && bookFormMode.bookId === bookId) {
+        setBookDraft(createEmptyBookDraft())
+        setBookFormMode({ type: 'closed' })
+      }
+
       setBooksState((current) => {
         if (current.status !== 'ready') {
           return current
@@ -569,9 +575,15 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     }
   }
 
-  function cancelBookEdit() {
+  function openBookCreate() {
     setBookDraft(createEmptyBookDraft())
     setBookFormMode({ type: 'create' })
+    setBookMutationState({ status: 'idle' })
+  }
+
+  function closeBookForm() {
+    setBookDraft(createEmptyBookDraft())
+    setBookFormMode({ type: 'closed' })
     setBookMutationState({ status: 'idle' })
   }
 
@@ -757,6 +769,14 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
           <div className="section-actions">
             <button
               type="button"
+              aria-expanded={bookFormMode.type === 'create'}
+              className="compact-action"
+              onClick={openBookCreate}
+            >
+              New book
+            </button>
+            <button
+              type="button"
               aria-label="Refresh books"
               className="secondary-button compact-action"
               onClick={refreshBooks}
@@ -766,137 +786,141 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
           </div>
         </div>
 
-        <form
-          aria-label="Admin book filters"
-          className="catalog-filters"
-          onSubmit={handleFilterSubmit}
-        >
-          <label>
-            <span>Title</span>
-            <input
-              name="title"
-              type="search"
-              value={filterDraft.title}
-              onChange={(event) =>
-                updateFilterDraft({ title: event.target.value })
-              }
-            />
-          </label>
-          <label>
-            <span>Author</span>
-            <input
-              name="author"
-              type="search"
-              value={filterDraft.author}
-              onChange={(event) =>
-                updateFilterDraft({ author: event.target.value })
-              }
-            />
-          </label>
-          <label>
-            <span>ISBN</span>
-            <input
-              name="isbn"
-              type="search"
-              value={filterDraft.isbn}
-              onChange={(event) =>
-                updateFilterDraft({ isbn: event.target.value })
-              }
-            />
-          </label>
-          <div className="catalog-filter-actions">
-            <button type="button" className="secondary-button" onClick={clearFilters}>
-              Clear
-            </button>
-          </div>
-        </form>
+        {/* Feedback surfaces here while the form is closed, so edit-row saves
+            and deletes stay visible after their form collapses. */}
+        {bookFormMode.type === 'closed' && (
+          <MutationFeedback state={bookMutationState} />
+        )}
 
-        <div className="catalog-toolbar" aria-label="Admin book table controls">
-          <CategoryFilter
-            ariaLabel="Admin category filters"
+        {/* The create form stays collapsed until requested; edits expand
+            inline beneath their table row instead of using this slot. */}
+        {bookFormMode.type === 'create' && (
+          <BookManagementForm
             categories={namedCategories}
-            categoriesState={categoriesState}
-            selectedCategories={query.categories}
-            onToggleCategory={toggleFilterCategory}
+            draft={bookDraft}
+            mode={bookFormMode}
+            mutationState={bookMutationState}
+            onClose={closeBookForm}
+            onDraftChange={updateBookDraft}
+            onReloadBook={() => void reloadEditingBook()}
+            onSubmit={(event) => void handleBookSubmit(event)}
+            onToggleCategory={toggleBookCategory}
           />
-          <div className="catalog-toolbar-status">
-            <label className="inline-sort">
-              <span>Sort by</span>
-              <select
-                value={primarySort}
-                onChange={(event) => changeSort(event.target.value as SortValue)}
-              >
-                {SORT_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {booksState.status === 'ready' && (
-              <span aria-live="polite" className="toolbar-summary">
-                {formatBookWindow(booksState.value, query)}
-              </span>
-            )}
-            {bookFormMode.type === 'edit' && (
-              <span className="toolbar-summary">
-                {formatAdminSelectionStatus(bookFormMode)}
-              </span>
-            )}
-            {booksState.status === 'ready' && (
-              <AdminToolbarPagination
-                page={booksState.value}
-                query={query}
-                onNextPage={() => goToPage(query.page + 1)}
-                onPageSizeChange={changePageSize}
-                onPreviousPage={() => goToPage(query.page - 1)}
+        )}
+
+        <div className="list-card">
+          <form
+            aria-label="Admin book filters"
+            className="catalog-filters"
+            onSubmit={handleFilterSubmit}
+          >
+            <label>
+              <span>Title</span>
+              <input
+                name="title"
+                type="search"
+                value={filterDraft.title}
+                onChange={(event) =>
+                  updateFilterDraft({ title: event.target.value })
+                }
               />
-            )}
+            </label>
+            <label>
+              <span>Author</span>
+              <input
+                name="author"
+                type="search"
+                value={filterDraft.author}
+                onChange={(event) =>
+                  updateFilterDraft({ author: event.target.value })
+                }
+              />
+            </label>
+            <label>
+              <span>ISBN</span>
+              <input
+                name="isbn"
+                type="search"
+                value={filterDraft.isbn}
+                onChange={(event) =>
+                  updateFilterDraft({ isbn: event.target.value })
+                }
+              />
+            </label>
+          </form>
+
+          <div className="catalog-toolbar" aria-label="Admin book table controls">
+            <CategoryFilter
+              ariaLabel="Admin category filters"
+              categories={namedCategories}
+              categoriesState={categoriesState}
+              selectedCategories={query.categories}
+              onToggleCategory={toggleFilterCategory}
+            />
+            <div className="catalog-toolbar-status">
+              {booksState.status === 'ready' && (
+                <span aria-live="polite" className="toolbar-summary">
+                  {formatBookWindow(booksState.value, query)}
+                </span>
+              )}
+              {booksState.status === 'ready' && (
+                <AdminToolbarPagination
+                  page={booksState.value}
+                  query={query}
+                  onNextPage={() => goToPage(query.page + 1)}
+                  onPageSizeChange={changePageSize}
+                  onPreviousPage={() => goToPage(query.page - 1)}
+                />
+              )}
+            </div>
           </div>
+
+          {booksState.status === 'loading' && (
+            <StateBlock
+              message="Loading books..."
+              title="Loading managed books"
+              variant="loading"
+            />
+          )}
+
+          {booksState.status === 'error' && (
+            <StateBlock
+              message={booksState.message}
+              title="Books could not be loaded"
+              variant="error"
+            />
+          )}
+
+          {booksState.status === 'ready' && (
+            <AdminBookResults
+              editingBookId={bookFormMode.type === 'edit' ? bookFormMode.bookId : null}
+              page={booksState.value}
+              query={query}
+              renderEditForm={() =>
+                bookFormMode.type === 'edit' ? (
+                  <BookManagementForm
+                    categories={namedCategories}
+                    draft={bookDraft}
+                    mode={bookFormMode}
+                    mutationState={bookMutationState}
+                    onClose={closeBookForm}
+                    onDraftChange={updateBookDraft}
+                    onReloadBook={() => void reloadEditingBook()}
+                    onSubmit={(event) => void handleBookSubmit(event)}
+                    onToggleCategory={toggleBookCategory}
+                  />
+                ) : null
+              }
+              onDeleteBook={requestBookDelete}
+              onEditBook={(book) => void startBookEdit(book)}
+              onNextPage={() => goToPage(query.page + 1)}
+              onPageChange={goToPage}
+              onPageSizeChange={changePageSize}
+              onPreviousPage={() => goToPage(query.page - 1)}
+              onSortByField={sortByField}
+            />
+          )}
         </div>
-
-        {booksState.status === 'loading' && (
-          <StateBlock
-            message="Loading books..."
-            title="Loading managed books"
-            variant="loading"
-          />
-        )}
-
-        {booksState.status === 'error' && (
-          <StateBlock
-            message={booksState.message}
-            title="Books could not be loaded"
-            variant="error"
-          />
-        )}
-
-        {booksState.status === 'ready' && (
-          <AdminBookResults
-            editingBookId={bookFormMode.type === 'edit' ? bookFormMode.bookId : null}
-            page={booksState.value}
-            query={query}
-            onDeleteBook={requestBookDelete}
-            onEditBook={(book) => void startBookEdit(book)}
-            onNextPage={() => goToPage(query.page + 1)}
-            onPageChange={goToPage}
-            onPageSizeChange={changePageSize}
-            onPreviousPage={() => goToPage(query.page - 1)}
-            onSortByField={sortByField}
-          />
-        )}
-
-        <BookManagementForm
-          categories={namedCategories}
-          draft={bookDraft}
-          mode={bookFormMode}
-          mutationState={bookMutationState}
-          onCancelEdit={cancelBookEdit}
-          onDraftChange={updateBookDraft}
-          onReloadBook={() => void reloadEditingBook()}
-          onSubmit={(event) => void handleBookSubmit(event)}
-          onToggleCategory={toggleBookCategory}
-        />
 
         {pendingBookDelete !== null && (
           <ConfirmDialog
@@ -968,7 +992,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
         )}
 
         {categoriesState.status === 'ready' && (
-          <CategoryManagementList
+          <CategoryManagementSection
             categories={categoriesState.value}
             editState={categoryEditState}
             onCancelEdit={() => setCategoryEditState(null)}
@@ -1068,7 +1092,7 @@ function BookManagementForm({
   draft,
   mode,
   mutationState,
-  onCancelEdit,
+  onClose,
   onDraftChange,
   onReloadBook,
   onSubmit,
@@ -1076,9 +1100,9 @@ function BookManagementForm({
 }: {
   categories: readonly (Category & { name: string })[]
   draft: BookFormDraft
-  mode: BookFormMode
+  mode: OpenBookFormMode
   mutationState: MutationState
-  onCancelEdit: () => void
+  onClose: () => void
   onDraftChange: (update: Partial<BookFormDraft>) => void
   onReloadBook: () => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
@@ -1103,18 +1127,16 @@ function BookManagementForm({
               : 'New books are saved with the selected categories.'}
           </p>
         </div>
-        {editing && (
-          <div className="section-actions">
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={onCancelEdit}
-              disabled={submitting}
-            >
-              Cancel edit
-            </button>
-          </div>
-        )}
+        <div className="section-actions">
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={onClose}
+            disabled={submitting}
+          >
+            {editing ? 'Cancel edit' : 'Close'}
+          </button>
+        </div>
       </div>
 
       <div className="admin-form-grid">
@@ -1205,6 +1227,7 @@ function AdminBookResults({
   onSortByField,
   page,
   query,
+  renderEditForm,
 }: {
   editingBookId: number | null
   onDeleteBook: (book: Book, opener: HTMLElement) => void
@@ -1216,6 +1239,7 @@ function AdminBookResults({
   onSortByField: (field: SortField) => void
   page: BookPage
   query: CatalogQueryState
+  renderEditForm: () => ReactNode
 }) {
   const books = page.content ?? []
   const pageNumber = page.number ?? query.page
@@ -1299,6 +1323,7 @@ function AdminBookResults({
                 book={book}
                 editing={book.id !== undefined && book.id === editingBookId}
                 key={book.id ?? `${book.title}-${book.isbn}`}
+                renderEditForm={renderEditForm}
                 onDeleteBook={onDeleteBook}
                 onEditBook={onEditBook}
               />
@@ -1329,73 +1354,231 @@ function AdminBookRow({
   editing,
   onDeleteBook,
   onEditBook,
+  renderEditForm,
 }: {
   book: Book
   editing: boolean
   onDeleteBook: (book: Book, opener: HTMLElement) => void
   onEditBook: (book: Book) => void
+  renderEditForm: () => ReactNode
 }) {
   const title = book.title ?? 'Untitled book'
+  const editRowId = `book-edit-row-${book.id ?? 'unsaved'}`
   const categories = (book.categories ?? [])
     .map((category) => category.name)
     .filter(Boolean)
 
   return (
-    <tr>
-      <th scope="row">{title}</th>
-      <td>{book.author ?? 'Unknown author'}</td>
-      <td>{book.publicationYear ?? 'Unknown'}</td>
-      <td>{book.isbn ?? 'Unknown'}</td>
-      <td>{categories.length > 0 ? categories.join(', ') : 'None'}</td>
-      <td className="admin-books-actions-cell">
-        <div
-          aria-label={`Actions for ${title}`}
-          className="row-actions admin-books-row-actions"
-          role="group"
-        >
-          <button
-            type="button"
-            className={`admin-books-action-button secondary-button ${
-              editing ? 'selected-row-action' : ''
-            }`}
-            aria-label={`Edit ${title}`}
-            onClick={() => onEditBook(book)}
+    <>
+      <tr>
+        <th scope="row">{title}</th>
+        <td>{book.author ?? 'Unknown author'}</td>
+        <td>{book.publicationYear ?? 'Unknown'}</td>
+        <td>{book.isbn ?? 'Unknown'}</td>
+        <td>{categories.length > 0 ? categories.join(', ') : 'None'}</td>
+        <td className="admin-books-actions-cell">
+          <div
+            aria-label={`Actions for ${title}`}
+            className="row-actions admin-books-row-actions"
+            role="group"
           >
-            {editing ? 'Editing' : 'Edit'}
-          </button>
-          <button
-            type="button"
-            className="danger-button admin-books-action-button"
-            aria-label={`Delete ${title}`}
-            onClick={(event) => onDeleteBook(book, event.currentTarget)}
-          >
-            Delete
-          </button>
-        </div>
-      </td>
-    </tr>
+            <button
+              type="button"
+              aria-controls={editing ? editRowId : undefined}
+              aria-expanded={editing}
+              className={`admin-books-action-button secondary-button ${
+                editing ? 'selected-row-action' : ''
+              }`}
+              aria-label={`Edit ${title}`}
+              onClick={() => onEditBook(book)}
+            >
+              {editing ? 'Editing' : 'Edit'}
+            </button>
+            <button
+              type="button"
+              className="danger-button admin-books-action-button"
+              aria-label={`Delete ${title}`}
+              onClick={(event) => onDeleteBook(book, event.currentTarget)}
+            >
+              Delete
+            </button>
+          </div>
+        </td>
+      </tr>
+      {editing && (
+        <tr className="book-edit-row" id={editRowId}>
+          <td colSpan={6}>{renderEditForm()}</td>
+        </tr>
+      )}
+    </>
   )
 }
 
-function CategoryManagementList({
-  categories,
-  editState,
-  onCancelEdit,
-  onDeleteCategory,
-  onEditCategory,
-  onEditNameChange,
-  onSaveCategory,
-}: {
-  categories: readonly Category[]
+const CATEGORY_PAGE_SIZE_OPTIONS = [10, 20, 50] as const
+
+type CategoryPageSize = (typeof CATEGORY_PAGE_SIZE_OPTIONS)[number]
+
+type CategoryListProps = {
   editState: CategoryEditState | null
   onCancelEdit: () => void
   onDeleteCategory: (category: Category, opener: HTMLElement) => void
   onEditCategory: (category: Category) => void
   onEditNameChange: (name: string) => void
   onSaveCategory: (category: Category) => void
+}
+
+// The categories contract returns the full list without paging parameters,
+// so filtering, sorting, and pagination happen client-side over that list.
+function CategoryManagementSection({
+  categories,
+  ...listProps
+}: CategoryListProps & { categories: readonly Category[] }) {
+  const [filterText, setFilterText] = useState('')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
+  const [page, setPage] = useState(0)
+  const [size, setSize] = useState<CategoryPageSize>(10)
+
+  const filteredCategories = useMemo(() => {
+    const text = filterText.trim().toLocaleLowerCase()
+    const matched = text
+      ? categories.filter((category) =>
+          (category.name ?? '').toLocaleLowerCase().includes(text),
+        )
+      : [...categories]
+    const factor = sortDirection === 'DESC' ? -1 : 1
+
+    return matched.sort(
+      (left, right) =>
+        factor *
+        (left.name ?? '').localeCompare(right.name ?? '', undefined, {
+          sensitivity: 'base',
+        }),
+    )
+  }, [categories, filterText, sortDirection])
+
+  const totalPages = Math.ceil(filteredCategories.length / size)
+  const currentPage = Math.min(page, Math.max(totalPages - 1, 0))
+  const pageCategories = filteredCategories.slice(
+    currentPage * size,
+    (currentPage + 1) * size,
+  )
+  const firstPage = currentPage <= 0
+  const lastPage = totalPages === 0 || currentPage >= totalPages - 1
+
+  return (
+    <div className="list-card">
+      <form
+        aria-label="Admin category filters"
+        className="admin-list-filters"
+        onSubmit={(event) => event.preventDefault()}
+      >
+        <label>
+          <span>Name</span>
+          <input
+            name="categoryName"
+            type="search"
+            value={filterText}
+            onChange={(event) => {
+              setFilterText(event.currentTarget.value)
+              setPage(0)
+            }}
+          />
+        </label>
+      </form>
+
+      <div className="catalog-toolbar" aria-label="Admin category table controls">
+        <div className="catalog-toolbar-status">
+          <span aria-live="polite" className="toolbar-summary">
+            {formatCategoryWindow(filteredCategories.length, currentPage, size)}
+          </span>
+          <PaginationControls
+            ariaLabel="Admin category pagination top"
+            first={firstPage}
+            last={lastPage}
+            pageNumber={currentPage}
+            querySize={size}
+            totalPages={totalPages}
+            variant="toolbar"
+            onNextPage={() => setPage(currentPage + 1)}
+            onPageSizeChange={(nextSize) => {
+              setSize(nextSize as CategoryPageSize)
+              setPage(0)
+            }}
+            onPreviousPage={() => setPage(Math.max(currentPage - 1, 0))}
+            pageSizeOptions={CATEGORY_PAGE_SIZE_OPTIONS}
+          />
+        </div>
+      </div>
+
+      <CategoryManagementList
+        categories={pageCategories}
+        hasCategories={categories.length > 0}
+        sortDirection={sortDirection}
+        onToggleSort={() => {
+          setSortDirection((current) => (current === 'ASC' ? 'DESC' : 'ASC'))
+          setPage(0)
+        }}
+        {...listProps}
+      />
+
+      <PaginationControls
+        ariaLabel="Admin category pagination"
+        first={firstPage}
+        last={lastPage}
+        pageNumber={currentPage}
+        querySize={size}
+        totalPages={totalPages}
+        onNextPage={() => setPage(currentPage + 1)}
+        onPageChange={(nextPage) => setPage(Math.max(0, nextPage))}
+        onPageSizeChange={(nextSize) => {
+          setSize(nextSize as CategoryPageSize)
+          setPage(0)
+        }}
+        onPreviousPage={() => setPage(Math.max(currentPage - 1, 0))}
+        pageSizeOptions={CATEGORY_PAGE_SIZE_OPTIONS}
+      />
+    </div>
+  )
+}
+
+function formatCategoryWindow(total: number, page: number, size: number) {
+  const label = `${total} ${total === 1 ? 'category' : 'categories'}`
+
+  if (total <= 0) {
+    return label
+  }
+
+  const start = page * size + 1
+  const end = Math.min((page + 1) * size, total)
+
+  return `Showing ${start}-${end} of ${label}`
+}
+
+function CategoryManagementList({
+  categories,
+  editState,
+  hasCategories,
+  onCancelEdit,
+  onDeleteCategory,
+  onEditCategory,
+  onEditNameChange,
+  onSaveCategory,
+  onToggleSort,
+  sortDirection,
+}: CategoryListProps & {
+  categories: readonly Category[]
+  hasCategories: boolean
+  onToggleSort: () => void
+  sortDirection: SortDirection
 }) {
   if (categories.length === 0) {
-    return (
+    return hasCategories ? (
+      <StateBlock
+        message="No categories match this filter."
+        title="No matching categories"
+        variant="empty"
+      />
+    ) : (
       <StateBlock
         message="No categories available."
         title="No managed categories"
@@ -1415,10 +1598,15 @@ function CategoryManagementList({
         <caption className="visually-hidden">Admin categories</caption>
         <thead>
           <tr>
-            <th className="plain-column-header" scope="col">
-              Name
-            </th>
-            <th className="plain-column-header" scope="col">
+            <SortToggleHeader
+              direction={sortDirection}
+              label="Name"
+              onSort={onToggleSort}
+            />
+            <th
+              className="plain-column-header admin-categories-actions-header"
+              scope="col"
+            >
               Actions
             </th>
           </tr>
@@ -1444,22 +1632,24 @@ function CategoryManagementList({
                     label
                   )}
                 </th>
-                <td>
+                <td className="admin-categories-actions-cell">
                   <div className="row-actions">
                     {editing ? (
                       <>
                         <button
                           type="button"
+                          aria-label="Save category"
                           onClick={() => onSaveCategory(category)}
                         >
-                          Save category
+                          Save
                         </button>
                         <button
                           type="button"
+                          aria-label="Cancel category edit"
                           className="secondary-button"
                           onClick={onCancelEdit}
                         >
-                          Cancel category edit
+                          Cancel
                         </button>
                       </>
                     ) : (
@@ -1588,14 +1778,6 @@ function formatBookWindow(page: BookPage, query: CatalogQueryState) {
 
 function formatBookCount(count: number) {
   return `${count} ${count === 1 ? 'book' : 'books'}`
-}
-
-function formatAdminSelectionStatus(mode: BookFormMode) {
-  if (mode.type === 'edit') {
-    return `Editing book ${mode.bookId}, version ${mode.version}`
-  }
-
-  return 'No book selected'
 }
 
 function normalizeCatalogSection(value: string | null | undefined): CatalogSection {

@@ -1008,7 +1008,10 @@ describe('App', () => {
         name: 'System diagnostics',
       }),
     ).toBeInTheDocument()
-    expect(await screen.findByText('Updated book title.')).toBeInTheDocument()
+    // Audit browsing lives on the operations console; the summary links there.
+    expect(
+      await screen.findByRole('link', { name: 'Browse audit rows' }),
+    ).toHaveAttribute('href', '/operator')
     expect(fetchMock).toHaveBeenCalledWith(OPERATOR_SURFACE_PATH, {
       method: 'GET',
       credentials: 'same-origin',

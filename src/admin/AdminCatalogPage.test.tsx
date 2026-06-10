@@ -83,7 +83,6 @@ describe('AdminCatalogPage', () => {
     renderAdminCatalog(`${ADMIN_CATALOG_ROUTE_PATH}?page=2`)
 
     expect(await screen.findByText('Effective Java')).toBeInTheDocument()
-    expect(screen.getByText(/Page 3\s+of 3/)).toBeInTheDocument()
     const pager = screen.getByLabelText('Admin book pagination')
     expect(
       within(pager).getByRole('button', { name: 'Previous page' }),
@@ -208,6 +207,10 @@ describe('AdminCatalogPage', () => {
     renderAdminCatalog()
 
     await screen.findByText('Effective Java')
+    expect(
+      screen.queryByRole('form', { name: 'Create book' }),
+    ).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'New book' }))
     const form = screen.getByRole('form', { name: 'Create book' })
 
     fireEvent.change(within(form).getByLabelText('Book title'), {
@@ -272,6 +275,7 @@ describe('AdminCatalogPage', () => {
     renderAdminCatalog()
 
     await screen.findByText('Effective Java')
+    fireEvent.click(screen.getByRole('button', { name: 'New book' }))
     const form = screen.getByRole('form', { name: 'Create book' })
 
     fireEvent.change(within(form).getByLabelText('Book title'), {
@@ -318,10 +322,16 @@ describe('AdminCatalogPage', () => {
       target: { value: 'Effective Java, Third Edition' },
     })
     expect(within(form).getByText('Updating loaded version 3')).toBeInTheDocument()
-    expect(screen.getByText('Editing book 1, version 3')).toBeInTheDocument()
+    // The edit form expands inline inside the books table, under its row.
+    expect(form.closest('table')).toBe(
+      screen.getByRole('table', { name: 'Admin books' }),
+    )
     expect(
       screen.getByRole('button', { name: 'Edit Effective Java' }),
     ).toHaveTextContent(/^Editing$/)
+    expect(
+      screen.getByRole('button', { name: 'Edit Effective Java' }),
+    ).toHaveAttribute('aria-expanded', 'true')
     fireEvent.click(within(form).getByRole('button', { name: 'Save book' }))
 
     await waitFor(() => {
@@ -363,7 +373,9 @@ describe('AdminCatalogPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Book cannot be edited until the backend returns its current version.',
     )
-    expect(screen.getByRole('form', { name: 'Create book' })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('form', { name: 'Edit book' }),
+    ).not.toBeInTheDocument()
     expect(
       fetchMock.mock.calls.some(
         ([input, init]) =>
@@ -568,6 +580,64 @@ describe('AdminCatalogPage', () => {
         String(input).startsWith(BOOKS_PATH),
       ),
     ).toHaveLength(1)
+  })
+
+  it('filters, sorts, and paginates the category list client-side', async () => {
+    const manyCategories = Array.from({ length: 12 }, (_, index) => ({
+      id: 100 + index,
+      name: `Topic ${String(index + 1).padStart(2, '0')}`,
+    }))
+    mockAdminFetch({ categories: manyCategories })
+
+    renderAdminCatalog(`${ADMIN_CATALOG_ROUTE_PATH}?tab=categories`)
+
+    expect(await screen.findByText('Topic 01')).toBeInTheDocument()
+    expect(
+      screen.getByText('Showing 1-10 of 12 categories'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('Topic 11')).not.toBeInTheDocument()
+
+    const pager = screen.getByLabelText('Admin category pagination')
+    fireEvent.click(within(pager).getByRole('button', { name: 'Page 2' }))
+
+    expect(await screen.findByText('Topic 11')).toBeInTheDocument()
+    expect(
+      screen.getByText('Showing 11-12 of 12 categories'),
+    ).toBeInTheDocument()
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Sort by Name; currently ascending. Activate to sort descending.',
+      }),
+    )
+
+    expect(await screen.findByText('Topic 12')).toBeInTheDocument()
+    expect(
+      screen.getByText('Showing 1-10 of 12 categories'),
+    ).toBeInTheDocument()
+
+    fireEvent.change(
+      within(
+        screen.getByRole('form', { name: 'Admin category filters' }),
+      ).getByLabelText('Name'),
+      { target: { value: 'Topic 07' } },
+    )
+
+    expect(
+      await screen.findByText('Showing 1-1 of 1 category'),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Topic 07')).toBeInTheDocument()
+
+    fireEvent.change(
+      within(
+        screen.getByRole('form', { name: 'Admin category filters' }),
+      ).getByLabelText('Name'),
+      { target: { value: 'No such topic' } },
+    )
+
+    expect(
+      await screen.findByText('No matching categories'),
+    ).toBeInTheDocument()
   })
 
   it('creates, updates, and deletes categories successfully', async () => {

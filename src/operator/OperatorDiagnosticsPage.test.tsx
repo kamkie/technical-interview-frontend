@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -23,12 +23,11 @@ describe('OperatorDiagnosticsPage', () => {
 
     renderDiagnostics()
 
-    expect(await screen.findByText('Updated book title.')).toBeInTheDocument()
     expect(
-      screen.getByRole('heading', { name: 'Operational status' }),
+      await screen.findByRole('heading', { name: 'Audit summary' }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('heading', { name: 'Audit summary' }),
+      screen.getByRole('heading', { name: 'Operational status' }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('heading', { name: 'Runtime summary' }),
@@ -37,6 +36,10 @@ describe('OperatorDiagnosticsPage', () => {
     expect(screen.getByText('main')).toBeInTheDocument()
     expect(screen.getByText('UP')).toBeInTheDocument()
     expect(screen.getByText('/api/admin/audit-logs')).toBeInTheDocument()
+    // Audit browsing lives on the operations console; the summary links there.
+    expect(
+      screen.getByRole('link', { name: 'Browse audit rows' }),
+    ).toHaveAttribute('href', '/operator')
     expect(fetchMock).toHaveBeenCalledWith(OPERATOR_SURFACE_PATH, {
       method: 'GET',
       credentials: 'same-origin',
@@ -52,53 +55,21 @@ describe('OperatorDiagnosticsPage', () => {
 
     const { unmount } = renderDiagnostics(session)
 
-    expect(await screen.findByText('Updated book title.')).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'Audit summary' }),
+    ).toBeInTheDocument()
     unmount()
 
     renderDiagnostics(session)
 
-    expect(screen.getByText('Updated book title.')).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'Audit summary' }),
+    ).toBeInTheDocument()
     expect(
       fetchMock.mock.calls.filter(
         ([input]) => String(input) === OPERATOR_SURFACE_PATH,
       ),
     ).toHaveLength(1)
-  })
-
-  it('expands inline details from a recent entry', async () => {
-    mockSurfaceFetch()
-
-    renderDiagnostics()
-
-    const recentEntries = await screen.findByLabelText('Recent audit entries')
-    const entryToggle = within(recentEntries).getByRole('button', {
-      name: /Updated book title/,
-    })
-
-    expect(entryToggle).toHaveAttribute('aria-expanded', 'false')
-
-    fireEvent.click(entryToggle)
-
-    expect(entryToggle).toHaveAttribute('aria-expanded', 'true')
-
-    const entryDetails = within(recentEntries)
-      .getByText('Structured details')
-      .closest('.recent-audit-entry-details') as HTMLElement
-
-    expect(entryDetails).not.toBeNull()
-    expect(
-      within(entryDetails).getByText('Updated book title.'),
-    ).toBeInTheDocument()
-    expect(
-      within(entryDetails).getByText(/Domain-Driven Design/),
-    ).toBeInTheDocument()
-
-    fireEvent.click(entryToggle)
-
-    expect(entryToggle).toHaveAttribute('aria-expanded', 'false')
-    expect(
-      within(recentEntries).queryByText('Structured details'),
-    ).not.toBeInTheDocument()
   })
 
   it('renders partial overview payloads without crashing', async () => {
@@ -107,12 +78,14 @@ describe('OperatorDiagnosticsPage', () => {
     renderDiagnostics()
 
     expect(
-      await screen.findByText('No recent audit entries available.'),
+      await screen.findByText('Build details unavailable.'),
     ).toBeInTheDocument()
-    expect(screen.getByText('Build details unavailable.')).toBeInTheDocument()
     expect(
       screen.getByText('Operational status unavailable.'),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'Browse audit rows' }),
+    ).toHaveAttribute('href', '/operator')
   })
 
   it('displays localized backend access failures', async () => {

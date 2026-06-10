@@ -1,29 +1,20 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import {
   fetchOperatorSurface,
   getSafeOperatorApiPath,
-  type AuditLog,
   type OperatorSurface,
 } from '../api/operator'
 import type { SessionResponse } from '../api/session'
 import { getDisplayMessage, type LoadState } from '../ui/asyncState'
 import { formatTimestamp } from '../ui/format'
 import { StateBlock } from '../ui/StateBlock'
-import {
-  AuditEntryDetails,
-  type SelectedAuditEntry,
-} from './AuditEntryDetails'
-import {
-  createAuditEntryKey,
-  formatAuditDescriptor,
-  formatOptionalNumber,
-  formatSummary,
-} from './auditFormat'
+import { formatOptionalNumber } from './auditFormat'
+import { OPERATOR_ROUTE_PATH } from './OperatorPage'
 
 export const OPERATOR_DIAGNOSTICS_ROUTE_PATH = '/operator/diagnostics' as const
 
-const EMPTY_AUDIT_ROWS: readonly AuditLog[] = []
 const HEALTHY_OPERATIONAL_VALUES = new Set([
   'UP',
   'CORRECT',
@@ -79,8 +70,6 @@ export function OperatorDiagnosticsPage({
         ? { status: 'ready', value: surfaceCache.value }
         : { status: 'loading' },
   )
-  const [selectedAuditEntry, setSelectedAuditEntry] =
-    useState<SelectedAuditEntry | null>(null)
 
   useEffect(() => {
     if (session.authenticated !== true) {
@@ -112,12 +101,6 @@ export function OperatorDiagnosticsPage({
     }
   }, [session])
 
-  function toggleDetails(entry: AuditLog, index: number) {
-    setSelectedAuditEntry((current) =>
-      current?.index === index ? null : { entry, index },
-    )
-  }
-
   if (session.authenticated !== true) {
     return (
       <section className="operator-panel" aria-label="System diagnostics">
@@ -133,25 +116,13 @@ export function OperatorDiagnosticsPage({
   return (
     <section className="operator-panel" aria-label="System diagnostics">
       <section className="operator-section" aria-label="Diagnostics overview">
-        <OperatorOverview
-          selectedAuditEntry={selectedAuditEntry}
-          state={overviewState}
-          onSelectEntry={toggleDetails}
-        />
+        <OperatorOverview state={overviewState} />
       </section>
     </section>
   )
 }
 
-function OperatorOverview({
-  onSelectEntry,
-  selectedAuditEntry,
-  state,
-}: {
-  onSelectEntry: (entry: AuditLog, index: number) => void
-  selectedAuditEntry: SelectedAuditEntry | null
-  state: LoadState<OperatorSurface>
-}) {
+function OperatorOverview({ state }: { state: LoadState<OperatorSurface> }) {
   if (state.status === 'loading') {
     return (
       <StateBlock
@@ -180,26 +151,15 @@ function OperatorOverview({
         <OperationalStatus operations={surface.operations} />
         <RuntimeSummary runtime={surface.runtime} />
       </div>
-      <AuditSummary
-        audit={surface.audit}
-        selectedAuditEntry={selectedAuditEntry}
-        onSelectEntry={onSelectEntry}
-      />
+      <AuditSummary audit={surface.audit} />
     </div>
   )
 }
 
-function AuditSummary({
-  audit,
-  onSelectEntry,
-  selectedAuditEntry,
-}: {
-  audit: OperatorSurface['audit']
-  onSelectEntry: (entry: AuditLog, index: number) => void
-  selectedAuditEntry: SelectedAuditEntry | null
-}) {
+// Browsing, filtering, and pagination of audit rows live on the operations
+// console; this card stays a stats summary that links there.
+function AuditSummary({ audit }: { audit: OperatorSurface['audit'] }) {
   const safeAuditEndpoint = getSafeOperatorApiPath(audit?.auditLogEndpoint)
-  const recentEntries = audit?.recentEntries ?? EMPTY_AUDIT_ROWS
 
   return (
     <section
@@ -217,40 +177,9 @@ function AuditSummary({
           <dd>{safeAuditEndpoint ?? 'Unavailable'}</dd>
         </div>
       </dl>
-      <div className="recent-audit-list" aria-label="Recent audit entries">
-        <h3>Recent entries</h3>
-        {recentEntries.length === 0 ? (
-          <p className="session-message muted">
-            No recent audit entries available.
-          </p>
-        ) : (
-          <ul>
-            {recentEntries.map((entry, index) => {
-              const expanded = selectedAuditEntry?.index === index
-              const detailsId = `recent-audit-entry-details-${index}`
-
-              return (
-                <li key={createAuditEntryKey(entry, index)}>
-                  <button
-                    aria-controls={detailsId}
-                    aria-expanded={expanded}
-                    type="button"
-                    onClick={() => onSelectEntry(entry, index)}
-                  >
-                    <span>{formatSummary(entry.summary)}</span>
-                    <span>{formatAuditDescriptor(entry)}</span>
-                  </button>
-                  {expanded && (
-                    <div className="recent-audit-entry-details" id={detailsId}>
-                      <AuditEntryDetails entry={entry} index={index} />
-                    </div>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-        )}
-      </div>
+      <p className="audit-summary-link">
+        <Link to={OPERATOR_ROUTE_PATH}>Browse audit rows</Link>
+      </p>
     </section>
   )
 }

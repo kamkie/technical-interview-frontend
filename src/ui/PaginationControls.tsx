@@ -71,12 +71,15 @@ export function PaginationControls({
     totalPages > 0 ? ` of ${totalPages}` : ''
   }`
 
+  // While a refetch is in flight, buttons stay focusable with aria-disabled
+  // and a click guard; a real disabled attribute would drop keyboard focus to
+  // the body mid-refetch. Only the first/last boundaries hard-disable.
+
   // The toolbar variant sits in the one-line table toolbar and owns the
   // rows-per-page select; the bottom pager only steps and jumps pages.
   if (variant === 'toolbar') {
     return (
       <div className="pagination-controls toolbar" aria-label={ariaLabel}>
-        <span>{pageStatus}</span>
         <label className="inline-page-size">
           <span>Rows per page</span>
           <select
@@ -97,18 +100,28 @@ export function PaginationControls({
           </select>
         </label>
         <button
+          aria-disabled={disabled || undefined}
           aria-label="Previous page"
           type="button"
-          disabled={disabled || first}
-          onClick={onPreviousPage}
+          disabled={first}
+          onClick={() => {
+            if (!disabled) {
+              onPreviousPage()
+            }
+          }}
         >
           <IconChevronLeft height={15} width={15} />
         </button>
         <button
+          aria-disabled={disabled || undefined}
           aria-label="Next page"
           type="button"
-          disabled={disabled || last}
-          onClick={onNextPage}
+          disabled={last}
+          onClick={() => {
+            if (!disabled) {
+              onNextPage()
+            }
+          }}
         >
           <IconChevronRight height={15} width={15} />
         </button>
@@ -124,10 +137,15 @@ export function PaginationControls({
     return (
       <nav className="pagination-controls pager" aria-label={ariaLabel}>
         <button
+          aria-disabled={disabled || undefined}
           aria-label="Previous page"
           type="button"
-          disabled={disabled || first}
-          onClick={onPreviousPage}
+          disabled={first}
+          onClick={() => {
+            if (!disabled) {
+              onPreviousPage()
+            }
+          }}
         >
           <IconChevronLeft height={15} width={15} />
         </button>
@@ -135,12 +153,12 @@ export function PaginationControls({
           typeof slot === 'number' ? (
             <button
               aria-current={slot === currentPage ? 'page' : undefined}
+              aria-disabled={disabled || undefined}
               aria-label={`Page ${slot}`}
-              disabled={disabled}
               key={slot}
               type="button"
               onClick={() => {
-                if (slot !== currentPage) {
+                if (!disabled && slot !== currentPage) {
                   onPageChange(slot - 1)
                 }
               }}
@@ -154,10 +172,15 @@ export function PaginationControls({
           ),
         )}
         <button
+          aria-disabled={disabled || undefined}
           aria-label="Next page"
           type="button"
-          disabled={disabled || last}
-          onClick={onNextPage}
+          disabled={last}
+          onClick={() => {
+            if (!disabled) {
+              onNextPage()
+            }
+          }}
         >
           <IconChevronRight height={15} width={15} />
         </button>
@@ -168,19 +191,29 @@ export function PaginationControls({
   return (
     <nav className="pagination-controls pager" aria-label={ariaLabel}>
       <button
+        aria-disabled={disabled || undefined}
         aria-label="Previous page"
         type="button"
-        disabled={disabled || first}
-        onClick={onPreviousPage}
+        disabled={first}
+        onClick={() => {
+          if (!disabled) {
+            onPreviousPage()
+          }
+        }}
       >
         <IconChevronLeft height={15} width={15} />
       </button>
       <span>{pageStatus}</span>
       <button
+        aria-disabled={disabled || undefined}
         aria-label="Next page"
         type="button"
-        disabled={disabled || last}
-        onClick={onNextPage}
+        disabled={last}
+        onClick={() => {
+          if (!disabled) {
+            onNextPage()
+          }
+        }}
       >
         <IconChevronRight height={15} width={15} />
       </button>

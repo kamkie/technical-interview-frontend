@@ -295,12 +295,6 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
     })
   }
 
-  function clearFilters() {
-    const defaultQuery = DEFAULT_LOCALIZATION_QUERY
-
-    updateFilterDraft(createLocalizationFilterDraft(defaultQuery))
-    updateLocalizationQuery(defaultQuery)
-  }
 
   function changePageSize(size: PageSize) {
     updateLocalizationQuery({
@@ -582,8 +576,12 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
           </div>
         )}
 
-        <div className="workflow-group" aria-label="Localization filters">
-          <form className="localization-filters" onSubmit={handleFilterSubmit}>
+        <div className="list-card">
+          <form
+            aria-label="Localization filters"
+            className="localization-filters"
+            onSubmit={handleFilterSubmit}
+          >
             <label>
               <span>Message key</span>
               <input
@@ -612,11 +610,6 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
                 ))}
               </select>
             </label>
-            <div className="catalog-filter-actions">
-              <button type="button" className="secondary-button" onClick={clearFilters}>
-                Clear
-              </button>
-            </div>
           </form>
 
           <div
@@ -662,27 +655,25 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
               )}
             </div>
           </div>
-        </div>
 
-        {localizationsState.status === 'loading' && (
-          <StateBlock
-            message="Loading localizations..."
-            title="Loading localization rows"
-            variant="loading"
-          />
-        )}
+          {localizationsState.status === 'loading' && (
+            <StateBlock
+              message="Loading localizations..."
+              title="Loading localization rows"
+              variant="loading"
+            />
+          )}
 
-        {localizationsState.status === 'error' && (
-          <StateBlock
-            message={localizationsState.message}
-            title="Localization rows could not be loaded"
-            variant="error"
-          />
-        )}
+          {localizationsState.status === 'error' && (
+            <StateBlock
+              message={localizationsState.message}
+              title="Localization rows could not be loaded"
+              variant="error"
+            />
+          )}
 
-        {localizationsState.status === 'ready' &&
-          (rows.length > 0 ? (
-            <div className="workflow-group" aria-label="Localization rows table">
+          {localizationsState.status === 'ready' &&
+            (rows.length > 0 ? (
               <LocalizationResults
                 editingId={formMode.type === 'edit' ? formMode.id : null}
                 rows={rows}
@@ -701,33 +692,33 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
                   ) : null
                 }
               />
-            </div>
-          ) : (
-            <StateBlock
-              message="No localization rows match these filters."
-              title="No localization rows found"
-              variant="empty"
-            />
-          ))}
+            ) : (
+              <StateBlock
+                message="No localization rows match these filters."
+                title="No localization rows found"
+                variant="empty"
+              />
+            ))}
 
-        {localizationsState.status === 'ready' && (
-          <PaginationControls
-            ariaLabel="Localization pagination"
-            first={localizationsState.value.first === true || pageNumber <= 0}
-            last={
-              localizationsState.value.last === true ||
-              (totalPages > 0 && pageNumber >= totalPages - 1)
-            }
-            pageNumber={pageNumber}
-            querySize={query.size}
-            totalPages={totalPages}
-            onNextPage={() => goToPage(pageNumber + 1)}
-            onPageChange={goToPage}
-            onPageSizeChange={(size) => changePageSize(size as PageSize)}
-            onPreviousPage={() => goToPage(pageNumber - 1)}
-            pageSizeOptions={PAGE_SIZE_OPTIONS}
-          />
-        )}
+          {localizationsState.status === 'ready' && (
+            <PaginationControls
+              ariaLabel="Localization pagination"
+              first={localizationsState.value.first === true || pageNumber <= 0}
+              last={
+                localizationsState.value.last === true ||
+                (totalPages > 0 && pageNumber >= totalPages - 1)
+              }
+              pageNumber={pageNumber}
+              querySize={query.size}
+              totalPages={totalPages}
+              onNextPage={() => goToPage(pageNumber + 1)}
+              onPageChange={goToPage}
+              onPageSizeChange={(size) => changePageSize(size as PageSize)}
+              onPreviousPage={() => goToPage(pageNumber - 1)}
+              pageSizeOptions={PAGE_SIZE_OPTIONS}
+            />
+          )}
+        </div>
       </section>
 
       {pendingLocalizationDelete !== null && (

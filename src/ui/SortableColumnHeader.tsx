@@ -1,21 +1,19 @@
 import {
   getSortDirection,
   type CatalogQueryState,
+  type SortDirection,
   type SortField,
 } from '../catalog/catalogQuery'
 
-export function SortableColumnHeader({
-  field,
+export function SortToggleHeader({
+  direction,
   label,
-  onSortByField,
-  query,
+  onSort,
 }: {
-  field: SortField
+  direction: SortDirection | undefined
   label: string
-  onSortByField: (field: SortField) => void
-  query: CatalogQueryState
+  onSort: () => void
 }) {
-  const direction = getSortDirection(query, field)
   const ariaSort =
     direction === 'ASC' ? 'ascending' : direction === 'DESC' ? 'descending' : 'none'
   const indicator =
@@ -29,7 +27,7 @@ export function SortableColumnHeader({
         aria-label={sortButtonLabel}
         className="column-sort-button"
         type="button"
-        onClick={() => onSortByField(field)}
+        onClick={onSort}
       >
         <span>{label}</span>
         <span
@@ -41,5 +39,25 @@ export function SortableColumnHeader({
         <span className="visually-hidden">{indicator}</span>
       </button>
     </th>
+  )
+}
+
+export function SortableColumnHeader({
+  field,
+  label,
+  onSortByField,
+  query,
+}: {
+  field: SortField
+  label: string
+  onSortByField: (field: SortField) => void
+  query: CatalogQueryState
+}) {
+  return (
+    <SortToggleHeader
+      direction={getSortDirection(query, field)}
+      label={label}
+      onSort={() => onSortByField(field)}
+    />
   )
 }

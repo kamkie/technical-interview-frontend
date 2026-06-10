@@ -36,9 +36,7 @@ describe('AdminUsersPage', () => {
     renderAdminUsers()
 
     expect(await screen.findByText('Admin User')).toBeInTheDocument()
-    expect(
-      screen.getByText(/Reviewing 2 users/),
-    ).toBeInTheDocument()
+    expect(screen.getByText('Showing 1-2 of 2 users')).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(ACCOUNT_PATH, {
       method: 'GET',
       credentials: 'same-origin',
@@ -70,7 +68,70 @@ describe('AdminUsersPage', () => {
       }),
     ).toBeInTheDocument()
     expect(screen.getAllByText('USER').length).toBeGreaterThan(0)
-    expect(screen.getByText('ADMIN')).toBeInTheDocument()
+    expect(screen.getAllByText('ADMIN').length).toBeGreaterThan(0)
+  })
+
+  it('filters, sorts, and paginates the user list client-side', async () => {
+    const manyUsers = Array.from({ length: 12 }, (_, index) =>
+      createAdminUser({
+        id: 100 + index,
+        displayName: `Listed User ${String(index + 1).padStart(2, '0')}`,
+        email: `listed-${String(index + 1).padStart(2, '0')}@example.test`,
+        login: `listed-${String(index + 1).padStart(2, '0')}`,
+        roles: index === 0 ? ['USER', 'ADMIN'] : ['USER'],
+      }),
+    )
+    const fetchMock = mockAdminUsersFetch({ users: manyUsers })
+    const { router } = renderAdminUsers()
+
+    expect(await screen.findByText('Listed User 01')).toBeInTheDocument()
+    expect(screen.getByText('Showing 1-10 of 12 users')).toBeInTheDocument()
+    expect(screen.queryByText('Listed User 11')).not.toBeInTheDocument()
+    // The contract has no paging parameters, so one fetch serves the list and
+    // paging, filtering, and sorting happen client-side.
+    expect(
+      fetchMock.mock.calls.filter(
+        ([input]) => String(input) === ADMIN_USERS_PATH,
+      ),
+    ).toHaveLength(1)
+
+    const pager = screen.getByLabelText('Admin user pagination')
+    fireEvent.click(within(pager).getByRole('button', { name: 'Page 2' }))
+
+    expect(await screen.findByText('Listed User 11')).toBeInTheDocument()
+    expect(screen.getByText('Showing 11-12 of 12 users')).toBeInTheDocument()
+    expect(router.state.location.search).toBe('?page=1')
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Sort by User; currently ascending. Activate to sort descending.',
+      }),
+    )
+
+    expect(await screen.findByText('Listed User 12')).toBeInTheDocument()
+    expect(screen.getByText('Showing 1-10 of 12 users')).toBeInTheDocument()
+    expect(router.state.location.search).toBe('?sort=user%2CDESC')
+
+    fireEvent.change(screen.getByLabelText('Role'), {
+      target: { value: 'ADMIN' },
+    })
+
+    expect(await screen.findByText('Showing 1-1 of 1 user')).toBeInTheDocument()
+    expect(screen.getByText('Listed User 01')).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Role'), { target: { value: '' } })
+    fireEvent.change(screen.getByLabelText('Search'), {
+      target: { value: 'listed-07' },
+    })
+
+    expect(
+      await screen.findByText('Showing 1-1 of 1 user'),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Listed User 07')).toBeInTheDocument()
+    expect(screen.queryByText('Listed User 12')).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(router.state.location.search).toBe('?q=listed-07&sort=user%2CDESC')
+    })
   })
 
   it('keeps authenticated non-admin users away from admin user controls', async () => {

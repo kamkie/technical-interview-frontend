@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import { useCurrentAccount } from '../account/useCurrentAccount'
 import {
@@ -20,12 +20,52 @@ import {
 } from '../ui/asyncState'
 import { formatTimestamp } from '../ui/format'
 import { MutationFeedback } from '../ui/MutationFeedback'
+import { PaginationControls } from '../ui/PaginationControls'
+import { SortToggleHeader } from '../ui/SortableColumnHeader'
 import { StateBlock } from '../ui/StateBlock'
 
 export const ADMIN_USERS_ROUTE_PATH = '/admin/users' as const
 export const ADMIN_USER_DETAIL_ROUTE_PATH = `${ADMIN_USERS_ROUTE_PATH}/:id` as const
 
 const EMPTY_USERS: readonly AdminUserAccount[] = []
+const LIVE_FILTER_DEBOUNCE_MS = 300
+
+// The contract returns the full user list without paging parameters, so
+// filtering, sorting, and pagination happen client-side over that list. The
+// state is URL-backed because list and detail are separate routes and the
+// query must survive selecting a user.
+const USERS_PAGE_SIZE_OPTIONS = [10, 20, 50] as const
+
+type UsersPageSize = (typeof USERS_PAGE_SIZE_OPTIONS)[number]
+
+type UsersSortField = 'user' | 'provider' | 'email' | 'lastLogin'
+
+type UsersSortDirection = 'ASC' | 'DESC'
+
+type UsersSortValue = `${UsersSortField},${UsersSortDirection}`
+
+type AdminUsersListQuery = {
+  page: number
+  q: string
+  role: '' | AdminUserRole
+  size: UsersPageSize
+  sort: UsersSortValue
+}
+
+const DEFAULT_USERS_QUERY: AdminUsersListQuery = {
+  page: 0,
+  q: '',
+  role: '',
+  size: 10,
+  sort: 'user,ASC',
+}
+
+const USERS_SORT_FIELDS: readonly UsersSortField[] = [
+  'user',
+  'provider',
+  'email',
+  'lastLogin',
+]
 
 type RoleDraft = {
   reason: string
@@ -92,7 +132,12 @@ export function AdminUsersPage({ session }: { session: SessionResponse }) {
 function AdminUsersManager({ session }: { session: SessionResponse }) {
   const navigate = useNavigate()
   const params = useParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const selectedRouteId = params.id?.trim() ?? ''
+  const listQuery = useMemo(
+    () => parseAdminUsersSearchParams(searchParams),
+    [searchParams],
+  )
   const [usersState, setUsersState] = useState<LoadState<AdminUserAccount[]>>({
     status: 'loading',
   })
@@ -100,6 +145,35 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
   const [roleMutationState, setRoleMutationState] = useState<MutationState>({
     status: 'idle',
   })
+  const [filterDraftState, setFilterDraftState] = useState(() => ({
+    key: listQuery.q,
+    value: listQuery.q,
+  }))
+  const filterDraft =
+    filterDraftState.key === listQuery.q ? filterDraftState.value : listQuery.q
+
+  // The search applies live: a short typing pause pushes the trimmed text
+  // into the URL-backed query, mirroring the list-page filter behavior.
+  useEffect(() => {
+    if (filterDraft.trim() === listQuery.q) {
+      return undefined
+    }
+
+    const timer = window.setTimeout(() => {
+      const nextQuery: AdminUsersListQuery = {
+        ...listQuery,
+        page: 0,
+        q: filterDraft.trim(),
+      }
+
+      setFilterDraftState({ key: nextQuery.q, value: filterDraft })
+      setSearchParams(adminUsersQueryToSearchParams(nextQuery))
+    }, LIVE_FILTER_DEBOUNCE_MS)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [filterDraft, listQuery, setSearchParams])
 
   useEffect(() => {
     let ignore = false
@@ -130,6 +204,38 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
     () => findUserByRouteId(users, selectedRouteId),
     [selectedRouteId, users],
   )
+  const filteredUsers = useMemo(
+    () => filterAndSortUsers(users, listQuery),
+    [listQuery, users],
+  )
+  const totalPages = Math.ceil(filteredUsers.length / listQuery.size)
+  const currentPage = Math.min(listQuery.page, Math.max(totalPages - 1, 0))
+  const pageUsers = filteredUsers.slice(
+    currentPage * listQuery.size,
+    (currentPage + 1) * listQuery.size,
+  )
+  const firstPage = currentPage <= 0
+  const lastPage = totalPages === 0 || currentPage >= totalPages - 1
+
+  function updateListQuery(nextQuery: AdminUsersListQuery) {
+    const nextSearch = adminUsersQueryToSearchParams(nextQuery)
+
+    if (nextSearch.toString() !== searchParams.toString()) {
+      setSearchParams(nextSearch)
+    }
+  }
+
+  function goToPage(page: number) {
+    updateListQuery({ ...listQuery, page: Math.max(0, page) })
+  }
+
+  function sortByField(field: UsersSortField) {
+    updateListQuery({
+      ...listQuery,
+      page: 0,
+      sort: nextUsersSort(listQuery.sort, field),
+    })
+  }
 
   function refreshUsers() {
     setUsersState({ status: 'loading' })
@@ -142,7 +248,11 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
     }
 
     setRoleMutationState({ status: 'idle' })
-    navigate(getAdminUserDetailPath(user.id))
+    // Keep the list query in the URL so the filtered view survives selection.
+    navigate({
+      pathname: getAdminUserDetailPath(user.id),
+      search: searchParams.toString(),
+    })
   }
 
   async function handleReplaceRoles(
@@ -215,32 +325,128 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
           </div>
         </div>
 
-        {usersState.status === 'loading' && (
-          <StateBlock
-            message="Loading users..."
-            title="Loading users"
-            variant="loading"
-          />
-        )}
+        <div className="list-card">
+          <form
+            aria-label="Admin user filters"
+            className="admin-list-filters"
+            onSubmit={(event) => event.preventDefault()}
+          >
+            <label>
+              <span>Search</span>
+              <input
+                name="q"
+                type="search"
+                value={filterDraft}
+                onChange={(event) =>
+                  setFilterDraftState({
+                    key: listQuery.q,
+                    value: event.currentTarget.value,
+                  })
+                }
+              />
+            </label>
+            <label>
+              <span>Role</span>
+              <select
+                name="role"
+                value={listQuery.role}
+                onChange={(event) =>
+                  updateListQuery({
+                    ...listQuery,
+                    page: 0,
+                    role: parseRoleFilter(event.currentTarget.value),
+                  })
+                }
+              >
+                <option value="">All roles</option>
+                {MANAGED_ADMIN_USER_ROLES.map((role) => (
+                  <option key={role} value={role}>
+                    {role}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </form>
 
-        {usersState.status === 'error' && (
-          <StateBlock
-            message={usersState.message}
-            title="Users could not be loaded"
-            variant="error"
-          />
-        )}
+          <div className="catalog-toolbar" aria-label="Admin user table controls">
+            <div className="catalog-toolbar-status">
+              {usersState.status === 'ready' && (
+                <span aria-live="polite" className="toolbar-summary">
+                  {formatUserWindow(filteredUsers.length, currentPage, listQuery.size)}
+                </span>
+              )}
+              {usersState.status === 'ready' && (
+                <PaginationControls
+                  ariaLabel="Admin user pagination top"
+                  first={firstPage}
+                  last={lastPage}
+                  pageNumber={currentPage}
+                  querySize={listQuery.size}
+                  totalPages={totalPages}
+                  variant="toolbar"
+                  onNextPage={() => goToPage(currentPage + 1)}
+                  onPageSizeChange={(size) =>
+                    updateListQuery({
+                      ...listQuery,
+                      page: 0,
+                      size: size as UsersPageSize,
+                    })
+                  }
+                  onPreviousPage={() => goToPage(currentPage - 1)}
+                  pageSizeOptions={USERS_PAGE_SIZE_OPTIONS}
+                />
+              )}
+            </div>
+          </div>
 
-        {usersState.status === 'ready' && (
-          <>
-            <AdminUsersWorkflowSummary users={usersState.value} />
-            <AdminUserResults
-              selectedRouteId={selectedRouteId}
-              users={usersState.value}
-              onSelectUser={selectUser}
+          {usersState.status === 'loading' && (
+            <StateBlock
+              message="Loading users..."
+              title="Loading users"
+              variant="loading"
             />
-          </>
-        )}
+          )}
+
+          {usersState.status === 'error' && (
+            <StateBlock
+              message={usersState.message}
+              title="Users could not be loaded"
+              variant="error"
+            />
+          )}
+
+          {usersState.status === 'ready' && (
+            <>
+              <AdminUserResults
+                hasUsers={usersState.value.length > 0}
+                listQuery={listQuery}
+                selectedRouteId={selectedRouteId}
+                users={pageUsers}
+                onSelectUser={selectUser}
+                onSortByField={sortByField}
+              />
+              <PaginationControls
+                ariaLabel="Admin user pagination"
+                first={firstPage}
+                last={lastPage}
+                pageNumber={currentPage}
+                querySize={listQuery.size}
+                totalPages={totalPages}
+                onNextPage={() => goToPage(currentPage + 1)}
+                onPageChange={goToPage}
+                onPageSizeChange={(size) =>
+                  updateListQuery({
+                    ...listQuery,
+                    page: 0,
+                    size: size as UsersPageSize,
+                  })
+                }
+                onPreviousPage={() => goToPage(currentPage - 1)}
+                pageSizeOptions={USERS_PAGE_SIZE_OPTIONS}
+              />
+            </>
+          )}
+        </div>
       </section>
 
       <AdminUserDetailPanel
@@ -255,22 +461,40 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
 }
 
 function AdminUserResults({
+  hasUsers,
+  listQuery,
   onSelectUser,
+  onSortByField,
   selectedRouteId,
   users,
 }: {
+  hasUsers: boolean
+  listQuery: AdminUsersListQuery
   onSelectUser: (user: AdminUserAccount) => void
+  onSortByField: (field: UsersSortField) => void
   selectedRouteId: string
   users: readonly AdminUserAccount[]
 }) {
   if (users.length === 0) {
-    return (
+    return hasUsers ? (
+      <StateBlock
+        message="No users match these filters."
+        title="No matching users"
+        variant="empty"
+      />
+    ) : (
       <StateBlock
         message="No users are available."
         title="No users returned"
         variant="empty"
       />
     )
+  }
+
+  const [sortField, sortDirection] = splitUsersSort(listQuery.sort)
+
+  function headerDirection(field: UsersSortField) {
+    return sortField === field ? sortDirection : undefined
   }
 
   return (
@@ -284,21 +508,29 @@ function AdminUserResults({
         <caption className="visually-hidden">Admin users</caption>
         <thead>
           <tr>
-            <th className="plain-column-header" scope="col">
-              User
-            </th>
-            <th className="plain-column-header" scope="col">
-              Provider
-            </th>
-            <th className="plain-column-header" scope="col">
-              Email
-            </th>
+            <SortToggleHeader
+              direction={headerDirection('user')}
+              label="User"
+              onSort={() => onSortByField('user')}
+            />
+            <SortToggleHeader
+              direction={headerDirection('provider')}
+              label="Provider"
+              onSort={() => onSortByField('provider')}
+            />
+            <SortToggleHeader
+              direction={headerDirection('email')}
+              label="Email"
+              onSort={() => onSortByField('email')}
+            />
             <th className="plain-column-header" scope="col">
               Roles
             </th>
-            <th className="plain-column-header" scope="col">
-              Last login
-            </th>
+            <SortToggleHeader
+              direction={headerDirection('lastLogin')}
+              label="Last login"
+              onSort={() => onSortByField('lastLogin')}
+            />
             <th className="plain-column-header" scope="col">
               Details
             </th>
@@ -322,19 +554,6 @@ function AdminUserResults({
         </tbody>
       </table>
     </div>
-  )
-}
-
-function AdminUsersWorkflowSummary({
-  users,
-}: {
-  users: readonly AdminUserAccount[]
-}) {
-  return (
-    <p aria-live="polite" className="toolbar-summary">
-      Reviewing {users.length} {users.length === 1 ? 'user' : 'users'} from
-      the admin user list.
-    </p>
   )
 }
 
@@ -718,6 +937,154 @@ function RolePills({ roles }: { roles: readonly string[] | undefined }) {
 
 function getAdminUserDetailPath(id: number) {
   return `${ADMIN_USERS_ROUTE_PATH}/${encodeURIComponent(String(id))}`
+}
+
+function parseAdminUsersSearchParams(
+  searchParams: URLSearchParams,
+): AdminUsersListQuery {
+  const page = Number.parseInt(searchParams.get('page') ?? '', 10)
+  const size = Number.parseInt(searchParams.get('size') ?? '', 10)
+
+  return {
+    page: Number.isInteger(page) && page > 0 ? page : DEFAULT_USERS_QUERY.page,
+    q: searchParams.get('q')?.trim() ?? '',
+    role: parseRoleFilter(searchParams.get('role') ?? ''),
+    size: USERS_PAGE_SIZE_OPTIONS.find((option) => option === size) ??
+      DEFAULT_USERS_QUERY.size,
+    sort: parseUsersSort(searchParams.get('sort')),
+  }
+}
+
+function adminUsersQueryToSearchParams(query: AdminUsersListQuery) {
+  const params = new URLSearchParams()
+
+  if (query.q) {
+    params.set('q', query.q)
+  }
+
+  if (query.role) {
+    params.set('role', query.role)
+  }
+
+  if (query.sort !== DEFAULT_USERS_QUERY.sort) {
+    params.set('sort', query.sort)
+  }
+
+  if (query.page > 0) {
+    params.set('page', String(query.page))
+  }
+
+  if (query.size !== DEFAULT_USERS_QUERY.size) {
+    params.set('size', String(query.size))
+  }
+
+  return params
+}
+
+function parseRoleFilter(value: string): '' | AdminUserRole {
+  return (
+    MANAGED_ADMIN_USER_ROLES.find((role) => role === value.toUpperCase()) ?? ''
+  )
+}
+
+function parseUsersSort(value: string | null): UsersSortValue {
+  const [field, direction] = (value ?? '').split(',')
+
+  if (
+    USERS_SORT_FIELDS.some((sortField) => sortField === field) &&
+    (direction === 'ASC' || direction === 'DESC')
+  ) {
+    return `${field as UsersSortField},${direction}`
+  }
+
+  return DEFAULT_USERS_QUERY.sort
+}
+
+function splitUsersSort(
+  sort: UsersSortValue,
+): [UsersSortField, UsersSortDirection] {
+  const [field, direction] = sort.split(',')
+
+  return [field as UsersSortField, direction as UsersSortDirection]
+}
+
+function nextUsersSort(
+  sort: UsersSortValue,
+  field: UsersSortField,
+): UsersSortValue {
+  const [currentField, currentDirection] = splitUsersSort(sort)
+  const nextDirection: UsersSortDirection =
+    currentField === field && currentDirection === 'ASC' ? 'DESC' : 'ASC'
+
+  return `${field},${nextDirection}`
+}
+
+function filterAndSortUsers(
+  users: readonly AdminUserAccount[],
+  query: AdminUsersListQuery,
+) {
+  const text = query.q.toLocaleLowerCase()
+  const filtered = users.filter((user) => {
+    if (query.role && !(user.roles ?? []).includes(query.role)) {
+      return false
+    }
+
+    if (!text) {
+      return true
+    }
+
+    return [user.displayName, user.login, user.email, user.provider].some(
+      (value) => value?.toLocaleLowerCase().includes(text),
+    )
+  })
+  const [field, direction] = splitUsersSort(query.sort)
+  const factor = direction === 'DESC' ? -1 : 1
+
+  return [...filtered].sort(
+    (left, right) => factor * compareUsers(left, right, field),
+  )
+}
+
+function compareUsers(
+  left: AdminUserAccount,
+  right: AdminUserAccount,
+  field: UsersSortField,
+) {
+  if (field === 'lastLogin') {
+    return (
+      (Date.parse(left.lastLoginAt ?? '') || 0) -
+      (Date.parse(right.lastLoginAt ?? '') || 0)
+    )
+  }
+
+  return userSortText(left, field).localeCompare(userSortText(right, field), undefined, {
+    sensitivity: 'base',
+  })
+}
+
+function userSortText(user: AdminUserAccount, field: UsersSortField) {
+  if (field === 'provider') {
+    return user.provider ?? ''
+  }
+
+  if (field === 'email') {
+    return user.email ?? ''
+  }
+
+  return createUserLabel(user)
+}
+
+function formatUserWindow(total: number, page: number, size: number) {
+  const label = `${total} ${total === 1 ? 'user' : 'users'}`
+
+  if (total <= 0) {
+    return label
+  }
+
+  const start = page * size + 1
+  const end = Math.min((page + 1) * size, total)
+
+  return `Showing ${start}-${end} of ${label}`
 }
 
 function findUserByRouteId(

@@ -221,10 +221,6 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
     })
   }
 
-  function clearFilters() {
-    updateFilterDraft(createAuditFilterDraft(DEFAULT_AUDIT_QUERY))
-    updateAuditQuery(DEFAULT_AUDIT_QUERY)
-  }
 
   function changePageSize(size: number) {
     updateAuditQuery({
@@ -292,7 +288,7 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
           </div>
         </div>
 
-        <div className="workflow-group" aria-label="Audit query controls">
+        <div className="list-card" aria-label="Audit query controls">
           <form
             aria-label="Audit filters"
             className="operator-filters"
@@ -347,11 +343,6 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
                 }
               />
             </label>
-            <div className="catalog-filter-actions">
-              <button type="button" className="secondary-button" onClick={clearFilters}>
-                Clear
-              </button>
-            </div>
           </form>
 
           <div className="catalog-toolbar" aria-label="Audit table controls">
@@ -392,9 +383,7 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
               )}
             </div>
           </div>
-        </div>
 
-        <div className="workflow-group" aria-label="Audit results">
           <AuditLogResults
             query={query}
             state={auditPageState}
@@ -650,15 +639,6 @@ function AuditPaginationControls({
       variant={variant}
     />
   )
-}
-
-const DEFAULT_AUDIT_QUERY: AuditQueryState = {
-  action: '',
-  actorLogin: '',
-  page: DEFAULT_AUDIT_PAGE,
-  size: DEFAULT_AUDIT_PAGE_SIZE,
-  sort: DEFAULT_AUDIT_SORT,
-  targetType: '',
 }
 
 function parseAuditSearchParams(searchParams: URLSearchParams): AuditQueryState {

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { PaginationControls } from './PaginationControls'
@@ -72,6 +72,30 @@ describe('PaginationControls pager', () => {
     expect(pager.querySelectorAll('.page-gap')).toHaveLength(1)
   })
 
+  it('keeps busy paging focusable with aria-disabled and guarded clicks', () => {
+    const onNextPage = vi.fn()
+    const { onPageChange } = renderPager({ disabled: true, onNextPage })
+
+    const pageButton = screen.getByRole('button', { name: 'Page 20' })
+    const nextButton = screen.getByRole('button', { name: 'Next page' })
+    expect(pageButton).not.toBeDisabled()
+    expect(pageButton).toHaveAttribute('aria-disabled', 'true')
+    expect(nextButton).not.toBeDisabled()
+    expect(nextButton).toHaveAttribute('aria-disabled', 'true')
+
+    fireEvent.click(pageButton)
+    fireEvent.click(nextButton)
+    expect(onPageChange).not.toHaveBeenCalled()
+    expect(onNextPage).not.toHaveBeenCalled()
+  })
+
+  it('hard-disables only the first and last boundaries', () => {
+    renderPager({ first: true, last: true })
+
+    expect(screen.getByRole('button', { name: 'Previous page' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled()
+  })
+
   it('falls back to a status stepper when total pages are unknown', () => {
     renderPager({ pageNumber: 2, totalPages: 0 })
 
@@ -84,5 +108,21 @@ describe('PaginationControls pager', () => {
     expect(
       screen.getByRole('button', { name: 'Next page' }),
     ).toBeInTheDocument()
+  })
+})
+
+describe('PaginationControls toolbar', () => {
+  it('offers rows-per-page and steppers without repeating the page position', () => {
+    renderPager({ variant: 'toolbar' })
+
+    const toolbar = screen.getByLabelText('Test pagination')
+    expect(within(toolbar).getByLabelText('Rows per page')).toBeInTheDocument()
+    expect(
+      within(toolbar).getByRole('button', { name: 'Previous page' }),
+    ).toBeInTheDocument()
+    expect(
+      within(toolbar).getByRole('button', { name: 'Next page' }),
+    ).toBeInTheDocument()
+    expect(toolbar).not.toHaveTextContent(/Page \d/)
   })
 })

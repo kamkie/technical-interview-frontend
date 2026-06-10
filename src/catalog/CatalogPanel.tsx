@@ -16,11 +16,9 @@ import { CategoryFilter } from './CategoryFilter'
 import {
   DEFAULT_CATALOG_QUERY,
   PAGE_SIZE_OPTIONS,
-  SORT_OPTIONS,
   catalogQueryToBookSearchParams,
   catalogQueryToSearchParams,
   createCatalogFilterDraft,
-  getPrimarySort,
   nextSortForField,
   parseCatalogSearchParams,
   type CatalogFilterDraft,
@@ -116,7 +114,6 @@ export function CatalogPanel() {
 
   const categories =
     categoriesState.status === 'ready' ? categoriesState.value : []
-  const primarySort = getPrimarySort(query)
   const isFetchingBooks = settledBooksQueryKey !== canonicalSearch
 
   useEffect(() => {
@@ -234,122 +231,104 @@ export function CatalogPanel() {
 
   return (
     <section className="catalog-panel" aria-label="Book catalog">
-      <form
-        aria-label="Catalog filters"
-        className="catalog-filters"
-        onSubmit={handleFilterSubmit}
-      >
-        <label>
-          <span>Title</span>
-          <input
-            name="title"
-            type="search"
-            value={filterDraft.title}
-            onChange={(event) => updateFilterDraft({ title: event.target.value })}
-          />
-        </label>
-        <label>
-          <span>Author</span>
-          <input
-            name="author"
-            type="search"
-            value={filterDraft.author}
-            onChange={(event) => updateFilterDraft({ author: event.target.value })}
-          />
-        </label>
-        <label>
-          <span>ISBN</span>
-          <input
-            name="isbn"
-            type="search"
-            value={filterDraft.isbn}
-            onChange={(event) => updateFilterDraft({ isbn: event.target.value })}
-          />
-        </label>
-        <div className="catalog-filter-actions">
-          <button type="button" className="secondary-button" onClick={clearFilters}>
-            Clear
-          </button>
-        </div>
-      </form>
-
-      <div className="catalog-toolbar" aria-label="Catalog table controls">
-        <CategoryFilter
-          ariaLabel="Category filters"
-          categories={categories}
-          categoriesState={categoriesState}
-          selectedCategories={query.categories}
-          onToggleCategory={toggleCategory}
-        />
-        <div className="catalog-toolbar-status">
-          <label className="inline-sort">
-            <span>Sort by</span>
-            <select
-              value={primarySort}
-              onChange={(event) => changeSort(event.target.value as SortValue)}
-            >
-              {SORT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          {booksState.status === 'ready' && (
-            <span aria-live="polite" className="toolbar-summary">
-              {formatBookWindow(booksState.value, query)}
-            </span>
-          )}
-          {booksState.status === 'ready' && (
-            <ToolbarPagination
-              ariaLabel="Book pagination top"
-              disabled={isFetchingBooks}
-              page={booksState.value}
-              query={query}
-              onNextPage={() => goToPage(query.page + 1)}
-              onPageSizeChange={changePageSize}
-              onPreviousPage={() => goToPage(query.page - 1)}
+      <div className="list-card">
+        <form
+          aria-label="Catalog filters"
+          className="catalog-filters"
+          onSubmit={handleFilterSubmit}
+        >
+          <label>
+            <span>Title</span>
+            <input
+              name="title"
+              type="search"
+              value={filterDraft.title}
+              onChange={(event) => updateFilterDraft({ title: event.target.value })}
             />
-          )}
+          </label>
+          <label>
+            <span>Author</span>
+            <input
+              name="author"
+              type="search"
+              value={filterDraft.author}
+              onChange={(event) => updateFilterDraft({ author: event.target.value })}
+            />
+          </label>
+          <label>
+            <span>ISBN</span>
+            <input
+              name="isbn"
+              type="search"
+              value={filterDraft.isbn}
+              onChange={(event) => updateFilterDraft({ isbn: event.target.value })}
+            />
+          </label>
+        </form>
+
+        <div className="catalog-toolbar" aria-label="Catalog table controls">
+          <CategoryFilter
+            ariaLabel="Category filters"
+            categories={categories}
+            categoriesState={categoriesState}
+            selectedCategories={query.categories}
+            onToggleCategory={toggleCategory}
+          />
+          <div className="catalog-toolbar-status">
+            {booksState.status === 'ready' && (
+              // Refetch progress takes over the summary slot instead of a
+              // dedicated status line, so the toolbar-to-table gap stays tight.
+              <span aria-live="polite" className="toolbar-summary">
+                {isFetchingBooks
+                  ? 'Updating results…'
+                  : formatBookWindow(booksState.value, query)}
+              </span>
+            )}
+            {booksState.status === 'ready' && (
+              <ToolbarPagination
+                ariaLabel="Book pagination top"
+                disabled={isFetchingBooks}
+                page={booksState.value}
+                query={query}
+                onNextPage={() => goToPage(query.page + 1)}
+                onPageSizeChange={changePageSize}
+                onPreviousPage={() => goToPage(query.page - 1)}
+              />
+            )}
+          </div>
         </div>
+
+        {booksState.status === 'loading' && (
+          <StateBlock
+            message="Loading books..."
+            title="Loading catalog results"
+            variant="loading"
+          />
+        )}
+
+        {booksState.status === 'error' && (
+          <StateBlock
+            message={booksState.message}
+            title="Books could not be displayed"
+            variant="error"
+          />
+        )}
+
+        {booksState.status === 'ready' && (
+          <BookResults
+            busy={isFetchingBooks}
+            hasActiveQuery={hasActiveQuery(query)}
+            page={booksState.value}
+            query={query}
+            onClearFilters={clearFilters}
+            onNextPage={() => goToPage(query.page + 1)}
+            onPageChange={goToPage}
+            onPageSizeChange={changePageSize}
+            onPreviousPage={() => goToPage(query.page - 1)}
+            onSortByField={sortByField}
+          />
+        )}
       </div>
-
-      <p className="catalog-fetch-status" role="status">
-        {isFetchingBooks && booksState.status === 'ready'
-          ? 'Updating results…'
-          : null}
-      </p>
-
-      {booksState.status === 'loading' && (
-        <StateBlock
-          message="Loading books..."
-          title="Loading catalog results"
-          variant="loading"
-        />
-      )}
-
-      {booksState.status === 'error' && (
-        <StateBlock
-          message={booksState.message}
-          title="Books could not be displayed"
-          variant="error"
-        />
-      )}
-
-      {booksState.status === 'ready' && (
-        <BookResults
-          busy={isFetchingBooks}
-          hasActiveQuery={hasActiveQuery(query)}
-          page={booksState.value}
-          query={query}
-          onClearFilters={clearFilters}
-          onNextPage={() => goToPage(query.page + 1)}
-          onPageChange={goToPage}
-          onPageSizeChange={changePageSize}
-          onPreviousPage={() => goToPage(query.page - 1)}
-          onSortByField={sortByField}
-        />
-      )}
     </section>
   )
 }
