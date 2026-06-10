@@ -12,6 +12,7 @@ import {
   type LoadState,
   type MutationState,
 } from '../ui/asyncState'
+import { formatTimestamp } from '../ui/format'
 import { MutationFeedback } from '../ui/MutationFeedback'
 import { StateBlock } from '../ui/StateBlock'
 import {
@@ -131,9 +132,9 @@ function AccountProfileDetails({
         <ProfileField label="Login name" value={account.login} />
         <ProfileField label="Identity provider" value={account.provider} />
         <ProfileField label="Account record" value={formatNumber(account.id)} />
-        <ProfileField label="Last sign-in" value={account.lastLoginAt} />
-        <ProfileField label="Created" value={account.createdAt} />
-        <ProfileField label="Updated" value={account.updatedAt} />
+        <ProfileField label="Last sign-in" value={formatProfileTimestamp(account.lastLoginAt)} />
+        <ProfileField label="Created" value={formatProfileTimestamp(account.createdAt)} />
+        <ProfileField label="Updated" value={formatProfileTimestamp(account.updatedAt)} />
       </dl>
     </div>
   )
@@ -270,6 +271,11 @@ function ProfileField({
 
 function formatNumber(value: number | undefined) {
   return value === undefined ? undefined : String(value)
+}
+
+// Missing values fall through to ProfileField's shared 'Unavailable' text.
+function formatProfileTimestamp(value: string | undefined) {
+  return value ? formatTimestamp(value) : undefined
 }
 
 function formatRoleLabel(role: string) {

@@ -13,6 +13,7 @@ import {
   type UserAccount,
 } from '../api/account'
 import type { SessionResponse } from '../api/session'
+import { formatTimestamp } from '../ui/format'
 import { AccountProfile } from './AccountProfile'
 
 describe('AccountProfile', () => {
@@ -66,6 +67,11 @@ describe('AccountProfile', () => {
     expect(await screen.findByText('Kamil Kiewisz')).toBeInTheDocument()
     expect(screen.getByText('kamil@example.test')).toBeInTheDocument()
     expect(screen.getByText('User')).toBeInTheDocument()
+    // Timestamps render through the shared formatter, never as raw ISO text.
+    expect(
+      screen.getByText(formatTimestamp('2026-05-11T12:00:00Z')),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('2026-05-11T12:00:00Z')).not.toBeInTheDocument()
     expect(screen.getAllByText('Polish')[0]).toBeInTheDocument()
     expect(
       screen.getByText(
