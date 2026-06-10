@@ -734,7 +734,12 @@ function LocalizationCoverageTable({
   }
 
   return (
-    <div className="catalog-table-scroll">
+    <div
+      aria-label="Scrollable localization coverage table"
+      className="catalog-table-scroll"
+      role="region"
+      tabIndex={0}
+    >
       <table className="catalog-table localization-coverage-table">
         <caption>Localization coverage</caption>
         <thead>
@@ -828,7 +833,12 @@ function LocalizationResults({
   sort: readonly string[]
 }) {
   return (
-    <div className="catalog-table-scroll">
+    <div
+      aria-label="Scrollable localization rows table"
+      className="catalog-table-scroll"
+      role="region"
+      tabIndex={0}
+    >
       <table className="catalog-table localization-rows-table">
         <caption className="visually-hidden">Localization rows</caption>
         <thead>
