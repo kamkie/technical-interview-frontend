@@ -45,15 +45,32 @@ export function createMockApiMiddleware(env: Record<string, string | undefined>)
       return
     }
 
-    const request = await toRequest(req)
-    const response = await handler(request)
+    // Connect does not handle rejected async middleware, so an unexpected
+    // handler failure would otherwise hang the request.
+    try {
+      const request = await toRequest(req)
+      const response = await handler(request)
 
-    if (!response) {
-      next()
-      return
+      if (!response) {
+        next()
+        return
+      }
+
+      await writeResponse(res, response)
+    } catch (error: unknown) {
+      console.error('[mock-api] request handling failed', error)
+      await writeResponse(
+        res,
+        Response.json(
+          {
+            title: 'Mock API failure',
+            status: 500,
+            detail: error instanceof Error ? error.message : String(error),
+          },
+          { status: 500 },
+        ),
+      )
     }
-
-    await writeResponse(res, response)
   }
 }
 
