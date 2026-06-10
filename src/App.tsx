@@ -61,6 +61,8 @@ const ACCOUNT_ROUTE_PATH = '/account'
 
 type RouteContext = {
   area: string
+  // Dewey classification for the area, typed on the route card's call number.
+  code: string
   description: string
   path: string
   title: string
@@ -68,6 +70,7 @@ type RouteContext = {
 
 const CATALOG_ROUTE_CONTEXT: RouteContext = {
   area: 'Public catalog',
+  code: '028',
   description:
     'Search the approved collection and review catalog availability.',
   path: CATALOG_ROUTE_PATH,
@@ -78,6 +81,7 @@ const ROUTE_CONTEXTS: readonly RouteContext[] = [
   CATALOG_ROUTE_CONTEXT,
   {
     area: 'Account',
+    code: '025.6',
     description:
       'Review the current profile and manage account preferences for this session.',
     path: ACCOUNT_ROUTE_PATH,
@@ -85,6 +89,7 @@ const ROUTE_CONTEXTS: readonly RouteContext[] = [
   },
   {
     area: 'Admin',
+    code: '025.3',
     description:
       'Manage book records and categories through backend-authorized catalog tools.',
     path: ADMIN_CATALOG_ROUTE_PATH,
@@ -92,6 +97,7 @@ const ROUTE_CONTEXTS: readonly RouteContext[] = [
   },
   {
     area: 'Admin',
+    code: '418',
     description:
       'Maintain localized messages without treating translated text as program logic.',
     path: ADMIN_LOCALIZATION_ROUTE_PATH,
@@ -99,6 +105,7 @@ const ROUTE_CONTEXTS: readonly RouteContext[] = [
   },
   {
     area: 'Admin',
+    code: '023',
     description:
       'Review application users and role-grant provenance through admin workflows.',
     path: ADMIN_USERS_ROUTE_PATH,
@@ -106,6 +113,7 @@ const ROUTE_CONTEXTS: readonly RouteContext[] = [
   },
   {
     area: 'Admin',
+    code: '023',
     description:
       'Review application users and role-grant provenance through admin workflows.',
     path: ADMIN_USER_DETAIL_ROUTE_PATH,
@@ -113,6 +121,7 @@ const ROUTE_CONTEXTS: readonly RouteContext[] = [
   },
   {
     area: 'Operations',
+    code: '025.1',
     description:
       'Review operator audit evidence with URL-backed filters, pagination, and read-only details.',
     path: OPERATOR_ROUTE_PATH,
@@ -120,6 +129,7 @@ const ROUTE_CONTEXTS: readonly RouteContext[] = [
   },
   {
     area: 'Operations',
+    code: '004.2',
     description:
       'Review build, runtime, and health evidence for support escalations.',
     path: OPERATOR_DIAGNOSTICS_ROUTE_PATH,
@@ -250,7 +260,7 @@ export function App() {
       </header>
 
       <main className="workspace">
-        <RouteContextHeader context={routeContext} />
+        <RouteContextHeader key={routeContext.path} context={routeContext} />
 
         <Routes>
           <Route index element={<Navigate to={CATALOG_ROUTE_PATH} replace />} />
@@ -411,7 +421,10 @@ function AdminMenu() {
 function RouteContextHeader({ context }: { context: RouteContext }) {
   return (
     <header className="route-context page-header">
-      <p className="eyebrow">{context.area}</p>
+      <p className="eyebrow">
+        <span className="call-number">{context.code}</span>
+        {` · ${context.area}`}
+      </p>
       <h1 id="page-title">{context.title}</h1>
       <p className="lede">{context.description}</p>
     </header>
