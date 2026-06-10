@@ -311,9 +311,14 @@ async function verifyAccountAccess(page, config, session) {
   await page.getByRole('heading', { name: 'Account settings' }).waitFor({
     timeout: config.timeoutMs,
   })
-  await page.getByText(account.displayName ?? account.login).waitFor({
-    timeout: config.timeoutMs,
-  })
+  // The topbar account button also shows the display name, so scope the
+  // check to the profile region to keep the locator strict-mode safe.
+  await page
+    .getByRole('region', { name: 'Account profile' })
+    .getByText(account.displayName ?? account.login)
+    .waitFor({
+      timeout: config.timeoutMs,
+    })
 
   pass(
     'account access',
