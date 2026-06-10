@@ -480,13 +480,13 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
     0,
   )
   // Coverage is derived from the fetched rows only. When that view is
-  // partial — more pages exist or a language filter narrows the rows — a
-  // locale shown as missing may exist on the server, so the create
-  // shortcuts are suppressed in favor of plain status pills.
+  // partial — rows still loading, more pages, or a language filter that
+  // narrows the rows — a locale shown as missing may exist on the server,
+  // so the create shortcuts are suppressed in favor of plain status pills.
   const coverageViewPartial =
     query.language !== '' ||
-    (localizationsState.status === 'ready' &&
-      (localizationsState.value.totalPages ?? 0) > 1)
+    localizationsState.status !== 'ready' ||
+    (localizationsState.value.totalPages ?? 0) > 1
 
   return (
     <div className="admin-localization-layout">
