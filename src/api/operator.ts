@@ -1,4 +1,4 @@
-import type { components, operations } from './generated/openapi'
+import type { components, paths } from './generated/openapi'
 import {
   ApiRequestError,
   parseApiProblem,
@@ -12,8 +12,12 @@ export const DEFAULT_AUDIT_PAGE = 0
 export const DEFAULT_AUDIT_PAGE_SIZE = 20
 export const DEFAULT_AUDIT_SORT = ['id,DESC'] as const
 
+// Looked up by contract path instead of the auto-numbered operation id, so
+// backend regeneration cannot silently shift this to another operation.
 type AuditLogQueryParams = NonNullable<
-  NonNullable<operations['findAll_3']['parameters']>['query']
+  NonNullable<
+    paths[typeof AUDIT_LOGS_PATH]['get']['parameters']
+  >['query']
 >
 
 export type AuditLog = components['schemas']['AuditLogResponse']
