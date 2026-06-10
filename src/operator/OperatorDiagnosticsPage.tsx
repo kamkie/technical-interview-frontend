@@ -10,11 +10,15 @@ import type { SessionResponse } from '../api/session'
 import { getDisplayMessage, type LoadState } from '../ui/asyncState'
 import { formatTimestamp } from '../ui/format'
 import { StateBlock } from '../ui/StateBlock'
-import { AuditDetailsPanel } from './AuditDetailsPanel'
+import {
+  AuditDetailsPanel,
+  type SelectedAuditEntry,
+} from './AuditDetailsPanel'
 import {
   createAuditEntryKey,
   formatAuditDescriptor,
   formatOptionalNumber,
+  formatSummary,
 } from './auditFormat'
 
 export const OPERATOR_DIAGNOSTICS_ROUTE_PATH = '/operator/diagnostics' as const
@@ -34,9 +38,8 @@ export function OperatorDiagnosticsPage({
   const [overviewState, setOverviewState] = useState<LoadState<OperatorSurface>>({
     status: 'loading',
   })
-  const [selectedAuditEntry, setSelectedAuditEntry] = useState<AuditLog | null>(
-    null,
-  )
+  const [selectedAuditEntry, setSelectedAuditEntry] =
+    useState<SelectedAuditEntry | null>(null)
   const detailsReturnFocusRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
@@ -69,9 +72,9 @@ export function OperatorDiagnosticsPage({
     }
   }, [session])
 
-  function openDetails(entry: AuditLog, opener: HTMLElement) {
+  function openDetails(entry: AuditLog, index: number, opener: HTMLElement) {
     detailsReturnFocusRef.current = opener
-    setSelectedAuditEntry(entry)
+    setSelectedAuditEntry({ entry, index })
   }
 
   function closeDetails() {
@@ -101,7 +104,8 @@ export function OperatorDiagnosticsPage({
         </section>
 
         <AuditDetailsPanel
-          entry={selectedAuditEntry}
+          description="Select a recent entry to inspect the structured audit payload."
+          selected={selectedAuditEntry}
           onCloseDetails={closeDetails}
         />
       </div>
@@ -113,7 +117,7 @@ function OperatorOverview({
   onSelectEntry,
   state,
 }: {
-  onSelectEntry: (entry: AuditLog, opener: HTMLElement) => void
+  onSelectEntry: (entry: AuditLog, index: number, opener: HTMLElement) => void
   state: LoadState<OperatorSurface>
 }) {
   if (state.status === 'loading') {
@@ -152,14 +156,14 @@ function AuditSummary({
   onSelectEntry,
 }: {
   audit: OperatorSurface['audit']
-  onSelectEntry: (entry: AuditLog, opener: HTMLElement) => void
+  onSelectEntry: (entry: AuditLog, index: number, opener: HTMLElement) => void
 }) {
   const safeAuditEndpoint = getSafeOperatorApiPath(audit?.auditLogEndpoint)
   const recentEntries = audit?.recentEntries ?? EMPTY_AUDIT_ROWS
 
   return (
     <section className="operator-card" aria-labelledby="audit-summary-title">
-      <h3 id="audit-summary-title">Audit summary</h3>
+      <h2 id="audit-summary-title">Audit summary</h2>
       <dl className="operator-metadata">
         <div>
           <dt>Total entries</dt>
@@ -171,7 +175,7 @@ function AuditSummary({
         </div>
       </dl>
       <div className="recent-audit-list" aria-label="Recent audit entries">
-        <h4>Recent entries</h4>
+        <h3>Recent entries</h3>
         {recentEntries.length === 0 ? (
           <p className="session-message muted">
             No recent audit entries available.
@@ -183,10 +187,10 @@ function AuditSummary({
                 <button
                   type="button"
                   onClick={(event) =>
-                    onSelectEntry(entry, event.currentTarget)
+                    onSelectEntry(entry, index, event.currentTarget)
                   }
                 >
-                  <span>{entry.summary ?? 'No summary'}</span>
+                  <span>{formatSummary(entry.summary)}</span>
                   <span>{formatAuditDescriptor(entry)}</span>
                 </button>
               </li>
@@ -259,7 +263,7 @@ function RuntimeSummary({
 
   return (
     <section className="operator-card" aria-labelledby="runtime-summary-title">
-      <h3 id="runtime-summary-title">Runtime summary</h3>
+      <h2 id="runtime-summary-title">Runtime summary</h2>
       <dl className="operator-metadata single-column">
         <div>
           <dt>Technical overview endpoint</dt>
@@ -293,7 +297,7 @@ function OperationalStatus({
 
   return (
     <section className="operator-card" aria-labelledby="operations-summary-title">
-      <h3 id="operations-summary-title">Operational status</h3>
+      <h2 id="operations-summary-title">Operational status</h2>
       {healthItems.length === 0 && endpointItems.length === 0 ? (
         <p className="session-message muted">Operational status unavailable.</p>
       ) : (

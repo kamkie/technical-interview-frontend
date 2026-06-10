@@ -1,7 +1,10 @@
 import type { AuditLog } from '../api/operator'
 
 export function createAuditEntryKey(entry: AuditLog, index: number) {
-  return entry.id ?? `${entry.createdAt ?? 'unknown'}-${entry.summary ?? index}`
+  return (
+    entry.id ??
+    `${entry.createdAt ?? 'unknown'}-${entry.summary ?? 'unknown'}-${index}`
+  )
 }
 
 export function createAuditEntryLabel(entry: AuditLog, index: number) {
@@ -14,8 +17,16 @@ export function formatAuditDescriptor(entry: AuditLog) {
   return [
     formatEnumValue(entry.targetType),
     formatEnumValue(entry.action),
-    entry.actorLogin?.trim() ? entry.actorLogin : 'Unknown actor',
+    formatActor(entry.actorLogin),
   ].join(' - ')
+}
+
+export function formatActor(actorLogin: string | undefined) {
+  return actorLogin?.trim() ? actorLogin : 'Unknown actor'
+}
+
+export function formatSummary(summary: string | undefined) {
+  return summary?.trim() ? summary : 'No summary'
 }
 
 export function formatEnumValue(value: string | undefined) {

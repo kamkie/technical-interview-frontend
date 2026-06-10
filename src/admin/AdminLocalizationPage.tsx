@@ -1,10 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
-import {
-  fetchCurrentAccount,
-  type UserAccount,
-} from '../api/account'
+import { useCurrentAccount } from '../account/useCurrentAccount'
 import {
   DEFAULT_LOCALIZATION_PAGE_SIZE,
   DEFAULT_LOCALIZATION_SORT,
@@ -96,35 +93,7 @@ type LocalizationFormDraft = {
 }
 
 export function AdminLocalizationPage({ session }: { session: SessionResponse }) {
-  const [accountState, setAccountState] = useState<LoadState<UserAccount>>({
-    status: 'loading',
-  })
-
-  useEffect(() => {
-    let ignore = false
-
-    fetchCurrentAccount(session)
-      .then((account) => {
-        if (!ignore) {
-          setAccountState({ status: 'ready', value: account })
-        }
-      })
-      .catch((error: unknown) => {
-        if (!ignore) {
-          setAccountState({
-            status: 'error',
-            message: getDisplayMessage(
-              error,
-              'Admin account details could not be loaded.',
-            ),
-          })
-        }
-      })
-
-    return () => {
-      ignore = true
-    }
-  }, [session])
+  const accountState = useCurrentAccount(session)
 
   return (
     <section
@@ -333,7 +302,13 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
       'localization-form-message-key',
     )
 
-    messageKeyInput?.scrollIntoView?.({ behavior: 'smooth', block: 'center' })
+    const prefersReducedMotion =
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
+
+    messageKeyInput?.scrollIntoView?.({
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
+      block: 'center',
+    })
     messageKeyInput?.focus({ preventScroll: true })
   }, [formFocusToken])
 
@@ -643,7 +618,7 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
     <div className="workflow-group" aria-labelledby="localization-coverage-title">
       <div className="workflow-group-heading">
         <div>
-          <h3 id="localization-coverage-title">Review locale coverage</h3>
+          <h2 id="localization-coverage-title">Review locale coverage</h2>
           <p className="section-description">
             Scan supported locales and create missing rows from stable message
             keys.
@@ -720,7 +695,7 @@ function LocalizationCoverageTable({
                     <button
                       className="localization-locale-button missing"
                       type="button"
-                      aria-label={`Add ${group.messageKey} ${locale.language}`}
+                      aria-label={`Add ${locale.language} for ${group.messageKey}`}
                       onClick={() =>
                         onCreateMissing(group.messageKey, locale.language)
                       }

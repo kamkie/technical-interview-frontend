@@ -1,10 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
-import {
-  fetchCurrentAccount,
-  type UserAccount,
-} from '../api/account'
+import { useCurrentAccount } from '../account/useCurrentAccount'
 import {
   MANAGED_ADMIN_USER_ROLES,
   fetchAdminUsers,
@@ -36,39 +33,9 @@ type RoleDraft = {
 }
 
 export function AdminUsersPage({ session }: { session: SessionResponse }) {
-  const [accountState, setAccountState] = useState<LoadState<UserAccount>>({
-    status: 'loading',
-  })
-
-  useEffect(() => {
-    if (session.authenticated !== true) {
-      return undefined
-    }
-
-    let ignore = false
-
-    fetchCurrentAccount(session)
-      .then((account) => {
-        if (!ignore) {
-          setAccountState({ status: 'ready', value: account })
-        }
-      })
-      .catch((error: unknown) => {
-        if (!ignore) {
-          setAccountState({
-            status: 'error',
-            message: getDisplayMessage(
-              error,
-              'Admin account details could not be loaded.',
-            ),
-          })
-        }
-      })
-
-    return () => {
-      ignore = true
-    }
-  }, [session])
+  const accountState = useCurrentAccount(
+    session.authenticated === true ? session : null,
+  )
 
   if (session.authenticated !== true) {
     return (
@@ -482,7 +449,10 @@ function AdminUserDetailPanel({
   user: AdminUserAccount | null
 }) {
   return (
-    <aside className="admin-user-detail-panel" aria-labelledby="admin-user-detail-title">
+    <section
+      className="admin-user-detail-panel"
+      aria-labelledby="admin-user-detail-title"
+    >
       <div className="admin-section-heading">
         <div>
           <p className="eyebrow">Detail</p>
@@ -532,7 +502,7 @@ function AdminUserDetailPanel({
           onReplaceRoles={onReplaceRoles}
         />
       )}
-    </aside>
+    </section>
   )
 }
 

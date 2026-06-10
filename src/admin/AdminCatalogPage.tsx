@@ -15,10 +15,7 @@ import {
   type BookPage,
   type Category,
 } from '../api/catalog'
-import {
-  fetchCurrentAccount,
-  type UserAccount,
-} from '../api/account'
+import { useCurrentAccount } from '../account/useCurrentAccount'
 import type { SessionResponse } from '../api/session'
 import { hasAdminRole } from '../auth/roles'
 import { CategoryFilter } from '../catalog/CategoryFilter'
@@ -30,7 +27,6 @@ import {
   catalogQueryToSearchParams,
   createCatalogFilterDraft,
   getPrimarySort,
-  getSortDirection,
   nextSortForField,
   parseCatalogSearchParams,
   type CatalogFilterDraft,
@@ -46,6 +42,7 @@ import {
 } from '../ui/asyncState'
 import { MutationFeedback } from '../ui/MutationFeedback'
 import { PaginationControls } from '../ui/PaginationControls'
+import { SortableColumnHeader } from '../ui/SortableColumnHeader'
 import { StateBlock } from '../ui/StateBlock'
 import { Tabs } from '../ui/Tabs'
 
@@ -70,35 +67,7 @@ type CategoryEditState = {
 }
 
 export function AdminCatalogPage({ session }: { session: SessionResponse }) {
-  const [accountState, setAccountState] = useState<LoadState<UserAccount>>({
-    status: 'loading',
-  })
-
-  useEffect(() => {
-    let ignore = false
-
-    fetchCurrentAccount(session)
-      .then((account) => {
-        if (!ignore) {
-          setAccountState({ status: 'ready', value: account })
-        }
-      })
-      .catch((error: unknown) => {
-        if (!ignore) {
-          setAccountState({
-            status: 'error',
-            message: getDisplayMessage(
-              error,
-              'Admin account details could not be loaded.',
-            ),
-          })
-        }
-      })
-
-    return () => {
-      ignore = true
-    }
-  }, [session])
+  const accountState = useCurrentAccount(session)
 
   return (
     <section className="admin-catalog-panel" aria-label="Catalog administration">
@@ -1408,46 +1377,6 @@ function CategoryManagementList({
         </tbody>
       </table>
     </div>
-  )
-}
-
-function SortableColumnHeader({
-  field,
-  label,
-  onSortByField,
-  query,
-}: {
-  field: SortField
-  label: string
-  onSortByField: (field: SortField) => void
-  query: CatalogQueryState
-}) {
-  const direction = getSortDirection(query, field)
-  const ariaSort =
-    direction === 'ASC' ? 'ascending' : direction === 'DESC' ? 'descending' : 'none'
-  const indicator =
-    direction === 'ASC' ? 'ascending' : direction === 'DESC' ? 'descending' : 'not sorted'
-  const nextDirectionLabel = direction === 'ASC' ? 'descending' : 'ascending'
-  const sortButtonLabel = `Sort by ${label}; currently ${indicator}. Activate to sort ${nextDirectionLabel}.`
-
-  return (
-    <th aria-sort={ariaSort} scope="col">
-      <button
-        aria-label={sortButtonLabel}
-        className="column-sort-button"
-        type="button"
-        onClick={() => onSortByField(field)}
-      >
-        <span>{label}</span>
-        <span
-          className={`sort-indicator ${direction ? 'sorted' : ''}`}
-          aria-hidden="true"
-        >
-          {direction === 'ASC' ? '↑' : direction === 'DESC' ? '↓' : '↕'}
-        </span>
-        <span className="visually-hidden">{indicator}</span>
-      </button>
-    </th>
   )
 }
 

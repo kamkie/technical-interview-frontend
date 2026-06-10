@@ -9,7 +9,7 @@ import {
   useLocation,
 } from 'react-router-dom'
 
-import { fetchCurrentAccount } from './api/account'
+import { useCurrentAccount } from './account/useCurrentAccount'
 import {
   fetchCurrentSession,
   formatLoginProviderName,
@@ -166,12 +166,22 @@ function useDismissibleMenu() {
     }
 
     function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        setOpen(false)
-        containerRef.current
-          ?.querySelector<HTMLElement>('[aria-expanded]')
-          ?.focus()
+      if (event.key !== 'Escape') {
+        return
       }
+
+      const container = containerRef.current
+      const focusInsideMenu =
+        container !== null &&
+        ((event.target instanceof Node && container.contains(event.target)) ||
+          container.contains(document.activeElement))
+
+      if (!focusInsideMenu) {
+        return
+      }
+
+      setOpen(false)
+      container.querySelector<HTMLElement>('[aria-expanded]')?.focus()
     }
 
     document.addEventListener('pointerdown', closeOnOutsidePointer)
@@ -342,31 +352,12 @@ function useAdminVisibility(sessionState: SessionState) {
     sessionState.status === 'ready' && sessionState.session.authenticated === true
       ? sessionState.session
       : null
-  const [adminSession, setAdminSession] = useState<SessionResponse | null>(null)
+  // The pathname refresh key retries a failed account load on the next route
+  // change, so one transient failure cannot hide admin navigation all session.
+  const { pathname } = useLocation()
+  const accountState = useCurrentAccount(session, pathname)
 
-  useEffect(() => {
-    if (session === null) {
-      return undefined
-    }
-
-    let ignore = false
-
-    fetchCurrentAccount(session)
-      .then((account) => {
-        if (!ignore && hasAdminRole(account)) {
-          setAdminSession(session)
-        }
-      })
-      .catch(() => {
-        // Navigation stays non-admin when the account cannot be loaded.
-      })
-
-    return () => {
-      ignore = true
-    }
-  }, [session])
-
-  return session !== null && adminSession === session
+  return accountState.status === 'ready' && hasAdminRole(accountState.value)
 }
 
 function AdminMenu() {

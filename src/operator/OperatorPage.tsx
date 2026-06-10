@@ -28,12 +28,17 @@ import {
 import { formatTimestamp } from '../ui/format'
 import { PaginationControls } from '../ui/PaginationControls'
 import { StateBlock } from '../ui/StateBlock'
-import { AuditDetailsPanel } from './AuditDetailsPanel'
+import {
+  AuditDetailsPanel,
+  type SelectedAuditEntry,
+} from './AuditDetailsPanel'
 import {
   createAuditEntryKey,
   createAuditEntryLabel,
+  formatActor,
   formatEnumValue,
   formatOptionalNumber,
+  formatSummary,
 } from './auditFormat'
 
 export const OPERATOR_ROUTE_PATH = '/operator' as const
@@ -122,9 +127,8 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
   const [auditPageState, setAuditPageState] = useState<LoadState<AuditLogPage>>({
     status: 'loading',
   })
-  const [selectedAuditEntry, setSelectedAuditEntry] = useState<AuditLog | null>(
-    null,
-  )
+  const [selectedAuditEntry, setSelectedAuditEntry] =
+    useState<SelectedAuditEntry | null>(null)
   const detailsReturnFocusRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
@@ -219,9 +223,9 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
     })
   }
 
-  function openDetails(entry: AuditLog, opener: HTMLElement) {
+  function openDetails(entry: AuditLog, index: number, opener: HTMLElement) {
     detailsReturnFocusRef.current = opener
-    setSelectedAuditEntry(entry)
+    setSelectedAuditEntry({ entry, index })
   }
 
   function closeDetails() {
@@ -415,7 +419,8 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
         </section>
 
         <AuditDetailsPanel
-          entry={selectedAuditEntry}
+          description="Select a row to inspect the structured audit payload without changing the current filters."
+          selected={selectedAuditEntry}
           onCloseDetails={closeDetails}
         />
       </div>
@@ -434,7 +439,7 @@ function AuditLogResults({
   onNextPage: () => void
   onPageSizeChange: (size: number) => void
   onPreviousPage: () => void
-  onSelectEntry: (entry: AuditLog, opener: HTMLElement) => void
+  onSelectEntry: (entry: AuditLog, index: number, opener: HTMLElement) => void
   query: AuditQueryState
   state: LoadState<AuditLogPage>
 }) {
@@ -530,7 +535,7 @@ function AuditWorkflowSummary({
   state,
 }: {
   query: AuditQueryState
-  selectedAuditEntry: AuditLog | null
+  selectedAuditEntry: SelectedAuditEntry | null
   state: LoadState<AuditLogPage>
 }) {
   const activeFilters = getAuditFilterSummary(query)
@@ -571,7 +576,10 @@ function AuditWorkflowSummary({
           <dt>Selected</dt>
           <dd>
             {selectedAuditEntry !== null
-              ? createAuditEntryLabel(selectedAuditEntry, 0)
+              ? createAuditEntryLabel(
+                  selectedAuditEntry.entry,
+                  selectedAuditEntry.index,
+                )
               : 'None'}
           </dd>
         </div>
@@ -587,7 +595,7 @@ function AuditLogRow({
 }: {
   entry: AuditLog
   index: number
-  onSelectEntry: (entry: AuditLog, opener: HTMLElement) => void
+  onSelectEntry: (entry: AuditLog, index: number, opener: HTMLElement) => void
 }) {
   const entryLabel = createAuditEntryLabel(entry, index)
 
@@ -599,14 +607,14 @@ function AuditLogRow({
         <span className="table-subtext">ID {formatOptionalNumber(entry.targetId)}</span>
       </td>
       <td>{formatEnumValue(entry.action)}</td>
-      <td>{entry.actorLogin?.trim() ? entry.actorLogin : 'Unknown actor'}</td>
-      <td>{entry.summary?.trim() ? entry.summary : 'No summary'}</td>
+      <td>{formatActor(entry.actorLogin)}</td>
+      <td>{formatSummary(entry.summary)}</td>
       <td>
         <button
           className="secondary-button"
           type="button"
           aria-label={`View ${entryLabel}`}
-          onClick={(event) => onSelectEntry(entry, event.currentTarget)}
+          onClick={(event) => onSelectEntry(entry, index, event.currentTarget)}
         >
           View
         </button>

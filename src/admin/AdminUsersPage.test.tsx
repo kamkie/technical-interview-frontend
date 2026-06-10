@@ -118,7 +118,7 @@ describe('AdminUsersPage', () => {
       container.querySelectorAll('.state-block[data-state="empty"]').length,
     ).toBeGreaterThanOrEqual(2)
     expect(await screen.findByText('No users are available.')).toBeInTheDocument()
-    const details = screen.getByRole('complementary', { name: 'User detail' })
+    const details = screen.getByRole('region', { name: 'User detail' })
     expect(within(details).getByText('No user selected')).toBeInTheDocument()
     expect(
       within(details).getByText('Select a user to review roles and provenance.'),
@@ -133,7 +133,7 @@ describe('AdminUsersPage', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'View Admin User' }))
 
     expect(await screen.findByRole('heading', { name: 'User detail' })).toBeInTheDocument()
-    const details = screen.getByRole('complementary', { name: 'User detail' })
+    const details = screen.getByRole('region', { name: 'User detail' })
 
     expect(
       within(details).getByRole('heading', { name: 'Identify selected user' }),
@@ -160,7 +160,7 @@ describe('AdminUsersPage', () => {
 
     renderAdminUsers(`${ADMIN_USERS_ROUTE_PATH}/8`)
 
-    const details = await screen.findByRole('complementary', {
+    const details = await screen.findByRole('region', {
       name: 'User detail',
     })
 

@@ -77,7 +77,7 @@ describe('OperatorPage', () => {
       within(pagination).getByRole('button', { name: 'Next' }),
     ).toBeInTheDocument()
     expect(
-      screen.getByRole('complementary', { name: 'Audit details' }),
+      screen.getByRole('region', { name: 'Audit details' }),
     ).toBeInTheDocument()
   })
 
@@ -184,7 +184,7 @@ describe('OperatorPage', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: 'View audit entry 2' }))
 
-    const detailsPanel = screen.getByRole('complementary', {
+    const detailsPanel = screen.getByRole('region', {
       name: 'Audit details',
     })
 

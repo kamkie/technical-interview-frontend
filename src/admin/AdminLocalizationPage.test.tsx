@@ -147,7 +147,7 @@ describe('AdminLocalizationPage', () => {
     renderAdminLocalization(`${ADMIN_LOCALIZATION_ROUTE_PATH}?messageKey=account.title`)
 
     fireEvent.click(await screen.findByRole('tab', { name: 'Coverage' }))
-    fireEvent.click(await screen.findByRole('button', { name: 'Add account.title de' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Add de for account.title' }))
 
     const form = screen.getByRole('form', { name: 'Create localization' })
     expect(within(form).getByLabelText('Message key')).toHaveValue('account.title')
@@ -330,7 +330,7 @@ describe('AdminLocalizationPage', () => {
     renderAdminLocalization(`${ADMIN_LOCALIZATION_ROUTE_PATH}?messageKey=account.title`)
 
     fireEvent.click(await screen.findByRole('tab', { name: 'Coverage' }))
-    fireEvent.click(await screen.findByRole('button', { name: 'Add account.title de' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Add de for account.title' }))
     const form = screen.getByRole('form', { name: 'Create localization' })
     fireEvent.change(within(form).getByLabelText('Message text'), {
       target: { value: 'Konto' },

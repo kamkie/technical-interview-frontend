@@ -1115,7 +1115,7 @@ h1 {
   box-shadow: var(--shadow-card);
 }
 
-.operator-card h3,
+.operator-card h2,
 .audit-detail-content h3 {
   margin: 0;
   color: var(--color-heading);
@@ -1195,7 +1195,7 @@ h1 {
   color: var(--color-warning);
 }
 
-.recent-audit-list h4 {
+.recent-audit-list h3 {
   margin: 0;
   color: var(--color-muted);
   font-size: 0.84rem;
@@ -1519,6 +1519,7 @@ h1 {
   gap: 1rem;
 }
 
+.workflow-group-heading h2,
 .workflow-group-heading h3 {
   margin: 0;
   color: var(--color-heading);

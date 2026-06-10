@@ -168,7 +168,7 @@ async function runBrowserA11y(config) {
       AxeBuilder,
       config,
       ACCOUNT_ROUTE_PATH,
-      'Account settings',
+      [{ role: 'heading', name: 'Language preference' }],
       'authenticated account route',
     )
     await scanAuthenticatedRoute(
@@ -176,7 +176,10 @@ async function runBrowserA11y(config) {
       AxeBuilder,
       config,
       ADMIN_USERS_ROUTE_PATH,
-      'User administration',
+      [
+        { role: 'heading', name: 'Application users' },
+        { role: 'table', name: 'Admin users' },
+      ],
       'authenticated admin users route',
     )
 
@@ -263,16 +266,21 @@ async function scanAuthenticatedRoute(
   AxeBuilder,
   config,
   path,
-  heading,
+  readyContent,
   label,
 ) {
   await page.goto(new URL(path, config.origin).toString(), {
     waitUntil: 'domcontentloaded',
     timeout: config.timeoutMs,
   })
-  await page.getByRole('heading', { name: heading }).waitFor({
-    timeout: config.timeoutMs,
-  })
+
+  // The shell h1 renders before the auth gate resolves, so wait for elements
+  // that only mount with the loaded page content before running axe.
+  for (const { name, role } of readyContent) {
+    await page.getByRole(role, { name }).waitFor({
+      timeout: config.timeoutMs,
+    })
+  }
 
   await scanPage(page, AxeBuilder, label)
 }

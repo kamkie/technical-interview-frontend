@@ -3,30 +3,39 @@ import { formatTimestamp } from '../ui/format'
 import { StateBlock } from '../ui/StateBlock'
 import {
   createAuditEntryLabel,
+  formatActor,
   formatEnumValue,
   formatOptionalNumber,
+  formatSummary,
   hasStructuredDetails,
 } from './auditFormat'
 
+export type SelectedAuditEntry = {
+  entry: AuditLog
+  index: number
+}
+
 export function AuditDetailsPanel({
-  entry,
+  description,
   onCloseDetails,
+  selected,
 }: {
-  entry: AuditLog | null
+  description: string
   onCloseDetails: () => void
+  selected: SelectedAuditEntry | null
 }) {
   return (
-    <aside className="operator-details-panel" aria-labelledby="audit-details-title">
+    <section
+      className="operator-details-panel"
+      aria-labelledby="audit-details-title"
+    >
       <div className="admin-section-heading">
         <div>
           <p className="eyebrow">Details</p>
           <h2 id="audit-details-title">Audit details</h2>
-          <p className="section-description">
-            Select a row to inspect the structured audit payload without
-            changing the current filters.
-          </p>
+          <p className="section-description">{description}</p>
         </div>
-        {entry !== null && (
+        {selected !== null && (
           <div className="section-actions">
             <button
               type="button"
@@ -39,7 +48,7 @@ export function AuditDetailsPanel({
         )}
       </div>
 
-      {entry === null ? (
+      {selected === null ? (
         <StateBlock
           message="Select an audit entry to inspect its read-only details."
           title="No audit entry selected"
@@ -50,37 +59,37 @@ export function AuditDetailsPanel({
           <dl className="operator-metadata">
             <div>
               <dt>Entry</dt>
-              <dd>{createAuditEntryLabel(entry, 0)}</dd>
+              <dd>{createAuditEntryLabel(selected.entry, selected.index)}</dd>
             </div>
             <div>
               <dt>Created</dt>
-              <dd>{formatTimestamp(entry.createdAt)}</dd>
+              <dd>{formatTimestamp(selected.entry.createdAt)}</dd>
             </div>
             <div>
               <dt>Target type</dt>
-              <dd>{formatEnumValue(entry.targetType)}</dd>
+              <dd>{formatEnumValue(selected.entry.targetType)}</dd>
             </div>
             <div>
               <dt>Target ID</dt>
-              <dd>{formatOptionalNumber(entry.targetId)}</dd>
+              <dd>{formatOptionalNumber(selected.entry.targetId)}</dd>
             </div>
             <div>
               <dt>Action</dt>
-              <dd>{formatEnumValue(entry.action)}</dd>
+              <dd>{formatEnumValue(selected.entry.action)}</dd>
             </div>
             <div>
               <dt>Actor</dt>
-              <dd>{entry.actorLogin?.trim() ? entry.actorLogin : 'Unknown actor'}</dd>
+              <dd>{formatActor(selected.entry.actorLogin)}</dd>
             </div>
           </dl>
           <div className="audit-detail-summary">
             <h3>Summary</h3>
-            <p>{entry.summary?.trim() ? entry.summary : 'No summary'}</p>
+            <p>{formatSummary(selected.entry.summary)}</p>
           </div>
           <div className="audit-detail-json">
             <h3>Structured details</h3>
-            {hasStructuredDetails(entry.details) ? (
-              <pre>{JSON.stringify(entry.details, null, 2)}</pre>
+            {hasStructuredDetails(selected.entry.details) ? (
+              <pre>{JSON.stringify(selected.entry.details, null, 2)}</pre>
             ) : (
               <p className="session-message muted">
                 No structured details available.
@@ -89,6 +98,6 @@ export function AuditDetailsPanel({
           </div>
         </div>
       )}
-    </aside>
+    </section>
   )
 }

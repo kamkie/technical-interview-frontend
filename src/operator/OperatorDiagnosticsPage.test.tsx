@@ -38,7 +38,7 @@ describe('OperatorDiagnosticsPage', () => {
     expect(screen.getByText('UP')).toBeInTheDocument()
     expect(screen.getByText('/api/admin/audit-logs')).toBeInTheDocument()
     expect(
-      screen.getByRole('complementary', { name: 'Audit details' }),
+      screen.getByRole('region', { name: 'Audit details' }),
     ).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(OPERATOR_SURFACE_PATH, {
       method: 'GET',
@@ -62,7 +62,7 @@ describe('OperatorDiagnosticsPage', () => {
       }),
     )
 
-    const detailsPanel = screen.getByRole('complementary', {
+    const detailsPanel = screen.getByRole('region', {
       name: 'Audit details',
     })
 

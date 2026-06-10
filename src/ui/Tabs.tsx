@@ -61,7 +61,7 @@ export function Tabs({
 
           return (
             <button
-              aria-controls={`${idPrefix}-panel-${tab.id}`}
+              aria-controls={selected ? `${idPrefix}-panel-${tab.id}` : undefined}
               aria-selected={selected}
               className="tab-button"
               id={`${idPrefix}-tab-${tab.id}`}
@@ -80,6 +80,7 @@ export function Tabs({
         aria-labelledby={`${idPrefix}-tab-${active.id}`}
         className="tab-panel"
         id={`${idPrefix}-panel-${active.id}`}
+        key={active.id}
         role="tabpanel"
       >
         {active.panel}
