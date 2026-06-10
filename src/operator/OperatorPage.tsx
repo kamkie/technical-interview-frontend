@@ -30,10 +30,7 @@ import { IconChevronDown } from '../ui/icons'
 import { PaginationControls } from '../ui/PaginationControls'
 import { SortToggleHeader } from '../ui/SortableColumnHeader'
 import { StateBlock } from '../ui/StateBlock'
-import {
-  AuditEntryDetails,
-  type SelectedAuditEntry,
-} from './AuditEntryDetails'
+import { AuditEntryDetails } from './AuditEntryDetails'
 import {
   createAuditEntryKey,
   createAuditEntryLabel,
@@ -106,8 +103,18 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
   const [auditPageState, setAuditPageState] = useState<LoadState<AuditLogPage>>({
     status: 'loading',
   })
-  const [selectedAuditEntry, setSelectedAuditEntry] =
-    useState<SelectedAuditEntry | null>(null)
+  // The expansion is positional, so it is stored under the search string it
+  // was made for; a query change (page, filter, or sort) would otherwise
+  // leave an arbitrary row on the new result expanded.
+  const currentSearch = searchParams.toString()
+  const [selectionState, setSelectionState] = useState<{
+    index: number
+    key: string
+  } | null>(null)
+  const selectedAuditIndex =
+    selectionState !== null && selectionState.key === currentSearch
+      ? selectionState.index
+      : null
 
   useEffect(() => {
     if (session.authenticated !== true) {
@@ -222,9 +229,11 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
     })
   }
 
-  function toggleDetails(entry: AuditLog, index: number) {
-    setSelectedAuditEntry((current) =>
-      current?.index === index ? null : { entry, index },
+  function toggleDetails(index: number) {
+    setSelectionState((current) =>
+      current?.key === currentSearch && current.index === index
+        ? null
+        : { index, key: currentSearch },
     )
   }
 
@@ -358,7 +367,7 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
             }
             onSelectEntry={toggleDetails}
             onSortByField={sortByField}
-            selectedIndex={selectedAuditEntry?.index ?? null}
+            selectedIndex={selectedAuditIndex}
           />
         </div>
       </section>
@@ -381,7 +390,7 @@ function AuditLogResults({
   onPageChange: (page: number) => void
   onPageSizeChange: (size: number) => void
   onPreviousPage: () => void
-  onSelectEntry: (entry: AuditLog, index: number) => void
+  onSelectEntry: (index: number) => void
   onSortByField: (field: AuditSortField) => void
   query: AuditQueryState
   selectedIndex: number | null
@@ -505,7 +514,7 @@ function AuditLogRow({
   entry: AuditLog
   expanded: boolean
   index: number
-  onSelectEntry: (entry: AuditLog, index: number) => void
+  onSelectEntry: (index: number) => void
 }) {
   const entryLabel = createAuditEntryLabel(entry, index)
   const detailRowId = `audit-entry-details-${index}`
@@ -517,7 +526,7 @@ function AuditLogRow({
       return
     }
 
-    onSelectEntry(entry, index)
+    onSelectEntry(index)
   }
 
   return (
@@ -540,7 +549,7 @@ function AuditLogRow({
             aria-label={`Details for ${entryLabel}`}
             onClick={(event) => {
               event.stopPropagation()
-              onSelectEntry(entry, index)
+              onSelectEntry(index)
             }}
           >
             <IconChevronDown

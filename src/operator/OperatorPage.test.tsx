@@ -262,6 +262,36 @@ describe('OperatorPage', () => {
     expect(container.querySelector('.audit-detail-row')).toBeNull()
   })
 
+  it('collapses the expanded row when the audit query changes', async () => {
+    const fetchMock = mockOperatorFetch({
+      auditPage: createAuditPage({
+        last: false,
+        totalElements: 40,
+        totalPages: 2,
+      }),
+    })
+
+    const { container } = renderOperator()
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Details for audit entry 2' }),
+    )
+
+    expect(container.querySelector('.audit-detail-row')).not.toBeNull()
+
+    fireEvent.click(screen.getAllByRole('button', { name: 'Next page' })[0])
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        `${AUDIT_LOGS_PATH}?page=1&size=20&sort=id%2CDESC`,
+        expect.objectContaining({ method: 'GET' }),
+      )
+    })
+    await waitFor(() => {
+      expect(container.querySelector('.audit-detail-row')).toBeNull()
+    })
+  })
+
   it('renders localized 401 audit errors without redirecting', async () => {
     mockOperatorFetch({
       auditPage: problemResponse(401, 'Sesja wygasla.'),
