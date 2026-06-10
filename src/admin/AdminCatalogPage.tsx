@@ -126,18 +126,27 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
 
     return params.toString()
   }, [searchParams])
-  const query = useMemo(
-    () => parseCatalogSearchParams(new URLSearchParams(querySearch)),
+  const canonicalQuerySearch = useMemo(
+    () =>
+      catalogQueryToSearchParams(
+        parseCatalogSearchParams(new URLSearchParams(querySearch)),
+      ).toString(),
     [querySearch],
+  )
+  // Parsing from the canonical string keeps the query identity stable across
+  // the canonicalization rewrite below, so the books effect fetches once.
+  const query = useMemo(
+    () => parseCatalogSearchParams(new URLSearchParams(canonicalQuerySearch)),
+    [canonicalQuerySearch],
   )
   const currentSearch = searchParams.toString()
   const canonicalSearch = useMemo(() => {
-    const params = catalogQueryToSearchParams(query)
+    const params = new URLSearchParams(canonicalQuerySearch)
 
     appendCatalogSectionParam(params, activeSection)
 
     return params.toString()
-  }, [activeSection, query])
+  }, [activeSection, canonicalQuerySearch])
   const [categoriesState, setCategoriesState] = useState<LoadState<Category[]>>({
     status: 'loading',
   })

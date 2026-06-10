@@ -89,6 +89,24 @@ describe('CatalogPanel', () => {
     )
   })
 
+  it('fetches books once when entering through a non-canonical URL', async () => {
+    const fetchMock = mockCatalogFetch()
+
+    const { router } = renderCatalogRoute(
+      `${CATALOG_ROUTE_PATH}?page=0&size=10&title=%20Effective%20`,
+    )
+
+    expect(await screen.findByText('Effective Java')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(router.state.location.search).toBe('?title=Effective')
+    })
+
+    const bookCalls = fetchMock.mock.calls.filter(([input]) =>
+      String(input).startsWith(BOOKS_PATH),
+    )
+    expect(bookCalls).toHaveLength(1)
+  })
+
   it('keeps responsive catalog controls and table scrolling discoverable', async () => {
     mockCatalogFetch()
 

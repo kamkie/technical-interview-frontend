@@ -32,14 +32,17 @@ const LIVE_FILTER_DEBOUNCE_MS = 300
 
 export function CatalogPanel() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const query = useMemo(
-    () => parseCatalogSearchParams(searchParams),
-    [searchParams],
-  )
   const currentSearch = searchParams.toString()
   const canonicalSearch = useMemo(
-    () => catalogQueryToSearchParams(query).toString(),
-    [query],
+    () =>
+      catalogQueryToSearchParams(parseCatalogSearchParams(searchParams)).toString(),
+    [searchParams],
+  )
+  // Parsing from the canonical string keeps the query identity stable across
+  // the canonicalization rewrite below, so the books effect fetches once.
+  const query = useMemo(
+    () => parseCatalogSearchParams(new URLSearchParams(canonicalSearch)),
+    [canonicalSearch],
   )
   const [categoriesState, setCategoriesState] = useState<LoadState<Category[]>>({
     status: 'loading',
