@@ -84,6 +84,8 @@ Role management is replacement-based, not patch-based.
 - Require an explicit operator reason in the UI before enabling or submitting a role replacement. The request must include the contract's reason field. Backend validation remains authoritative for exact accepted values and length.
 - On success, replace the list row and selected detail state with the returned `AdminUserAccountResponse`; do not assume the submitted roles are the final state.
 - Do not add optimistic role changes unless they are reconciled immediately with the successful backend response and rolled back on failure.
+- A replacement that removes `ADMIN` from the signed-in account requires an explicit confirmation dialog before the request is sent, because admin workflows close as soon as it succeeds.
+- When a successful replacement targets the signed-in account, propagate the returned roles to the shared current-account state so navigation and admin gates react without a reload.
 - When the backend returns `400`, `401`, `403`, or `404`, render the localized `ApiProblemResponse.message` and keep the previous user state visible.
 
 ## CSRF Rules

@@ -2,12 +2,17 @@ import {
   FormEvent,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
-import { useCurrentAccount } from '../account/useCurrentAccount'
+import {
+  publishAccountUpdate,
+  useCurrentAccount,
+} from '../account/useCurrentAccount'
+import type { UserAccount } from '../api/account'
 import {
   MANAGED_ADMIN_USER_ROLES,
   fetchAdminUsers,
@@ -24,6 +29,7 @@ import {
   type LoadState,
   type MutationState,
 } from '../ui/asyncState'
+import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { formatTimestamp } from '../ui/format'
 import { MutationFeedback } from '../ui/MutationFeedback'
 import { PaginationControls } from '../ui/PaginationControls'
@@ -123,7 +129,10 @@ export function AdminUsersPage({ session }: { session: SessionResponse }) {
 
       {accountState.status === 'ready' &&
         (hasAdminRole(accountState.value) ? (
-          <AdminUsersManager session={session} />
+          <AdminUsersManager
+            currentAccount={accountState.value}
+            session={session}
+          />
         ) : (
           <StateBlock
             message="Admin access is required for user management."
@@ -135,7 +144,13 @@ export function AdminUsersPage({ session }: { session: SessionResponse }) {
   )
 }
 
-function AdminUsersManager({ session }: { session: SessionResponse }) {
+function AdminUsersManager({
+  currentAccount,
+  session,
+}: {
+  currentAccount: UserAccount
+  session: SessionResponse
+}) {
   const navigate = useNavigate()
   const params = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -151,6 +166,11 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
   const [roleMutationState, setRoleMutationState] = useState<MutationState>({
     status: 'idle',
   })
+  const [pendingSelfDemotion, setPendingSelfDemotion] = useState<{
+    request: AdminUserRoleUpdateRequest
+    user: AdminUserAccount
+  } | null>(null)
+  const selfDemotionReturnFocusRef = useRef<HTMLElement | null>(null)
   const [filterDraftState, setFilterDraftState] = useState(() => ({
     key: listQuery.q,
     value: listQuery.q,
@@ -270,7 +290,7 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
     })
   }
 
-  async function handleReplaceRoles(
+  function handleReplaceRoles(
     user: AdminUserAccount,
     request: AdminUserRoleUpdateRequest,
   ) {
@@ -292,6 +312,56 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
       return
     }
 
+    // Dropping ADMIN from the signed-in account closes the admin workflows
+    // immediately, so it needs an explicit confirmation first.
+    const selfDemotion =
+      user.id === currentAccount.id &&
+      (user.roles ?? []).includes('ADMIN') &&
+      !request.roles.includes('ADMIN')
+
+    if (selfDemotion) {
+      selfDemotionReturnFocusRef.current =
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null
+      setPendingSelfDemotion({ request, user })
+
+      return
+    }
+
+    void submitRoleReplacement(user, request)
+  }
+
+  function closeSelfDemotionDialog() {
+    const opener = selfDemotionReturnFocusRef.current
+
+    selfDemotionReturnFocusRef.current = null
+    setPendingSelfDemotion(null)
+    window.requestAnimationFrame(() => {
+      if (opener?.isConnected) {
+        opener.focus()
+      }
+    })
+  }
+
+  function confirmSelfDemotion() {
+    const pending = pendingSelfDemotion
+
+    closeSelfDemotionDialog()
+
+    if (pending) {
+      void submitRoleReplacement(pending.user, pending.request)
+    }
+  }
+
+  async function submitRoleReplacement(
+    user: AdminUserAccount,
+    request: AdminUserRoleUpdateRequest,
+  ) {
+    if (user.id === undefined) {
+      return
+    }
+
     setRoleMutationState({ status: 'submitting' })
 
     try {
@@ -305,6 +375,17 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
             }
           : current,
       )
+
+      // Replacing the signed-in account's own roles must reach the shared
+      // account cache so navigation and admin gates react immediately.
+      if (updatedUser.id !== undefined && updatedUser.id === currentAccount.id) {
+        publishAccountUpdate(session, {
+          ...currentAccount,
+          roles: updatedUser.roles,
+          updatedAt: updatedUser.updatedAt,
+        })
+      }
+
       setRoleMutationState({
         status: 'success',
         message: 'User roles updated.',
@@ -440,9 +521,7 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
                     <AdminUserDetail
                       mutationState={roleMutationState}
                       user={user}
-                      onReplaceRoles={(target, request) =>
-                        void handleReplaceRoles(target, request)
-                      }
+                      onReplaceRoles={handleReplaceRoles}
                     />
                   </section>
                 )}
@@ -481,7 +560,19 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
           selectedRouteId={selectedRouteId}
           state={usersState}
           user={selectedUser}
-          onReplaceRoles={(user, request) => void handleReplaceRoles(user, request)}
+          onReplaceRoles={handleReplaceRoles}
+        />
+      )}
+
+      {pendingSelfDemotion !== null && (
+        <ConfirmDialog
+          confirmLabel="Remove my admin access"
+          message={`Removing ADMIN from ${createUserLabel(
+            pendingSelfDemotion.user,
+          )} demotes the account you are signed in with; admin workflows close after saving.`}
+          title="Confirm self-demotion"
+          onCancel={closeSelfDemotionDialog}
+          onConfirm={confirmSelfDemotion}
         />
       )}
     </div>

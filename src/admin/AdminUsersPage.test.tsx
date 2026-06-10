@@ -369,6 +369,76 @@ describe('AdminUsersPage', () => {
     expect(screen.getAllByText('Reviewer User').length).toBeGreaterThan(0)
     expect(screen.queryByText('User roles updated.')).not.toBeInTheDocument()
   })
+
+  it('asks for confirmation before removing the signed-in admin role', async () => {
+    document.cookie = 'XSRF-TOKEN=token%201'
+    const selfUser = createAdminUser({
+      id: 42,
+      displayName: 'Kamil Kiewisz',
+      email: 'kamil@example.test',
+      login: 'kamkie',
+      roles: ['USER', 'ADMIN'],
+    })
+    const fetchMock = mockAdminUsersFetch({
+      replaceRolesResponse: createAdminUser({
+        ...selfUser,
+        roles: ['USER'],
+        updatedAt: '2026-06-11T10:00:00Z',
+      }),
+      users: [...createUsers(), selfUser],
+    })
+
+    renderAdminUsers(`${ADMIN_USERS_ROUTE_PATH}/42`)
+
+    const form = await screen.findByRole('form', {
+      name: 'Replace roles for Kamil Kiewisz',
+    })
+    fireEvent.click(within(form).getByLabelText('ADMIN'))
+    fireEvent.change(within(form).getByLabelText('Operator reason'), {
+      target: { value: 'Stepping down from admin duty' },
+    })
+    fireEvent.click(within(form).getByRole('button', { name: 'Save roles' }))
+
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog).toHaveTextContent('Confirm self-demotion')
+    expect(
+      fetchMock.mock.calls.some(([input]) => String(input).endsWith('/roles')),
+    ).toBe(false)
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(
+      fetchMock.mock.calls.some(([input]) => String(input).endsWith('/roles')),
+    ).toBe(false)
+
+    fireEvent.click(within(form).getByRole('button', { name: 'Save roles' }))
+    fireEvent.click(
+      within(await screen.findByRole('dialog')).getByRole('button', {
+        name: 'Remove my admin access',
+      }),
+    )
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(getAdminUserRolesPath(42), {
+        method: 'PUT',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'X-XSRF-TOKEN': 'token 1',
+        },
+        body: JSON.stringify({
+          roles: ['USER'],
+          reason: 'Stepping down from admin duty',
+        }),
+      })
+    })
+    // The refreshed own roles reach the shared account cache, so the admin
+    // gate closes right after the demotion is saved.
+    expect(
+      await screen.findByText('Admin access is required for user management.'),
+    ).toBeInTheDocument()
+  })
 })
 
 function renderAdminUsers(
