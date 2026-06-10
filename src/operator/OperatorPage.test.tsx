@@ -60,10 +60,10 @@ describe('OperatorPage', () => {
     ).toBeInTheDocument()
     const pagination = screen.getByLabelText('Audit pagination')
     expect(
-      within(pagination).getByRole('button', { name: 'Previous' }),
+      within(pagination).getByRole('button', { name: 'Previous page' }),
     ).toBeInTheDocument()
     expect(
-      within(pagination).getByRole('button', { name: 'Next' }),
+      within(pagination).getByRole('button', { name: 'Next page' }),
     ).toBeInTheDocument()
   })
 

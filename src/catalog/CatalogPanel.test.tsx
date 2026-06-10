@@ -60,8 +60,13 @@ describe('CatalogPanel', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('Showing 1-2 of 2 books')).toBeInTheDocument()
     expect(screen.getAllByText('Title A-Z')).toHaveLength(1)
-    // The compact top and full bottom pagination both show the position.
-    expect(screen.getAllByText('Page 1 of 1')).toHaveLength(2)
+    // The top toolbar shows the position; the bottom pager numbers the pages.
+    expect(screen.getByText('Page 1 of 1')).toBeInTheDocument()
+    expect(
+      within(screen.getByLabelText('Book pagination')).getByRole('button', {
+        name: 'Page 1',
+      }),
+    ).toHaveAttribute('aria-current', 'page')
     expect(fetchMock).toHaveBeenCalledWith(CATEGORIES_PATH, {
       method: 'GET',
       credentials: 'same-origin',
@@ -110,14 +115,14 @@ describe('CatalogPanel', () => {
       within(tableRegion).getByRole('table', { name: 'Public books' }),
     ).toBeInTheDocument()
 
-    // The bottom pager only steps pages; the rows-per-page select lives in
-    // the top toolbar pagination.
+    // The bottom pager steps and jumps numbered pages; the rows-per-page
+    // select lives in the top toolbar pagination.
     const pagination = screen.getByLabelText('Book pagination')
     expect(
-      within(pagination).getByRole('button', { name: 'Previous' }),
+      within(pagination).getByRole('button', { name: 'Previous page' }),
     ).toBeInTheDocument()
     expect(
-      within(pagination).getByRole('button', { name: 'Next' }),
+      within(pagination).getByRole('button', { name: 'Next page' }),
     ).toBeInTheDocument()
     expect(within(pagination).queryByLabelText('Rows per page')).toBeNull()
 
@@ -207,12 +212,19 @@ describe('CatalogPanel', () => {
 
     expect(await screen.findByText('Refactoring')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    const pager = screen.getByLabelText('Book pagination')
+
+    fireEvent.click(within(pager).getByRole('button', { name: 'Next page' }))
 
     expect(await screen.findByText('Updating results…')).toBeInTheDocument()
     expect(screen.getByText('Refactoring')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled()
+    expect(
+      within(pager).getByRole('button', { name: 'Next page' }),
+    ).toBeDisabled()
+    expect(
+      within(pager).getByRole('button', { name: 'Previous page' }),
+    ).toBeDisabled()
+    expect(within(pager).getByRole('button', { name: 'Page 2' })).toBeDisabled()
     expect(
       screen.getByRole('region', { name: 'Scrollable public books table' }),
     ).toHaveAttribute('aria-busy', 'true')
@@ -229,7 +241,11 @@ describe('CatalogPanel', () => {
     expect(
       screen.getByRole('region', { name: 'Scrollable public books table' }),
     ).not.toHaveAttribute('aria-busy')
-    expect(screen.getByRole('button', { name: 'Next' })).not.toBeDisabled()
+    expect(
+      within(screen.getByLabelText('Book pagination')).getByRole('button', {
+        name: 'Next page',
+      }),
+    ).not.toBeDisabled()
   })
 
   it('applies text and repeated category filters live without a submit', async () => {
@@ -272,21 +288,44 @@ describe('CatalogPanel', () => {
     expect(screen.getByText('Showing 1-1 of 1 book')).toBeInTheDocument()
   })
 
-  it('requests the next button-based page with Spring pagination parameters', async () => {
+  it('requests stepped and jumped pages with Spring pagination parameters', async () => {
     const fetchMock = mockCatalogFetch({ books: paginatedBookPage })
 
     renderCatalogRoute()
 
     expect(await screen.findByText('Refactoring')).toBeInTheDocument()
-    expect(screen.getAllByText(/Page 1\s+of 3/)).toHaveLength(2)
-    expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Previous page' })).toBeDisabled()
+    expect(screen.getByText(/Page 1\s+of 3/)).toBeInTheDocument()
+    const pager = screen.getByLabelText('Book pagination')
+    const topPager = screen.getByLabelText('Book pagination top')
+    expect(
+      within(pager).getByRole('button', { name: 'Previous page' }),
+    ).toBeDisabled()
+    expect(
+      within(topPager).getByRole('button', { name: 'Previous page' }),
+    ).toBeDisabled()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    fireEvent.click(within(pager).getByRole('button', { name: 'Next page' }))
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(
         `${BOOKS_PATH}?page=1&size=10&sort=title%2CASC`,
+        expect.objectContaining({
+          credentials: 'same-origin',
+          method: 'GET',
+        }),
+      )
+    })
+
+    // Numbered pages jump directly instead of stepping one page at a time.
+    fireEvent.click(
+      within(screen.getByLabelText('Book pagination')).getByRole('button', {
+        name: 'Page 3',
+      }),
+    )
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        `${BOOKS_PATH}?page=2&size=10&sort=title%2CASC`,
         expect.objectContaining({
           credentials: 'same-origin',
           method: 'GET',
@@ -309,11 +348,25 @@ describe('CatalogPanel', () => {
     renderCatalogRoute(`${CATALOG_ROUTE_PATH}?page=2`)
 
     expect(await screen.findByText('Refactoring')).toBeInTheDocument()
-    expect(screen.getAllByText(/Page 3\s+of 3/)).toHaveLength(2)
-    expect(screen.getByRole('button', { name: 'Previous' })).not.toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Previous page' })).not.toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled()
+    expect(screen.getByText(/Page 3\s+of 3/)).toBeInTheDocument()
+    const pager = screen.getByLabelText('Book pagination')
+    expect(
+      within(pager).getByRole('button', { name: 'Previous page' }),
+    ).not.toBeDisabled()
+    expect(
+      within(pager).getByRole('button', { name: 'Next page' }),
+    ).toBeDisabled()
+    expect(within(pager).getByRole('button', { name: 'Page 3' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    const topPager = screen.getByLabelText('Book pagination top')
+    expect(
+      within(topPager).getByRole('button', { name: 'Previous page' }),
+    ).not.toBeDisabled()
+    expect(
+      within(topPager).getByRole('button', { name: 'Next page' }),
+    ).toBeDisabled()
   })
 
   it('renders localized backend book error messages', async () => {

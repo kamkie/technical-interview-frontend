@@ -879,6 +879,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
             onDeleteBook={requestBookDelete}
             onEditBook={(book) => void startBookEdit(book)}
             onNextPage={() => goToPage(query.page + 1)}
+            onPageChange={goToPage}
             onPageSizeChange={changePageSize}
             onPreviousPage={() => goToPage(query.page - 1)}
             onSortByField={sortByField}
@@ -1198,6 +1199,7 @@ function AdminBookResults({
   onDeleteBook,
   onEditBook,
   onNextPage,
+  onPageChange,
   onPageSizeChange,
   onPreviousPage,
   onSortByField,
@@ -1208,6 +1210,7 @@ function AdminBookResults({
   onDeleteBook: (book: Book, opener: HTMLElement) => void
   onEditBook: (book: Book) => void
   onNextPage: () => void
+  onPageChange: (page: number) => void
   onPageSizeChange: (size: PageSize) => void
   onPreviousPage: () => void
   onSortByField: (field: SortField) => void
@@ -1237,6 +1240,7 @@ function AdminBookResults({
           first={first}
           last={last}
           onNextPage={onNextPage}
+          onPageChange={onPageChange}
           onPageSizeChange={(size) => onPageSizeChange(size as PageSize)}
           onPreviousPage={onPreviousPage}
           pageSizeOptions={PAGE_SIZE_OPTIONS}
@@ -1311,6 +1315,7 @@ function AdminBookResults({
         first={first}
         last={last}
         onNextPage={onNextPage}
+        onPageChange={onPageChange}
         onPageSizeChange={(size) => onPageSizeChange(size as PageSize)}
         onPreviousPage={onPreviousPage}
         pageSizeOptions={PAGE_SIZE_OPTIONS}

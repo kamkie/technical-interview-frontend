@@ -405,6 +405,7 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
                   : query.page + 1,
               )
             }
+            onPageChange={goToPage}
             onPageSizeChange={changePageSize}
             onPreviousPage={() =>
               goToPage(
@@ -424,6 +425,7 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
 
 function AuditLogResults({
   onNextPage,
+  onPageChange,
   onPageSizeChange,
   onPreviousPage,
   onSelectEntry,
@@ -432,6 +434,7 @@ function AuditLogResults({
   state,
 }: {
   onNextPage: () => void
+  onPageChange: (page: number) => void
   onPageSizeChange: (size: number) => void
   onPreviousPage: () => void
   onSelectEntry: (entry: AuditLog, index: number) => void
@@ -519,6 +522,7 @@ function AuditLogResults({
         page={page}
         query={query}
         onNextPage={onNextPage}
+        onPageChange={onPageChange}
         onPageSizeChange={onPageSizeChange}
         onPreviousPage={onPreviousPage}
       />
@@ -608,6 +612,7 @@ function AuditLogRow({
 function AuditPaginationControls({
   ariaLabel = 'Audit pagination',
   onNextPage,
+  onPageChange,
   onPageSizeChange,
   onPreviousPage,
   page,
@@ -616,6 +621,7 @@ function AuditPaginationControls({
 }: {
   ariaLabel?: string
   onNextPage: () => void
+  onPageChange?: (page: number) => void
   onPageSizeChange: (size: number) => void
   onPreviousPage: () => void
   page: AuditLogPage
@@ -634,6 +640,7 @@ function AuditPaginationControls({
       first={first}
       last={last}
       onNextPage={onNextPage}
+      onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}
       onPreviousPage={onPreviousPage}
       pageNumber={pageNumber}

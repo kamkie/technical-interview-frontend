@@ -722,6 +722,7 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
             querySize={query.size}
             totalPages={totalPages}
             onNextPage={() => goToPage(pageNumber + 1)}
+            onPageChange={goToPage}
             onPageSizeChange={(size) => changePageSize(size as PageSize)}
             onPreviousPage={() => goToPage(pageNumber - 1)}
             pageSizeOptions={PAGE_SIZE_OPTIONS}

@@ -83,10 +83,24 @@ describe('AdminCatalogPage', () => {
     renderAdminCatalog(`${ADMIN_CATALOG_ROUTE_PATH}?page=2`)
 
     expect(await screen.findByText('Effective Java')).toBeInTheDocument()
-    expect(screen.getAllByText(/Page 3\s+of 3/)).toHaveLength(2)
-    expect(screen.getByRole('button', { name: 'Previous' })).not.toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled()
+    expect(screen.getByText(/Page 3\s+of 3/)).toBeInTheDocument()
+    const pager = screen.getByLabelText('Admin book pagination')
+    expect(
+      within(pager).getByRole('button', { name: 'Previous page' }),
+    ).not.toBeDisabled()
+    expect(
+      within(pager).getByRole('button', { name: 'Next page' }),
+    ).toBeDisabled()
+    expect(within(pager).getByRole('button', { name: 'Page 3' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    expect(
+      within(screen.getByLabelText('Admin book pagination top')).getByRole(
+        'button',
+        { name: 'Next page' },
+      ),
+    ).toBeDisabled()
   })
 
   it('canonicalizes invalid admin catalog query values before requesting books', async () => {

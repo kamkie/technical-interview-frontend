@@ -344,6 +344,7 @@ export function CatalogPanel() {
           query={query}
           onClearFilters={clearFilters}
           onNextPage={() => goToPage(query.page + 1)}
+          onPageChange={goToPage}
           onPageSizeChange={changePageSize}
           onPreviousPage={() => goToPage(query.page - 1)}
           onSortByField={sortByField}
@@ -408,6 +409,7 @@ function BookResults({
   hasActiveQuery,
   onClearFilters,
   onNextPage,
+  onPageChange,
   onPageSizeChange,
   onPreviousPage,
   onSortByField,
@@ -418,6 +420,7 @@ function BookResults({
   hasActiveQuery: boolean
   onClearFilters: () => void
   onNextPage: () => void
+  onPageChange: (page: number) => void
   onPageSizeChange: (size: PageSize) => void
   onPreviousPage: () => void
   onSortByField: (field: SortField) => void
@@ -457,6 +460,7 @@ function BookResults({
           first={first}
           last={last}
           onNextPage={onNextPage}
+          onPageChange={onPageChange}
           onPageSizeChange={(size) => onPageSizeChange(size as PageSize)}
           onPreviousPage={onPreviousPage}
           pageSizeOptions={PAGE_SIZE_OPTIONS}
@@ -527,6 +531,7 @@ function BookResults({
         first={first}
         last={last}
         onNextPage={onNextPage}
+        onPageChange={onPageChange}
         onPageSizeChange={(size) => onPageSizeChange(size as PageSize)}
         onPreviousPage={onPreviousPage}
         pageSizeOptions={PAGE_SIZE_OPTIONS}
