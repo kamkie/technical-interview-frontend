@@ -786,12 +786,6 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
           </div>
         </div>
 
-        {/* Feedback surfaces here while the form is closed, so edit-row saves
-            and deletes stay visible after their form collapses. */}
-        {bookFormMode.type === 'closed' && (
-          <MutationFeedback state={bookMutationState} />
-        )}
-
         {/* The create form stays collapsed until requested; edits expand
             inline beneath their table row instead of using this slot. */}
         {bookFormMode.type === 'create' && (
@@ -858,6 +852,11 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
               onToggleCategory={toggleFilterCategory}
             />
             <div className="catalog-toolbar-status">
+              {/* Mutation feedback borrows the fixed-height toolbar row while
+                  the form is closed, so messages never shift the table. */}
+              {bookFormMode.type === 'closed' && (
+                <MutationFeedback state={bookMutationState} />
+              )}
               {booksState.status === 'ready' && (
                 <span aria-live="polite" className="toolbar-summary">
                   {formatBookWindow(booksState.value, query)}
@@ -973,8 +972,6 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
           </button>
         </form>
 
-        <MutationFeedback state={categoryMutationState} />
-
         {categoriesState.status === 'loading' && (
           <StateBlock
             message="Loading categories..."
@@ -994,6 +991,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
         {categoriesState.status === 'ready' && (
           <CategoryManagementSection
             categories={categoriesState.value}
+            feedback={<MutationFeedback state={categoryMutationState} />}
             editState={categoryEditState}
             onCancelEdit={() => setCategoryEditState(null)}
             onDeleteCategory={requestCategoryDelete}
@@ -1431,8 +1429,12 @@ type CategoryListProps = {
 // so filtering, sorting, and pagination happen client-side over that list.
 function CategoryManagementSection({
   categories,
+  feedback,
   ...listProps
-}: CategoryListProps & { categories: readonly Category[] }) {
+}: CategoryListProps & {
+  categories: readonly Category[]
+  feedback: ReactNode
+}) {
   const [filterText, setFilterText] = useState('')
   const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
   const [page, setPage] = useState(0)
@@ -1488,6 +1490,9 @@ function CategoryManagementSection({
 
       <div className="catalog-toolbar" aria-label="Admin category table controls">
         <div className="catalog-toolbar-status">
+          {/* Mutation feedback borrows the fixed-height toolbar row so
+              messages never shift the table. */}
+          {feedback}
           <span aria-live="polite" className="toolbar-summary">
             {formatCategoryWindow(filteredCategories.length, currentPage, size)}
           </span>

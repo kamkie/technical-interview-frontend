@@ -149,9 +149,9 @@ function OperatorOverview({ state }: { state: LoadState<OperatorSurface> }) {
     <div className="operator-overview-grid">
       <div className="operator-overview-side">
         <OperationalStatus operations={surface.operations} />
-        <RuntimeSummary runtime={surface.runtime} />
+        <AuditSummary audit={surface.audit} />
       </div>
-      <AuditSummary audit={surface.audit} />
+      <RuntimeSummary runtime={surface.runtime} />
     </div>
   )
 }

@@ -1279,8 +1279,8 @@ h1 {
   gap: 1rem;
 }
 
-/* The status and runtime cards live in their own side column so a tall
-   expanded audit entry cannot inflate the gap between them. */
+/* The two short cards (status, audit) stack in one column beside the tall
+   runtime card so neither column carries all the height. */
 .operator-overview-grid {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1.25rem;
@@ -2262,6 +2262,12 @@ input[type='search']::-webkit-search-cancel-button:hover {
   font-variant-numeric: tabular-nums;
 }
 
+/* Mutation messages share the toolbar line so they cannot shift the table;
+   match the toolbar type scale. */
+.catalog-toolbar .session-message {
+  font-size: 0.8125rem;
+}
+
 .pagination-controls {
   display: flex;
   gap: 0.625rem;
@@ -2387,6 +2393,105 @@ input[type='search']::-webkit-search-cancel-button:hover {
 
 .role-grants-table {
   min-width: 720px;
+}
+
+/* Sorting, paging, and filtering swap row content; fixed table layout keeps
+   the column boundaries from reflowing to fit whichever page is loaded. The
+   header cells pin each column's share; unspecified columns absorb the rest. */
+.public-books-table,
+.admin-books-table,
+.admin-users-table,
+.localization-rows-table,
+.operator-audit-table {
+  table-layout: fixed;
+}
+
+.public-books-table thead th:nth-child(1) {
+  width: 28%;
+}
+
+.public-books-table thead th:nth-child(2) {
+  width: 22%;
+}
+
+.public-books-table thead th:nth-child(3) {
+  width: 12%;
+}
+
+.public-books-table thead th:nth-child(4) {
+  width: 14%;
+}
+
+.admin-books-table thead th:nth-child(1) {
+  width: 24%;
+}
+
+.admin-books-table thead th:nth-child(2) {
+  width: 19%;
+}
+
+.admin-books-table thead th:nth-child(3) {
+  width: 10%;
+}
+
+.admin-books-table thead th:nth-child(4) {
+  width: 13%;
+}
+
+.admin-users-table thead th:nth-child(1) {
+  width: 18%;
+}
+
+.admin-users-table thead th:nth-child(2) {
+  width: 10%;
+}
+
+.admin-users-table thead th:nth-child(3) {
+  width: 24%;
+}
+
+.admin-users-table thead th:nth-child(4) {
+  width: 18%;
+}
+
+.admin-users-table thead th:nth-child(5) {
+  width: 16%;
+}
+
+.localization-rows-table thead th:nth-child(1) {
+  width: 17%;
+}
+
+.localization-rows-table thead th:nth-child(2) {
+  width: 8%;
+}
+
+.localization-rows-table thead th:nth-child(3) {
+  width: 26%;
+}
+
+.localization-rows-table thead th:nth-child(4) {
+  width: 20%;
+}
+
+.localization-rows-table thead th:nth-child(5) {
+  width: 13%;
+}
+
+.operator-audit-table thead th:nth-child(1) {
+  width: 13%;
+}
+
+.operator-audit-table thead th:nth-child(2) {
+  width: 12%;
+}
+
+.operator-audit-table thead th:nth-child(3) {
+  width: 14%;
+}
+
+.operator-audit-table thead th:nth-child(4) {
+  width: 12%;
 }
 
 .catalog-table thead th {

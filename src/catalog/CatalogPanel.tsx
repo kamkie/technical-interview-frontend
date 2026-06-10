@@ -457,7 +457,7 @@ function BookResults({
         role="region"
         tabIndex={0}
       >
-        <table className="catalog-table">
+        <table className="catalog-table public-books-table">
           <caption className="visually-hidden">Public books</caption>
           <thead>
             <tr>
