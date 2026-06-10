@@ -805,6 +805,9 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
           <div className="section-actions">
             <button
               type="button"
+              aria-controls={
+                bookFormMode.type === 'create' ? 'admin-book-create-form' : undefined
+              }
               aria-expanded={bookFormMode.type === 'create'}
               className="compact-action"
               onClick={openBookCreate}
@@ -980,6 +983,9 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
           <div className="section-actions">
             <button
               type="button"
+              aria-controls={
+                categoryFormOpen ? 'admin-category-create-form' : undefined
+              }
               aria-expanded={categoryFormOpen}
               className="compact-action"
               onClick={openCategoryCreate}
@@ -1003,6 +1009,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
           <form
             className="category-create-form"
             aria-label="Create category"
+            id="admin-category-create-form"
             onSubmit={(event) => void handleCategoryCreate(event)}
           >
             <div className="form-heading-row">
@@ -1197,6 +1204,7 @@ function BookManagementForm({
       className={`book-management-form ${editing ? 'editing-book-form' : 'create-book-form'}`}
       aria-label={editing ? 'Edit book' : 'Create book'}
       data-mode={mode.type}
+      id={editing ? undefined : 'admin-book-create-form'}
       onSubmit={onSubmit}
     >
       <div className="form-heading-row">

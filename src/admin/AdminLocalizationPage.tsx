@@ -541,6 +541,9 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
           <div className="section-actions">
             <button
               type="button"
+              aria-controls={
+                formMode.type === 'create' ? 'localization-create-panel' : undefined
+              }
               aria-expanded={formMode.type === 'create'}
               className="compact-action"
               onClick={() => startCreate()}
@@ -561,7 +564,11 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
         {formMode.type === 'closed' && <MutationFeedback state={mutationState} />}
 
         {formMode.type === 'create' && (
-          <div className="workflow-group" aria-label="Create localization panel">
+          <div
+            aria-label="Create localization panel"
+            className="workflow-group"
+            id="localization-create-panel"
+          >
             <LocalizationForm
               draft={formDraft}
               mode={formMode}
