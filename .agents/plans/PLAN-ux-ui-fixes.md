@@ -16,7 +16,7 @@ Filename: `.agents/plans/PLAN-ux-ui-fixes.md`
 - Approved by: user (chat session)
 - Approved at: 2026-06-10
 - Open questions: None; see `## Open Questions` for resolutions.
-- Implementation progress: In progress.
+- Implementation progress: Complete; commits ccfc1fe (A), 6a1c879 (B), a5adab5 (C), 014c605 (D), 414fb89 (E). Full baseline, a11y, anonymous and authenticated smoke, and a live mock-browser pass all green on 2026-06-10. Item 12b needed no change (form fills its row at 1440px).
 
 ## Status History
 
