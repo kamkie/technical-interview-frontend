@@ -243,6 +243,31 @@ input[type='radio'] {
    Top bar — ink buckram with brass details
    ========================================================================== */
 
+/* Off-screen via transform until focused so it stays tabbable. */
+.skip-link {
+  position: absolute;
+  top: 0.5rem;
+  left: 1rem;
+  z-index: 20;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-150%);
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
+.workspace:focus {
+  outline: none;
+}
+
 .topbar {
   position: sticky;
   top: 0;

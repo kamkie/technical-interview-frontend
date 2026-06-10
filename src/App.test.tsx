@@ -981,6 +981,63 @@ describe('App', () => {
       },
     })
   })
+
+  it('reflects the active route in the document title', async () => {
+    mockAppFetch({
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    const view = renderApp()
+
+    await screen.findByRole('heading', { level: 1, name: 'Book catalog' })
+    expect(document.title).toBe('Book catalog · Library Console')
+
+    view.unmount()
+    renderApp('/account')
+
+    await screen.findByRole('heading', { level: 1, name: 'Account settings' })
+    expect(document.title).toBe('Account settings · Library Console')
+  })
+
+  it('exposes a skip link targeting the main workspace', async () => {
+    mockAppFetch({
+      session: createSession(),
+    })
+
+    renderApp()
+
+    const skipLink = screen.getByRole('link', { name: 'Skip to main content' })
+
+    expect(skipLink).toHaveAttribute('href', '#main-content')
+    expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content')
+    await screen.findByRole('heading', { level: 1, name: 'Book catalog' })
+  })
+
+  it('moves focus to the page heading after in-app navigation but not on load', async () => {
+    mockAppFetch({
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    renderApp()
+
+    await screen.findByRole('heading', { level: 1, name: 'Book catalog' })
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Book catalog' }),
+    ).not.toHaveFocus()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Account' }))
+    fireEvent.click(screen.getByRole('link', { name: 'Account settings' }))
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { level: 1, name: 'Account settings' }),
+      ).toHaveFocus()
+    })
+  })
 })
 
 function renderApp(initialEntry = '/catalog') {

@@ -7,6 +7,7 @@ import {
   Route,
   Routes,
   useLocation,
+  useNavigationType,
 } from 'react-router-dom'
 
 import { useCurrentAccount } from './account/useCurrentAccount'
@@ -210,6 +211,7 @@ export function App() {
   const { refreshSession, sessionState } = useSessionBootstrap()
   const isAdmin = useAdminVisibility(sessionState)
   const routeContext = useRouteContext()
+  useRouteFocusReset()
   const { preference, resolvedTheme, setPreference } = useThemePreference()
   const [logoutState, setLogoutState] = useState<LogoutState>({
     status: 'idle',
@@ -235,6 +237,9 @@ export function App() {
 
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#main-content">
+        Skip to main content
+      </a>
       <header className="topbar">
         <div className="topbar-primary">
           <Link className="brand-lockup" to={CATALOG_ROUTE_PATH}>
@@ -259,7 +264,7 @@ export function App() {
         </div>
       </header>
 
-      <main className="workspace">
+      <main className="workspace" id="main-content" tabIndex={-1}>
         <RouteContextHeader key={routeContext.path} context={routeContext} />
 
         <Routes>
@@ -419,16 +424,49 @@ function AdminMenu() {
 }
 
 function RouteContextHeader({ context }: { context: RouteContext }) {
+  useEffect(() => {
+    document.title = `${context.title} · Library Console`
+  }, [context.title])
+
   return (
     <header className="route-context page-header">
       <p className="eyebrow">
         <span className="call-number">{context.code}</span>
         {` · ${context.area}`}
       </p>
-      <h1 id="page-title">{context.title}</h1>
+      <h1 id="page-title" tabIndex={-1}>
+        {context.title}
+      </h1>
       <p className="lede">{context.description}</p>
     </header>
   )
+}
+
+// Moves focus to the page heading after in-app navigation so the new route is
+// announced; initial load, replace-redirects, and query-only changes keep the
+// browser's own focus behavior.
+function useRouteFocusReset() {
+  const { pathname } = useLocation()
+  const navigationType = useNavigationType()
+  const previousPathnameRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    const previousPathname = previousPathnameRef.current
+
+    previousPathnameRef.current = pathname
+
+    if (
+      navigationType === 'REPLACE' ||
+      previousPathname === null ||
+      previousPathname === pathname
+    ) {
+      return
+    }
+
+    window.requestAnimationFrame(() => {
+      document.getElementById('page-title')?.focus()
+    })
+  }, [navigationType, pathname])
 }
 
 function ThemePreferenceControl({
