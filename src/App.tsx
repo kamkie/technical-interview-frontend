@@ -392,7 +392,29 @@ function ShellNavigation({
   return (
     <nav className="shell-navigation" aria-label="Primary navigation">
       <NavLink to={CATALOG_ROUTE_PATH}>Catalog</NavLink>
-      {authenticated && isAdmin && <AdminMenu />}
+      {authenticated && isAdmin && (
+        <>
+          <WorkflowMenu
+            ariaLabel="Admin workflows"
+            idPrefix="admin-menu"
+            label="Admin"
+            items={[
+              { label: 'Catalog admin', to: ADMIN_CATALOG_ROUTE_PATH },
+              { label: 'Localizations', to: ADMIN_LOCALIZATION_ROUTE_PATH },
+              { label: 'Users', to: ADMIN_USERS_ROUTE_PATH },
+            ]}
+          />
+          <WorkflowMenu
+            ariaLabel="Operations workflows"
+            idPrefix="operations-menu"
+            label="Operations"
+            items={[
+              { end: true, label: 'Operations console', to: OPERATOR_ROUTE_PATH },
+              { label: 'Diagnostics', to: OPERATOR_DIAGNOSTICS_ROUTE_PATH },
+            ]}
+          />
+        </>
+      )}
     </nav>
   )
 }
@@ -410,48 +432,51 @@ function useAdminVisibility(sessionState: SessionState) {
   return accountState.status === 'ready' && hasAdminRole(accountState.value)
 }
 
-function AdminMenu() {
+// One topbar menu per workflow area, so the nav grouping matches the route
+// context areas (Admin vs Operations) typed on each page's call-number card.
+function WorkflowMenu({
+  ariaLabel,
+  idPrefix,
+  items,
+  label,
+}: {
+  ariaLabel: string
+  idPrefix: string
+  items: readonly { end?: boolean; label: string; to: string }[]
+  label: string
+}) {
   const { containerRef, open, setOpen } = useDismissibleMenu()
-  const panelId = 'admin-menu-panel'
+  const panelId = `${idPrefix}-panel`
+  const triggerId = `${idPrefix}-trigger`
 
   function closeMenu() {
     setOpen(false)
   }
 
   return (
-    <div className="nav-menu" aria-label="Admin workflows" ref={containerRef}>
+    <div className="nav-menu" aria-label={ariaLabel} ref={containerRef}>
       <button
         aria-controls={panelId}
         aria-expanded={open}
         className="nav-menu-button"
-        id="admin-menu-trigger"
+        id={triggerId}
         type="button"
         onClick={() => setOpen((current) => !current)}
       >
-        Admin
+        {label}
         <IconChevronDown className="menu-caret" height={14} width={14} />
       </button>
       {open && (
         <nav
-          aria-labelledby="admin-menu-trigger"
+          aria-labelledby={triggerId}
           className="nav-menu-panel"
           id={panelId}
         >
-          <NavLink to={ADMIN_CATALOG_ROUTE_PATH} onClick={closeMenu}>
-            Catalog admin
-          </NavLink>
-          <NavLink to={ADMIN_LOCALIZATION_ROUTE_PATH} onClick={closeMenu}>
-            Localizations
-          </NavLink>
-          <NavLink to={ADMIN_USERS_ROUTE_PATH} onClick={closeMenu}>
-            Users
-          </NavLink>
-          <NavLink end to={OPERATOR_ROUTE_PATH} onClick={closeMenu}>
-            Operations
-          </NavLink>
-          <NavLink to={OPERATOR_DIAGNOSTICS_ROUTE_PATH} onClick={closeMenu}>
-            Diagnostics
-          </NavLink>
+          {items.map((item) => (
+            <NavLink end={item.end} key={item.to} to={item.to} onClick={closeMenu}>
+              {item.label}
+            </NavLink>
+          ))}
         </nav>
       )}
     </div>

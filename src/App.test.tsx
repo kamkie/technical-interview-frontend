@@ -152,6 +152,9 @@ describe('App', () => {
     expect(
       within(primaryNavigation).queryByRole('button', { name: 'Admin' }),
     ).not.toBeInTheDocument()
+    expect(
+      within(primaryNavigation).queryByRole('button', { name: 'Operations' }),
+    ).not.toBeInTheDocument()
 
     expect(fetchMock).toHaveBeenCalledWith(SESSION_PATH, {
       method: 'GET',
@@ -383,8 +386,11 @@ describe('App', () => {
     expect(
       within(primaryNavigation).getByRole('link', { name: 'Users' }),
     ).toHaveAttribute('href', '/admin/users')
+    fireEvent.click(
+      within(primaryNavigation).getByRole('button', { name: 'Operations' }),
+    )
     expect(
-      within(primaryNavigation).getByRole('link', { name: 'Operations' }),
+      within(primaryNavigation).getByRole('link', { name: 'Operations console' }),
     ).toHaveAttribute('href', '/operator')
     expect(
       within(primaryNavigation).getByRole('link', { name: 'Diagnostics' }),
