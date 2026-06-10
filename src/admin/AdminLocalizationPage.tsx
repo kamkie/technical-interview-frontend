@@ -479,6 +479,14 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
       total + group.locales.filter((locale) => locale.status === 'missing').length,
     0,
   )
+  // Coverage is derived from the fetched rows only. When that view is
+  // partial — more pages exist or a language filter narrows the rows — a
+  // locale shown as missing may exist on the server, so the create
+  // shortcuts are suppressed in favor of plain status pills.
+  const coverageViewPartial =
+    query.language !== '' ||
+    (localizationsState.status === 'ready' &&
+      (localizationsState.value.totalPages ?? 0) > 1)
 
   return (
     <div className="admin-localization-layout">
@@ -508,10 +516,19 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
           </div>
 
           {!coverageHidden && (
-            <LocalizationCoverageTable
-              coverage={coverage}
-              onCreateMissing={startCreate}
-            />
+            <>
+              {coverageViewPartial && (
+                <p className="session-message muted">
+                  Coverage reflects only the visible rows. Narrow by message
+                  key without a language filter to add missing locales here.
+                </p>
+              )}
+              <LocalizationCoverageTable
+                coverage={coverage}
+                createMissingEnabled={!coverageViewPartial}
+                onCreateMissing={startCreate}
+              />
+            </>
           )}
         </section>
       )}
@@ -705,9 +722,11 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
 
 function LocalizationCoverageTable({
   coverage,
+  createMissingEnabled,
   onCreateMissing,
 }: {
   coverage: readonly LocalizationKeyCoverage[]
+  createMissingEnabled: boolean
   onCreateMissing: (messageKey: string, language: string) => void
 }) {
   if (coverage.length === 0) {
@@ -745,7 +764,7 @@ function LocalizationCoverageTable({
               </td>
               {group.locales.map((locale) => (
                 <td key={locale.language}>
-                  {locale.status === 'missing' ? (
+                  {locale.status === 'missing' && createMissingEnabled ? (
                     <button
                       className="localization-locale-button missing"
                       type="button"

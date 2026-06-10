@@ -208,6 +208,46 @@ describe('AdminLocalizationPage', () => {
     })
   })
 
+  it('suppresses coverage create shortcuts when the result view is partial', async () => {
+    mockAdminLocalizationFetch({
+      localizations: () =>
+        createLocalizationPage({
+          last: false,
+          totalElements: 40,
+          totalPages: 2,
+        }),
+    })
+
+    renderAdminLocalization(
+      `${ADMIN_LOCALIZATION_ROUTE_PATH}?messageKey=account.title`,
+    )
+
+    expect(
+      await screen.findByRole('table', { name: 'Localization coverage' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Add de for account.title' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.getByText(/Coverage reflects only the visible rows/),
+    ).toBeInTheDocument()
+  })
+
+  it('suppresses coverage create shortcuts under a language filter', async () => {
+    mockAdminLocalizationFetch()
+
+    renderAdminLocalization(
+      `${ADMIN_LOCALIZATION_ROUTE_PATH}?messageKey=account.title&language=pl`,
+    )
+
+    expect(
+      await screen.findByRole('table', { name: 'Localization coverage' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Add de for account.title' }),
+    ).not.toBeInTheDocument()
+  })
+
   it('creates a missing locale row and refreshes visible coverage', async () => {
     document.cookie = 'XSRF-TOKEN=token%201'
     let localizationReads = 0

@@ -55,6 +55,8 @@ Coverage/status is derived on the frontend from `GET /api/localizations` results
 
 The UI must make clear which locales are missing without treating localized message text itself as program logic. Coverage decisions are based on stable `messageKey`, `language`, row identity, row presence, and empty/non-empty `messageText`.
 
+Coverage is computed from the currently fetched result view only. When that view is partial — the result spans multiple pages or a language filter narrows the rows — a locale shown as missing may still exist on the server, so missing-locale create shortcuts are suppressed and the widget states that coverage reflects only the visible rows. Create shortcuts stay available when the full result fits one page and no language filter is active.
+
 ## Editing Behavior
 
 The edit unit is one localization row identified by the backend `id`, or a new row for a selected `messageKey` and `language`.
