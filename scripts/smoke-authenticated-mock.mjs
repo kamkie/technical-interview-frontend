@@ -306,7 +306,7 @@ async function verifyAccountAccess(page, config, session) {
     waitUntil: 'domcontentloaded',
     timeout: config.timeoutMs,
   })
-  await page.getByRole('heading', { name: 'Account preferences' }).waitFor({
+  await page.getByRole('heading', { name: 'Account settings' }).waitFor({
     timeout: config.timeoutMs,
   })
   await page.getByText(account.displayName ?? account.login).waitFor({
@@ -340,7 +340,7 @@ async function verifyAdminAccess(page, config, account) {
     waitUntil: 'domcontentloaded',
     timeout: config.timeoutMs,
   })
-  await page.getByRole('heading', { name: 'User management' }).waitFor({
+  await page.getByRole('heading', { name: 'User administration' }).waitFor({
     timeout: config.timeoutMs,
   })
   await page.getByRole('button', { name: 'View Mock Admin' }).waitFor({

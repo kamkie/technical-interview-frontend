@@ -36,13 +36,6 @@ describe('AdminUsersPage', () => {
     renderAdminUsers()
 
     expect(await screen.findByText('Admin User')).toBeInTheDocument()
-    const statusSummary = screen.getByLabelText('Admin users status summary')
-    expect(
-      within(statusSummary).getByText('Review users and role grants'),
-    ).toBeInTheDocument()
-    expect(
-      within(statusSummary).getByText('Inspect, replace roles'),
-    ).toBeInTheDocument()
     const workflowSummary = screen.getByLabelText('Admin users workflow')
     expect(
       screen.getByText(/Reviewing 2 users/),

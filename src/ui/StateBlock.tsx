@@ -15,6 +15,9 @@ export function StateBlock({
 }) {
   return (
     <div className={`state-block ${variant}-state`} data-state={variant}>
+      {variant === 'loading' && (
+        <span className="state-spinner" aria-hidden="true" />
+      )}
       <p className="state-block-title">{title}</p>
       {children ?? <StateMessage variant={variant}>{message}</StateMessage>}
     </div>

@@ -188,35 +188,7 @@ export function CatalogPanel() {
   }
 
   return (
-    <section className="catalog-panel" aria-labelledby="catalog-title">
-      <div className="section-heading">
-        <p className="eyebrow">Public catalog</p>
-        <h2 id="catalog-title">Books</h2>
-        <p className="section-description">
-          Browse approved books with filters, categories, sorting, and
-          pagination.
-        </p>
-      </div>
-
-      <div className="route-state-panel" aria-label="Catalog status summary">
-        <div>
-          <span className="state-label">Current task</span>
-          <span className="state-value">Find public catalog records</span>
-        </div>
-        <div>
-          <span className="state-label">Query state</span>
-          <span className="state-value">
-            {getActiveFilterSummary(query).length > 0
-              ? 'Filtered results'
-              : 'Default catalog view'}
-          </span>
-        </div>
-        <div>
-          <span className="state-label">Primary actions</span>
-          <span className="state-value">Search, filter, sort, paginate</span>
-        </div>
-      </div>
-
+    <section className="catalog-panel" aria-label="Book catalog">
       <form
         aria-label="Catalog filters"
         className="catalog-filters"
@@ -519,8 +491,11 @@ function SortableColumnHeader({
         onClick={() => onSortByField(field)}
       >
         <span>{label}</span>
-        <span className="sort-indicator" aria-hidden="true">
-          {direction === 'ASC' ? 'Asc' : direction === 'DESC' ? 'Desc' : '-'}
+        <span
+          className={`sort-indicator ${direction ? 'sorted' : ''}`}
+          aria-hidden="true"
+        >
+          {direction === 'ASC' ? '↑' : direction === 'DESC' ? '↓' : '↕'}
         </span>
         <span className="visually-hidden">{indicator}</span>
       </button>

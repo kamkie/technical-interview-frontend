@@ -168,7 +168,7 @@ async function runBrowserA11y(config) {
       AxeBuilder,
       config,
       ACCOUNT_ROUTE_PATH,
-      'Account preferences',
+      'Account settings',
       'authenticated account route',
     )
     await scanAuthenticatedRoute(
@@ -176,7 +176,7 @@ async function runBrowserA11y(config) {
       AxeBuilder,
       config,
       ADMIN_USERS_ROUTE_PATH,
-      'User management',
+      'User administration',
       'authenticated admin users route',
     )
 
@@ -215,7 +215,7 @@ async function scanAnonymousCatalog(page, AxeBuilder, config) {
     waitUntil: 'domcontentloaded',
     timeout: config.timeoutMs,
   })
-  await page.getByRole('heading', { name: 'Books' }).waitFor({
+  await page.getByRole('heading', { name: 'Book catalog' }).waitFor({
     timeout: config.timeoutMs,
   })
   await page.getByRole('button', { name: 'Sign in' }).waitFor({

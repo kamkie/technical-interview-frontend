@@ -87,7 +87,7 @@ describe('App', () => {
       expect(document.documentElement).toHaveAttribute('data-theme', 'dark')
     })
     expect(
-      await screen.findByRole('heading', { name: 'Account preferences' }),
+      await screen.findByRole('heading', { level: 1, name: 'Account settings' }),
     ).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('radio', { name: 'Light' }))
@@ -105,7 +105,7 @@ describe('App', () => {
       expect(document.documentElement).toHaveAttribute('data-theme', 'light')
     })
     expect(
-      await screen.findByRole('heading', { name: 'Operator audit' }),
+      await screen.findByRole('heading', { level: 1, name: 'Operations console' }),
     ).toBeInTheDocument()
   })
 
@@ -137,7 +137,6 @@ describe('App', () => {
         name: 'Book catalog',
       }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Books' })).toBeInTheDocument()
     const primaryNavigation = screen.getByRole('navigation', {
       name: 'Primary navigation',
     })
@@ -342,6 +341,9 @@ describe('App', () => {
 
   it('renders authenticated header state and the guarded account profile', async () => {
     const fetchMock = mockAppFetch({
+      account: createAccount({
+        roles: ['USER', 'ADMIN'],
+      }),
       session: createSession({
         authenticated: true,
       }),
@@ -359,11 +361,8 @@ describe('App', () => {
       name: 'Primary navigation',
     })
     expect(
-      within(primaryNavigation).getByRole('link', { name: 'Account' }),
-    ).toHaveAttribute('href', '/account')
-    expect(
-      within(primaryNavigation).getByRole('link', { name: 'Operations' }),
-    ).toHaveAttribute('href', '/operator')
+      within(primaryNavigation).queryByRole('link', { name: 'Account' }),
+    ).not.toBeInTheDocument()
     const accountMenu = screen.getByRole('region', { name: 'Account menu' })
     expect(
       within(accountMenu).getByRole('link', { name: 'Account settings' }),
@@ -372,13 +371,13 @@ describe('App', () => {
       '/account',
     )
     expect(
-      screen.getByRole('heading', { name: 'Account preferences' }),
+      screen.getByRole('heading', { name: 'Language preference' }),
     ).toBeInTheDocument()
     expect(
       screen.queryByRole('link', { name: 'Localizations' }),
     ).not.toBeInTheDocument()
     fireEvent.click(
-      within(primaryNavigation).getByRole('button', { name: 'Admin' }),
+      await within(primaryNavigation).findByRole('button', { name: 'Admin' }),
     )
     expect(
       within(primaryNavigation).getByRole('link', { name: 'Catalog admin' }),
@@ -392,6 +391,12 @@ describe('App', () => {
     expect(
       within(primaryNavigation).getByRole('link', { name: 'Users' }),
     ).toHaveAttribute('href', '/admin/users')
+    expect(
+      within(primaryNavigation).getByRole('link', { name: 'Operations' }),
+    ).toHaveAttribute('href', '/operator')
+    expect(
+      within(primaryNavigation).getByRole('link', { name: 'Diagnostics' }),
+    ).toHaveAttribute('href', '/operator/diagnostics')
     expect(await screen.findByText('Kamil Kiewisz')).toBeInTheDocument()
     expect(screen.getByText('kamkie')).toBeInTheDocument()
     expect(screen.getByText('kamil@example.test')).toBeInTheDocument()
@@ -594,7 +599,7 @@ describe('App', () => {
     )
   })
 
-  it('does not fetch the account profile when an authenticated user stays on catalog', async () => {
+  it('resolves admin navigation from the account without showing admin links to non-admins', async () => {
     const fetchMock = mockAppFetch({
       session: createSession({
         authenticated: true,
@@ -605,9 +610,17 @@ describe('App', () => {
 
     expect(await screen.findByRole('button', { name: 'Account' })).toBeInTheDocument()
     expect(await screen.findByText('Clean Code')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(
+        fetchMock.mock.calls.some(([input]) => String(input) === ACCOUNT_PATH),
+      ).toBe(true)
+    })
     expect(
-      fetchMock.mock.calls.some(([input]) => String(input) === ACCOUNT_PATH),
-    ).toBe(false)
+      screen.queryByRole('button', { name: 'Admin' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: 'Operations' }),
+    ).not.toBeInTheDocument()
   })
 
   it('renders account loading state after authenticated session bootstrap', async () => {
@@ -874,7 +887,10 @@ describe('App', () => {
     renderApp(ADMIN_LOCALIZATION_ROUTE_PATH)
 
     expect(
-      await screen.findByRole('heading', { name: 'Localization management' }),
+      await screen.findByRole('heading', {
+        level: 1,
+        name: 'Localization administration',
+      }),
     ).toBeInTheDocument()
     expect(
       await screen.findByRole('button', { name: 'Edit account.title en' }),
@@ -901,7 +917,10 @@ describe('App', () => {
     renderApp(ADMIN_USERS_ROUTE_PATH)
 
     expect(
-      await screen.findByRole('heading', { name: 'User management' }),
+      await screen.findByRole('heading', {
+        level: 1,
+        name: 'User administration',
+      }),
     ).toBeInTheDocument()
     expect(await screen.findByText('Admin User')).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(ADMIN_USERS_PATH, {
@@ -923,17 +942,12 @@ describe('App', () => {
     renderApp('/operator')
 
     expect(
-      await screen.findByRole('heading', { name: 'Operator audit' }),
+      await screen.findByRole('heading', {
+        level: 1,
+        name: 'Operations console',
+      }),
     ).toBeInTheDocument()
-    expect(await screen.findByText('Updated book title.')).toBeInTheDocument()
     expect(await screen.findByText('Created category Java.')).toBeInTheDocument()
-    expect(fetchMock).toHaveBeenCalledWith(OPERATOR_SURFACE_PATH, {
-      method: 'GET',
-      credentials: 'same-origin',
-      headers: {
-        Accept: 'application/json',
-      },
-    })
     expect(fetchMock).toHaveBeenCalledWith(
       `${AUDIT_LOGS_PATH}?page=0&size=20&sort=id%2CDESC`,
       expect.objectContaining({
@@ -941,9 +955,31 @@ describe('App', () => {
         method: 'GET',
       }),
     )
+  })
+
+  it('renders the operator diagnostics route for authenticated users', async () => {
+    const fetchMock = mockAppFetch({
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    renderApp('/operator/diagnostics')
+
     expect(
-      fetchMock.mock.calls.some(([input]) => String(input) === ACCOUNT_PATH),
-    ).toBe(false)
+      await screen.findByRole('heading', {
+        level: 1,
+        name: 'System diagnostics',
+      }),
+    ).toBeInTheDocument()
+    expect(await screen.findByText('Updated book title.')).toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledWith(OPERATOR_SURFACE_PATH, {
+      method: 'GET',
+      credentials: 'same-origin',
+      headers: {
+        Accept: 'application/json',
+      },
+    })
   })
 })
 

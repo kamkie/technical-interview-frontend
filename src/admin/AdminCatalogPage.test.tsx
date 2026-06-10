@@ -41,13 +41,6 @@ describe('AdminCatalogPage', () => {
     )
 
     expect(await screen.findByText('Effective Java')).toBeInTheDocument()
-    const statusSummary = screen.getByLabelText('Admin catalog status summary')
-    expect(
-      within(statusSummary).getByText('Maintain books and categories'),
-    ).toBeInTheDocument()
-    expect(
-      within(statusSummary).getByText('Create, edit, delete'),
-    ).toBeInTheDocument()
     expect(
       screen.getByRole('button', {
         name: 'Sort by Publication year; currently descending. Activate to sort ascending.',
@@ -493,6 +486,7 @@ describe('AdminCatalogPage', () => {
     renderAdminCatalog()
 
     await screen.findByText('Effective Java')
+    fireEvent.click(screen.getByRole('tab', { name: 'Categories' }))
     const form = screen.getByRole('form', { name: 'Create category' })
 
     fireEvent.change(within(form).getByLabelText('Category name'), {
@@ -541,6 +535,7 @@ describe('AdminCatalogPage', () => {
 
     renderAdminCatalog()
 
+    fireEvent.click(await screen.findByRole('tab', { name: 'Categories' }))
     fireEvent.click(await screen.findByRole('button', { name: 'Delete Java' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -571,6 +566,7 @@ describe('AdminCatalogPage', () => {
     renderAdminCatalog()
 
     await screen.findByText('Effective Java')
+    fireEvent.click(screen.getByRole('tab', { name: 'Categories' }))
     const form = screen.getByRole('form', { name: 'Create category' })
 
     fireEvent.change(within(form).getByLabelText('Category name'), {

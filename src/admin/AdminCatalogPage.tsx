@@ -40,7 +40,6 @@ import {
   type SortValue,
 } from '../catalog/catalogQuery'
 import {
-  formatLoadStatus,
   getDisplayMessage,
   type LoadState,
   type MutationState,
@@ -48,6 +47,7 @@ import {
 import { MutationFeedback } from '../ui/MutationFeedback'
 import { PaginationControls } from '../ui/PaginationControls'
 import { StateBlock } from '../ui/StateBlock'
+import { Tabs } from '../ui/Tabs'
 
 export const ADMIN_CATALOG_ROUTE_PATH = '/admin/catalog' as const
 const EMPTY_CATEGORIES: readonly Category[] = []
@@ -101,16 +101,7 @@ export function AdminCatalogPage({ session }: { session: SessionResponse }) {
   }, [session])
 
   return (
-    <section className="admin-catalog-panel" aria-labelledby="admin-catalog-title">
-      <div className="section-heading">
-        <p className="eyebrow">Admin catalog</p>
-        <h2 id="admin-catalog-title">Catalog management</h2>
-        <p className="section-description">
-          Manage book records and category labels after your admin access is
-          confirmed.
-        </p>
-      </div>
-
+    <section className="admin-catalog-panel" aria-label="Catalog administration">
       {accountState.status === 'loading' && (
         <StateBlock
           message="Loading admin access..."
@@ -142,6 +133,7 @@ export function AdminCatalogPage({ session }: { session: SessionResponse }) {
 }
 
 function AdminCatalogManager({ session }: { session: SessionResponse }) {
+  const [activeSection, setActiveSection] = useState('books')
   const [searchParams, setSearchParams] = useSearchParams()
   const query = useMemo(
     () => parseCatalogSearchParams(searchParams),
@@ -677,39 +669,12 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     }
   }
 
-  return (
-    <div className="admin-catalog-layout">
-      <div
-        className="route-state-panel"
-        aria-label="Admin catalog status summary"
-      >
-        <div>
-          <span className="state-label">Current task</span>
-          <span className="state-value">Maintain books and categories</span>
-        </div>
-        <div>
-          <span className="state-label">Book state</span>
-          <span className="state-value">
-            {formatLoadStatus(booksState.status)}
-          </span>
-        </div>
-        <div>
-          <span className="state-label">Category state</span>
-          <span className="state-value">
-            {formatLoadStatus(categoriesState.status)}
-          </span>
-        </div>
-        <div>
-          <span className="state-label">Primary actions</span>
-          <span className="state-value">Create, edit, delete</span>
-        </div>
-      </div>
-
-      <section className="admin-section" aria-labelledby="admin-books-title">
+  const booksPanel = (
+    <section className="admin-section" aria-labelledby="admin-books-title">
         <div className="admin-section-heading">
           <div>
             <p className="eyebrow">Books</p>
-            <h3 id="admin-books-title">Book management</h3>
+            <h2 id="admin-books-title">Book management</h2>
             <p className="section-description">
               Use current filters to find records, then edit from the latest
               catalog data.
@@ -862,12 +827,14 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
           onToggleCategory={toggleBookCategory}
         />
       </section>
+  )
 
+  const categoriesPanel = (
       <section className="admin-section" aria-labelledby="admin-categories-title">
         <div className="admin-section-heading">
           <div>
             <p className="eyebrow">Categories</p>
-            <h3 id="admin-categories-title">Category management</h3>
+            <h2 id="admin-categories-title">Category management</h2>
             <p className="section-description">
               Category changes refresh the affected book view while preserving
               current filters.
@@ -951,6 +918,20 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
           />
         )}
       </section>
+  )
+
+  return (
+    <div className="admin-catalog-layout">
+      <Tabs
+        activeTab={activeSection}
+        ariaLabel="Catalog administration sections"
+        idPrefix="admin-catalog"
+        onTabChange={setActiveSection}
+        tabs={[
+          { id: 'books', label: 'Books', panel: booksPanel },
+          { id: 'categories', label: 'Categories', panel: categoriesPanel },
+        ]}
+      />
     </div>
   )
 }
@@ -1036,7 +1017,7 @@ function BookManagementForm({
     >
       <div className="form-heading-row">
         <div>
-          <h4>{editing ? 'Edit book' : 'Create book'}</h4>
+          <h3>{editing ? 'Edit book' : 'Create book'}</h3>
           <p className="form-context">
             {editing
               ? `Updating loaded version ${mode.version}`
@@ -1294,7 +1275,9 @@ function AdminBookRow({
         >
           <button
             type="button"
-            className={`admin-books-action-button ${editing ? 'selected-row-action' : ''}`}
+            className={`admin-books-action-button secondary-button ${
+              editing ? 'selected-row-action' : ''
+            }`}
             aria-label={`Edit ${title}`}
             onClick={() => onEditBook(book)}
           >
@@ -1403,6 +1386,7 @@ function CategoryManagementList({
                       <>
                         <button
                           type="button"
+                          className="secondary-button"
                           onClick={() => onEditCategory(category)}
                         >
                           Edit {label}
@@ -1455,8 +1439,11 @@ function SortableColumnHeader({
         onClick={() => onSortByField(field)}
       >
         <span>{label}</span>
-        <span className="sort-indicator" aria-hidden="true">
-          {direction === 'ASC' ? 'Asc' : direction === 'DESC' ? 'Desc' : '-'}
+        <span
+          className={`sort-indicator ${direction ? 'sorted' : ''}`}
+          aria-hidden="true"
+        >
+          {direction === 'ASC' ? '↑' : direction === 'DESC' ? '↓' : '↕'}
         </span>
         <span className="visually-hidden">{indicator}</span>
       </button>

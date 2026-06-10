@@ -46,16 +46,7 @@ export function AccountProfile({ session }: { session: SessionResponse }) {
   }, [session])
 
   return (
-    <section className="account-panel" aria-labelledby="account-title">
-      <div className="section-heading">
-        <p className="eyebrow">Account workspace</p>
-        <h2 id="account-title">Account preferences</h2>
-        <p className="section-description">
-          Review the current account and choose the language used for account
-          and workflow messages.
-        </p>
-      </div>
-
+    <section className="account-panel" aria-label="Account profile">
       {accountState.status === 'loading' && (
         <StateBlock
           message="Loading account..."
@@ -214,7 +205,7 @@ function LanguagePreferenceForm({
     >
       <div className="language-preference-header">
         <div>
-          <h3>Language preference</h3>
+          <h2>Language preference</h2>
           <p className="section-description">
             Choose the language used for account and workflow messages.
           </p>

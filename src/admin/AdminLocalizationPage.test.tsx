@@ -40,18 +40,8 @@ describe('AdminLocalizationPage', () => {
     )
 
     expect(await screen.findByText('Konto')).toBeInTheDocument()
-    const statusSummary = screen.getByLabelText('Localization status summary')
-    expect(
-      within(statusSummary).getByText('Maintain localized messages'),
-    ).toBeInTheDocument()
-    expect(
-      within(statusSummary).getByText('Create, edit, delete'),
-    ).toBeInTheDocument()
     expect(
       screen.getByRole('heading', { name: 'Find message rows' }),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole('heading', { name: 'Review locale coverage' }),
     ).toBeInTheDocument()
     expect(
       screen.getByRole('heading', { name: 'Operate on rows' }),
@@ -75,6 +65,12 @@ describe('AdminLocalizationPage', () => {
       }),
     )
 
+    expect(screen.getAllByLabelText('Rows per page')[0]).toHaveValue('50')
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Coverage' }))
+    expect(
+      screen.getByRole('heading', { name: 'Review locale coverage' }),
+    ).toBeInTheDocument()
     const coverageTable = screen.getByRole('table', {
       name: 'Localization coverage',
     })
@@ -85,7 +81,6 @@ describe('AdminLocalizationPage', () => {
       ).toBeInTheDocument()
     }
     expect(within(coverageTable).getByText('partial')).toBeInTheDocument()
-    expect(screen.getAllByLabelText('Rows per page')[0]).toHaveValue('50')
   })
 
   it('keeps authenticated non-admin users away from localization controls', async () => {
@@ -151,6 +146,7 @@ describe('AdminLocalizationPage', () => {
 
     renderAdminLocalization(`${ADMIN_LOCALIZATION_ROUTE_PATH}?messageKey=account.title`)
 
+    fireEvent.click(await screen.findByRole('tab', { name: 'Coverage' }))
     fireEvent.click(await screen.findByRole('button', { name: 'Add account.title de' }))
 
     const form = screen.getByRole('form', { name: 'Create localization' })
@@ -333,6 +329,7 @@ describe('AdminLocalizationPage', () => {
 
     renderAdminLocalization(`${ADMIN_LOCALIZATION_ROUTE_PATH}?messageKey=account.title`)
 
+    fireEvent.click(await screen.findByRole('tab', { name: 'Coverage' }))
     fireEvent.click(await screen.findByRole('button', { name: 'Add account.title de' }))
     const form = screen.getByRole('form', { name: 'Create localization' })
     fireEvent.change(within(form).getByLabelText('Message text'), {
@@ -388,6 +385,7 @@ describe('AdminLocalizationPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Nie masz dostepu do tlumaczen.',
     )
+    fireEvent.click(screen.getByRole('tab', { name: 'Coverage' }))
     expect(screen.getAllByText('unknown').length).toBeGreaterThan(0)
   })
 })

@@ -1,3 +1,5 @@
+import { IconChevronLeft, IconChevronRight } from './icons'
+
 export function PaginationControls({
   ariaLabel,
   first,
@@ -27,9 +29,6 @@ export function PaginationControls({
 }) {
   return (
     <div className="pagination-controls" aria-label={ariaLabel}>
-      <button type="button" disabled={first} onClick={onPreviousPage}>
-        Previous
-      </button>
       <span>
         Page {pageNumber + 1}
         {totalPages > 0 ? ` of ${totalPages}` : ''} - {pageSize} {rowsLabel}
@@ -50,8 +49,13 @@ export function PaginationControls({
           ))}
         </select>
       </label>
+      <button type="button" disabled={first} onClick={onPreviousPage}>
+        <IconChevronLeft height={15} width={15} />
+        Previous
+      </button>
       <button type="button" disabled={last} onClick={onNextPage}>
         Next
+        <IconChevronRight height={15} width={15} />
       </button>
     </div>
   )

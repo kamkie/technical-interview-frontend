@@ -6,13 +6,10 @@ import {
   DEFAULT_AUDIT_PAGE_SIZE,
   DEFAULT_AUDIT_SORT,
   fetchAuditLogs,
-  fetchOperatorSurface,
-  getSafeOperatorApiPath,
   type AuditAction,
   type AuditLog,
   type AuditLogPage,
   type AuditTargetType,
-  type OperatorSurface,
 } from '../api/operator'
 import type { SessionResponse } from '../api/session'
 import {
@@ -31,6 +28,13 @@ import {
 import { formatTimestamp } from '../ui/format'
 import { PaginationControls } from '../ui/PaginationControls'
 import { StateBlock } from '../ui/StateBlock'
+import { AuditDetailsPanel } from './AuditDetailsPanel'
+import {
+  createAuditEntryKey,
+  createAuditEntryLabel,
+  formatEnumValue,
+  formatOptionalNumber,
+} from './auditFormat'
 
 export const OPERATOR_ROUTE_PATH = '/operator' as const
 
@@ -115,9 +119,6 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
     filterDraftState.key === routeFilterDraftKey
       ? filterDraftState.value
       : routeFilterDraft
-  const [overviewState, setOverviewState] = useState<LoadState<OperatorSurface>>({
-    status: 'loading',
-  })
   const [auditPageState, setAuditPageState] = useState<LoadState<AuditLogPage>>({
     status: 'loading',
   })
@@ -125,36 +126,6 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
     null,
   )
   const detailsReturnFocusRef = useRef<HTMLElement | null>(null)
-
-  useEffect(() => {
-    if (session.authenticated !== true) {
-      return undefined
-    }
-
-    let ignore = false
-
-    fetchOperatorSurface()
-      .then((surface) => {
-        if (!ignore) {
-          setOverviewState({ status: 'ready', value: surface })
-        }
-      })
-      .catch((error: unknown) => {
-        if (!ignore) {
-          setOverviewState({
-            status: 'error',
-            message: getDisplayMessage(
-              error,
-              'Operator overview could not be loaded.',
-            ),
-          })
-        }
-      })
-
-    return () => {
-      ignore = true
-    }
-  }, [session])
 
   useEffect(() => {
     if (session.authenticated !== true) {
@@ -281,62 +252,13 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
   }
 
   return (
-    <section className="operator-panel" aria-labelledby="operator-title">
-      <div className="section-heading">
-        <p className="eyebrow">Operator</p>
-        <h2 id="operator-title">Operator audit</h2>
-        <p className="section-description">
-          Inspect read-only operational and audit evidence for an
-          authenticated session.
-        </p>
-      </div>
-
-      <div className="route-state-panel" aria-label="Operator status summary">
-        <div>
-          <span className="state-label">Current task</span>
-          <span className="state-value">Review audit and runtime evidence</span>
-        </div>
-        <div>
-          <span className="state-label">Overview state</span>
-          <span className="state-value">
-            {formatLoadStatus(overviewState.status)}
-          </span>
-        </div>
-        <div>
-          <span className="state-label">Audit state</span>
-          <span className="state-value">
-            {formatLoadStatus(auditPageState.status)}
-          </span>
-        </div>
-        <div>
-          <span className="state-label">Primary actions</span>
-          <span className="state-value">Filter, paginate, inspect details</span>
-        </div>
-      </div>
-
+    <section className="operator-panel" aria-label="Operator audit">
       <div className="operator-layout">
-        <section className="operator-section" aria-labelledby="operator-overview-title">
-          <div className="admin-section-heading">
-            <div>
-              <p className="eyebrow">Overview</p>
-              <h3 id="operator-overview-title">Operator overview</h3>
-              <p className="section-description">
-                Summarizes audit, runtime, and health information for
-                operational review.
-              </p>
-            </div>
-          </div>
-          <OperatorOverview
-            state={overviewState}
-            onSelectEntry={openDetails}
-          />
-        </section>
-
         <section className="operator-section" aria-labelledby="audit-log-title">
           <div className="admin-section-heading">
             <div>
               <p className="eyebrow">Audit log</p>
-              <h3 id="audit-log-title">Audit rows</h3>
+              <h2 id="audit-log-title">Audit rows</h2>
               <p className="section-description">
                 Review audit entries with filters, sorting, and pagination.
               </p>
@@ -346,7 +268,7 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
           <div className="workflow-group" aria-labelledby="audit-search-title">
             <div className="workflow-group-heading">
               <div>
-                <h4 id="audit-search-title">Find audit entries</h4>
+                <h3 id="audit-search-title">Find audit entries</h3>
                 <p className="section-description">
                   Keep URL-backed filters, sort, and page size aligned with
                   the audit query.
@@ -463,10 +385,9 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
           <div className="workflow-group" aria-labelledby="audit-review-title">
             <div className="workflow-group-heading">
               <div>
-                <h4 id="audit-review-title">Review audit rows</h4>
+                <h3 id="audit-review-title">Review audit rows</h3>
                 <p className="section-description">
-                  Open read-only details from recent entries or the pageable
-                  audit table.
+                  Open read-only details from the pageable audit table.
                 </p>
               </div>
             </div>
@@ -499,235 +420,6 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
         />
       </div>
     </section>
-  )
-}
-
-function OperatorOverview({
-  onSelectEntry,
-  state,
-}: {
-  onSelectEntry: (entry: AuditLog, opener: HTMLElement) => void
-  state: LoadState<OperatorSurface>
-}) {
-  if (state.status === 'loading') {
-    return (
-      <StateBlock
-        message="Loading operator overview..."
-        title="Loading operator overview"
-        variant="loading"
-      />
-    )
-  }
-
-  if (state.status === 'error') {
-    return (
-      <StateBlock
-        message={state.message}
-        title="Operator overview unavailable"
-        variant="error"
-      />
-    )
-  }
-
-  const surface = state.value
-
-  return (
-    <div className="operator-overview-grid">
-      <AuditSummary audit={surface.audit} onSelectEntry={onSelectEntry} />
-      <RuntimeSummary runtime={surface.runtime} />
-      <OperationalStatus operations={surface.operations} />
-    </div>
-  )
-}
-
-function AuditSummary({
-  audit,
-  onSelectEntry,
-}: {
-  audit: OperatorSurface['audit']
-  onSelectEntry: (entry: AuditLog, opener: HTMLElement) => void
-}) {
-  const safeAuditEndpoint = getSafeOperatorApiPath(audit?.auditLogEndpoint)
-  const recentEntries = audit?.recentEntries ?? EMPTY_AUDIT_ROWS
-
-  return (
-    <section className="operator-card" aria-labelledby="audit-summary-title">
-      <h4 id="audit-summary-title">Audit summary</h4>
-      <dl className="operator-metadata">
-        <div>
-          <dt>Total entries</dt>
-          <dd>{formatOptionalNumber(audit?.totalEntries)}</dd>
-        </div>
-        <div>
-          <dt>Audit API</dt>
-          <dd>{safeAuditEndpoint ?? 'Unavailable'}</dd>
-        </div>
-      </dl>
-      <div className="recent-audit-list" aria-label="Recent audit entries">
-        <h5>Recent entries</h5>
-        {recentEntries.length === 0 ? (
-          <p className="session-message muted">
-            No recent audit entries available.
-          </p>
-        ) : (
-          <ul>
-            {recentEntries.map((entry, index) => (
-              <li key={createAuditEntryKey(entry, index)}>
-                <button
-                  type="button"
-                  onClick={(event) =>
-                    onSelectEntry(entry, event.currentTarget)
-                  }
-                >
-                  <span>{entry.summary ?? 'No summary'}</span>
-                  <span>{formatAuditDescriptor(entry)}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </section>
-  )
-}
-
-function RuntimeSummary({
-  runtime,
-}: {
-  runtime: OperatorSurface['runtime']
-}) {
-  const overview = runtime?.technicalOverview
-  const buildItems = compactMetadataItems([
-    ['Name', overview?.build?.name],
-    ['Group', overview?.build?.group],
-    ['Artifact', overview?.build?.artifact],
-    ['Version', overview?.build?.version],
-    ['Build time', formatOptionalTimestamp(overview?.build?.time)],
-  ])
-  const gitItems = compactMetadataItems([
-    ['Branch', overview?.git?.branch],
-    ['Commit', overview?.git?.shortCommitId ?? overview?.git?.commitId],
-    ['Commit time', formatOptionalTimestamp(overview?.git?.commitTime)],
-  ])
-  const runtimeItems = compactMetadataItems([
-    ['Application', overview?.runtime?.applicationName],
-    ['Java version', overview?.runtime?.javaVersion],
-    ['Java vendor', overview?.runtime?.javaVendor],
-    ['Profiles', overview?.runtime?.activeProfiles?.join(', ')],
-  ])
-  const dependencyItems = compactMetadataItems(
-    Object.entries(overview?.dependencies ?? {}).map(([name, version]) => [
-      name,
-      version,
-    ]),
-  )
-  const configurationItems = compactMetadataItems([
-    ['Default page size', overview?.configuration?.pagination?.defaultPageSize],
-    ['Max page size', overview?.configuration?.pagination?.maxPageSize],
-    ['Session store', overview?.configuration?.session?.storeType],
-    ['Session timeout', overview?.configuration?.session?.timeout],
-    ['Session cookie', overview?.configuration?.session?.cookieName],
-    [
-      'Exposed endpoints',
-      overview?.configuration?.observability?.exposedEndpoints?.join(', '),
-    ],
-    [
-      'Health probes',
-      formatOptionalBoolean(
-        overview?.configuration?.observability?.healthProbesEnabled,
-      ),
-    ],
-    [
-      'Tracing sample',
-      overview?.configuration?.observability?.tracingSamplingProbability,
-    ],
-    [
-      'OpenAPI version',
-      overview?.configuration?.documentation?.openApiVersion,
-    ],
-    ['CSRF enabled', formatOptionalBoolean(overview?.configuration?.security?.csrfEnabled)],
-    ['Public API path', overview?.configuration?.security?.publicApiPathPattern],
-    ['Shutdown mode', overview?.configuration?.shutdown?.serverShutdown],
-  ])
-
-  return (
-    <section className="operator-card" aria-labelledby="runtime-summary-title">
-      <h4 id="runtime-summary-title">Runtime summary</h4>
-      <dl className="operator-metadata single-column">
-        <div>
-          <dt>Technical overview endpoint</dt>
-          <dd>{runtime?.technicalOverviewEndpoint ?? 'Unavailable'}</dd>
-        </div>
-      </dl>
-      <OperatorMetadataGroup title="Build" items={buildItems} />
-      <OperatorMetadataGroup title="Git" items={gitItems} />
-      <OperatorMetadataGroup title="Runtime" items={runtimeItems} />
-      <OperatorMetadataGroup title="Dependencies" items={dependencyItems} />
-      <OperatorMetadataGroup title="Configuration" items={configurationItems} />
-    </section>
-  )
-}
-
-function OperationalStatus({
-  operations,
-}: {
-  operations: OperatorSurface['operations']
-}) {
-  const statusItems = compactMetadataItems([
-    ['Health', operations?.applicationHealthStatus],
-    ['Liveness', operations?.livenessState],
-    ['Readiness', operations?.readinessState],
-    ['Health endpoint', operations?.actuatorHealthEndpoint],
-    ['Info endpoint', operations?.actuatorInfoEndpoint],
-    ['Prometheus endpoint', operations?.actuatorPrometheusEndpoint],
-  ])
-
-  return (
-    <section className="operator-card" aria-labelledby="operations-summary-title">
-      <h4 id="operations-summary-title">Operational status</h4>
-      <OperatorMetadataList items={statusItems} unavailable="Operational status unavailable." />
-    </section>
-  )
-}
-
-function OperatorMetadataGroup({
-  items,
-  title,
-}: {
-  items: readonly [string, string][]
-  title: string
-}) {
-  return (
-    <div className="operator-metadata-group">
-      <h5>{title}</h5>
-      <OperatorMetadataList
-        items={items}
-        unavailable={`${title} details unavailable.`}
-      />
-    </div>
-  )
-}
-
-function OperatorMetadataList({
-  items,
-  unavailable,
-}: {
-  items: readonly [string, string][]
-  unavailable: string
-}) {
-  if (items.length === 0) {
-    return <p className="session-message muted">{unavailable}</p>
-  }
-
-  return (
-    <dl className="operator-metadata">
-      {items.map(([label, value]) => (
-        <div key={label}>
-          <dt>{label}</dt>
-          <dd>{value}</dd>
-        </div>
-      ))}
-    </dl>
   )
 }
 
@@ -771,7 +463,6 @@ function AuditLogResults({
 
   return (
     <div className="audit-results">
-      <AuditPageSummary page={page} query={query} />
       {rows.length === 0 ? (
         <StateBlock
           message="No audit entries match these filters."
@@ -889,27 +580,6 @@ function AuditWorkflowSummary({
   )
 }
 
-function AuditPageSummary({
-  page,
-  query,
-}: {
-  page: AuditLogPage
-  query: AuditQueryState
-}) {
-  const pageNumber = page.number ?? query.page
-  const pageSize = page.size ?? query.size
-  const numberOfElements = page.numberOfElements ?? page.content?.length ?? 0
-  const totalElements = page.totalElements
-
-  return (
-    <p className="catalog-summary">
-      Showing {numberOfElements}
-      {totalElements !== undefined ? ` of ${totalElements}` : ''} audit entries
-      on page {pageNumber + 1} with {pageSize} rows.
-    </p>
-  )
-}
-
 function AuditLogRow({
   entry,
   index,
@@ -935,9 +605,10 @@ function AuditLogRow({
         <button
           className="secondary-button"
           type="button"
+          aria-label={`View ${entryLabel}`}
           onClick={(event) => onSelectEntry(entry, event.currentTarget)}
         >
-          View {entryLabel}
+          View
         </button>
       </td>
     </tr>
@@ -978,91 +649,6 @@ function AuditPaginationControls({
       querySize={query.size}
       totalPages={totalPages}
     />
-  )
-}
-
-function AuditDetailsPanel({
-  entry,
-  onCloseDetails,
-}: {
-  entry: AuditLog | null
-  onCloseDetails: () => void
-}) {
-  return (
-    <aside className="operator-details-panel" aria-labelledby="audit-details-title">
-      <div className="admin-section-heading">
-        <div>
-          <p className="eyebrow">Details</p>
-          <h3 id="audit-details-title">Audit details</h3>
-          <p className="section-description">
-            Select a row to inspect the structured audit payload without
-            changing the current filters.
-          </p>
-        </div>
-        {entry !== null && (
-          <div className="section-actions">
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={onCloseDetails}
-            >
-              Close details
-            </button>
-          </div>
-        )}
-      </div>
-
-      {entry === null ? (
-        <StateBlock
-          message="Select an audit entry to inspect its read-only details."
-          title="No audit entry selected"
-          variant="empty"
-        />
-      ) : (
-        <div className="audit-detail-content">
-          <dl className="operator-metadata">
-            <div>
-              <dt>Entry</dt>
-              <dd>{createAuditEntryLabel(entry, 0)}</dd>
-            </div>
-            <div>
-              <dt>Created</dt>
-              <dd>{formatTimestamp(entry.createdAt)}</dd>
-            </div>
-            <div>
-              <dt>Target type</dt>
-              <dd>{formatEnumValue(entry.targetType)}</dd>
-            </div>
-            <div>
-              <dt>Target ID</dt>
-              <dd>{formatOptionalNumber(entry.targetId)}</dd>
-            </div>
-            <div>
-              <dt>Action</dt>
-              <dd>{formatEnumValue(entry.action)}</dd>
-            </div>
-            <div>
-              <dt>Actor</dt>
-              <dd>{entry.actorLogin?.trim() ? entry.actorLogin : 'Unknown actor'}</dd>
-            </div>
-          </dl>
-          <div className="audit-detail-summary">
-            <h4>Summary</h4>
-            <p>{entry.summary?.trim() ? entry.summary : 'No summary'}</p>
-          </div>
-          <div className="audit-detail-json">
-            <h4>Structured details</h4>
-            {hasStructuredDetails(entry.details) ? (
-              <pre>{JSON.stringify(entry.details, null, 2)}</pre>
-            ) : (
-              <p className="session-message muted">
-                No structured details available.
-              </p>
-            )}
-          </div>
-        </div>
-      )}
-    </aside>
   )
 }
 
@@ -1173,76 +759,6 @@ function isCustomSort(sort: readonly string[]) {
 
 function getSortOptionValue(sort: readonly string[]) {
   return sort.join('|')
-}
-
-function compactMetadataItems(
-  items: readonly (readonly [string, unknown])[],
-): [string, string][] {
-  return items.flatMap(([label, value]) => {
-    const formatted = formatOptionalValue(value)
-
-    return formatted === undefined ? [] : [[label, formatted] as [string, string]]
-  })
-}
-
-function formatAuditDescriptor(entry: AuditLog) {
-  return [
-    formatEnumValue(entry.targetType),
-    formatEnumValue(entry.action),
-    entry.actorLogin?.trim() ? entry.actorLogin : 'Unknown actor',
-  ].join(' - ')
-}
-
-function createAuditEntryKey(entry: AuditLog, index: number) {
-  return entry.id ?? `${entry.createdAt ?? 'unknown'}-${entry.summary ?? index}`
-}
-
-function createAuditEntryLabel(entry: AuditLog, index: number) {
-  return entry.id !== undefined ? `audit entry ${entry.id}` : `audit entry ${index + 1}`
-}
-
-function formatEnumValue(value: string | undefined) {
-  return value?.trim() ? value : 'Unknown'
-}
-
-function formatOptionalNumber(value: number | undefined) {
-  return value === undefined ? 'Unavailable' : String(value)
-}
-
-function formatOptionalBoolean(value: boolean | undefined) {
-  if (value === undefined) {
-    return undefined
-  }
-
-  return value ? 'Yes' : 'No'
-}
-
-function formatOptionalValue(value: unknown) {
-  if (value === undefined || value === null) {
-    return undefined
-  }
-
-  if (typeof value === 'string') {
-    return value.trim() ? value : undefined
-  }
-
-  return String(value)
-}
-
-function formatOptionalTimestamp(value: string | undefined) {
-  if (!value) {
-    return undefined
-  }
-
-  return formatTimestamp(value)
-}
-
-function hasStructuredDetails(value: unknown) {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    Object.keys(value).length > 0
-  )
 }
 
 function createFilterDraftKey(draft: AuditFilterDraft) {

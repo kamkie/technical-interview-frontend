@@ -281,7 +281,7 @@ async function runBrowserCatalogSmoke(config, routePath, expectedBooksPath) {
     )
     assertBookPage(browserBooksPage, 'browser books request')
 
-    await page.getByRole('heading', { name: 'Books' }).waitFor({
+    await page.getByRole('heading', { name: 'Book catalog' }).waitFor({
       timeout: config.timeoutMs,
     })
     await page.getByRole('button', { name: 'Sign in' }).waitFor({

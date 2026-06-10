@@ -31,10 +31,7 @@ describe('AccountProfile', () => {
     render(<AccountProfile session={createSession()} />)
 
     expect(
-      screen.getByText(
-        'Review the current account and choose the language used for account ' +
-          'and workflow messages.',
-      ),
+      screen.getByRole('region', { name: 'Account profile' }),
     ).toBeInTheDocument()
 
     const loadingBlock = screen.getByText('Loading account profile').parentElement

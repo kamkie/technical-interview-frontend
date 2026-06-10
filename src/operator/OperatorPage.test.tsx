@@ -30,15 +30,7 @@ describe('OperatorPage', () => {
       `${OPERATOR_ROUTE_PATH}?targetType=BOOK&action=UPDATE&actorLogin=admin&page=2&size=50&sort=createdAt,DESC&sort=id,DESC`,
     )
 
-    expect(await screen.findByText('Updated book title.')).toBeInTheDocument()
     expect(await screen.findByText('Created category Java.')).toBeInTheDocument()
-    const statusSummary = screen.getByLabelText('Operator status summary')
-    expect(
-      within(statusSummary).getByText('Review audit and runtime evidence'),
-    ).toBeInTheDocument()
-    expect(
-      within(statusSummary).getByText('Filter, paginate, inspect details'),
-    ).toBeInTheDocument()
     expect(
       screen.getByRole('heading', { name: 'Find audit entries' }),
     ).toBeInTheDocument()
@@ -55,13 +47,6 @@ describe('OperatorPage', () => {
         'Target: BOOK / Action: UPDATE / Actor: admin',
       ),
     ).toBeInTheDocument()
-    expect(fetchMock).toHaveBeenCalledWith(OPERATOR_SURFACE_PATH, {
-      method: 'GET',
-      credentials: 'same-origin',
-      headers: {
-        Accept: 'application/json',
-      },
-    })
     expect(fetchMock).toHaveBeenCalledWith(
       `${AUDIT_LOGS_PATH}?targetType=BOOK&action=UPDATE&actorLogin=admin&page=2&size=50&sort=createdAt%2CDESC&sort=id%2CDESC`,
       {
@@ -94,10 +79,6 @@ describe('OperatorPage', () => {
     expect(
       screen.getByRole('complementary', { name: 'Audit details' }),
     ).toBeInTheDocument()
-    expect(screen.getAllByText('technical-interview-demo').length).toBeGreaterThan(0)
-    expect(screen.getByText('main')).toBeInTheDocument()
-    expect(screen.getByText('UP')).toBeInTheDocument()
-    expect(screen.getByText('/api/admin/audit-logs')).toBeInTheDocument()
   })
 
   it('resets the page when filters change while preserving repeated sort', async () => {
@@ -171,7 +152,7 @@ describe('OperatorPage', () => {
     })
   })
 
-  it('renders empty audit pages and partial overview payloads without crashing', async () => {
+  it('renders empty audit pages without crashing', async () => {
     mockOperatorFetch({
       auditPage: createAuditPage({
         content: [],
@@ -182,7 +163,6 @@ describe('OperatorPage', () => {
         totalElements: 0,
         totalPages: 0,
       }),
-      surface: {},
     })
 
     const { container } = renderOperator()
@@ -195,32 +175,6 @@ describe('OperatorPage', () => {
     ).toBeGreaterThanOrEqual(2)
     expect(screen.getByText('No audit rows found')).toBeInTheDocument()
     expect(screen.getByText('No audit entry selected')).toBeInTheDocument()
-    expect(screen.getByText('No recent audit entries available.')).toBeInTheDocument()
-    expect(screen.getByText('Build details unavailable.')).toBeInTheDocument()
-    expect(
-      screen.getByText('Operational status unavailable.'),
-    ).toBeInTheDocument()
-  })
-
-  it('opens details from a recent entry', async () => {
-    mockOperatorFetch()
-
-    renderOperator()
-
-    const recentEntries = await screen.findByLabelText('Recent audit entries')
-
-    fireEvent.click(
-      within(recentEntries).getByRole('button', {
-        name: /Updated book title/,
-      }),
-    )
-
-    const detailsPanel = screen.getByRole('complementary', {
-      name: 'Audit details',
-    })
-
-    expect(within(detailsPanel).getByText('Updated book title.')).toBeInTheDocument()
-    expect(within(detailsPanel).getByText(/Domain-Driven Design/)).toBeInTheDocument()
   })
 
   it('opens details from a table row and handles missing details', async () => {
@@ -242,28 +196,20 @@ describe('OperatorPage', () => {
     ).toBeInTheDocument()
   })
 
-  it('renders localized 401 and 403 operator errors without redirecting', async () => {
+  it('renders localized 401 audit errors without redirecting', async () => {
     mockOperatorFetch({
       auditPage: problemResponse(401, 'Sesja wygasla.'),
-      surface: problemResponse(403, 'Nie masz dostepu do audytu.'),
     })
 
     renderOperator()
 
-    const alerts = await screen.findAllByRole('alert')
-
-    expect(alerts.map((alert) => alert.textContent)).toEqual(
-      expect.arrayContaining([
-        'Nie masz dostepu do audytu.',
-        'Sesja wygasla.',
-      ]),
-    )
+    expect(await screen.findByRole('alert')).toHaveTextContent('Sesja wygasla.')
     expect(
       screen.queryByRole('heading', { name: 'Sign in required' }),
     ).not.toBeInTheDocument()
   })
 
-  it('keeps overview visible when audit rows fail with a generic transport error', async () => {
+  it('surfaces generic transport errors from audit rows', async () => {
     mockOperatorFetch({
       auditPage: new Response(null, {
         status: 503,
@@ -273,7 +219,6 @@ describe('OperatorPage', () => {
 
     renderOperator()
 
-    expect(await screen.findByText('Updated book title.')).toBeInTheDocument()
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'GET /api/admin/audit-logs?page=0&size=20&sort=id%2CDESC failed with 503 Service Unavailable',
     )

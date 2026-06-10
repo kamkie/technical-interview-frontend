@@ -1,0 +1,419 @@
+import { useEffect, useRef, useState } from 'react'
+
+import {
+  fetchOperatorSurface,
+  getSafeOperatorApiPath,
+  type AuditLog,
+  type OperatorSurface,
+} from '../api/operator'
+import type { SessionResponse } from '../api/session'
+import { getDisplayMessage, type LoadState } from '../ui/asyncState'
+import { formatTimestamp } from '../ui/format'
+import { StateBlock } from '../ui/StateBlock'
+import { AuditDetailsPanel } from './AuditDetailsPanel'
+import {
+  createAuditEntryKey,
+  formatAuditDescriptor,
+  formatOptionalNumber,
+} from './auditFormat'
+
+export const OPERATOR_DIAGNOSTICS_ROUTE_PATH = '/operator/diagnostics' as const
+
+const EMPTY_AUDIT_ROWS: readonly AuditLog[] = []
+const HEALTHY_OPERATIONAL_VALUES = new Set([
+  'UP',
+  'CORRECT',
+  'ACCEPTING_TRAFFIC',
+])
+
+export function OperatorDiagnosticsPage({
+  session,
+}: {
+  session: SessionResponse
+}) {
+  const [overviewState, setOverviewState] = useState<LoadState<OperatorSurface>>({
+    status: 'loading',
+  })
+  const [selectedAuditEntry, setSelectedAuditEntry] = useState<AuditLog | null>(
+    null,
+  )
+  const detailsReturnFocusRef = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    if (session.authenticated !== true) {
+      return undefined
+    }
+
+    let ignore = false
+
+    fetchOperatorSurface()
+      .then((surface) => {
+        if (!ignore) {
+          setOverviewState({ status: 'ready', value: surface })
+        }
+      })
+      .catch((error: unknown) => {
+        if (!ignore) {
+          setOverviewState({
+            status: 'error',
+            message: getDisplayMessage(
+              error,
+              'Operator overview could not be loaded.',
+            ),
+          })
+        }
+      })
+
+    return () => {
+      ignore = true
+    }
+  }, [session])
+
+  function openDetails(entry: AuditLog, opener: HTMLElement) {
+    detailsReturnFocusRef.current = opener
+    setSelectedAuditEntry(entry)
+  }
+
+  function closeDetails() {
+    const opener = detailsReturnFocusRef.current
+
+    setSelectedAuditEntry(null)
+    window.requestAnimationFrame(() => opener?.focus())
+  }
+
+  if (session.authenticated !== true) {
+    return (
+      <section className="operator-panel" aria-label="System diagnostics">
+        <StateBlock
+          message="Sign in is required for system diagnostics."
+          title="Sign in required"
+          variant="error"
+        />
+      </section>
+    )
+  }
+
+  return (
+    <section className="operator-panel" aria-label="System diagnostics">
+      <div className="operator-layout">
+        <section className="operator-section" aria-label="Diagnostics overview">
+          <OperatorOverview state={overviewState} onSelectEntry={openDetails} />
+        </section>
+
+        <AuditDetailsPanel
+          entry={selectedAuditEntry}
+          onCloseDetails={closeDetails}
+        />
+      </div>
+    </section>
+  )
+}
+
+function OperatorOverview({
+  onSelectEntry,
+  state,
+}: {
+  onSelectEntry: (entry: AuditLog, opener: HTMLElement) => void
+  state: LoadState<OperatorSurface>
+}) {
+  if (state.status === 'loading') {
+    return (
+      <StateBlock
+        message="Loading operator overview..."
+        title="Loading operator overview"
+        variant="loading"
+      />
+    )
+  }
+
+  if (state.status === 'error') {
+    return (
+      <StateBlock
+        message={state.message}
+        title="Operator overview unavailable"
+        variant="error"
+      />
+    )
+  }
+
+  const surface = state.value
+
+  return (
+    <div className="operator-overview-grid">
+      <OperationalStatus operations={surface.operations} />
+      <AuditSummary audit={surface.audit} onSelectEntry={onSelectEntry} />
+      <RuntimeSummary runtime={surface.runtime} />
+    </div>
+  )
+}
+
+function AuditSummary({
+  audit,
+  onSelectEntry,
+}: {
+  audit: OperatorSurface['audit']
+  onSelectEntry: (entry: AuditLog, opener: HTMLElement) => void
+}) {
+  const safeAuditEndpoint = getSafeOperatorApiPath(audit?.auditLogEndpoint)
+  const recentEntries = audit?.recentEntries ?? EMPTY_AUDIT_ROWS
+
+  return (
+    <section className="operator-card" aria-labelledby="audit-summary-title">
+      <h3 id="audit-summary-title">Audit summary</h3>
+      <dl className="operator-metadata">
+        <div>
+          <dt>Total entries</dt>
+          <dd>{formatOptionalNumber(audit?.totalEntries)}</dd>
+        </div>
+        <div>
+          <dt>Audit API</dt>
+          <dd>{safeAuditEndpoint ?? 'Unavailable'}</dd>
+        </div>
+      </dl>
+      <div className="recent-audit-list" aria-label="Recent audit entries">
+        <h4>Recent entries</h4>
+        {recentEntries.length === 0 ? (
+          <p className="session-message muted">
+            No recent audit entries available.
+          </p>
+        ) : (
+          <ul>
+            {recentEntries.map((entry, index) => (
+              <li key={createAuditEntryKey(entry, index)}>
+                <button
+                  type="button"
+                  onClick={(event) =>
+                    onSelectEntry(entry, event.currentTarget)
+                  }
+                >
+                  <span>{entry.summary ?? 'No summary'}</span>
+                  <span>{formatAuditDescriptor(entry)}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </section>
+  )
+}
+
+function RuntimeSummary({
+  runtime,
+}: {
+  runtime: OperatorSurface['runtime']
+}) {
+  const overview = runtime?.technicalOverview
+  const buildItems = compactMetadataItems([
+    ['Name', overview?.build?.name],
+    ['Group', overview?.build?.group],
+    ['Artifact', overview?.build?.artifact],
+    ['Version', overview?.build?.version],
+    ['Build time', formatOptionalTimestamp(overview?.build?.time)],
+  ])
+  const gitItems = compactMetadataItems([
+    ['Branch', overview?.git?.branch],
+    ['Commit', overview?.git?.shortCommitId ?? overview?.git?.commitId],
+    ['Commit time', formatOptionalTimestamp(overview?.git?.commitTime)],
+  ])
+  const runtimeItems = compactMetadataItems([
+    ['Application', overview?.runtime?.applicationName],
+    ['Java version', overview?.runtime?.javaVersion],
+    ['Java vendor', overview?.runtime?.javaVendor],
+    ['Profiles', overview?.runtime?.activeProfiles?.join(', ')],
+  ])
+  const dependencyItems = compactMetadataItems(
+    Object.entries(overview?.dependencies ?? {}).map(([name, version]) => [
+      name,
+      version,
+    ]),
+  )
+  const configurationItems = compactMetadataItems([
+    ['Default page size', overview?.configuration?.pagination?.defaultPageSize],
+    ['Max page size', overview?.configuration?.pagination?.maxPageSize],
+    ['Session store', overview?.configuration?.session?.storeType],
+    ['Session timeout', overview?.configuration?.session?.timeout],
+    ['Session cookie', overview?.configuration?.session?.cookieName],
+    [
+      'Exposed endpoints',
+      overview?.configuration?.observability?.exposedEndpoints?.join(', '),
+    ],
+    [
+      'Health probes',
+      formatOptionalBoolean(
+        overview?.configuration?.observability?.healthProbesEnabled,
+      ),
+    ],
+    [
+      'Tracing sample',
+      overview?.configuration?.observability?.tracingSamplingProbability,
+    ],
+    [
+      'OpenAPI version',
+      overview?.configuration?.documentation?.openApiVersion,
+    ],
+    ['CSRF enabled', formatOptionalBoolean(overview?.configuration?.security?.csrfEnabled)],
+    ['Public API path', overview?.configuration?.security?.publicApiPathPattern],
+    ['Shutdown mode', overview?.configuration?.shutdown?.serverShutdown],
+  ])
+
+  return (
+    <section className="operator-card" aria-labelledby="runtime-summary-title">
+      <h3 id="runtime-summary-title">Runtime summary</h3>
+      <dl className="operator-metadata single-column">
+        <div>
+          <dt>Technical overview endpoint</dt>
+          <dd>{runtime?.technicalOverviewEndpoint ?? 'Unavailable'}</dd>
+        </div>
+      </dl>
+      <OperatorMetadataGroup title="Build" items={buildItems} open />
+      <OperatorMetadataGroup title="Git" items={gitItems} />
+      <OperatorMetadataGroup title="Runtime" items={runtimeItems} />
+      <OperatorMetadataGroup title="Dependencies" items={dependencyItems} />
+      <OperatorMetadataGroup title="Configuration" items={configurationItems} />
+    </section>
+  )
+}
+
+function OperationalStatus({
+  operations,
+}: {
+  operations: OperatorSurface['operations']
+}) {
+  const healthItems = compactMetadataItems([
+    ['Health', operations?.applicationHealthStatus],
+    ['Liveness', operations?.livenessState],
+    ['Readiness', operations?.readinessState],
+  ])
+  const endpointItems = compactMetadataItems([
+    ['Health endpoint', operations?.actuatorHealthEndpoint],
+    ['Info endpoint', operations?.actuatorInfoEndpoint],
+    ['Prometheus endpoint', operations?.actuatorPrometheusEndpoint],
+  ])
+
+  return (
+    <section className="operator-card" aria-labelledby="operations-summary-title">
+      <h3 id="operations-summary-title">Operational status</h3>
+      {healthItems.length === 0 && endpointItems.length === 0 ? (
+        <p className="session-message muted">Operational status unavailable.</p>
+      ) : (
+        <>
+          {healthItems.length > 0 && (
+            <dl className="operator-metadata">
+              {healthItems.map(([label, value]) => (
+                <div key={label}>
+                  <dt>{label}</dt>
+                  <dd>
+                    <span
+                      className={`health-pill ${
+                        isHealthyOperationalValue(value) ? 'ok' : 'attention'
+                      }`}
+                    >
+                      {value}
+                    </span>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          {endpointItems.length > 0 && (
+            <OperatorMetadataList
+              items={endpointItems}
+              unavailable="Operational status unavailable."
+            />
+          )}
+        </>
+      )}
+    </section>
+  )
+}
+
+function OperatorMetadataGroup({
+  items,
+  open = false,
+  title,
+}: {
+  items: readonly [string, string][]
+  open?: boolean
+  title: string
+}) {
+  return (
+    <details className="operator-metadata-group" open={open}>
+      <summary>
+        {title}
+        <span className="metadata-count" aria-hidden="true">
+          {items.length}
+        </span>
+      </summary>
+      <OperatorMetadataList
+        items={items}
+        unavailable={`${title} details unavailable.`}
+      />
+    </details>
+  )
+}
+
+function OperatorMetadataList({
+  items,
+  unavailable,
+}: {
+  items: readonly [string, string][]
+  unavailable: string
+}) {
+  if (items.length === 0) {
+    return <p className="session-message muted">{unavailable}</p>
+  }
+
+  return (
+    <dl className="operator-metadata">
+      {items.map(([label, value]) => (
+        <div key={label}>
+          <dt>{label}</dt>
+          <dd>{value}</dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
+function isHealthyOperationalValue(value: string) {
+  return HEALTHY_OPERATIONAL_VALUES.has(value.trim().toUpperCase())
+}
+
+function compactMetadataItems(
+  items: readonly (readonly [string, unknown])[],
+): [string, string][] {
+  return items.flatMap(([label, value]) => {
+    const formatted = formatOptionalValue(value)
+
+    return formatted === undefined ? [] : [[label, formatted] as [string, string]]
+  })
+}
+
+function formatOptionalBoolean(value: boolean | undefined) {
+  if (value === undefined) {
+    return undefined
+  }
+
+  return value ? 'Yes' : 'No'
+}
+
+function formatOptionalValue(value: unknown) {
+  if (value === undefined || value === null) {
+    return undefined
+  }
+
+  if (typeof value === 'string') {
+    return value.trim() ? value : undefined
+  }
+
+  return String(value)
+}
+
+function formatOptionalTimestamp(value: string | undefined) {
+  if (!value) {
+    return undefined
+  }
+
+  return formatTimestamp(value)
+}

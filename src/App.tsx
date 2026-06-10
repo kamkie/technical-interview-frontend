@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   matchPath,
+  Link,
   NavLink,
   Navigate,
   Route,
@@ -8,6 +9,7 @@ import {
   useLocation,
 } from 'react-router-dom'
 
+import { fetchCurrentAccount } from './api/account'
 import {
   fetchCurrentSession,
   formatLoginProviderName,
@@ -33,10 +35,22 @@ import {
   RequireAuthenticated,
   type SessionState,
 } from './auth/RequireAuthenticated'
+import { hasAdminRole } from './auth/roles'
 import { CatalogPanel } from './catalog/CatalogPanel'
 import { CATALOG_ROUTE_PATH } from './catalog/catalogQuery'
+import {
+  OPERATOR_DIAGNOSTICS_ROUTE_PATH,
+  OperatorDiagnosticsPage,
+} from './operator/OperatorDiagnosticsPage'
 import { OPERATOR_ROUTE_PATH, OperatorPage } from './operator/OperatorPage'
 import { getDisplayMessage } from './ui/asyncState'
+import {
+  IconBookOpen,
+  IconChevronDown,
+  IconMonitor,
+  IconMoon,
+  IconSun,
+} from './ui/icons'
 import {
   THEME_PREFERENCES,
   useThemePreference,
@@ -100,9 +114,16 @@ const ROUTE_CONTEXTS: readonly RouteContext[] = [
   {
     area: 'Operations',
     description:
-      'Inspect operator-facing health and audit evidence without making diagnostics the primary workflow.',
+      'Review operator audit evidence with URL-backed filters, pagination, and read-only details.',
     path: OPERATOR_ROUTE_PATH,
     title: 'Operations console',
+  },
+  {
+    area: 'Operations',
+    description:
+      'Review build, runtime, and health evidence for support escalations.',
+    path: OPERATOR_DIAGNOSTICS_ROUTE_PATH,
+    title: 'System diagnostics',
   },
 ]
 
@@ -112,13 +133,62 @@ const THEME_LABELS: Record<ThemePreference, string> = {
   system: 'System',
 }
 
+const THEME_ICONS: Record<ThemePreference, typeof IconSun> = {
+  dark: IconMoon,
+  light: IconSun,
+  system: IconMonitor,
+}
+
 type LogoutState =
   | { status: 'idle' }
   | { status: 'submitting' }
   | { status: 'error'; message: string }
 
+function useDismissibleMenu() {
+  const [open, setOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (!open) {
+      return undefined
+    }
+
+    function closeOnOutsidePointer(event: PointerEvent) {
+      const container = containerRef.current
+
+      if (
+        container &&
+        event.target instanceof Node &&
+        !container.contains(event.target)
+      ) {
+        setOpen(false)
+      }
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setOpen(false)
+        containerRef.current
+          ?.querySelector<HTMLElement>('[aria-expanded]')
+          ?.focus()
+      }
+    }
+
+    document.addEventListener('pointerdown', closeOnOutsidePointer)
+    document.addEventListener('keydown', closeOnEscape)
+
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsidePointer)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [open])
+
+  return { containerRef, open, setOpen }
+}
+
 export function App() {
   const { refreshSession, sessionState } = useSessionBootstrap()
+  const isAdmin = useAdminVisibility(sessionState)
   const routeContext = useRouteContext()
   const { preference, resolvedTheme, setPreference } = useThemePreference()
   const [logoutState, setLogoutState] = useState<LogoutState>({
@@ -147,13 +217,13 @@ export function App() {
     <div className="app-shell">
       <header className="topbar">
         <div className="topbar-primary">
-          <div className="brand-lockup">
+          <Link className="brand-lockup" to={CATALOG_ROUTE_PATH}>
             <span className="brand-mark" aria-hidden="true">
-              LC
+              <IconBookOpen height={18} width={18} />
             </span>
             <span className="brand-name">Library Console</span>
-          </div>
-          <ShellNavigation authenticated={authenticated} />
+          </Link>
+          <ShellNavigation authenticated={authenticated} isAdmin={isAdmin} />
         </div>
         <div className="topbar-actions">
           <ThemePreferenceControl
@@ -235,6 +305,16 @@ export function App() {
               </RequireAuthenticated>
             }
           />
+          <Route
+            path={OPERATOR_DIAGNOSTICS_ROUTE_PATH}
+            element={
+              <RequireAuthenticated state={sessionState}>
+                {sessionState.status === 'ready' && (
+                  <OperatorDiagnosticsPage session={sessionState.session} />
+                )}
+              </RequireAuthenticated>
+            }
+          />
           <Route path="*" element={<Navigate to={CATALOG_ROUTE_PATH} replace />} />
         </Routes>
       </main>
@@ -242,66 +322,108 @@ export function App() {
   )
 }
 
-function ShellNavigation({ authenticated }: { authenticated: boolean }) {
+function ShellNavigation({
+  authenticated,
+  isAdmin,
+}: {
+  authenticated: boolean
+  isAdmin: boolean
+}) {
   return (
     <nav className="shell-navigation" aria-label="Primary navigation">
-      <div className="nav-section" aria-label="Catalog workflow">
-        <span className="nav-section-label">Catalog</span>
-        <NavLink to={CATALOG_ROUTE_PATH}>Catalog</NavLink>
-      </div>
-      {authenticated && (
-        <div className="nav-section" aria-label="Account and operations workflows">
-          <span className="nav-section-label">Workspace</span>
-          <NavLink to={ACCOUNT_ROUTE_PATH}>Account</NavLink>
-          <NavLink to={OPERATOR_ROUTE_PATH}>Operations</NavLink>
-        </div>
-      )}
-      {authenticated && <AdminMenu />}
+      <NavLink to={CATALOG_ROUTE_PATH}>Catalog</NavLink>
+      {authenticated && isAdmin && <AdminMenu />}
     </nav>
   )
 }
 
+function useAdminVisibility(sessionState: SessionState) {
+  const session =
+    sessionState.status === 'ready' && sessionState.session.authenticated === true
+      ? sessionState.session
+      : null
+  const [adminSession, setAdminSession] = useState<SessionResponse | null>(null)
+
+  useEffect(() => {
+    if (session === null) {
+      return undefined
+    }
+
+    let ignore = false
+
+    fetchCurrentAccount(session)
+      .then((account) => {
+        if (!ignore && hasAdminRole(account)) {
+          setAdminSession(session)
+        }
+      })
+      .catch(() => {
+        // Navigation stays non-admin when the account cannot be loaded.
+      })
+
+    return () => {
+      ignore = true
+    }
+  }, [session])
+
+  return session !== null && adminSession === session
+}
+
 function AdminMenu() {
-  const [open, setOpen] = useState(false)
+  const { containerRef, open, setOpen } = useDismissibleMenu()
   const panelId = 'admin-menu-panel'
 
+  function closeMenu() {
+    setOpen(false)
+  }
+
   return (
-    <div className="nav-section nav-section-admin" aria-label="Admin workflows">
-      <span className="nav-section-label">Admin</span>
-      <div className="nav-menu">
-        <button
-          aria-controls={panelId}
-          aria-expanded={open}
-          className="nav-menu-button"
-          id="admin-menu-trigger"
-          type="button"
-          onClick={() => setOpen((current) => !current)}
+    <div className="nav-menu" aria-label="Admin workflows" ref={containerRef}>
+      <button
+        aria-controls={panelId}
+        aria-expanded={open}
+        className="nav-menu-button"
+        id="admin-menu-trigger"
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+      >
+        Admin
+        <IconChevronDown className="menu-caret" height={14} width={14} />
+      </button>
+      {open && (
+        <nav
+          aria-labelledby="admin-menu-trigger"
+          className="nav-menu-panel"
+          id={panelId}
         >
-          Admin
-        </button>
-        {open && (
-          <nav
-            aria-labelledby="admin-menu-trigger"
-            className="nav-menu-panel"
-            id={panelId}
-          >
-            <NavLink to={ADMIN_CATALOG_ROUTE_PATH}>Catalog admin</NavLink>
-            <NavLink to={ADMIN_LOCALIZATION_ROUTE_PATH}>Localizations</NavLink>
-            <NavLink to={ADMIN_USERS_ROUTE_PATH}>Users</NavLink>
-          </nav>
-        )}
-      </div>
+          <NavLink to={ADMIN_CATALOG_ROUTE_PATH} onClick={closeMenu}>
+            Catalog admin
+          </NavLink>
+          <NavLink to={ADMIN_LOCALIZATION_ROUTE_PATH} onClick={closeMenu}>
+            Localizations
+          </NavLink>
+          <NavLink to={ADMIN_USERS_ROUTE_PATH} onClick={closeMenu}>
+            Users
+          </NavLink>
+          <NavLink end to={OPERATOR_ROUTE_PATH} onClick={closeMenu}>
+            Operations
+          </NavLink>
+          <NavLink to={OPERATOR_DIAGNOSTICS_ROUTE_PATH} onClick={closeMenu}>
+            Diagnostics
+          </NavLink>
+        </nav>
+      )}
     </div>
   )
 }
 
 function RouteContextHeader({ context }: { context: RouteContext }) {
   return (
-    <section className="route-context page-header" aria-labelledby="page-title">
+    <header className="route-context page-header">
       <p className="eyebrow">{context.area}</p>
       <h1 id="page-title">{context.title}</h1>
       <p className="lede">{context.description}</p>
-    </section>
+    </header>
   )
 }
 
@@ -320,18 +442,29 @@ function ThemePreferenceControl({
       role="radiogroup"
       aria-label={`Theme preference, currently ${THEME_LABELS[preference]} using ${resolvedTheme} mode`}
     >
-      {THEME_PREFERENCES.map((option) => (
-        <label className="theme-option" key={option}>
-          <input
-            type="radio"
-            name="theme-preference"
-            value={option}
-            checked={preference === option}
-            onChange={() => onPreferenceChange(option)}
-          />
-          <span>{THEME_LABELS[option]}</span>
-        </label>
-      ))}
+      {THEME_PREFERENCES.map((option) => {
+        const Icon = THEME_ICONS[option]
+
+        return (
+          <label
+            className="theme-option"
+            key={option}
+            title={`${THEME_LABELS[option]} theme`}
+          >
+            <input
+              type="radio"
+              name="theme-preference"
+              value={option}
+              checked={preference === option}
+              onChange={() => onPreferenceChange(option)}
+            />
+            <span className="theme-option-indicator">
+              <Icon />
+              <span className="visually-hidden">{THEME_LABELS[option]}</span>
+            </span>
+          </label>
+        )
+      })}
     </div>
   )
 }
@@ -390,7 +523,7 @@ function SessionAccountMenu({
   onLogout: (session: SessionResponse) => void
   state: SessionState
 }) {
-  const [open, setOpen] = useState(false)
+  const { containerRef, open, setOpen } = useDismissibleMenu()
   const panelId = 'account-menu-panel'
   const detailsId = 'connection-details-panel'
   const [showDetails, setShowDetails] = useState(false)
@@ -407,16 +540,17 @@ function SessionAccountMenu({
 
   if (state.status === 'error') {
     return (
-      <div className="account-menu">
+      <div className="account-menu" ref={containerRef}>
         <button
           aria-controls={panelId}
           aria-expanded={open}
-          className="account-menu-button"
+          className="account-menu-button connection-issue"
           id="account-menu-trigger"
           type="button"
           onClick={() => setOpen((current) => !current)}
         >
           Connection issue
+          <IconChevronDown className="menu-caret" height={14} width={14} />
         </button>
         {open && (
           <div
@@ -434,11 +568,11 @@ function SessionAccountMenu({
 
   if (state.session.authenticated !== true) {
     return (
-      <div className="account-menu">
+      <div className="account-menu" ref={containerRef}>
         <button
           aria-controls={panelId}
           aria-expanded={open}
-          className="account-menu-button"
+          className="account-menu-button sign-in"
           id="account-menu-trigger"
           type="button"
           onClick={() => setOpen((current) => !current)}
@@ -484,7 +618,7 @@ function SessionAccountMenu({
   const submitting = logoutState.status === 'submitting'
 
   return (
-    <div className="account-menu">
+    <div className="account-menu" ref={containerRef}>
       <button
         aria-controls={panelId}
         aria-expanded={open}
@@ -494,6 +628,7 @@ function SessionAccountMenu({
         onClick={() => setOpen((current) => !current)}
       >
         Account
+        <IconChevronDown className="menu-caret" height={14} width={14} />
       </button>
       {open && (
         <div
@@ -503,7 +638,11 @@ function SessionAccountMenu({
           role="region"
         >
           <div className="account-menu-actions">
-            <NavLink className="account-menu-link" to={ACCOUNT_ROUTE_PATH}>
+            <NavLink
+              className="account-menu-link"
+              to={ACCOUNT_ROUTE_PATH}
+              onClick={() => setOpen(false)}
+            >
               Account settings
             </NavLink>
             <button

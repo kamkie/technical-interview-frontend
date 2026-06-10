@@ -17,7 +17,6 @@ import {
 import type { SessionResponse } from '../api/session'
 import { hasAdminRole } from '../auth/roles'
 import {
-  formatLoadStatus,
   getDisplayMessage,
   type LoadState,
   type MutationState,
@@ -92,16 +91,7 @@ export function AdminUsersPage({ session }: { session: SessionResponse }) {
   }
 
   return (
-    <section className="admin-user-panel" aria-labelledby="admin-users-title">
-      <div className="section-heading">
-        <p className="eyebrow">Admin users</p>
-        <h2 id="admin-users-title">User management</h2>
-        <p className="section-description">
-          Review application users and role-grant provenance after
-          authenticated admin access is confirmed.
-        </p>
-      </div>
-
+    <section className="admin-user-panel" aria-label="User administration">
       {accountState.status === 'loading' && (
         <StateBlock
           message="Loading admin access..."
@@ -237,34 +227,11 @@ function AdminUsersManager({ session }: { session: SessionResponse }) {
 
   return (
     <div className="admin-users-layout">
-      <div className="route-state-panel" aria-label="Admin users status summary">
-        <div>
-          <span className="state-label">Current task</span>
-          <span className="state-value">Review users and role grants</span>
-        </div>
-        <div>
-          <span className="state-label">User state</span>
-          <span className="state-value">
-            {formatLoadStatus(usersState.status)}
-          </span>
-        </div>
-        <div>
-          <span className="state-label">Selected user</span>
-          <span className="state-value">
-            {selectedRouteId ? `User ${selectedRouteId}` : 'No user selected'}
-          </span>
-        </div>
-        <div>
-          <span className="state-label">Primary actions</span>
-          <span className="state-value">Inspect, replace roles</span>
-        </div>
-      </div>
-
       <section className="admin-section" aria-labelledby="admin-users-list-title">
         <div className="admin-section-heading">
           <div>
             <p className="eyebrow">Users</p>
-            <h3 id="admin-users-list-title">Application users</h3>
+            <h2 id="admin-users-list-title">Application users</h2>
             <p className="section-description">
               Select a user to review profile details, roles, and grant
               history.
@@ -483,7 +450,9 @@ function AdminUserRow({
         >
           <button
             aria-current={selected ? 'true' : undefined}
-            className={selected ? 'secondary-button selected-row-action' : undefined}
+            className={
+              selected ? 'secondary-button selected-row-action' : 'secondary-button'
+            }
             type="button"
             disabled={user.id === undefined}
             onClick={() => onSelectUser(user)}
@@ -517,7 +486,7 @@ function AdminUserDetailPanel({
       <div className="admin-section-heading">
         <div>
           <p className="eyebrow">Detail</p>
-          <h3 id="admin-user-detail-title">User detail</h3>
+          <h2 id="admin-user-detail-title">User detail</h2>
           <p className="section-description">
             Detail content follows the selected user from the current list.
           </p>
@@ -586,7 +555,7 @@ function AdminUserDetail({
       <div className="workflow-group" aria-labelledby="admin-user-identity-title">
         <div className="workflow-group-heading">
           <div>
-            <h4 id="admin-user-identity-title">Identify selected user</h4>
+            <h3 id="admin-user-identity-title">Identify selected user</h3>
             <p className="section-description">
               Confirm profile context before reviewing grants or replacing
               roles.
@@ -653,7 +622,7 @@ function RoleGrantProvenance({
     >
       <div className="workflow-group-heading">
         <div>
-          <h4 id="role-grants-title">Audit role grants</h4>
+          <h3 id="role-grants-title">Audit role grants</h3>
           <p className="section-description">
             Review source, operator, timestamp, and reason for each grant.
           </p>
@@ -767,7 +736,7 @@ function RoleReplacementForm({
     >
       <div className="workflow-group-heading">
         <div>
-          <h4>Replace managed roles</h4>
+          <h3>Replace managed roles</h3>
           <p className="section-description">
             Submit the complete managed role set with an operator reason.
           </p>

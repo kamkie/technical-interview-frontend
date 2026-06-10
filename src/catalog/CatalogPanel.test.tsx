@@ -58,16 +58,6 @@ describe('CatalogPanel', () => {
     expect(
       screen.getByRole('columnheader', { name: 'Categories' }),
     ).toBeInTheDocument()
-    const statusSummary = screen.getByLabelText('Catalog status summary')
-    expect(
-      within(statusSummary).getByText('Find public catalog records'),
-    ).toBeInTheDocument()
-    expect(
-      within(statusSummary).getByText('Default catalog view'),
-    ).toBeInTheDocument()
-    expect(
-      within(statusSummary).getByText('Search, filter, sort, paginate'),
-    ).toBeInTheDocument()
     expect(screen.getByText('Showing 1-2 of 2 books')).toBeInTheDocument()
     expect(screen.getByText('No filters applied')).toBeInTheDocument()
     expect(screen.getByText('0 selected')).toBeInTheDocument()
@@ -188,7 +178,6 @@ describe('CatalogPanel', () => {
     })
     expect(await screen.findByText('Clean Code')).toBeInTheDocument()
     expect(screen.getByText('Showing 1-1 of 1 book')).toBeInTheDocument()
-    expect(screen.getByText('Filtered results')).toBeInTheDocument()
     expect(
       screen.getByText('Title: clean; Author: martin; Categories: Java, Architecture'),
     ).toBeInTheDocument()

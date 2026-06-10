@@ -40,6 +40,7 @@ import {
 import { MutationFeedback } from '../ui/MutationFeedback'
 import { PaginationControls } from '../ui/PaginationControls'
 import { StateBlock } from '../ui/StateBlock'
+import { Tabs } from '../ui/Tabs'
 
 export const ADMIN_LOCALIZATION_ROUTE_PATH = '/admin/localizations' as const
 
@@ -128,17 +129,8 @@ export function AdminLocalizationPage({ session }: { session: SessionResponse })
   return (
     <section
       className="admin-localization-panel"
-      aria-labelledby="admin-localization-title"
+      aria-label="Localization administration"
     >
-      <div className="section-heading">
-        <p className="eyebrow">Admin localizations</p>
-        <h2 id="admin-localization-title">Localization management</h2>
-        <p className="section-description">
-          Maintain localized messages by key and language while reviewing
-          translated text as content.
-        </p>
-      </div>
-
       {accountState.status === 'loading' && (
         <StateBlock
           message="Loading admin access..."
@@ -170,6 +162,8 @@ export function AdminLocalizationPage({ session }: { session: SessionResponse })
 }
 
 function AdminLocalizationManager({ session }: { session: SessionResponse }) {
+  const [activeSection, setActiveSection] = useState('messages')
+  const [formFocusToken, setFormFocusToken] = useState(0)
   const [searchParams, setSearchParams] = useSearchParams()
   const query = useMemo(
     () => parseLocalizationSearchParams(searchParams),
@@ -326,7 +320,22 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
       }),
     )
     setMutationState({ status: 'idle' })
+    setActiveSection('messages')
+    setFormFocusToken((token) => token + 1)
   }
+
+  useEffect(() => {
+    if (formFocusToken === 0) {
+      return
+    }
+
+    const messageKeyInput = document.getElementById(
+      'localization-form-message-key',
+    )
+
+    messageKeyInput?.scrollIntoView?.({ behavior: 'smooth', block: 'center' })
+    messageKeyInput?.focus({ preventScroll: true })
+  }, [formFocusToken])
 
   async function startEdit(row: LocalizationResponse) {
     if (row.id === undefined) {
@@ -439,39 +448,13 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
     setMutationState({ status: 'idle' })
   }
 
-  return (
-    <div className="admin-localization-layout">
-      <div
-        className="route-state-panel"
-        aria-label="Localization status summary"
-      >
-        <div>
-          <span className="state-label">Current task</span>
-          <span className="state-value">Maintain localized messages</span>
-        </div>
-        <div>
-          <span className="state-label">Message state</span>
-          <span className="state-value">
-            {formatLoadStatus(localizationsState.status)}
-          </span>
-        </div>
-        <div>
-          <span className="state-label">Coverage</span>
-          <span className="state-value">
-            {coverage.length > 0 ? 'Coverage visible' : 'No coverage rows'}
-          </span>
-        </div>
-        <div>
-          <span className="state-label">Primary actions</span>
-          <span className="state-value">Create, edit, delete</span>
-        </div>
-      </div>
-
+  const messagesPanel = (
+    <>
       <section className="admin-section" aria-labelledby="localization-list-title">
         <div className="admin-section-heading">
           <div>
             <p className="eyebrow">Messages</p>
-            <h3 id="localization-list-title">Localization rows</h3>
+            <h2 id="localization-list-title">Localization rows</h2>
             <p className="section-description">
               Filter by message key or language and review the matching
               localized text.
@@ -492,7 +475,7 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
         <div className="workflow-group" aria-labelledby="localization-search-title">
           <div className="workflow-group-heading">
             <div>
-              <h4 id="localization-search-title">Find message rows</h4>
+              <h3 id="localization-search-title">Find message rows</h3>
               <p className="section-description">
                 Narrow by stable key and locale before editing individual rows.
               </p>
@@ -598,29 +581,12 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
           />
         )}
 
-        <div className="workflow-group" aria-labelledby="localization-coverage-title">
-          <div className="workflow-group-heading">
-            <div>
-              <h4 id="localization-coverage-title">Review locale coverage</h4>
-              <p className="section-description">
-                Scan supported locales and create missing rows from stable
-                message keys.
-              </p>
-            </div>
-          </div>
-
-          <LocalizationCoverageTable
-            coverage={coverage}
-            onCreateMissing={startCreate}
-          />
-        </div>
-
         {localizationsState.status === 'ready' &&
           (rows.length > 0 ? (
             <div className="workflow-group" aria-labelledby="localization-row-title">
               <div className="workflow-group-heading">
                 <div>
-                  <h4 id="localization-row-title">Operate on rows</h4>
+                  <h3 id="localization-row-title">Operate on rows</h3>
                   <p className="section-description">
                     Edit or delete one backend row at a time.
                   </p>
@@ -670,6 +636,40 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
           onSubmit={(event) => void handleFormSubmit(event)}
         />
       </section>
+    </>
+  )
+
+  const coveragePanel = (
+    <div className="workflow-group" aria-labelledby="localization-coverage-title">
+      <div className="workflow-group-heading">
+        <div>
+          <h3 id="localization-coverage-title">Review locale coverage</h3>
+          <p className="section-description">
+            Scan supported locales and create missing rows from stable message
+            keys.
+          </p>
+        </div>
+      </div>
+
+      <LocalizationCoverageTable
+        coverage={coverage}
+        onCreateMissing={startCreate}
+      />
+    </div>
+  )
+
+  return (
+    <div className="admin-localization-layout">
+      <Tabs
+        activeTab={activeSection}
+        ariaLabel="Localization administration sections"
+        idPrefix="admin-localization"
+        onTabChange={setActiveSection}
+        tabs={[
+          { id: 'messages', label: 'Messages', panel: messagesPanel },
+          { id: 'coverage', label: 'Coverage', panel: coveragePanel },
+        ]}
+      />
     </div>
   )
 }
@@ -720,11 +720,12 @@ function LocalizationCoverageTable({
                     <button
                       className="localization-locale-button missing"
                       type="button"
+                      aria-label={`Add ${group.messageKey} ${locale.language}`}
                       onClick={() =>
                         onCreateMissing(group.messageKey, locale.language)
                       }
                     >
-                      Add {group.messageKey} {locale.language}
+                      Add {locale.language}
                     </button>
                   ) : (
                     <CoverageStatus status={locale.status} />
@@ -872,15 +873,21 @@ function LocalizationRow({
       <td>{row.updatedAt ?? 'Unknown'}</td>
       <td>
         <div className="row-actions">
-          <button type="button" onClick={() => onEditLocalization(row)}>
-            Edit {label}
+          <button
+            type="button"
+            className="secondary-button"
+            aria-label={`Edit ${label}`}
+            onClick={() => onEditLocalization(row)}
+          >
+            Edit
           </button>
           <button
             type="button"
             className="danger-button"
+            aria-label={`Delete ${label}`}
             onClick={() => onDeleteLocalization(row)}
           >
-            Delete {label}
+            Delete
           </button>
         </div>
       </td>
@@ -914,9 +921,9 @@ function LocalizationForm({
     >
       <div className="form-heading-row">
         <div>
-          <h3 id="localization-form-title">
+          <h2 id="localization-form-title">
             {editing ? 'Edit localization' : 'Create localization'}
-          </h3>
+          </h2>
           <p className="section-description">
             Use message keys and supported language codes for each row.
           </p>
@@ -939,6 +946,7 @@ function LocalizationForm({
         <label>
           <span>Message key</span>
           <input
+            id="localization-form-message-key"
             required
             value={draft.messageKey}
             onChange={(event) =>
