@@ -1694,7 +1694,6 @@ h1 {
 .catalog-filters input,
 .admin-list-filters input,
 .admin-list-filters select,
-.inline-sort select,
 .inline-page-size select {
   width: 100%;
   min-height: 2.125rem;
@@ -2196,13 +2195,12 @@ input[type='search']::-webkit-search-cancel-button:hover {
 .catalog-filters input:hover,
 .admin-list-filters input:hover,
 .admin-list-filters select:hover,
-.inline-sort select:hover,
 .inline-page-size select:hover {
   border-color: var(--color-subtle);
 }
 
-/* One-line table toolbar: chips on the left, sort + summary + pagination on
-   the right. The chip group's box dissolves into the toolbar's flex flow so
+/* One-line table toolbar: chips on the left, summary + pagination on the
+   right. The chip group's box dissolves into the toolbar's flex flow so
    the status slides into free space beside the last chip row instead of
    always reserving a whole row for itself. */
 .catalog-toolbar {
@@ -2225,20 +2223,6 @@ input[type='search']::-webkit-search-cancel-button:hover {
   justify-content: flex-end;
   min-width: 0;
   margin-left: auto;
-}
-
-.inline-sort {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  color: var(--color-control-text);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.inline-sort select {
-  width: auto;
 }
 
 .toolbar-summary {

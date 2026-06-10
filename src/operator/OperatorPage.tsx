@@ -28,6 +28,7 @@ import {
 import { formatTimestamp } from '../ui/format'
 import { IconChevronDown } from '../ui/icons'
 import { PaginationControls } from '../ui/PaginationControls'
+import { SortToggleHeader } from '../ui/SortableColumnHeader'
 import { StateBlock } from '../ui/StateBlock'
 import {
   AuditEntryDetails,
@@ -71,33 +72,9 @@ const AUDIT_TARGET_TYPES = Object.keys(
 ) as AuditTargetType[]
 const AUDIT_ACTIONS = Object.keys(AUDIT_ACTION_LABELS) as AuditAction[]
 
-const SORT_OPTIONS = [
-  {
-    label: 'Newest id first',
-    sort: DEFAULT_AUDIT_SORT,
-    value: DEFAULT_AUDIT_SORT.join('|'),
-  },
-  {
-    label: 'Newest timestamp first',
-    sort: ['createdAt,DESC', 'id,DESC'],
-    value: 'createdAt,DESC|id,DESC',
-  },
-  {
-    label: 'Oldest timestamp first',
-    sort: ['createdAt,ASC', 'id,ASC'],
-    value: 'createdAt,ASC|id,ASC',
-  },
-  {
-    label: 'Actor login A-Z',
-    sort: ['actorLogin,ASC', 'createdAt,DESC'],
-    value: 'actorLogin,ASC|createdAt,DESC',
-  },
-  {
-    label: 'Target type A-Z',
-    sort: ['targetType,ASC', 'createdAt,DESC'],
-    value: 'targetType,ASC|createdAt,DESC',
-  },
-] as const
+type AuditSortField = 'createdAt' | 'targetType' | 'action' | 'actorLogin'
+
+type AuditSortDirection = 'ASC' | 'DESC'
 
 type AuditQueryState = {
   action: AuditAction | ''
@@ -230,19 +207,11 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
     })
   }
 
-  function changeSort(value: string) {
-    const option = SORT_OPTIONS.find((item) => item.value === value)
-    const customSort = value
-      .split('|')
-      .map((item) => item.trim())
-      .filter(Boolean)
-    const nextSort =
-      option?.sort ?? (customSort.length > 0 ? customSort : DEFAULT_AUDIT_SORT)
-
+  function sortByField(field: AuditSortField) {
     updateAuditQuery({
       ...query,
       page: 0,
-      sort: nextSort,
+      sort: nextAuditSort(query.sort, field),
     })
   }
 
@@ -347,22 +316,6 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
 
           <div className="catalog-toolbar" aria-label="Audit table controls">
             <div className="catalog-toolbar-status">
-              <label className="inline-sort">
-                <span>Sort by</span>
-                <select
-                  value={getSortOptionValue(query.sort)}
-                  onChange={(event) => changeSort(event.currentTarget.value)}
-                >
-                  {isCustomSort(query.sort) && (
-                    <option value={query.sort.join('|')}>Custom sort</option>
-                  )}
-                  {SORT_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
               <span aria-live="polite" className="toolbar-summary">
                 {formatAuditSummary(auditPageState)}
               </span>
@@ -404,6 +357,7 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
               )
             }
             onSelectEntry={toggleDetails}
+            onSortByField={sortByField}
             selectedIndex={selectedAuditEntry?.index ?? null}
           />
         </div>
@@ -418,6 +372,7 @@ function AuditLogResults({
   onPageSizeChange,
   onPreviousPage,
   onSelectEntry,
+  onSortByField,
   query,
   selectedIndex,
   state,
@@ -427,6 +382,7 @@ function AuditLogResults({
   onPageSizeChange: (size: number) => void
   onPreviousPage: () => void
   onSelectEntry: (entry: AuditLog, index: number) => void
+  onSortByField: (field: AuditSortField) => void
   query: AuditQueryState
   selectedIndex: number | null
   state: LoadState<AuditLogPage>
@@ -473,18 +429,26 @@ function AuditLogResults({
             <caption className="visually-hidden">Operator audit rows</caption>
             <thead>
               <tr>
-                <th className="plain-column-header" scope="col">
-                  Created
-                </th>
-                <th className="plain-column-header" scope="col">
-                  Target
-                </th>
-                <th className="plain-column-header" scope="col">
-                  Action
-                </th>
-                <th className="plain-column-header" scope="col">
-                  Actor
-                </th>
+                <SortToggleHeader
+                  direction={getAuditSortDirection(query.sort, 'createdAt')}
+                  label="Created"
+                  onSort={() => onSortByField('createdAt')}
+                />
+                <SortToggleHeader
+                  direction={getAuditSortDirection(query.sort, 'targetType')}
+                  label="Target"
+                  onSort={() => onSortByField('targetType')}
+                />
+                <SortToggleHeader
+                  direction={getAuditSortDirection(query.sort, 'action')}
+                  label="Action"
+                  onSort={() => onSortByField('action')}
+                />
+                <SortToggleHeader
+                  direction={getAuditSortDirection(query.sort, 'actorLogin')}
+                  label="Actor"
+                  onSort={() => onSortByField('actorLogin')}
+                />
                 <th className="plain-column-header" scope="col">
                   Summary
                 </th>
@@ -711,14 +675,37 @@ function normalizeAuditAction(value: string | null): AuditAction | '' {
     : ''
 }
 
-function isCustomSort(sort: readonly string[]) {
-  const value = sort.join('|')
-
-  return !SORT_OPTIONS.some((option) => option.value === value)
+// Header sorts keep composite criteria so equal values stay deterministic:
+// timestamp sorts carry an id tiebreaker in the same direction, and the
+// other fields fall back to newest first within equal values.
+function buildAuditSort(
+  field: AuditSortField,
+  direction: AuditSortDirection,
+): readonly string[] {
+  return field === 'createdAt'
+    ? [`createdAt,${direction}`, `id,${direction}`]
+    : [`${field},${direction}`, 'createdAt,DESC']
 }
 
-function getSortOptionValue(sort: readonly string[]) {
-  return sort.join('|')
+function getAuditSortDirection(
+  sort: readonly string[],
+  field: AuditSortField,
+): AuditSortDirection | undefined {
+  const [property, direction] = (sort[0] ?? '').split(',')
+
+  return property === field && (direction === 'ASC' || direction === 'DESC')
+    ? direction
+    : undefined
+}
+
+function nextAuditSort(
+  sort: readonly string[],
+  field: AuditSortField,
+): readonly string[] {
+  const nextDirection: AuditSortDirection =
+    getAuditSortDirection(sort, field) === 'ASC' ? 'DESC' : 'ASC'
+
+  return buildAuditSort(field, nextDirection)
 }
 
 function createFilterDraftKey(draft: AuditFilterDraft) {

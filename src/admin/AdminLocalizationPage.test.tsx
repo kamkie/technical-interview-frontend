@@ -75,6 +75,58 @@ describe('AdminLocalizationPage', () => {
     expect(within(coverageTable).getByText('partial')).toBeInTheDocument()
   })
 
+  it('sorts from column headers with composite sort values and resets the page', async () => {
+    const fetchMock = mockAdminLocalizationFetch()
+
+    renderAdminLocalization(`${ADMIN_LOCALIZATION_ROUTE_PATH}?page=2`)
+
+    await screen.findByText('Konto')
+    expect(
+      screen.getByRole('button', {
+        name: 'Sort by Message key; currently ascending. Activate to sort descending.',
+      }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Sort by Updated; currently not sorted. Activate to sort ascending.',
+      }),
+    )
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        `${LOCALIZATIONS_PATH}?page=0&size=20&sort=updatedAt%2CASC&sort=messageKey%2CASC`,
+        expect.objectContaining({ method: 'GET' }),
+      )
+    })
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Sort by Message key; currently not sorted. Activate to sort ascending.',
+      }),
+    )
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        `${LOCALIZATIONS_PATH}?page=0&size=20&sort=messageKey%2CASC&sort=language%2CASC`,
+        expect.objectContaining({ method: 'GET' }),
+      )
+    })
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Sort by Message key; currently ascending. Activate to sort descending.',
+      }),
+    )
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        `${LOCALIZATIONS_PATH}?page=0&size=20&sort=messageKey%2CDESC&sort=language%2CASC`,
+        expect.objectContaining({ method: 'GET' }),
+      )
+    })
+  })
+
   it('keeps authenticated non-admin users away from localization controls', async () => {
     const fetchMock = mockAdminLocalizationFetch({
       account: createAccount({

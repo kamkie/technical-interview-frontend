@@ -50,7 +50,11 @@ describe('OperatorPage', () => {
     expect(screen.getByLabelText('Target type')).toHaveValue('BOOK')
     expect(screen.getByLabelText('Action')).toHaveValue('UPDATE')
     expect(screen.getByLabelText('Actor login')).toHaveValue('admin')
-    expect(screen.getByLabelText('Sort by')).toHaveValue('createdAt,DESC|id,DESC')
+    expect(
+      screen.getByRole('button', {
+        name: 'Sort by Created; currently descending. Activate to sort ascending.',
+      }),
+    ).toBeInTheDocument()
     expect(screen.getAllByLabelText('Rows per page')[0]).toHaveValue('50')
     const tableRegion = screen.getByRole('region', {
       name: 'Scrollable operator audit table',
@@ -94,6 +98,53 @@ describe('OperatorPage', () => {
     expect(screen.getByLabelText('Target type')).toHaveValue('AUTHENTICATION')
     // The query trims the value while the input keeps the typed text.
     expect(screen.getByLabelText('Actor login')).toHaveValue(' system ')
+  })
+
+  it('sorts from column headers with composite sort values and resets the page', async () => {
+    const fetchMock = mockOperatorFetch()
+
+    renderOperator(`${OPERATOR_ROUTE_PATH}?page=2`)
+
+    await screen.findByText('Created category Java.')
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Sort by Actor; currently not sorted. Activate to sort ascending.',
+      }),
+    )
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        `${AUDIT_LOGS_PATH}?page=0&size=20&sort=actorLogin%2CASC&sort=createdAt%2CDESC`,
+        expect.objectContaining({ method: 'GET' }),
+      )
+    })
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Sort by Created; currently not sorted. Activate to sort ascending.',
+      }),
+    )
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        `${AUDIT_LOGS_PATH}?page=0&size=20&sort=createdAt%2CASC&sort=id%2CASC`,
+        expect.objectContaining({ method: 'GET' }),
+      )
+    })
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Sort by Created; currently ascending. Activate to sort descending.',
+      }),
+    )
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        `${AUDIT_LOGS_PATH}?page=0&size=20&sort=createdAt%2CDESC&sort=id%2CDESC`,
+        expect.objectContaining({ method: 'GET' }),
+      )
+    })
   })
 
   it('keeps repeated sort values through browser back and forward navigation', async () => {

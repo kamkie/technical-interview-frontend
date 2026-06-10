@@ -37,6 +37,7 @@ import {
 import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { MutationFeedback } from '../ui/MutationFeedback'
 import { PaginationControls } from '../ui/PaginationControls'
+import { SortToggleHeader } from '../ui/SortableColumnHeader'
 import { StateBlock } from '../ui/StateBlock'
 export const ADMIN_LOCALIZATION_ROUTE_PATH = '/admin/localizations' as const
 
@@ -44,28 +45,9 @@ const LIVE_FILTER_DEBOUNCE_MS = 300
 const EMPTY_LOCALIZATIONS: readonly LocalizationResponse[] = []
 const COVERAGE_HIDDEN_STORAGE_KEY = 'admin-localization-coverage-hidden'
 const PAGE_SIZE_OPTIONS = [10, 20, 50] as const
-const SORT_OPTIONS = [
-  {
-    label: 'Message key A-Z',
-    sort: ['messageKey,ASC', 'language,ASC'],
-    value: 'messageKey,ASC|language,ASC',
-  },
-  {
-    label: 'Message key Z-A',
-    sort: ['messageKey,DESC', 'language,ASC'],
-    value: 'messageKey,DESC|language,ASC',
-  },
-  {
-    label: 'Language A-Z',
-    sort: ['language,ASC', 'messageKey,ASC'],
-    value: 'language,ASC|messageKey,ASC',
-  },
-  {
-    label: 'Recently updated',
-    sort: ['updatedAt,DESC', 'messageKey,ASC'],
-    value: 'updatedAt,DESC|messageKey,ASC',
-  },
-] as const
+type LocalizationSortField = 'messageKey' | 'language' | 'updatedAt'
+
+type LocalizationSortDirection = 'ASC' | 'DESC'
 
 type PageSize = (typeof PAGE_SIZE_OPTIONS)[number]
 
@@ -304,13 +286,11 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
     })
   }
 
-  function changeSort(value: string) {
-    const option = SORT_OPTIONS.find((item) => item.value === value)
-
+  function sortByField(field: LocalizationSortField) {
     updateLocalizationQuery({
       ...query,
       page: 0,
-      sort: option?.sort ?? DEFAULT_LOCALIZATION_QUERY.sort,
+      sort: nextLocalizationSort(query.sort, field),
     })
   }
 
@@ -617,19 +597,6 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
             aria-label="Localization table controls"
           >
             <div className="catalog-toolbar-status">
-              <label className="inline-sort">
-                <span>Sort by</span>
-                <select
-                  value={getSortOptionValue(query.sort)}
-                  onChange={(event) => changeSort(event.currentTarget.value)}
-                >
-                  {SORT_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
               <span aria-live="polite" className="toolbar-summary">
                 {formatLocalizationSummary(localizationsState)}
               </span>
@@ -677,8 +644,10 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
               <LocalizationResults
                 editingId={formMode.type === 'edit' ? formMode.id : null}
                 rows={rows}
+                sort={query.sort}
                 onDeleteLocalization={requestLocalizationDelete}
                 onEditLocalization={(row) => void startEdit(row)}
+                onSortByField={sortByField}
                 renderEditForm={() =>
                   formMode.type === 'edit' ? (
                     <LocalizationForm
@@ -818,14 +787,18 @@ function LocalizationResults({
   editingId,
   onDeleteLocalization,
   onEditLocalization,
+  onSortByField,
   renderEditForm,
   rows,
+  sort,
 }: {
   editingId: number | null
   onDeleteLocalization: (row: LocalizationResponse, opener: HTMLElement) => void
   onEditLocalization: (row: LocalizationResponse) => void
+  onSortByField: (field: LocalizationSortField) => void
   renderEditForm: () => ReactNode
   rows: readonly LocalizationResponse[]
+  sort: readonly string[]
 }) {
   return (
     <div className="catalog-table-scroll">
@@ -833,21 +806,27 @@ function LocalizationResults({
         <caption className="visually-hidden">Localization rows</caption>
         <thead>
           <tr>
-            <th className="plain-column-header" scope="col">
-              Message key
-            </th>
-            <th className="plain-column-header" scope="col">
-              Language
-            </th>
+            <SortToggleHeader
+              direction={getLocalizationSortDirection(sort, 'messageKey')}
+              label="Message key"
+              onSort={() => onSortByField('messageKey')}
+            />
+            <SortToggleHeader
+              direction={getLocalizationSortDirection(sort, 'language')}
+              label="Language"
+              onSort={() => onSortByField('language')}
+            />
             <th className="plain-column-header" scope="col">
               Message
             </th>
             <th className="plain-column-header" scope="col">
               Description
             </th>
-            <th className="plain-column-header" scope="col">
-              Updated
-            </th>
+            <SortToggleHeader
+              direction={getLocalizationSortDirection(sort, 'updatedAt')}
+              label="Updated"
+              onSort={() => onSortByField('updatedAt')}
+            />
             <th className="plain-column-header" scope="col">
               Actions
             </th>
@@ -1153,12 +1132,37 @@ function createLocalizationLabel(row: LocalizationResponse) {
   return `${row.messageKey ?? 'unknown'} ${row.language ?? 'unknown'}`
 }
 
-function getSortOptionValue(sort: readonly string[]) {
-  const value = sort.join('|')
+// Header sorts keep composite criteria so equal values stay deterministic:
+// message-key sorts break ties by language, and the other fields break ties
+// by message key.
+function buildLocalizationSort(
+  field: LocalizationSortField,
+  direction: LocalizationSortDirection,
+): readonly string[] {
+  return field === 'messageKey'
+    ? [`messageKey,${direction}`, 'language,ASC']
+    : [`${field},${direction}`, 'messageKey,ASC']
+}
 
-  return SORT_OPTIONS.some((option) => option.value === value)
-    ? value
-    : SORT_OPTIONS[0].value
+function getLocalizationSortDirection(
+  sort: readonly string[],
+  field: LocalizationSortField,
+): LocalizationSortDirection | undefined {
+  const [property, direction] = (sort[0] ?? '').split(',')
+
+  return property === field && (direction === 'ASC' || direction === 'DESC')
+    ? direction
+    : undefined
+}
+
+function nextLocalizationSort(
+  sort: readonly string[],
+  field: LocalizationSortField,
+): readonly string[] {
+  const nextDirection: LocalizationSortDirection =
+    getLocalizationSortDirection(sort, field) === 'ASC' ? 'DESC' : 'ASC'
+
+  return buildLocalizationSort(field, nextDirection)
 }
 
 function normalizeSupportedLanguage(
