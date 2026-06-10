@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import {
   fetchOperatorSurface,
@@ -11,9 +11,9 @@ import { getDisplayMessage, type LoadState } from '../ui/asyncState'
 import { formatTimestamp } from '../ui/format'
 import { StateBlock } from '../ui/StateBlock'
 import {
-  AuditDetailsPanel,
+  AuditEntryDetails,
   type SelectedAuditEntry,
-} from './AuditDetailsPanel'
+} from './AuditEntryDetails'
 import {
   createAuditEntryKey,
   formatAuditDescriptor,
@@ -81,7 +81,6 @@ export function OperatorDiagnosticsPage({
   )
   const [selectedAuditEntry, setSelectedAuditEntry] =
     useState<SelectedAuditEntry | null>(null)
-  const detailsReturnFocusRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     if (session.authenticated !== true) {
@@ -113,16 +112,10 @@ export function OperatorDiagnosticsPage({
     }
   }, [session])
 
-  function openDetails(entry: AuditLog, index: number, opener: HTMLElement) {
-    detailsReturnFocusRef.current = opener
-    setSelectedAuditEntry({ entry, index })
-  }
-
-  function closeDetails() {
-    const opener = detailsReturnFocusRef.current
-
-    setSelectedAuditEntry(null)
-    window.requestAnimationFrame(() => opener?.focus())
+  function toggleDetails(entry: AuditLog, index: number) {
+    setSelectedAuditEntry((current) =>
+      current?.index === index ? null : { entry, index },
+    )
   }
 
   if (session.authenticated !== true) {
@@ -139,26 +132,24 @@ export function OperatorDiagnosticsPage({
 
   return (
     <section className="operator-panel" aria-label="System diagnostics">
-      <div className="operator-layout">
-        <section className="operator-section" aria-label="Diagnostics overview">
-          <OperatorOverview state={overviewState} onSelectEntry={openDetails} />
-        </section>
-
-        <AuditDetailsPanel
-          description="Select a recent entry to inspect the structured audit payload."
-          selected={selectedAuditEntry}
-          onCloseDetails={closeDetails}
+      <section className="operator-section" aria-label="Diagnostics overview">
+        <OperatorOverview
+          selectedAuditEntry={selectedAuditEntry}
+          state={overviewState}
+          onSelectEntry={toggleDetails}
         />
-      </div>
+      </section>
     </section>
   )
 }
 
 function OperatorOverview({
   onSelectEntry,
+  selectedAuditEntry,
   state,
 }: {
-  onSelectEntry: (entry: AuditLog, index: number, opener: HTMLElement) => void
+  onSelectEntry: (entry: AuditLog, index: number) => void
+  selectedAuditEntry: SelectedAuditEntry | null
   state: LoadState<OperatorSurface>
 }) {
   if (state.status === 'loading') {
@@ -186,7 +177,11 @@ function OperatorOverview({
   return (
     <div className="operator-overview-grid">
       <OperationalStatus operations={surface.operations} />
-      <AuditSummary audit={surface.audit} onSelectEntry={onSelectEntry} />
+      <AuditSummary
+        audit={surface.audit}
+        selectedAuditEntry={selectedAuditEntry}
+        onSelectEntry={onSelectEntry}
+      />
       <RuntimeSummary runtime={surface.runtime} />
     </div>
   )
@@ -195,9 +190,11 @@ function OperatorOverview({
 function AuditSummary({
   audit,
   onSelectEntry,
+  selectedAuditEntry,
 }: {
   audit: OperatorSurface['audit']
-  onSelectEntry: (entry: AuditLog, index: number, opener: HTMLElement) => void
+  onSelectEntry: (entry: AuditLog, index: number) => void
+  selectedAuditEntry: SelectedAuditEntry | null
 }) {
   const safeAuditEndpoint = getSafeOperatorApiPath(audit?.auditLogEndpoint)
   const recentEntries = audit?.recentEntries ?? EMPTY_AUDIT_ROWS
@@ -223,19 +220,29 @@ function AuditSummary({
           </p>
         ) : (
           <ul>
-            {recentEntries.map((entry, index) => (
-              <li key={createAuditEntryKey(entry, index)}>
-                <button
-                  type="button"
-                  onClick={(event) =>
-                    onSelectEntry(entry, index, event.currentTarget)
-                  }
-                >
-                  <span>{formatSummary(entry.summary)}</span>
-                  <span>{formatAuditDescriptor(entry)}</span>
-                </button>
-              </li>
-            ))}
+            {recentEntries.map((entry, index) => {
+              const expanded = selectedAuditEntry?.index === index
+              const detailsId = `recent-audit-entry-details-${index}`
+
+              return (
+                <li key={createAuditEntryKey(entry, index)}>
+                  <button
+                    aria-controls={detailsId}
+                    aria-expanded={expanded}
+                    type="button"
+                    onClick={() => onSelectEntry(entry, index)}
+                  >
+                    <span>{formatSummary(entry.summary)}</span>
+                    <span>{formatAuditDescriptor(entry)}</span>
+                  </button>
+                  {expanded && (
+                    <div className="recent-audit-entry-details" id={detailsId}>
+                      <AuditEntryDetails entry={entry} index={index} />
+                    </div>
+                  )}
+                </li>
+              )
+            })}
           </ul>
         )}
       </div>

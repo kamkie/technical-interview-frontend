@@ -74,9 +74,6 @@ describe('OperatorPage', () => {
     expect(
       within(pagination).getByRole('button', { name: 'Next' }),
     ).toBeInTheDocument()
-    expect(
-      screen.getByRole('region', { name: 'Audit details' }),
-    ).toBeInTheDocument()
   })
 
   it('resets the page when filters change while preserving repeated sort', async () => {
@@ -170,28 +167,41 @@ describe('OperatorPage', () => {
     ).toBeInTheDocument()
     expect(
       container.querySelectorAll('.state-block[data-state="empty"]').length,
-    ).toBeGreaterThanOrEqual(2)
+    ).toBeGreaterThanOrEqual(1)
     expect(screen.getByText('No audit rows found')).toBeInTheDocument()
-    expect(screen.getByText('No audit entry selected')).toBeInTheDocument()
   })
 
-  it('opens details from a table row and handles missing details', async () => {
+  it('expands inline details from a table row and handles missing details', async () => {
     mockOperatorFetch()
 
-    renderOperator()
+    const { container } = renderOperator()
 
-    fireEvent.click(await screen.findByRole('button', { name: 'View audit entry 2' }))
-
-    const detailsPanel = screen.getByRole('region', {
-      name: 'Audit details',
+    const detailsToggle = await screen.findByRole('button', {
+      name: 'Details for audit entry 2',
     })
 
+    expect(detailsToggle).toHaveAttribute('aria-expanded', 'false')
+
+    fireEvent.click(detailsToggle)
+
+    expect(detailsToggle).toHaveAttribute('aria-expanded', 'true')
+
+    const detailRow = container.querySelector('.audit-detail-row')
+
+    expect(detailRow).not.toBeNull()
     expect(
-      within(detailsPanel).getByText('Created category Java.'),
+      within(detailRow as HTMLElement).getByText('Created category Java.'),
     ).toBeInTheDocument()
     expect(
-      within(detailsPanel).getByText('No structured details available.'),
+      within(detailRow as HTMLElement).getByText(
+        'No structured details available.',
+      ),
     ).toBeInTheDocument()
+
+    fireEvent.click(detailsToggle)
+
+    expect(detailsToggle).toHaveAttribute('aria-expanded', 'false')
+    expect(container.querySelector('.audit-detail-row')).toBeNull()
   })
 
   it('renders localized 401 audit errors without redirecting', async () => {

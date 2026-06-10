@@ -1179,27 +1179,24 @@ h1 {
 
 /* Operator ------------------------------------------------------------------- */
 
-.operator-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.45fr);
-  gap: 2rem;
-  align-items: start;
-}
-
 .operator-section {
   display: grid;
   min-width: 0;
   gap: 1.25rem;
 }
 
-.operator-details-panel {
-  display: grid;
-  position: sticky;
-  top: 4.5rem;
-  gap: 1rem;
-  min-width: 0;
-  padding-left: 1.5rem;
-  border-left: 1px solid var(--color-border);
+/* Inline detail rows expand beneath the audit row they describe. */
+.audit-detail-row td {
+  padding: 1rem 1.25rem 1.25rem;
+  background: var(--color-surface-muted);
+}
+
+.recent-audit-entry-details {
+  margin-top: 0.5rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface-muted);
 }
 
 .operator-overview-grid,
@@ -2571,24 +2568,9 @@ h1 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .operator-layout {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
   .admin-users-layout {
     grid-template-columns: 1fr;
     gap: 1.5rem;
-  }
-
-  .operator-details-panel {
-    position: static;
-    grid-column: 1;
-    grid-row: auto;
-    padding-left: 0;
-    padding-top: 1.25rem;
-    border-top: 1px solid var(--color-border);
-    border-left: 0;
   }
 
   .admin-user-detail-panel {

@@ -37,9 +37,6 @@ describe('OperatorDiagnosticsPage', () => {
     expect(screen.getByText('main')).toBeInTheDocument()
     expect(screen.getByText('UP')).toBeInTheDocument()
     expect(screen.getByText('/api/admin/audit-logs')).toBeInTheDocument()
-    expect(
-      screen.getByRole('region', { name: 'Audit details' }),
-    ).toBeInTheDocument()
     expect(fetchMock).toHaveBeenCalledWith(OPERATOR_SURFACE_PATH, {
       method: 'GET',
       credentials: 'same-origin',
@@ -68,25 +65,40 @@ describe('OperatorDiagnosticsPage', () => {
     ).toHaveLength(1)
   })
 
-  it('opens details from a recent entry', async () => {
+  it('expands inline details from a recent entry', async () => {
     mockSurfaceFetch()
 
     renderDiagnostics()
 
     const recentEntries = await screen.findByLabelText('Recent audit entries')
-
-    fireEvent.click(
-      within(recentEntries).getByRole('button', {
-        name: /Updated book title/,
-      }),
-    )
-
-    const detailsPanel = screen.getByRole('region', {
-      name: 'Audit details',
+    const entryToggle = within(recentEntries).getByRole('button', {
+      name: /Updated book title/,
     })
 
-    expect(within(detailsPanel).getByText('Updated book title.')).toBeInTheDocument()
-    expect(within(detailsPanel).getByText(/Domain-Driven Design/)).toBeInTheDocument()
+    expect(entryToggle).toHaveAttribute('aria-expanded', 'false')
+
+    fireEvent.click(entryToggle)
+
+    expect(entryToggle).toHaveAttribute('aria-expanded', 'true')
+
+    const entryDetails = within(recentEntries)
+      .getByText('Structured details')
+      .closest('.recent-audit-entry-details') as HTMLElement
+
+    expect(entryDetails).not.toBeNull()
+    expect(
+      within(entryDetails).getByText('Updated book title.'),
+    ).toBeInTheDocument()
+    expect(
+      within(entryDetails).getByText(/Domain-Driven Design/),
+    ).toBeInTheDocument()
+
+    fireEvent.click(entryToggle)
+
+    expect(entryToggle).toHaveAttribute('aria-expanded', 'false')
+    expect(
+      within(recentEntries).queryByText('Structured details'),
+    ).not.toBeInTheDocument()
   })
 
   it('renders partial overview payloads without crashing', async () => {
@@ -101,7 +113,6 @@ describe('OperatorDiagnosticsPage', () => {
     expect(
       screen.getByText('Operational status unavailable.'),
     ).toBeInTheDocument()
-    expect(screen.getByText('No audit entry selected')).toBeInTheDocument()
   })
 
   it('displays localized backend access failures', async () => {

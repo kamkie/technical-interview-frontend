@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import {
@@ -29,9 +29,9 @@ import { formatTimestamp } from '../ui/format'
 import { PaginationControls } from '../ui/PaginationControls'
 import { StateBlock } from '../ui/StateBlock'
 import {
-  AuditDetailsPanel,
+  AuditEntryDetails,
   type SelectedAuditEntry,
-} from './AuditDetailsPanel'
+} from './AuditEntryDetails'
 import {
   createAuditEntryKey,
   createAuditEntryLabel,
@@ -129,7 +129,6 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
   })
   const [selectedAuditEntry, setSelectedAuditEntry] =
     useState<SelectedAuditEntry | null>(null)
-  const detailsReturnFocusRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     if (session.authenticated !== true) {
@@ -223,16 +222,10 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
     })
   }
 
-  function openDetails(entry: AuditLog, index: number, opener: HTMLElement) {
-    detailsReturnFocusRef.current = opener
-    setSelectedAuditEntry({ entry, index })
-  }
-
-  function closeDetails() {
-    const opener = detailsReturnFocusRef.current
-
-    setSelectedAuditEntry(null)
-    window.requestAnimationFrame(() => opener?.focus())
+  function toggleDetails(entry: AuditLog, index: number) {
+    setSelectedAuditEntry((current) =>
+      current?.index === index ? null : { entry, index },
+    )
   }
 
   if (session.authenticated !== true) {
@@ -257,173 +250,168 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
 
   return (
     <section className="operator-panel" aria-label="Operator audit">
-      <div className="operator-layout">
-        <section className="operator-section" aria-labelledby="audit-log-title">
-          <div className="admin-section-heading">
+      <section className="operator-section" aria-labelledby="audit-log-title">
+        <div className="admin-section-heading">
+          <div>
+            <p className="eyebrow">Audit log</p>
+            <h2 id="audit-log-title">Audit rows</h2>
+            <p className="section-description">
+              Review audit entries with filters, sorting, and pagination.
+              Expand a row to inspect the structured audit payload without
+              changing the current filters.
+            </p>
+          </div>
+        </div>
+
+        <div className="workflow-group" aria-labelledby="audit-search-title">
+          <div className="workflow-group-heading">
             <div>
-              <p className="eyebrow">Audit log</p>
-              <h2 id="audit-log-title">Audit rows</h2>
+              <h3 id="audit-search-title">Find audit entries</h3>
               <p className="section-description">
-                Review audit entries with filters, sorting, and pagination.
+                Keep URL-backed filters, sort, and page size aligned with
+                the audit query.
               </p>
             </div>
           </div>
 
-          <div className="workflow-group" aria-labelledby="audit-search-title">
-            <div className="workflow-group-heading">
-              <div>
-                <h3 id="audit-search-title">Find audit entries</h3>
-                <p className="section-description">
-                  Keep URL-backed filters, sort, and page size aligned with
-                  the audit query.
-                </p>
-              </div>
+          <form
+            aria-label="Audit filters"
+            className="operator-filters"
+            onSubmit={handleFilterSubmit}
+          >
+            <label>
+              <span>Target type</span>
+              <select
+                name="targetType"
+                value={filterDraft.targetType}
+                onChange={(event) =>
+                  updateFilterDraft({
+                    targetType: event.currentTarget.value as AuditTargetType | '',
+                  })
+                }
+              >
+                <option value="">All targets</option>
+                {AUDIT_TARGET_TYPES.map((targetType) => (
+                  <option key={targetType} value={targetType}>
+                    {AUDIT_TARGET_TYPE_LABELS[targetType]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Action</span>
+              <select
+                name="action"
+                value={filterDraft.action}
+                onChange={(event) =>
+                  updateFilterDraft({
+                    action: event.currentTarget.value as AuditAction | '',
+                  })
+                }
+              >
+                <option value="">All actions</option>
+                {AUDIT_ACTIONS.map((action) => (
+                  <option key={action} value={action}>
+                    {AUDIT_ACTION_LABELS[action]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Actor login</span>
+              <input
+                name="actorLogin"
+                type="search"
+                value={filterDraft.actorLogin}
+                onChange={(event) =>
+                  updateFilterDraft({ actorLogin: event.currentTarget.value })
+                }
+              />
+            </label>
+            <div className="catalog-filter-actions">
+              <button type="submit">Search audit logs</button>
+              <button type="button" className="secondary-button" onClick={clearFilters}>
+                Clear
+              </button>
             </div>
+          </form>
 
-            <form
-              aria-label="Audit filters"
-              className="operator-filters"
-              onSubmit={handleFilterSubmit}
-            >
-              <label>
-                <span>Target type</span>
-                <select
-                  name="targetType"
-                  value={filterDraft.targetType}
-                  onChange={(event) =>
-                    updateFilterDraft({
-                      targetType: event.currentTarget.value as AuditTargetType | '',
-                    })
-                  }
-                >
-                  <option value="">All targets</option>
-                  {AUDIT_TARGET_TYPES.map((targetType) => (
-                    <option key={targetType} value={targetType}>
-                      {AUDIT_TARGET_TYPE_LABELS[targetType]}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                <span>Action</span>
-                <select
-                  name="action"
-                  value={filterDraft.action}
-                  onChange={(event) =>
-                    updateFilterDraft({
-                      action: event.currentTarget.value as AuditAction | '',
-                    })
-                  }
-                >
-                  <option value="">All actions</option>
-                  {AUDIT_ACTIONS.map((action) => (
-                    <option key={action} value={action}>
-                      {AUDIT_ACTION_LABELS[action]}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                <span>Actor login</span>
-                <input
-                  name="actorLogin"
-                  type="search"
-                  value={filterDraft.actorLogin}
-                  onChange={(event) =>
-                    updateFilterDraft({ actorLogin: event.currentTarget.value })
-                  }
-                />
-              </label>
-              <div className="catalog-filter-actions">
-                <button type="submit">Search audit logs</button>
-                <button type="button" className="secondary-button" onClick={clearFilters}>
-                  Clear
-                </button>
-              </div>
-            </form>
-
-            <div className="operator-controls" aria-label="Audit table controls">
-              <label>
-                <span>Sort by</span>
-                <select
-                  value={getSortOptionValue(query.sort)}
-                  onChange={(event) => changeSort(event.currentTarget.value)}
-                >
-                  {isCustomSort(query.sort) && (
-                    <option value={query.sort.join('|')}>Custom sort</option>
-                  )}
-                  {SORT_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                <span>Rows per page</span>
-                <select
-                  value={query.size}
-                  onChange={(event) =>
-                    changePageSize(Number(event.currentTarget.value))
-                  }
-                >
-                  {!PAGE_SIZE_OPTIONS.includes(query.size as PageSizeOption) && (
-                    <option value={query.size}>{query.size}</option>
-                  )}
-                  {PAGE_SIZE_OPTIONS.map((size) => (
-                    <option key={size} value={size}>
-                      {size}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            <AuditWorkflowSummary
-              query={query}
-              selectedAuditEntry={selectedAuditEntry}
-              state={auditPageState}
-            />
+          <div className="operator-controls" aria-label="Audit table controls">
+            <label>
+              <span>Sort by</span>
+              <select
+                value={getSortOptionValue(query.sort)}
+                onChange={(event) => changeSort(event.currentTarget.value)}
+              >
+                {isCustomSort(query.sort) && (
+                  <option value={query.sort.join('|')}>Custom sort</option>
+                )}
+                {SORT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Rows per page</span>
+              <select
+                value={query.size}
+                onChange={(event) =>
+                  changePageSize(Number(event.currentTarget.value))
+                }
+              >
+                {!PAGE_SIZE_OPTIONS.includes(query.size as PageSizeOption) && (
+                  <option value={query.size}>{query.size}</option>
+                )}
+                {PAGE_SIZE_OPTIONS.map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
 
-          <div className="workflow-group" aria-labelledby="audit-review-title">
-            <div className="workflow-group-heading">
-              <div>
-                <h3 id="audit-review-title">Review audit rows</h3>
-                <p className="section-description">
-                  Open read-only details from the pageable audit table.
-                </p>
-              </div>
-            </div>
-            <AuditLogResults
-              query={query}
-              state={auditPageState}
-              onNextPage={() =>
-                goToPage(
-                  auditPageState.status === 'ready'
-                    ? (auditPageState.value.number ?? query.page) + 1
-                    : query.page + 1,
-                )
-              }
-              onPageSizeChange={changePageSize}
-              onPreviousPage={() =>
-                goToPage(
-                  auditPageState.status === 'ready'
-                    ? (auditPageState.value.number ?? query.page) - 1
-                    : query.page - 1,
-                )
-              }
-              onSelectEntry={openDetails}
-            />
-          </div>
-        </section>
+          <AuditWorkflowSummary
+            query={query}
+            selectedAuditEntry={selectedAuditEntry}
+            state={auditPageState}
+          />
+        </div>
 
-        <AuditDetailsPanel
-          description="Select a row to inspect the structured audit payload without changing the current filters."
-          selected={selectedAuditEntry}
-          onCloseDetails={closeDetails}
-        />
-      </div>
+        <div className="workflow-group" aria-labelledby="audit-review-title">
+          <div className="workflow-group-heading">
+            <div>
+              <h3 id="audit-review-title">Review audit rows</h3>
+              <p className="section-description">
+                Open read-only details from the pageable audit table.
+              </p>
+            </div>
+          </div>
+          <AuditLogResults
+            query={query}
+            state={auditPageState}
+            onNextPage={() =>
+              goToPage(
+                auditPageState.status === 'ready'
+                  ? (auditPageState.value.number ?? query.page) + 1
+                  : query.page + 1,
+              )
+            }
+            onPageSizeChange={changePageSize}
+            onPreviousPage={() =>
+              goToPage(
+                auditPageState.status === 'ready'
+                  ? (auditPageState.value.number ?? query.page) - 1
+                  : query.page - 1,
+              )
+            }
+            onSelectEntry={toggleDetails}
+            selectedIndex={selectedAuditEntry?.index ?? null}
+          />
+        </div>
+      </section>
     </section>
   )
 }
@@ -434,13 +422,15 @@ function AuditLogResults({
   onPreviousPage,
   onSelectEntry,
   query,
+  selectedIndex,
   state,
 }: {
   onNextPage: () => void
   onPageSizeChange: (size: number) => void
   onPreviousPage: () => void
-  onSelectEntry: (entry: AuditLog, index: number, opener: HTMLElement) => void
+  onSelectEntry: (entry: AuditLog, index: number) => void
   query: AuditQueryState
+  selectedIndex: number | null
   state: LoadState<AuditLogPage>
 }) {
   if (state.status === 'loading') {
@@ -509,6 +499,7 @@ function AuditLogResults({
               {rows.map((entry, index) => (
                 <AuditLogRow
                   entry={entry}
+                  expanded={selectedIndex === index}
                   index={index}
                   key={createAuditEntryKey(entry, index)}
                   onSelectEntry={onSelectEntry}
@@ -590,36 +581,50 @@ function AuditWorkflowSummary({
 
 function AuditLogRow({
   entry,
+  expanded,
   index,
   onSelectEntry,
 }: {
   entry: AuditLog
+  expanded: boolean
   index: number
-  onSelectEntry: (entry: AuditLog, index: number, opener: HTMLElement) => void
+  onSelectEntry: (entry: AuditLog, index: number) => void
 }) {
   const entryLabel = createAuditEntryLabel(entry, index)
+  const detailRowId = `audit-entry-details-${index}`
 
   return (
-    <tr>
-      <td>{formatTimestamp(entry.createdAt)}</td>
-      <td>
-        {formatEnumValue(entry.targetType)}
-        <span className="table-subtext">ID {formatOptionalNumber(entry.targetId)}</span>
-      </td>
-      <td>{formatEnumValue(entry.action)}</td>
-      <td>{formatActor(entry.actorLogin)}</td>
-      <td>{formatSummary(entry.summary)}</td>
-      <td>
-        <button
-          className="secondary-button"
-          type="button"
-          aria-label={`View ${entryLabel}`}
-          onClick={(event) => onSelectEntry(entry, index, event.currentTarget)}
-        >
-          View
-        </button>
-      </td>
-    </tr>
+    <>
+      <tr>
+        <td>{formatTimestamp(entry.createdAt)}</td>
+        <td>
+          {formatEnumValue(entry.targetType)}
+          <span className="table-subtext">ID {formatOptionalNumber(entry.targetId)}</span>
+        </td>
+        <td>{formatEnumValue(entry.action)}</td>
+        <td>{formatActor(entry.actorLogin)}</td>
+        <td>{formatSummary(entry.summary)}</td>
+        <td>
+          <button
+            aria-controls={detailRowId}
+            aria-expanded={expanded}
+            className="secondary-button"
+            type="button"
+            aria-label={`Details for ${entryLabel}`}
+            onClick={() => onSelectEntry(entry, index)}
+          >
+            Details
+          </button>
+        </td>
+      </tr>
+      {expanded && (
+        <tr className="audit-detail-row" id={detailRowId}>
+          <td colSpan={6}>
+            <AuditEntryDetails entry={entry} index={index} />
+          </td>
+        </tr>
+      )}
+    </>
   )
 }
 

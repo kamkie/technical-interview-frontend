@@ -27,7 +27,7 @@ Build a single read-only operator route, `/operator`, that shows:
 - runtime and operational status summaries from that overview payload
 - recent audit entries from the overview audit section
 - pageable audit rows from `GET /api/admin/audit-logs`
-- a read-only details panel for a selected audit entry
+- read-only inline details expanded beneath a selected audit entry
 
 The route may be linked from top-level navigation for authenticated users. The route must remain directly addressable so browser refresh and shared URLs preserve filter state.
 
@@ -105,7 +105,7 @@ Audit summary:
 - show the total audit entry count when `audit.totalEntries` is present
 - show the audit log endpoint as diagnostic text only when it is a safe `/api/**` path
 - show recent entries newest first as returned by `audit.recentEntries`
-- support opening the details panel from a recent entry
+- support expanding inline details from a recent entry
 - show an empty recent-entry state when the recent list is absent or empty
 
 Runtime summary:
@@ -133,7 +133,7 @@ Table behavior:
 - show an empty state when the page is empty
 - use `totalElements`, `totalPages`, `number`, `size`, `first`, `last`, and `numberOfElements` for pagination labels and button disabled states when present
 - keep pagination controls stable if optional pagination metadata is missing
-- allow opening the details panel from any row
+- allow expanding inline details from any row
 
 Filter controls:
 
@@ -145,11 +145,11 @@ Filter controls:
 
 Do not branch UI behavior on English audit summaries or localized messages.
 
-## Details Panel
+## Inline Entry Details
 
-Selecting a recent entry or table row opens a read-only details panel.
+Selecting a recent entry or table row expands read-only details inline, directly beneath the selected entry. Selecting the same entry again collapses the details.
 
-The panel must show:
+The expanded details must show:
 
 - the selected audit entry identity and timestamp
 - target type and target id
@@ -162,8 +162,9 @@ Rules:
 
 - Preserve the backend `details` object shape; render it as formatted JSON or key/value sections without editing controls.
 - Missing, null, empty, or partially populated `details` must render an empty-details state instead of crashing.
-- Closing the panel returns focus to the opener when feasible.
-- The details panel must not trigger mutation requests.
+- The expand control communicates its state accessibly (for example `aria-expanded`), and collapsing keeps focus on that control.
+- The inline details must not trigger mutation requests.
+- Entries are not condensed or grouped; each audit record keeps its own row.
 
 ## Partial Payloads
 
@@ -202,8 +203,8 @@ Route and component tests:
 - changing filters resets `page` to `0`.
 - repeated sort values survive refresh/back/forward and are sent as repeated `sort`.
 - empty audit pages render an empty state.
-- selecting a recent entry opens the details panel.
-- selecting a table row opens the details panel.
+- selecting a recent entry expands its inline details.
+- selecting a table row expands its inline details.
 - missing `details` and partial overview payloads render unavailable states without crashing.
 - backend `401` and `403` localized errors render without redirect loops.
 - transport failures render a generic endpoint-specific error.
@@ -211,7 +212,7 @@ Route and component tests:
 Browser or smoke coverage:
 
 - load `/operator` with no authenticated backend session and verify the route guard prevents operator API calls.
-- when a live authenticated ADMIN session is available, verify overview, filters, pagination, and details panel against the real same-origin backend.
+- when a live authenticated ADMIN session is available, verify overview, filters, pagination, and inline entry details against the real same-origin backend.
 - if no live ADMIN session is available, report that authenticated operator browser smoke was skipped and keep automated component/API coverage as the validation source.
 
 ## Acceptance Criteria
