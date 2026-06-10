@@ -56,6 +56,7 @@ describe('OperatorPage', () => {
       }),
     ).toBeInTheDocument()
     expect(screen.getAllByLabelText('Rows per page')[0]).toHaveValue('50')
+    expect(screen.getByText('Showing 1-1 of 1 audit entry')).toBeInTheDocument()
     const tableRegion = screen.getByRole('region', {
       name: 'Scrollable operator audit table',
     })

@@ -59,6 +59,9 @@ describe('AdminLocalizationPage', () => {
     )
 
     expect(screen.getAllByLabelText('Rows per page')[0]).toHaveValue('50')
+    expect(
+      screen.getByText('Showing 1-2 of 2 localization rows'),
+    ).toBeInTheDocument()
 
     expect(
       screen.getByRole('heading', { name: 'Locale coverage' }),

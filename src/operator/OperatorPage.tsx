@@ -497,12 +497,20 @@ function formatAuditSummary(state: LoadState<AuditLogPage>) {
     return `Audit rows are ${formatLoadStatus(state.status).toLowerCase()}.`
   }
 
-  const rowCount = state.value.numberOfElements ?? state.value.content?.length
-  const totalElements = state.value.totalElements
+  const rowCount = state.value.numberOfElements ?? state.value.content?.length ?? 0
+  const total = state.value.totalElements ?? rowCount
+  const label = `${total} ${total === 1 ? 'audit entry' : 'audit entries'}`
 
-  return `Showing ${rowCount ?? 0}${
-    totalElements !== undefined ? ` of ${totalElements}` : ''
-  } audit entries.`
+  if (total <= 0 || rowCount <= 0) {
+    return label
+  }
+
+  const page = state.value.number ?? 0
+  const size = state.value.size ?? rowCount
+  const start = page * size + 1
+  const end = Math.min(start + rowCount - 1, total)
+
+  return `Showing ${start}-${end} of ${label}`
 }
 
 function AuditLogRow({
