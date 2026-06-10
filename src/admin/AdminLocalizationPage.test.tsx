@@ -333,7 +333,6 @@ describe('AdminLocalizationPage', () => {
 
   it('confirms, deletes, and refreshes rows from the current results', async () => {
     document.cookie = 'XSRF-TOKEN=token'
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
     let localizationReads = 0
     const fetchMock = mockAdminLocalizationFetch({
       localizations: () => {
@@ -371,6 +370,14 @@ describe('AdminLocalizationPage', () => {
       await screen.findByRole('button', { name: 'Delete account.title en' }),
     )
 
+    const dialog = await screen.findByRole('dialog')
+    expect(
+      within(dialog).getByText('Delete account.title en?'),
+    ).toBeInTheDocument()
+    fireEvent.click(
+      within(dialog).getByRole('button', { name: 'Delete localization' }),
+    )
+
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(getLocalizationPath(1), {
         method: 'DELETE',
@@ -382,7 +389,6 @@ describe('AdminLocalizationPage', () => {
         body: undefined,
       })
     })
-    expect(confirmSpy).toHaveBeenCalledWith('Delete account.title en?')
     expect(screen.getByText('Localization deleted.')).toBeInTheDocument()
     await waitFor(() => {
       expect(
@@ -390,6 +396,34 @@ describe('AdminLocalizationPage', () => {
       ).not.toBeInTheDocument()
     })
     expect(localizationReads).toBeGreaterThanOrEqual(2)
+  })
+
+  it('closes the delete dialog without deleting when cancelled', async () => {
+    document.cookie = 'XSRF-TOKEN=token'
+    const fetchMock = mockAdminLocalizationFetch()
+
+    renderAdminLocalization()
+
+    const deleteButton = await screen.findByRole('button', {
+      name: 'Delete account.title en',
+    })
+
+    fireEvent.click(deleteButton)
+    fireEvent.click(
+      within(await screen.findByRole('dialog')).getByRole('button', {
+        name: 'Cancel',
+      }),
+    )
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+    await waitFor(() => {
+      expect(deleteButton).toHaveFocus()
+    })
+    expect(
+      fetchMock.mock.calls.filter(([, init]) => init?.method === 'DELETE'),
+    ).toHaveLength(0)
   })
 
   it('lets the backend report missing CSRF write failures', async () => {

@@ -34,6 +34,7 @@ import {
   type LoadState,
   type MutationState,
 } from '../ui/asyncState'
+import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { MutationFeedback } from '../ui/MutationFeedback'
 import { PaginationControls } from '../ui/PaginationControls'
 import { StateBlock } from '../ui/StateBlock'
@@ -175,6 +176,9 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
   const [mutationState, setMutationState] = useState<MutationState>({
     status: 'idle',
   })
+  const [pendingLocalizationDelete, setPendingLocalizationDelete] =
+    useState<LocalizationResponse | null>(null)
+  const deleteReturnFocusRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     let ignore = false
@@ -416,14 +420,36 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
     }
   }
 
-  async function deleteVisibleLocalization(row: LocalizationResponse) {
+  function requestLocalizationDelete(
+    row: LocalizationResponse,
+    opener: HTMLElement,
+  ) {
     if (row.id === undefined) {
       return
     }
 
-    const label = createLocalizationLabel(row)
+    deleteReturnFocusRef.current = opener
+    setPendingLocalizationDelete(row)
+  }
 
-    if (!window.confirm(`Delete ${label}?`)) {
+  function closeLocalizationDeleteDialog() {
+    const opener = deleteReturnFocusRef.current
+
+    deleteReturnFocusRef.current = null
+    setPendingLocalizationDelete(null)
+    window.requestAnimationFrame(() => {
+      if (opener?.isConnected) {
+        opener.focus()
+      }
+    })
+  }
+
+  async function confirmLocalizationDelete() {
+    const row = pendingLocalizationDelete
+
+    closeLocalizationDeleteDialog()
+
+    if (row?.id === undefined) {
       return
     }
 
@@ -609,7 +635,7 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
               </div>
               <LocalizationResults
                 rows={rows}
-                onDeleteLocalization={(row) => void deleteVisibleLocalization(row)}
+                onDeleteLocalization={requestLocalizationDelete}
                 onEditLocalization={(row) => void startEdit(row)}
               />
             </div>
@@ -651,6 +677,16 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
           onSubmit={(event) => void handleFormSubmit(event)}
         />
       </section>
+
+      {pendingLocalizationDelete !== null && (
+        <ConfirmDialog
+          confirmLabel="Delete localization"
+          message={`Delete ${createLocalizationLabel(pendingLocalizationDelete)}?`}
+          title="Confirm deletion"
+          onCancel={closeLocalizationDeleteDialog}
+          onConfirm={() => void confirmLocalizationDelete()}
+        />
+      )}
     </>
   )
 
@@ -823,7 +859,7 @@ function LocalizationResults({
   onEditLocalization,
   rows,
 }: {
-  onDeleteLocalization: (row: LocalizationResponse) => void
+  onDeleteLocalization: (row: LocalizationResponse, opener: HTMLElement) => void
   onEditLocalization: (row: LocalizationResponse) => void
   rows: readonly LocalizationResponse[]
 }) {
@@ -873,7 +909,7 @@ function LocalizationRow({
   onEditLocalization,
   row,
 }: {
-  onDeleteLocalization: (row: LocalizationResponse) => void
+  onDeleteLocalization: (row: LocalizationResponse, opener: HTMLElement) => void
   onEditLocalization: (row: LocalizationResponse) => void
   row: LocalizationResponse
 }) {
@@ -900,7 +936,7 @@ function LocalizationRow({
             type="button"
             className="danger-button"
             aria-label={`Delete ${label}`}
-            onClick={() => onDeleteLocalization(row)}
+            onClick={(event) => onDeleteLocalization(row, event.currentTarget)}
           >
             Delete
           </button>

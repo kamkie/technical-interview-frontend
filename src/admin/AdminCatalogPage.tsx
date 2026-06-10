@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import {
@@ -40,6 +40,7 @@ import {
   type LoadState,
   type MutationState,
 } from '../ui/asyncState'
+import { ConfirmDialog } from '../ui/ConfirmDialog'
 import { MutationFeedback } from '../ui/MutationFeedback'
 import { PaginationControls } from '../ui/PaginationControls'
 import { SortableColumnHeader } from '../ui/SortableColumnHeader'
@@ -162,6 +163,12 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     useState<MutationState>({
       status: 'idle',
     })
+  const [pendingBookDelete, setPendingBookDelete] = useState<Book | null>(null)
+  const [pendingCategoryDelete, setPendingCategoryDelete] =
+    useState<Category | null>(null)
+  // Only one confirm dialog can be open at a time, so book and category
+  // deletes share the focus-return target.
+  const deleteReturnFocusRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     let ignore = false
@@ -458,17 +465,37 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     }
   }
 
-  async function deleteVisibleBook(book: Book) {
+  function requestBookDelete(book: Book, opener: HTMLElement) {
     if (book.id === undefined) {
       return
     }
 
-    const bookId = book.id
-    const label = book.title ?? `book ${book.id}`
+    deleteReturnFocusRef.current = opener
+    setPendingBookDelete(book)
+  }
 
-    if (!window.confirm(`Delete ${label}?`)) {
+  function closeBookDeleteDialog() {
+    const opener = deleteReturnFocusRef.current
+
+    deleteReturnFocusRef.current = null
+    setPendingBookDelete(null)
+    window.requestAnimationFrame(() => {
+      if (opener?.isConnected) {
+        opener.focus()
+      }
+    })
+  }
+
+  async function confirmBookDelete() {
+    const book = pendingBookDelete
+
+    closeBookDeleteDialog()
+
+    if (book?.id === undefined) {
       return
     }
+
+    const bookId = book.id
 
     setBookMutationState({ status: 'submitting' })
 
@@ -578,14 +605,33 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     }
   }
 
-  async function deleteManagedCategory(category: Category) {
+  function requestCategoryDelete(category: Category, opener: HTMLElement) {
     if (category.id === undefined) {
       return
     }
 
-    const label = category.name ?? `category ${category.id}`
+    deleteReturnFocusRef.current = opener
+    setPendingCategoryDelete(category)
+  }
 
-    if (!window.confirm(`Delete ${label}?`)) {
+  function closeCategoryDeleteDialog() {
+    const opener = deleteReturnFocusRef.current
+
+    deleteReturnFocusRef.current = null
+    setPendingCategoryDelete(null)
+    window.requestAnimationFrame(() => {
+      if (opener?.isConnected) {
+        opener.focus()
+      }
+    })
+  }
+
+  async function confirmCategoryDelete() {
+    const category = pendingCategoryDelete
+
+    closeCategoryDeleteDialog()
+
+    if (category?.id === undefined) {
       return
     }
 
@@ -802,7 +848,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
             editingBookId={bookFormMode.type === 'edit' ? bookFormMode.bookId : null}
             page={booksState.value}
             query={query}
-            onDeleteBook={(book) => void deleteVisibleBook(book)}
+            onDeleteBook={requestBookDelete}
             onEditBook={(book) => void startBookEdit(book)}
             onNextPage={() => goToPage(query.page + 1)}
             onPageSizeChange={changePageSize}
@@ -822,6 +868,18 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
           onSubmit={(event) => void handleBookSubmit(event)}
           onToggleCategory={toggleBookCategory}
         />
+
+        {pendingBookDelete !== null && (
+          <ConfirmDialog
+            confirmLabel="Delete book"
+            message={`Delete ${
+              pendingBookDelete.title ?? `book ${pendingBookDelete.id}`
+            }?`}
+            title="Confirm deletion"
+            onCancel={closeBookDeleteDialog}
+            onConfirm={() => void confirmBookDelete()}
+          />
+        )}
       </section>
   )
 
@@ -890,7 +948,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
             categories={categoriesState.value}
             editState={categoryEditState}
             onCancelEdit={() => setCategoryEditState(null)}
-            onDeleteCategory={(category) => void deleteManagedCategory(category)}
+            onDeleteCategory={requestCategoryDelete}
             onEditCategory={(category) => {
               if (category.id !== undefined) {
                 setCategoryEditState({
@@ -911,6 +969,19 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
               )
             }
             onSaveCategory={(category) => void saveCategoryEdit(category)}
+          />
+        )}
+
+        {pendingCategoryDelete !== null && (
+          <ConfirmDialog
+            confirmLabel="Delete category"
+            message={`Delete ${
+              pendingCategoryDelete.name ??
+              `category ${pendingCategoryDelete.id}`
+            }?`}
+            title="Confirm deletion"
+            onCancel={closeCategoryDeleteDialog}
+            onConfirm={() => void confirmCategoryDelete()}
           />
         )}
       </section>
@@ -1123,7 +1194,7 @@ function AdminBookResults({
   query,
 }: {
   editingBookId: number | null
-  onDeleteBook: (book: Book) => void
+  onDeleteBook: (book: Book, opener: HTMLElement) => void
   onEditBook: (book: Book) => void
   onNextPage: () => void
   onPageSizeChange: (size: PageSize) => void
@@ -1248,7 +1319,7 @@ function AdminBookRow({
 }: {
   book: Book
   editing: boolean
-  onDeleteBook: (book: Book) => void
+  onDeleteBook: (book: Book, opener: HTMLElement) => void
   onEditBook: (book: Book) => void
 }) {
   const title = book.title ?? 'Untitled book'
@@ -1283,7 +1354,7 @@ function AdminBookRow({
             type="button"
             className="danger-button admin-books-action-button"
             aria-label={`Delete ${title}`}
-            onClick={() => onDeleteBook(book)}
+            onClick={(event) => onDeleteBook(book, event.currentTarget)}
           >
             Delete
           </button>
@@ -1305,7 +1376,7 @@ function CategoryManagementList({
   categories: readonly Category[]
   editState: CategoryEditState | null
   onCancelEdit: () => void
-  onDeleteCategory: (category: Category) => void
+  onDeleteCategory: (category: Category, opener: HTMLElement) => void
   onEditCategory: (category: Category) => void
   onEditNameChange: (name: string) => void
   onSaveCategory: (category: Category) => void
@@ -1390,7 +1461,9 @@ function CategoryManagementList({
                         <button
                           type="button"
                           className="danger-button"
-                          onClick={() => onDeleteCategory(category)}
+                          onClick={(event) =>
+                            onDeleteCategory(category, event.currentTarget)
+                          }
                         >
                           Delete {label}
                         </button>

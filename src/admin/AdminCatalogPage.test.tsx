@@ -411,7 +411,6 @@ describe('AdminCatalogPage', () => {
 
   it('confirms and removes deleted books from the current results', async () => {
     document.cookie = 'XSRF-TOKEN=token'
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
     const fetchMock = mockAdminFetch()
 
     renderAdminCatalog()
@@ -419,6 +418,10 @@ describe('AdminCatalogPage', () => {
     fireEvent.click(
       await screen.findByRole('button', { name: 'Delete Effective Java' }),
     )
+
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByText('Delete Effective Java?')).toBeInTheDocument()
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Delete book' }))
 
     await waitFor(() => {
       expect(fetchMock).toHaveBeenCalledWith(getBookPath(1), {
@@ -431,14 +434,41 @@ describe('AdminCatalogPage', () => {
         body: undefined,
       })
     })
-    expect(confirmSpy).toHaveBeenCalledWith('Delete Effective Java?')
     expect(screen.queryByText('Effective Java')).not.toBeInTheDocument()
     expect(screen.getByText('Book deleted.')).toBeInTheDocument()
   })
 
+  it('closes the delete dialog without deleting when cancelled', async () => {
+    document.cookie = 'XSRF-TOKEN=token'
+    const fetchMock = mockAdminFetch()
+
+    renderAdminCatalog()
+
+    const deleteButton = await screen.findByRole('button', {
+      name: 'Delete Effective Java',
+    })
+
+    fireEvent.click(deleteButton)
+    fireEvent.click(
+      within(await screen.findByRole('dialog')).getByRole('button', {
+        name: 'Cancel',
+      }),
+    )
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+    await waitFor(() => {
+      expect(deleteButton).toHaveFocus()
+    })
+    expect(
+      fetchMock.mock.calls.filter(([, init]) => init?.method === 'DELETE'),
+    ).toHaveLength(0)
+    expect(screen.getByText('Effective Java')).toBeInTheDocument()
+  })
+
   it('keeps books visible after localized delete failures', async () => {
     document.cookie = 'XSRF-TOKEN=token'
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
     mockAdminFetch({
       deleteBookResponse: Response.json(
         {
@@ -461,6 +491,11 @@ describe('AdminCatalogPage', () => {
 
     fireEvent.click(
       await screen.findByRole('button', { name: 'Delete Effective Java' }),
+    )
+    fireEvent.click(
+      within(await screen.findByRole('dialog')).getByRole('button', {
+        name: 'Delete book',
+      }),
     )
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -531,7 +566,6 @@ describe('AdminCatalogPage', () => {
 
   it('creates, updates, and deletes categories successfully', async () => {
     document.cookie = 'XSRF-TOKEN=token'
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
     mockAdminFetch({
       createCategoryResponse: {
         id: 3,
@@ -568,13 +602,20 @@ describe('AdminCatalogPage', () => {
       screen.getByRole('button', { name: 'Delete Application Security' }),
     )
 
+    const dialog = await screen.findByRole('dialog')
+    expect(
+      within(dialog).getByText('Delete Application Security?'),
+    ).toBeInTheDocument()
+    fireEvent.click(
+      within(dialog).getByRole('button', { name: 'Delete category' }),
+    )
+
     expect(await screen.findByText('Category deleted.')).toBeInTheDocument()
     expect(screen.queryAllByText('Application Security')).toHaveLength(0)
   })
 
   it('keeps categories visible after category-in-use delete failures', async () => {
     document.cookie = 'XSRF-TOKEN=token'
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
     mockAdminFetch({
       deleteCategoryResponse: Response.json(
         {
@@ -597,6 +638,11 @@ describe('AdminCatalogPage', () => {
 
     fireEvent.click(await screen.findByRole('tab', { name: 'Categories' }))
     fireEvent.click(await screen.findByRole('button', { name: 'Delete Java' }))
+    fireEvent.click(
+      within(await screen.findByRole('dialog')).getByRole('button', {
+        name: 'Delete category',
+      }),
+    )
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Kategoria jest uzywana przez ksiazki.',
