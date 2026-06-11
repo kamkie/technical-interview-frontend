@@ -9,6 +9,7 @@ The canonical automated authenticated smoke command is `npm run smoke:authentica
 - Open the frontend at `http://127.0.0.1:5173`.
 - Browser API traffic uses relative `/api/**` requests. Vite proxies those requests to the backend at `http://localhost:8080`.
 - The Vite proxy preserves the frontend host for proxied requests so OAuth redirects can be registered for and return to the frontend origin during local smoke.
+- The Vite dev and preview servers also forward the backend fake provider's browser-facing `/test-support/oauth2/**` endpoints to the backend, because the fake authorize endpoint only accepts a `redirect_uri` whose host and port match the request it receives. App behavior and smoke automation still must not navigate to those support paths directly.
 - The UI discovers auth behavior from `GET /api/session`: `loginProviders[]`, `accountPath`, `logoutPath`, `sessionCookie`, and `csrf` metadata.
 - For fake-OAuth smoke, find the `smoke` provider in `loginProviders[]` and start login through its relative `authorizationPath`.
 - Do not hard-code `/login`, provider authorization paths, backend fake-provider support paths, logout paths, CSRF cookie names, or CSRF header names in app behavior or smoke automation.
@@ -85,6 +86,27 @@ Wait for the backend to become ready:
 ```powershell
 Invoke-WebRequest http://127.0.0.1:8080/actuator/health/readiness
 ```
+
+## Combined GitHub And Fake Provider Startup
+
+When the session needs the real `github` provider and the fake `smoke` provider at the same time, use the repository launcher instead of the manual backend startup above:
+
+```powershell
+./scripts/dev-live-auth.ps1
+```
+
+The launcher:
+
+- loads the backend `.env` through the backend's `scripts/load-dotenv.ps1`, then forces `SPRING_PROFILES_ACTIVE=local,oauth,fake-oauth` so a `.env` profile value cannot override the combined provider profiles
+- requires non-empty `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` from the backend `.env` or the current shell
+- seeds `APP_BOOTSTRAP_INITIAL_ADMIN_IDENTITIES=smoke:smoke-user`, appending `github:<login>` when `-GitHubAdminLogin <login>` is passed
+- starts the backend Docker dependencies and `bootRun` with the backend's skip-tests local-loop exclusions, waits for the readiness endpoint, and fails unless `GET /api/session` advertises both the `github` and `smoke` providers
+- reuses a backend already running on `http://127.0.0.1:8080` only when it already advertises both providers
+- runs `npm run dev` on `http://127.0.0.1:5173` with a strict port so the registered GitHub callback origin stays valid, unless `-BackendOnly` is passed to reuse an already-running frontend dev server
+
+For the same-origin browser flow, the GitHub OAuth app must register the callback `http://127.0.0.1:5173/api/session/login/oauth2/code/github`. Use `-BackendRepo <path>` for a non-default backend checkout and `-ReadyTimeoutSeconds <seconds>` when a cold Gradle build needs longer than the default wait.
+
+Stopping the frontend with `Ctrl+C` leaves the backend running in its own window; stop `bootRun` there and run `docker-compose down` in the backend repository when finished.
 
 ## Start The Frontend
 
@@ -188,7 +210,7 @@ Treat these as failures:
 
 ## Optional External Provider Smoke
 
-GitHub and OIDC checks are optional manual smoke paths. They are not the canonical local authenticated automation path because they require external provider credentials.
+GitHub and OIDC checks are optional manual smoke paths. They are not the canonical local authenticated automation path because they require external provider credentials. For a GitHub smoke session that also keeps the fake `smoke` provider available, use the combined launcher in [Combined GitHub And Fake Provider Startup](#combined-github-and-fake-provider-startup).
 
 Provider expectations from the backend operations guide:
 

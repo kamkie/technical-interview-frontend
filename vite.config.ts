@@ -17,6 +17,14 @@ const apiProxy = {
     target: 'http://localhost:8080',
     changeOrigin: false,
   },
+  // The backend fake-oauth profile's browser-facing authorize endpoint only
+  // accepts a redirect_uri whose host and port match the request it receives,
+  // so the fake login redirect must stay on the frontend origin during local
+  // live-auth smoke instead of falling through to the SPA fallback.
+  '^/test-support/oauth2/': {
+    target: 'http://localhost:8080',
+    changeOrigin: false,
+  },
 } satisfies Record<string, ProxyOptions>
 
 function codecovBundleAnalysisPlugin(): Plugin | false {

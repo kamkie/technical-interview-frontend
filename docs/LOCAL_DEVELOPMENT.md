@@ -81,6 +81,14 @@ Mock scenario controls:
 
 The mock keeps the browser boundary contract intact: browser traffic still uses same-origin `/api/**`; login links come from `GET /api/session` metadata; logout, account path, session cookie, and CSRF names come from session metadata; unsafe authenticated writes must mirror the readable CSRF cookie into the configured header; and catalog queries preserve Spring `page`, `size`, repeated `sort`, and repeated `category` filters. Do not use mock mode to introduce CORS, JWT, bearer token, hard-coded provider paths, or contract fields that the backend does not own.
 
+Start the sibling backend with both the GitHub and fake OAuth login providers, then run the frontend dev server against it:
+
+```powershell
+./scripts/dev-live-auth.ps1
+```
+
+The launcher loads the backend `.env`, forces the backend `local,oauth,fake-oauth` profiles, requires non-empty `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`, seeds `APP_BOOTSTRAP_INITIAL_ADMIN_IDENTITIES`, starts the backend Docker dependencies and `bootRun`, waits for readiness, verifies `GET /api/session` advertises the `github` and `smoke` providers, and then runs `npm run dev` with a strict port so the registered GitHub callback origin `http://127.0.0.1:5173/` stays valid. Use `-BackendOnly` to reuse an already-running frontend dev server, `-GitHubAdminLogin <login>` to seed a GitHub admin identity, and `-BackendRepo` for a non-default backend checkout. [`docs/LOCAL_AUTH_SMOKE.md`](LOCAL_AUTH_SMOKE.md) owns callback registration, admin identity seeding, and the live auth smoke steps.
+
 Preview a production build locally:
 
 ```powershell
@@ -130,6 +138,7 @@ These manifests are reference assets. Deployment-specific TLS, DNS, ingress cont
 | Run managed mock dev server                   | `npm run dev:mock:managed -- --port 5173` |
 | List repo-local dev servers                   | `npm run dev:list`                        |
 | Stop repo-local dev servers                   | `npm run dev:cleanup`                     |
+| Run live-auth backend and dev server          | `./scripts/dev-live-auth.ps1`             |
 | Run production preview                        | `npm run preview`                         |
 | Lint                                          | `npm run lint`                            |
 | Lint Markdown only                            | `npm run lint:markdown`                   |

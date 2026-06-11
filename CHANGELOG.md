@@ -4,9 +4,17 @@ This project follows Keep a Changelog style. Release entries stay under `Unrelea
 
 ## [Unreleased]
 
+### Added
+
+- Added `./scripts/dev-live-auth.ps1`, which starts the sibling backend with the GitHub and fake OAuth login providers (`local,oauth,fake-oauth`), verifies both providers from `GET /api/session`, and runs the frontend dev server against that backend.
+
 ### Changed
 
 - The release image now pins its runtime Nginx base by digest so weekly Dependabot digest-bump pull requests signal upstream rebuilds, including the rebuild that allows removing the OpenSSL CVE-2026-45447 package upgrade.
+
+### Fixed
+
+- The dev and preview servers now forward the backend fake provider's browser-facing `/test-support/oauth2/**` endpoints to the backend, so the fake-OAuth login can complete on the frontend origin during live-backend auth smoke instead of dead-ending in the SPA fallback.
 
 ## [0.4.0] - 2026-06-11
 
