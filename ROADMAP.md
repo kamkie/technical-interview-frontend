@@ -22,7 +22,7 @@ Stable IDs:
 - Latest release: `v0.3.1`.
 - Next target version: Not selected; select the next maintenance target before more release prep.
 - Current priority: Deliver `M-I18N-001` frontend internationalization; select the next maintenance target before more release prep.
-- Active product plans: None.
+- Active product plans: `PLAN-frontend-i18n` (delivers `M-I18N-001`).
 - Selection policy: Breaking user-facing or backend-contract integration changes require a selected roadmap item.
 
 ## Product Direction

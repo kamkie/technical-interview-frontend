@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-frontend-i18n
 
-Status: Draft
+Status: Approved
 
 Workers: 1
 
@@ -12,10 +12,10 @@ Filename: `.agents/plans/PLAN-frontend-i18n.md`
 
 ## Readiness
 
-- Plan readiness: Not ready; open questions 1-3 need user decisions before approval.
-- Approved by:
-- Approved at:
-- Open questions: Yes; see `## Open Questions`.
+- Plan readiness: Ready for execution; open questions resolved by the user with the recommended options.
+- Approved by: user (chat session, "take the recommendations")
+- Approved at: 2026-06-11
+- Open questions: None; resolutions recorded in `## Open Questions`.
 - Implementation progress: Not started.
 
 Use `Status: Draft` while shaping the plan. Use `Status: Approved` only after explicit user approval is recorded. Creating or updating this plan is not implementation approval.
@@ -23,6 +23,7 @@ Use `Status: Draft` while shaping the plan. Use `Status: Approved` only after ex
 ## Status History
 
 - 2026-06-11: none -> Draft by AI agent; plan created from `ROADMAP.md` milestone `M-I18N-001` at user request.
+- 2026-06-11: Draft -> Approved by user ("take the recommendations"); open questions 1-3 resolved with the recommended options and the Open Question 4 roadmap Release Context update applied.
 
 ## Goal
 
@@ -56,10 +57,12 @@ Render the frontend UI in the user's resolved language using the backend localiz
 
 ## Open Questions
 
-1. Anonymous selection persistence (T-I18N-005): recommend writing the backend `language` cookie from the frontend (`Path=/`, `SameSite=Lax`, `Max-Age` one year) so backend negotiation and the UI agree for anonymous sessions. Alternative is `localStorage`, which backend negotiation cannot see. Needs user confirmation because the frontend would write a backend-owned cookie name.
-2. `Accept-Language` request format (T-I18N-002): recommend sending exactly the resolved two-letter code so backend resolution deterministically matches the UI, replacing today's raw browser-list pass-through. Alternative keeps the browser chain appended as lower-quality fallbacks.
-3. Admin chrome breadth (T-I18N-004): recommend treating all static UI strings on the listed surfaces (headings, nav, buttons, table headers, form labels, empty/loading states, aria-labels) as chrome, excluding backend-provided content and localized backend messages. Alternative limits this milestone to page-level chrome (headings, nav, primary actions) and defers dense admin form/table strings.
-4. On approval, update `ROADMAP.md` Release Context `Active product plans` to reference `PLAN-frontend-i18n` (recommended; roadmap edit is authorized by approving this plan).
+All resolved by the user on 2026-06-11 ("take the recommendations"):
+
+1. Anonymous selection persistence (T-I18N-005): the frontend writes the backend `language` cookie (`Path=/`, `SameSite=Lax`, `Max-Age` one year) so backend negotiation and the UI agree for anonymous sessions; fall back to `localStorage` only if the cookie proves unwritable (see `## Risks`).
+2. `Accept-Language` request format (T-I18N-002): send exactly the resolved two-letter code, replacing today's raw browser-list pass-through, so backend resolution deterministically matches the UI.
+3. Admin chrome breadth (T-I18N-004): all static UI strings on the listed surfaces (headings, nav, buttons, table headers, form labels, empty/loading states, aria-labels) are chrome; backend-provided content and localized backend messages stay excluded.
+4. `ROADMAP.md` Release Context `Active product plans` references `PLAN-frontend-i18n`; applied alongside this approval.
 
 ## Proposed Changes
 
@@ -92,14 +95,14 @@ Render the frontend UI in the user's resolved language using the backend localiz
 
 | Packet                 | Status  | Owner       | Depends On | Last Updated | Notes                                 |
 | ---------------------- | ------- | ----------- | ---------- | ------------ | ------------------------------------- |
-| T1-language-resolution | Waiting | Coordinator | Approval   | 2026-06-11   | T-I18N-001; pure resolution module    |
+| T1-language-resolution | Ready   | Coordinator | None       | 2026-06-11   | T-I18N-001; pure resolution module    |
 | T2-request-language    | Waiting | Coordinator | T1         | 2026-06-11   | T-I18N-002; resolved language on API  |
 | T3-catalog-provider    | Waiting | Coordinator | T1         | 2026-06-11   | T-I18N-003; catalog load + provider   |
 | T4-shell-chrome        | Waiting | Coordinator | T3         | 2026-06-11   | T-I18N-004; shell, nav, shared ui     |
 | T5-page-chrome         | Waiting | Coordinator | T4         | 2026-06-11   | T-I18N-004; catalog, account, admin   |
 | T6-language-switch     | Waiting | Coordinator | T5         | 2026-06-11   | T-I18N-005; same-session switch, anon |
 
-All packets are `Waiting` on plan approval; T1 becomes `Ready` when the plan is approved.
+T1 is `Ready`; later packets promote to `Ready` as their predecessors land per the dependency order.
 
 ## Task Packets
 
@@ -124,7 +127,7 @@ Write scope:
 
 Dependencies:
 
-- Plan approval; no packet predecessors.
+- None; plan approved 2026-06-11.
 
 Validation:
 
@@ -377,14 +380,14 @@ Result summary:
 ## Long-Run Continuity
 
 - Resume docs reread: latest user request, `AGENTS.md`, this plan's header and `## Readiness`, the current packet and its result summary, `.agents/references/plan-execution.md`, `.agents/references/testing.md`.
-- Current task or wave: none; awaiting approval.
-- Completed commits: none.
-- Plan status and readiness: Draft; open questions 1-3 block approval.
+- Current task or wave: T1-language-resolution is next; implementation not started.
+- Completed commits: none (draft plan committed by the user as a0be7f1).
+- Plan status and readiness: Approved 2026-06-11; T1 `Ready`.
 - Validation and self-review state: not started.
 - Coordinator reconciliation state: not started.
-- Changelog, docs, spec, roadmap, or plan updates: none yet; roadmap Release Context update pending Open Question 4 at approval.
-- Blockers or open questions: see `## Open Questions`.
-- Next action: user resolves open questions 1-3 and approves or amends the plan.
+- Changelog, docs, spec, roadmap, or plan updates: `ROADMAP.md` Release Context `Active product plans` now references this plan.
+- Blockers or open questions: none.
+- Next action: execute T1-language-resolution when the user authorizes plan implementation.
 - Context handoff notes: none.
 
 ## Execution Graph
@@ -439,5 +442,5 @@ sequenceDiagram
 
 ## Handoff Notes
 
-- On approval: set `Status: Approved`, record approver and date, promote T1 to `Ready`, and apply the Open Question 4 roadmap Release Context update in the same change.
+- Approval recorded 2026-06-11 with the recommended options; T1 promoted to `Ready` and the roadmap Release Context updated in the same change. Plan approval is not implementation authorization; execution starts per `.agents/references/plan-execution.md` when the user asks to implement this plan.
 - At closeout: move `M-I18N-001` per `.agents/references/roadmap.md` (milestone summary to `docs/ROADMAP_ARCHIVE.md` when it leaves the active roadmap), update `CHANGELOG.md`, and record durable i18n rules in their owners (`docs/DESIGN.md` for behavior, `docs/backend/` stays authoritative for negotiation).
