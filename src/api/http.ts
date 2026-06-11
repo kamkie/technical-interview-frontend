@@ -51,8 +51,30 @@ export function getBrowserAcceptLanguage() {
   return navigator.language || undefined
 }
 
+// The resolved UI language set by the i18n provider; undefined until the
+// first resolution keeps the browser-list pass-through for early requests.
+let activeRequestLanguage: string | undefined
+
+export function setActiveRequestLanguage(language: string | undefined) {
+  activeRequestLanguage = language
+}
+
+export function getActiveRequestLanguage() {
+  return activeRequestLanguage
+}
+
+export function getActiveLanguageHeaders(): Record<string, string> {
+  if (activeRequestLanguage === undefined) {
+    return {}
+  }
+
+  return {
+    'Accept-Language': activeRequestLanguage,
+  }
+}
+
 export function createJsonReadHeaders(
-  acceptLanguage = getBrowserAcceptLanguage(),
+  acceptLanguage = activeRequestLanguage ?? getBrowserAcceptLanguage(),
 ) {
   const headers: Record<string, string> = {
     Accept: 'application/json',

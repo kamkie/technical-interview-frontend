@@ -1,5 +1,6 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
+import { setActiveRequestLanguage } from './http'
 import {
   LOCALIZATIONS_PATH,
   SUPPORTED_LOCALIZATION_LANGUAGES,
@@ -15,6 +16,10 @@ import {
   type LocalizationResponse,
 } from './localizations'
 import type { SessionResponse } from './session'
+
+afterEach(() => {
+  setActiveRequestLanguage(undefined)
+})
 
 describe('localizations API client', () => {
   it('serializes Spring pagination, filters, and repeated sort values', () => {
@@ -88,6 +93,36 @@ describe('localizations API client', () => {
         Accept: 'application/json',
       },
     })
+  })
+
+  it('carries the resolved language on localization mutations once set', async () => {
+    setActiveRequestLanguage('de')
+
+    const fetchImplementation = vi
+      .fn()
+      .mockResolvedValue(Response.json(createLocalizationRow({ id: 11 })))
+    const request = {
+      messageKey: 'account.title',
+      language: 'de',
+      messageText: 'Konto',
+    } satisfies LocalizationRequest
+
+    await createLocalization(createSession(), request, {
+      cookieSource: 'XSRF-TOKEN=token',
+      fetchImplementation,
+    })
+
+    expect(fetchImplementation).toHaveBeenCalledWith(
+      LOCALIZATIONS_PATH,
+      expect.objectContaining({
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Accept-Language': 'de',
+          'X-XSRF-TOKEN': 'token',
+        },
+      }),
+    )
   })
 
   it('creates localization rows with generated JSON bodies and configured CSRF metadata', async () => {

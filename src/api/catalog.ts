@@ -2,6 +2,7 @@ import type { components } from './generated/openapi'
 import {
   ApiRequestError,
   createJsonReadHeaders,
+  getActiveLanguageHeaders,
   parseApiProblem,
   type FetchImplementation,
 } from './http'
@@ -238,6 +239,7 @@ async function fetchCatalogMutation(
     credentials: 'same-origin',
     headers: {
       Accept: 'application/json',
+      ...getActiveLanguageHeaders(),
       ...init.headers,
       ...getCsrfHeaders(session, options.cookieSource),
     },

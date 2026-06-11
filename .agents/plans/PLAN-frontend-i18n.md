@@ -96,7 +96,7 @@ All resolved by the user on 2026-06-11 ("take the recommendations"):
 | Packet                 | Status   | Owner       | Depends On | Last Updated | Notes                                 |
 | ---------------------- | -------- | ----------- | ---------- | ------------ | ------------------------------------- |
 | T1-language-resolution | Complete | Coordinator | None       | 2026-06-11   | T-I18N-001; pure resolution module    |
-| T2-request-language    | Ready    | Coordinator | T1         | 2026-06-11   | T-I18N-002; resolved language on API  |
+| T2-request-language    | Complete | Coordinator | T1         | 2026-06-11   | T-I18N-002; resolved language on API  |
 | T3-catalog-provider    | Ready    | Coordinator | T1         | 2026-06-11   | T-I18N-003; catalog load + provider   |
 | T4-shell-chrome        | Waiting  | Coordinator | T3         | 2026-06-11   | T-I18N-004; shell, nav, shared ui     |
 | T5-page-chrome         | Waiting  | Coordinator | T4         | 2026-06-11   | T-I18N-004; catalog, account, admin   |
@@ -200,7 +200,15 @@ Expected output:
 
 Result summary:
 
-- Status: pending
+- Status: Complete (2026-06-11)
+- Worker: session agent (direct execution mode)
+- Changed files: `src/api/http.ts` (active-language holder, `getActiveLanguageHeaders`, read-header default), `src/api/account.ts`, `src/api/catalog.ts`, `src/api/localizations.ts`, `src/api/adminUsers.ts` (reads and mutations carry the resolved language once set), new `src/api/http.test.ts`, plus targeted cases in `account.test.ts` and `localizations.test.ts` with `afterEach` holder resets.
+- Validation: full baseline green (`npm run lint`, `npm run typecheck`, `npm test` 220 passed, `npm run build`, `git diff --check`). One test authoring defect (reused Response body) found and fixed during validation.
+- Self-review: pre-resolution behavior unchanged (browser-list reads, headerless mutation requests), so existing exact-match header assertions still hold; explicit `acceptLanguage` arguments still win over the holder.
+- Commit: see checkpoint below.
+- Blockers: none.
+- Review risks: contract drift reviewed — only the documented `Accept-Language` surface is used; no new endpoints or fields.
+- Handoff: T3 already `Ready`; the provider must call `setActiveRequestLanguage` on resolution.
 
 ### Task Packet: T3-catalog-provider
 

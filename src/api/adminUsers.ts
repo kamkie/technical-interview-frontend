@@ -1,6 +1,7 @@
 import type { components } from './generated/openapi'
 import {
   ApiRequestError,
+  getActiveLanguageHeaders,
   parseApiProblem,
   type FetchImplementation,
 } from './http'
@@ -36,6 +37,7 @@ export async function fetchAdminUsers(
       credentials: 'same-origin',
       headers: {
         Accept: 'application/json',
+        ...getActiveLanguageHeaders(),
       },
     },
   )
@@ -74,6 +76,7 @@ export async function replaceAdminUserRoles(
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
+      ...getActiveLanguageHeaders(),
       ...getCsrfHeaders(session, options.cookieSource),
     },
     body: JSON.stringify(normalizedRequest),

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import {
   ACCOUNT_LANGUAGE_PATH,
@@ -8,7 +8,12 @@ import {
   updateAccountLanguage,
   type UserAccount,
 } from './account'
+import { setActiveRequestLanguage } from './http'
 import type { SessionResponse } from './session'
+
+afterEach(() => {
+  setActiveRequestLanguage(undefined)
+})
 
 describe('fetchCurrentAccount', () => {
   it('fetches the session-provided same-origin account endpoint', async () => {
@@ -159,6 +164,43 @@ describe('updateAccountLanguage', () => {
         body: JSON.stringify({
           preferredLanguage: '',
         }),
+      }),
+    )
+  })
+
+  it('carries the resolved language on account requests once set', async () => {
+    setActiveRequestLanguage('pl')
+
+    const fetchImplementation = vi
+      .fn()
+      .mockImplementation(() => Promise.resolve(Response.json(createAccount())))
+    const session = createSession({
+      authenticated: true,
+    })
+
+    await fetchCurrentAccount(session, fetchImplementation)
+    await updateAccountLanguage(session, 'pl', fetchImplementation, 'XSRF-TOKEN=token')
+
+    expect(fetchImplementation).toHaveBeenNthCalledWith(
+      1,
+      ACCOUNT_PATH,
+      expect.objectContaining({
+        headers: {
+          Accept: 'application/json',
+          'Accept-Language': 'pl',
+        },
+      }),
+    )
+    expect(fetchImplementation).toHaveBeenNthCalledWith(
+      2,
+      ACCOUNT_LANGUAGE_PATH,
+      expect.objectContaining({
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Accept-Language': 'pl',
+          'X-XSRF-TOKEN': 'token',
+        },
       }),
     )
   })
