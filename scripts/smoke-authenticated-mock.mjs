@@ -162,8 +162,11 @@ async function runBrowserSmoke(config) {
   }
 
   try {
+    // The UI language follows the browser locale, so pin English to keep
+    // the asserted chrome copy deterministic on non-English host systems.
     const context = await browser.newContext({
       baseURL: config.origin,
+      locale: 'en-US',
     })
     const page = await context.newPage()
     const sameOriginApiRequests = []

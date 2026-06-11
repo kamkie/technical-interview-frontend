@@ -50,6 +50,8 @@ import {
 import { hasAdminRole } from './auth/roles'
 import { CatalogPanel } from './catalog/CatalogPanel'
 import { CATALOG_ROUTE_PATH } from './catalog/catalogQuery'
+import type { UiMessageKey } from './i18n/messages'
+import { useI18n } from './i18n/useI18n'
 import {
   OPERATOR_DIAGNOSTICS_ROUTE_PATH,
   OperatorDiagnosticsPage,
@@ -93,87 +95,79 @@ const LANGUAGE_FLAGS: Record<string, (props: FlagProps) => ReactElement> = {
 }
 
 type RouteContext = {
-  area: string
+  areaKey: UiMessageKey
   // Dewey classification for the area, typed on the route card's call number.
   code: string
-  description: string
+  descriptionKey: UiMessageKey
   path: string
-  title: string
+  titleKey: UiMessageKey
 }
 
 const CATALOG_ROUTE_CONTEXT: RouteContext = {
-  area: 'Public catalog',
+  areaKey: 'ui.area.catalog',
   code: '028',
-  description:
-    'Search the approved collection and review catalog availability.',
+  descriptionKey: 'ui.route.catalog.description',
   path: CATALOG_ROUTE_PATH,
-  title: 'Book catalog',
+  titleKey: 'ui.route.catalog.title',
 }
 
 const ROUTE_CONTEXTS: readonly RouteContext[] = [
   CATALOG_ROUTE_CONTEXT,
   {
-    area: 'Account',
+    areaKey: 'ui.area.account',
     code: '025.6',
-    description:
-      'Review the current profile and manage account preferences for this session.',
+    descriptionKey: 'ui.route.account.description',
     path: ACCOUNT_ROUTE_PATH,
-    title: 'Account settings',
+    titleKey: 'ui.route.account.title',
   },
   {
-    area: 'Admin',
+    areaKey: 'ui.area.admin',
     code: '025.3',
-    description:
-      'Manage book records and categories through backend-authorized catalog tools.',
+    descriptionKey: 'ui.route.admin-catalog.description',
     path: ADMIN_CATALOG_ROUTE_PATH,
-    title: 'Catalog administration',
+    titleKey: 'ui.route.admin-catalog.title',
   },
   {
-    area: 'Admin',
+    areaKey: 'ui.area.admin',
     code: '418',
-    description:
-      'Maintain localized messages without treating translated text as program logic.',
+    descriptionKey: 'ui.route.admin-localization.description',
     path: ADMIN_LOCALIZATION_ROUTE_PATH,
-    title: 'Localization administration',
+    titleKey: 'ui.route.admin-localization.title',
   },
   {
-    area: 'Admin',
+    areaKey: 'ui.area.admin',
     code: '023',
-    description:
-      'Review application users and role-grant provenance through admin workflows.',
+    descriptionKey: 'ui.route.admin-users.description',
     path: ADMIN_USERS_ROUTE_PATH,
-    title: 'User administration',
+    titleKey: 'ui.route.admin-users.title',
   },
   {
-    area: 'Admin',
+    areaKey: 'ui.area.admin',
     code: '023',
-    description:
-      'Review application users and role-grant provenance through admin workflows.',
+    descriptionKey: 'ui.route.admin-users.description',
     path: ADMIN_USER_DETAIL_ROUTE_PATH,
-    title: 'User administration',
+    titleKey: 'ui.route.admin-users.title',
   },
   {
-    area: 'Operations',
+    areaKey: 'ui.area.operations',
     code: '025.1',
-    description:
-      'Review operator audit evidence with URL-backed filters, pagination, and read-only details.',
+    descriptionKey: 'ui.route.operator.description',
     path: OPERATOR_ROUTE_PATH,
-    title: 'Operations console',
+    titleKey: 'ui.route.operator.title',
   },
   {
-    area: 'Operations',
+    areaKey: 'ui.area.operations',
     code: '004.2',
-    description:
-      'Review build, runtime, and health evidence for support escalations.',
+    descriptionKey: 'ui.route.diagnostics.description',
     path: OPERATOR_DIAGNOSTICS_ROUTE_PATH,
-    title: 'System diagnostics',
+    titleKey: 'ui.route.diagnostics.title',
   },
 ]
 
-const THEME_LABELS: Record<ThemePreference, string> = {
-  dark: 'Dark',
-  light: 'Light',
-  system: 'System',
+const THEME_LABEL_KEYS: Record<ThemePreference, UiMessageKey> = {
+  dark: 'ui.theme.dark',
+  light: 'ui.theme.light',
+  system: 'ui.theme.system',
 }
 
 const THEME_ICONS: Record<ThemePreference, typeof IconSun> = {
@@ -240,6 +234,7 @@ function useDismissibleMenu() {
 }
 
 export function App() {
+  const { t } = useI18n()
   const { refreshSession, sessionState } = useSessionBootstrap()
   const isAdmin = useAdminVisibility(sessionState)
   const routeContext = useRouteContext()
@@ -262,7 +257,7 @@ export function App() {
     } catch (error: unknown) {
       setLogoutState({
         status: 'error',
-        message: getDisplayMessage(error, 'Logout failed.'),
+        message: getDisplayMessage(error, t('ui.session.logout-failed')),
       })
     }
   }
@@ -270,7 +265,7 @@ export function App() {
   return (
     <div className="app-shell">
       <a className="skip-link" href="#main-content">
-        Skip to main content
+        {t('ui.shell.skip-link')}
       </a>
       <header className="topbar">
         <div className="topbar-primary">
@@ -278,7 +273,7 @@ export function App() {
             <span className="brand-mark" aria-hidden="true">
               <IconBookOpen height={18} width={18} />
             </span>
-            <span className="brand-name">Library Console</span>
+            <span className="brand-name">{t('ui.shell.brand')}</span>
           </Link>
           <ShellNavigation authenticated={authenticated} isAdmin={isAdmin} />
         </div>
@@ -389,28 +384,34 @@ function ShellNavigation({
   authenticated: boolean
   isAdmin: boolean
 }) {
+  const { t } = useI18n()
+
   return (
-    <nav className="shell-navigation" aria-label="Primary navigation">
-      <NavLink to={CATALOG_ROUTE_PATH}>Catalog</NavLink>
+    <nav className="shell-navigation" aria-label={t('ui.nav.primary-label')}>
+      <NavLink to={CATALOG_ROUTE_PATH}>{t('ui.nav.catalog')}</NavLink>
       {authenticated && isAdmin && (
         <>
           <WorkflowMenu
-            ariaLabel="Admin workflows"
+            ariaLabel={t('ui.nav.admin-label')}
             idPrefix="admin-menu"
-            label="Admin"
+            label={t('ui.nav.admin')}
             items={[
-              { label: 'Catalog admin', to: ADMIN_CATALOG_ROUTE_PATH },
-              { label: 'Localizations', to: ADMIN_LOCALIZATION_ROUTE_PATH },
-              { label: 'Users', to: ADMIN_USERS_ROUTE_PATH },
+              { label: t('ui.nav.catalog-admin'), to: ADMIN_CATALOG_ROUTE_PATH },
+              { label: t('ui.nav.localizations'), to: ADMIN_LOCALIZATION_ROUTE_PATH },
+              { label: t('ui.nav.users'), to: ADMIN_USERS_ROUTE_PATH },
             ]}
           />
           <WorkflowMenu
-            ariaLabel="Operations workflows"
+            ariaLabel={t('ui.nav.operations-label')}
             idPrefix="operations-menu"
-            label="Operations"
+            label={t('ui.nav.operations')}
             items={[
-              { end: true, label: 'Operations console', to: OPERATOR_ROUTE_PATH },
-              { label: 'Diagnostics', to: OPERATOR_DIAGNOSTICS_ROUTE_PATH },
+              {
+                end: true,
+                label: t('ui.nav.operations-console'),
+                to: OPERATOR_ROUTE_PATH,
+              },
+              { label: t('ui.nav.diagnostics'), to: OPERATOR_DIAGNOSTICS_ROUTE_PATH },
             ]}
           />
         </>
@@ -486,6 +487,7 @@ function WorkflowMenu({
 // Wide-viewport shortcut for the account language preference; the account
 // page keeps the full searchable control and the clear action.
 function QuickLanguageMenu({ session }: { session: SessionResponse }) {
+  const { t } = useI18n()
   const { containerRef, open, setOpen } = useDismissibleMenu()
   const accountState = useCurrentAccount(session)
   const [updateState, setUpdateState] = useState<MutationState>({
@@ -522,10 +524,7 @@ function QuickLanguageMenu({ session }: { session: SessionResponse }) {
     } catch (error: unknown) {
       setUpdateState({
         status: 'error',
-        message: getDisplayMessage(
-          error,
-          'Language preference could not be saved.',
-        ),
+        message: getDisplayMessage(error, t('ui.language.save-failed')),
       })
     }
   }
@@ -535,9 +534,11 @@ function QuickLanguageMenu({ session }: { session: SessionResponse }) {
       <button
         aria-controls={panelId}
         aria-expanded={open}
-        aria-label={`Language preference, currently ${
-          currentOption?.label ?? 'no preference'
-        }`}
+        aria-label={t('ui.language.menu-label', {
+          label: currentOption
+            ? t(`ui.language.${currentOption.value}`)
+            : t('ui.language.no-preference-inline'),
+        })}
         className="nav-menu-button language-menu-button"
         id="language-menu-trigger"
         type="button"
@@ -573,7 +574,7 @@ function QuickLanguageMenu({ session }: { session: SessionResponse }) {
                 onClick={() => void selectLanguage(option.value)}
               >
                 <Flag className="language-flag" />
-                <span>{option.label}</span>
+                <span>{t(`ui.language.${option.value}`)}</span>
               </button>
             )
           })}
@@ -589,20 +590,24 @@ function QuickLanguageMenu({ session }: { session: SessionResponse }) {
 }
 
 function RouteContextHeader({ context }: { context: RouteContext }) {
+  const { t } = useI18n()
+  const title = t(context.titleKey)
+  const brand = t('ui.shell.brand')
+
   useEffect(() => {
-    document.title = `${context.title} · Library Console`
-  }, [context.title])
+    document.title = `${title} · ${brand}`
+  }, [brand, title])
 
   return (
     <header className="route-context page-header">
       <p className="eyebrow">
         <span className="call-number">{context.code}</span>
-        {` · ${context.area}`}
+        {` · ${t(context.areaKey)}`}
       </p>
       <h1 id="page-title" tabIndex={-1}>
-        {context.title}
+        {title}
       </h1>
-      <p className="lede">{context.description}</p>
+      <p className="lede">{t(context.descriptionKey)}</p>
     </header>
   )
 }
@@ -643,11 +648,16 @@ function ThemePreferenceControl({
   preference: ThemePreference
   resolvedTheme: 'dark' | 'light'
 }) {
+  const { t } = useI18n()
+
   return (
     <div
       className="theme-control"
       role="radiogroup"
-      aria-label={`Theme preference, currently ${THEME_LABELS[preference]} using ${resolvedTheme} mode`}
+      aria-label={t('ui.theme.group-label', {
+        label: t(THEME_LABEL_KEYS[preference]),
+        mode: t(`ui.theme.mode.${resolvedTheme}`),
+      })}
     >
       {THEME_PREFERENCES.map((option) => {
         const Icon = THEME_ICONS[option]
@@ -656,7 +666,9 @@ function ThemePreferenceControl({
           <label
             className="theme-option"
             key={option}
-            title={`${THEME_LABELS[option]} theme`}
+            title={t('ui.theme.option-title', {
+              label: t(THEME_LABEL_KEYS[option]),
+            })}
           >
             <input
               type="radio"
@@ -667,7 +679,7 @@ function ThemePreferenceControl({
             />
             <span className="theme-option-indicator">
               <Icon />
-              <span className="visually-hidden">{THEME_LABELS[option]}</span>
+              <span className="visually-hidden">{t(THEME_LABEL_KEYS[option])}</span>
             </span>
           </label>
         )
@@ -730,6 +742,7 @@ function SessionAccountMenu({
   onLogout: (session: SessionResponse) => void
   state: SessionState
 }) {
+  const { t } = useI18n()
   const { containerRef, open, setOpen } = useDismissibleMenu()
   const accountState = useCurrentAccount(
     state.status === 'ready' && state.session.authenticated === true
@@ -740,9 +753,9 @@ function SessionAccountMenu({
 
   if (state.status === 'loading') {
     return (
-      <div className="header-session" aria-label="Session status">
+      <div className="header-session" aria-label={t('ui.session.status-label')}>
         <span className="header-session-text" role="status">
-          Checking sign-in...
+          {t('ui.session.checking')}
         </span>
       </div>
     )
@@ -759,12 +772,12 @@ function SessionAccountMenu({
           type="button"
           onClick={() => setOpen((current) => !current)}
         >
-          Connection issue
+          {t('ui.session.connection-issue')}
           <IconChevronDown className="menu-caret" height={14} width={14} />
         </button>
         {open && (
           <div
-            aria-label="Connection menu"
+            aria-label={t('ui.session.connection-menu-label')}
             className="account-menu-panel"
             id={panelId}
             role="region"
@@ -787,20 +800,21 @@ function SessionAccountMenu({
           type="button"
           onClick={() => setOpen((current) => !current)}
         >
-          Sign in
+          {t('ui.session.sign-in')}
         </button>
         {open && (
           <div
-            aria-label="Sign in options"
+            aria-label={t('ui.session.sign-in-options-label')}
             className="account-menu-panel"
             id={panelId}
             role="region"
           >
             <div className="session-action-summary">
-              <p className="session-action-title">Sign in to your workspace</p>
+              <p className="session-action-title">
+                {t('ui.session.sign-in-title')}
+              </p>
               <p className="session-message muted">
-                Choose one of the sign-in options supplied by the current
-                session.
+                {t('ui.session.sign-in-hint')}
               </p>
             </div>
             <SessionLoginActions session={state.session} />
@@ -819,8 +833,8 @@ function SessionAccountMenu({
     accountState.status === 'ready'
       ? accountState.value.displayName?.trim() ||
         accountState.value.login?.trim() ||
-        'Account'
-      : 'Account'
+        t('ui.session.account')
+      : t('ui.session.account')
 
   return (
     <div className="account-menu" ref={containerRef}>
@@ -837,7 +851,7 @@ function SessionAccountMenu({
       </button>
       {open && (
         <div
-          aria-label="Account menu"
+          aria-label={t('ui.session.account-menu-label')}
           className="account-menu-panel"
           id={panelId}
           role="region"
@@ -848,7 +862,7 @@ function SessionAccountMenu({
               to={ACCOUNT_ROUTE_PATH}
               onClick={() => setOpen(false)}
             >
-              Account settings
+              {t('ui.session.account-settings')}
             </NavLink>
             <button
               className="logout-button"
@@ -856,12 +870,14 @@ function SessionAccountMenu({
               disabled={submitting || !state.session.logoutPath}
               onClick={() => onLogout(state.session)}
             >
-              {submitting ? 'Signing out...' : 'Sign out'}
+              {submitting
+                ? t('ui.session.signing-out')
+                : t('ui.session.sign-out')}
             </button>
           </div>
           {!state.session.logoutPath && (
             <p className="session-message muted">
-              Sign out is unavailable for this session.
+              {t('ui.session.sign-out-unavailable')}
             </p>
           )}
           {logoutState.status === 'error' && (
@@ -887,16 +903,18 @@ function useRouteContext() {
 }
 
 function SessionBootstrapPanel({ state }: { state: SessionState }) {
+  const { t } = useI18n()
+
   return (
     <section className="session-panel" aria-labelledby="session-title">
       <div className="section-heading">
-        <p className="eyebrow">Connection</p>
-        <h2 id="session-title">Connection details</h2>
+        <p className="eyebrow">{t('ui.session.connection-eyebrow')}</p>
+        <h2 id="session-title">{t('ui.session.connection-details')}</h2>
       </div>
 
       {state.status === 'loading' && (
         <p className="session-message" role="status">
-          Loading session...
+          {t('ui.session.loading')}
         </p>
       )}
 
@@ -918,13 +936,15 @@ function SessionDetails({
   session: SessionResponse
   showStatus?: boolean
 }) {
+  const { t } = useI18n()
   const csrf = session.csrf
   const csrfLabel =
     csrf?.enabled === true
-      ? `Cookie ${csrf.cookieName ?? 'unavailable'}; header ${
-          csrf.headerName ?? 'unavailable'
-        }`
-      : 'Disabled'
+      ? t('ui.session.csrf-label', {
+          cookie: csrf.cookieName ?? 'unavailable',
+          header: csrf.headerName ?? 'unavailable',
+        })
+      : t('ui.common.disabled')
 
   return (
     <div className="session-details">
@@ -932,23 +952,23 @@ function SessionDetails({
 
       <dl className="session-metadata">
         <div>
-          <dt>Account endpoint</dt>
+          <dt>{t('ui.session.account-endpoint')}</dt>
           <dd>
             {session.authenticated === true
-              ? session.accountPath ?? 'Unavailable'
-              : 'None'}
+              ? session.accountPath ?? t('ui.common.unavailable')
+              : t('ui.common.none')}
           </dd>
         </div>
         <div>
-          <dt>Sign-out endpoint</dt>
-          <dd>{session.logoutPath ?? 'Unavailable'}</dd>
+          <dt>{t('ui.session.sign-out-endpoint')}</dt>
+          <dd>{session.logoutPath ?? t('ui.common.unavailable')}</dd>
         </div>
         <div>
-          <dt>Session cookie</dt>
-          <dd>{session.sessionCookie?.name ?? 'Unavailable'}</dd>
+          <dt>{t('ui.session.cookie')}</dt>
+          <dd>{session.sessionCookie?.name ?? t('ui.common.unavailable')}</dd>
         </div>
         <div>
-          <dt>Write protection</dt>
+          <dt>{t('ui.session.write-protection')}</dt>
           <dd>{csrfLabel}</dd>
         </div>
       </dl>
@@ -957,25 +977,26 @@ function SessionDetails({
 }
 
 function SessionLoginActions({ session }: { session: SessionResponse }) {
+  const { t } = useI18n()
   const loginProviders = getAvailableLoginProviders(session)
 
   if (loginProviders.length === 0) {
     return (
-      <p className="session-message muted">
-        No sign-in options are available for this session.
-      </p>
+      <p className="session-message muted">{t('ui.session.no-providers')}</p>
     )
   }
 
   return (
-    <nav className="login-actions" aria-label="Login providers">
+    <nav className="login-actions" aria-label={t('ui.session.login-providers-label')}>
       {loginProviders.map((provider, index) => (
         <a
           className="login-link"
           href={provider.authorizationPath}
           key={`${provider.authorizationPath}-${index}`}
         >
-          Sign in with {formatLoginProviderName(provider)}
+          {t('ui.session.sign-in-with', {
+            provider: formatLoginProviderName(provider),
+          })}
         </a>
       ))}
     </nav>
@@ -983,8 +1004,11 @@ function SessionLoginActions({ session }: { session: SessionResponse }) {
 }
 
 function SessionStatusSummary({ session }: { session: SessionResponse }) {
+  const { t } = useI18n()
   const statusLabel =
-    session.authenticated === true ? 'Signed in' : 'Browsing as guest'
+    session.authenticated === true
+      ? t('ui.session.signed-in')
+      : t('ui.session.guest')
 
   return (
     <div className="session-summary">

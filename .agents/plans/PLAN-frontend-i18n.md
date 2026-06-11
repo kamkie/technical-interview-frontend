@@ -98,8 +98,8 @@ All resolved by the user on 2026-06-11 ("take the recommendations"):
 | T1-language-resolution | Complete | Coordinator | None       | 2026-06-11   | T-I18N-001; pure resolution module    |
 | T2-request-language    | Complete | Coordinator | T1         | 2026-06-11   | T-I18N-002; resolved language on API  |
 | T3-catalog-provider    | Complete | Coordinator | T1         | 2026-06-11   | T-I18N-003; catalog load + provider   |
-| T4-shell-chrome        | Ready    | Coordinator | T3         | 2026-06-11   | T-I18N-004; shell, nav, shared ui     |
-| T5-page-chrome         | Waiting  | Coordinator | T4         | 2026-06-11   | T-I18N-004; catalog, account, admin   |
+| T4-shell-chrome        | Complete | Coordinator | T3         | 2026-06-11   | T-I18N-004; shell, nav, shared ui     |
+| T5-page-chrome         | Ready    | Coordinator | T4         | 2026-06-11   | T-I18N-004; catalog, account, admin   |
 | T6-language-switch     | Waiting  | Coordinator | T5         | 2026-06-11   | T-I18N-005; same-session switch, anon |
 
 T1 is `Ready`; later packets promote to `Ready` as their predecessors land per the dependency order.
@@ -304,7 +304,15 @@ Expected output:
 
 Result summary:
 
-- Status: pending
+- Status: Complete (2026-06-11)
+- Worker: session agent (direct execution mode)
+- Changed files: `src/App.tsx` (route contexts, nav, theme control, session/account menus, login actions, `document.title` through `t(...)`), `src/i18n/messages.ts` (~70 new keys), `src/ui/PaginationControls.tsx`, `src/ui/ConfirmDialog.tsx`, `src/ui/SortableColumnHeader.tsx`. `StateBlock`, `MutationFeedback`, and `Tabs` carry no internal literals (prop-driven) and were left untouched. Scope extension: `scripts/a11y.mjs` and `scripts/smoke-authenticated-mock.mjs` now pin `locale: 'en-US'` — the UI follows the browser locale, so on this Polish host the headless browser rendered seeded Polish chrome and the scripts' English assertions failed; pinning makes them deterministic (validation-blocker fix recorded per plan rules). `scripts/smoke-anonymous.mjs` keeps `pl-PL` deliberately: it targets a live backend without `ui.*` rows, so English fallback keeps its assertions valid.
+- Validation: full baseline green (lint, typecheck, `npm test` 230 passed, build, `git diff --check`); `npm run a11y` PASSED (5 passed, 0 advisory, 0 skipped); responsive sweep at 375/768/1280 via `preview_eval` with `language=pl` cookie active — no page/topbar overflow, admin menu panel with longest Polish item stays on-screen at 375.
+- Self-review: one missing registry key (`ui.session.write-protection`) caught by typecheck and added; English defaults stay byte-identical to prior literals so existing tests pass unchanged; degenerate inner fallbacks (`'unavailable'` inside the CSRF label params, `'this provider'` in `formatLoginProviderName`, the session-bootstrap failure fallback) stay English literal by design.
+- Commit: see checkpoint below.
+- Blockers: none.
+- Review risks: the headless-browser-locale discovery is live evidence that any future English copy assertion in browser scripts needs an explicit locale.
+- Handoff: T5 promoted to `Ready`; same recipe per page module.
 
 ### Task Packet: T5-page-chrome
 

@@ -1,3 +1,4 @@
+import { useI18n } from '../i18n/useI18n'
 import { IconChevronLeft, IconChevronRight } from './icons'
 
 // Constant-slot page window: the first and last pages stay visible and the
@@ -67,9 +68,11 @@ export function PaginationControls({
   totalPages: number
   variant?: 'pager' | 'toolbar'
 }) {
-  const pageStatus = `Page ${pageNumber + 1}${
-    totalPages > 0 ? ` of ${totalPages}` : ''
-  }`
+  const { t } = useI18n()
+  const pageStatus =
+    totalPages > 0
+      ? t('ui.pagination.page-of', { page: pageNumber + 1, total: totalPages })
+      : t('ui.pagination.page', { page: pageNumber + 1 })
 
   // While a refetch is in flight, buttons stay focusable with aria-disabled
   // and a click guard; a real disabled attribute would drop keyboard focus to
@@ -81,7 +84,7 @@ export function PaginationControls({
     return (
       <div className="pagination-controls toolbar" aria-label={ariaLabel}>
         <label className="inline-page-size">
-          <span>Rows per page</span>
+          <span>{t('ui.pagination.rows-per-page')}</span>
           <select
             disabled={disabled}
             value={querySize}
@@ -101,7 +104,7 @@ export function PaginationControls({
         </label>
         <button
           aria-disabled={disabled || undefined}
-          aria-label="Previous page"
+          aria-label={t('ui.pagination.previous')}
           type="button"
           disabled={first}
           onClick={() => {
@@ -114,7 +117,7 @@ export function PaginationControls({
         </button>
         <button
           aria-disabled={disabled || undefined}
-          aria-label="Next page"
+          aria-label={t('ui.pagination.next')}
           type="button"
           disabled={last}
           onClick={() => {
@@ -138,7 +141,7 @@ export function PaginationControls({
       <nav className="pagination-controls pager" aria-label={ariaLabel}>
         <button
           aria-disabled={disabled || undefined}
-          aria-label="Previous page"
+          aria-label={t('ui.pagination.previous')}
           type="button"
           disabled={first}
           onClick={() => {
@@ -154,7 +157,7 @@ export function PaginationControls({
             <button
               aria-current={slot === currentPage ? 'page' : undefined}
               aria-disabled={disabled || undefined}
-              aria-label={`Page ${slot}`}
+              aria-label={t('ui.pagination.page', { page: slot })}
               key={slot}
               type="button"
               onClick={() => {
@@ -173,7 +176,7 @@ export function PaginationControls({
         )}
         <button
           aria-disabled={disabled || undefined}
-          aria-label="Next page"
+          aria-label={t('ui.pagination.next')}
           type="button"
           disabled={last}
           onClick={() => {

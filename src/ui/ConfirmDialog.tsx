@@ -1,7 +1,9 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 
+import { useI18n } from '../i18n/useI18n'
+
 export function ConfirmDialog({
-  cancelLabel = 'Cancel',
+  cancelLabel,
   confirmLabel,
   message,
   onCancel,
@@ -15,6 +17,7 @@ export function ConfirmDialog({
   onConfirm: () => void
   title: string
 }) {
+  const { t } = useI18n()
   const dialogRef = useRef<HTMLDialogElement | null>(null)
   // Counts close() calls made by effect cleanup so their close events are
   // not mistaken for a user cancel. Without this, the StrictMode
@@ -67,7 +70,7 @@ export function ConfirmDialog({
           type="button"
           onClick={onCancel}
         >
-          {cancelLabel}
+          {cancelLabel ?? t('ui.common.cancel')}
         </button>
         <button className="danger-button" type="button" onClick={onConfirm}>
           {confirmLabel}

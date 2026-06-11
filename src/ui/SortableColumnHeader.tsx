@@ -4,6 +4,7 @@ import {
   type SortDirection,
   type SortField,
 } from '../catalog/catalogQuery'
+import { useI18n } from '../i18n/useI18n'
 
 export function SortToggleHeader({
   direction,
@@ -14,12 +15,22 @@ export function SortToggleHeader({
   label: string
   onSort: () => void
 }) {
+  const { t } = useI18n()
   const ariaSort =
     direction === 'ASC' ? 'ascending' : direction === 'DESC' ? 'descending' : 'none'
   const indicator =
-    direction === 'ASC' ? 'ascending' : direction === 'DESC' ? 'descending' : 'not sorted'
-  const nextDirectionLabel = direction === 'ASC' ? 'descending' : 'ascending'
-  const sortButtonLabel = `Sort by ${label}; currently ${indicator}. Activate to sort ${nextDirectionLabel}.`
+    direction === 'ASC'
+      ? t('ui.sort.ascending')
+      : direction === 'DESC'
+        ? t('ui.sort.descending')
+        : t('ui.sort.not-sorted')
+  const nextDirectionLabel =
+    direction === 'ASC' ? t('ui.sort.descending') : t('ui.sort.ascending')
+  const sortButtonLabel = t('ui.sort.button-label', {
+    label,
+    indicator,
+    direction: nextDirectionLabel,
+  })
 
   return (
     <th aria-sort={ariaSort} scope="col">
