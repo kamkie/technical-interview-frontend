@@ -93,20 +93,20 @@ All resolved by the user on 2026-06-11 ("take the recommendations"):
 
 ## Progress Tracker
 
-| Packet                 | Status  | Owner       | Depends On | Last Updated | Notes                                 |
-| ---------------------- | ------- | ----------- | ---------- | ------------ | ------------------------------------- |
-| T1-language-resolution | Ready   | Coordinator | None       | 2026-06-11   | T-I18N-001; pure resolution module    |
-| T2-request-language    | Waiting | Coordinator | T1         | 2026-06-11   | T-I18N-002; resolved language on API  |
-| T3-catalog-provider    | Waiting | Coordinator | T1         | 2026-06-11   | T-I18N-003; catalog load + provider   |
-| T4-shell-chrome        | Waiting | Coordinator | T3         | 2026-06-11   | T-I18N-004; shell, nav, shared ui     |
-| T5-page-chrome         | Waiting | Coordinator | T4         | 2026-06-11   | T-I18N-004; catalog, account, admin   |
-| T6-language-switch     | Waiting | Coordinator | T5         | 2026-06-11   | T-I18N-005; same-session switch, anon |
+| Packet                 | Status   | Owner       | Depends On | Last Updated | Notes                                 |
+| ---------------------- | -------- | ----------- | ---------- | ------------ | ------------------------------------- |
+| T1-language-resolution | Complete | Coordinator | None       | 2026-06-11   | T-I18N-001; pure resolution module    |
+| T2-request-language    | Ready    | Coordinator | T1         | 2026-06-11   | T-I18N-002; resolved language on API  |
+| T3-catalog-provider    | Ready    | Coordinator | T1         | 2026-06-11   | T-I18N-003; catalog load + provider   |
+| T4-shell-chrome        | Waiting  | Coordinator | T3         | 2026-06-11   | T-I18N-004; shell, nav, shared ui     |
+| T5-page-chrome         | Waiting  | Coordinator | T4         | 2026-06-11   | T-I18N-004; catalog, account, admin   |
+| T6-language-switch     | Waiting  | Coordinator | T5         | 2026-06-11   | T-I18N-005; same-session switch, anon |
 
 T1 is `Ready`; later packets promote to `Ready` as their predecessors land per the dependency order.
 
 ## Task Packets
 
-### Task Packet: T1-language-resolution
+### Task Packet: T1-language-resolution (Complete)
 
 Task id: T1-language-resolution (roadmap T-I18N-001)
 
@@ -148,7 +148,15 @@ Expected output:
 
 Result summary:
 
-- Status: pending
+- Status: Complete (2026-06-11)
+- Worker: session agent (direct execution mode)
+- Changed files: `src/i18n/resolveLanguage.ts`, `src/i18n/resolveLanguage.test.ts` (new); reuses `readCookie` from `src/api/session.ts` and `SUPPORTED_LOCALIZATION_LANGUAGES` from `src/api/localizations.ts`.
+- Validation: `npm run lint`, `npm run typecheck`, `npm test` (212 passed), `npm run build`, `git diff --check` — all green.
+- Self-review: pure module, no API-facing or owner-doc changes; region tags map to base language; unsupported values skip a tier instead of aborting resolution.
+- Commit: see checkpoint below.
+- Blockers: none.
+- Review risks: none beyond plan-level risks.
+- Handoff: T2 and T3 promoted to `Ready`.
 
 ### Task Packet: T2-request-language
 
@@ -374,6 +382,7 @@ Result summary:
 
 - `Workers: 1`; packets run sequentially in dependency order (T1, then T2 and T3, then T4, T5, T6). T2 and T3 have disjoint write scopes and may run as a parallel wave if delegated.
 - Active-plan implementation uses a coordinator plus one fresh implementation worker per repository-changing packet per `.agents/references/plan-execution.md`; if worker subagents are unavailable or the user directs direct execution, record that mode here before starting.
+- Execution mode recorded 2026-06-11: direct execution by the session agent. The active tool contract directs against spawning subagents unless the user asks, matching repo precedent from `PLAN-graphical-review-fixes`; packet sequencing, validation, and checkpoints stay as planned.
 - Each packet must be implemented, validated through `.agents/references/testing.md`, self-reviewed through `.agents/references/reviews.md`, and committed at its checkpoint before dependent packets start.
 - Keep compact evidence in this plan; no raw test output or browser logs.
 
