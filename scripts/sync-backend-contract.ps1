@@ -49,8 +49,8 @@ if ($LASTEXITCODE -eq 0 -and $gitOutput) {
 $sourceLines = @(
     "# Backend Contract Source",
     "",
-    "Source repository: technical-interview-demo",
-    "Backend commit: $backendCommit",
+    "- Source repository: technical-interview-demo",
+    "- Backend commit: $backendCommit",
     "",
     "Imported files:",
     "",
@@ -66,5 +66,13 @@ $sourceLines = @(
 
 $sourcePath = Join-Path $targetDir "SOURCE.md"
 [System.IO.File]::WriteAllText($sourcePath, (($sourceLines -join "`n") + "`n"), $utf8NoBom)
+
+# The backend source may use hard-wrapped prose; normalize the imported
+# Markdown through the repository formatter so the copy passes this repo's
+# Markdown rules without hand edits.
+& node (Join-Path $repoRoot "scripts\format-markdown.mjs")
+if ($LASTEXITCODE -ne 0) {
+    throw "Markdown formatting failed after contract import."
+}
 
 Write-Host "Imported backend contract artifacts from technical-interview-demo@$backendCommit"

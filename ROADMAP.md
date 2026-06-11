@@ -40,7 +40,7 @@ No milestone is currently selected. `M-I18N-001` is delivered and archived in `d
 
 ## Blocked Backlog
 
-- `M-USERS-001` (Blocked): Admin block/unblock action on the user administration page — surface account status in the users list and inline detail, and add a block/unblock control with an operator reason beside role replacement. Blocked until the sibling backend ships its account block/unblock capability (captured as a Conceptualization candidate in the backend `ROADMAP.md`) and the imported contract artifacts under `docs/backend/` are refreshed to expose the status field and endpoint; today the strongest admin sanction is demoting a user to `USER`-only via role replacement.
+- `M-USERS-001` (Unblocked, awaiting selection): Admin block/unblock action on the user administration page — surface account status in the users list and inline detail, and add a block/unblock control with an operator reason beside role replacement. The sibling backend shipped account block/unblock and the imported contract artifacts under `docs/backend/` now expose `/api/admin/users/{id}/status` (refreshed 2026-06-11 from backend commit `0640891`); the mock API tracks the path without implementing it. Select the milestone to start; until then the strongest admin sanction remains demoting a user to `USER`-only via role replacement.
 
 ## Product Non-Goals
 

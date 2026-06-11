@@ -6,6 +6,9 @@ export const MOCK_OPENAPI_PATHS = [
   '/api/categories/{id}',
   '/api/books/{id}',
   '/api/admin/users/{id}/roles',
+  // Tracked from the refreshed contract; the mock does not implement the
+  // admin status endpoint until M-USERS-001 is selected.
+  '/api/admin/users/{id}/status',
   '/api/account/language',
   '/api/session/logout',
   '/api/localizations',

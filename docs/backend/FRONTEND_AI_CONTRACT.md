@@ -1,6 +1,7 @@
 # Frontend AI Contract
 
-> Generated document for AI import into a separate first-party frontend repository. > Do not edit imported copies by hand; refresh them from this backend source document.
+> Generated document for AI import into a separate first-party frontend repository.
+> Do not edit imported copies by hand; refresh them from this backend source document.
 
 Use this document only as frontend-agent instructions for integrating with the Technical Interview Demo backend. It is not a standalone API contract.
 
@@ -33,9 +34,9 @@ Current approved baseline summary:
 
 - OpenAPI version: `3.0.1`
 - Contract version marker: `APPROVED`
-- Path templates: `14`
-- Operations: `22`
-- Component schemas: `40`
+- Path templates: `15`
+- Operations: `23`
+- Component schemas: `41`
 - Security scheme: `sessionCookie` as an API key in cookie `technical-interview-demo-session`
 
 If the frontend needs a portable JSON or YAML copy, keep it as a separate generated contract artifact with a documented refresh path. Do not treat this Markdown summary as the full API specification.
@@ -98,3 +99,5 @@ Integration rules:
 The API supports `Accept-Language`, optional `lang`, and cookie `language` fallback. Supported application languages are currently `en`, `es`, `de`, `fr`, `pl`, `uk`, and `no`.
 
 Error payloads use localized `ProblemDetail` data and include `messageKey`, localized `message`, and resolved `language`. Render localized feedback, but do not branch on English message text.
+
+The first-party frontend renders its UI chrome from public localization catalog rows using `ui.`-prefixed message keys, such as `ui.nav.catalog`, resolved per language with in-code English defaults as fallback. Those chrome rows are operator-managed content through the existing localization endpoints; languages without seeded `ui.*` rows render the English defaults without breaking the page.

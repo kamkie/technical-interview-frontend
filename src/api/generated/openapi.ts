@@ -50,8 +50,8 @@ export interface components {
       publicationYear?: number;
       categories?: components['schemas']["Category"][];
     };
-    AdminUserRoleUpdateRequest: {
-      roles: Array<"USER" | "ADMIN">;
+    AdminUserAccountStatusUpdateRequest: {
+      status: "ACTIVE" | "BLOCKED";
       reason: string;
     };
     AdminUserAccountResponse: {
@@ -66,6 +66,10 @@ export interface components {
       lastLoginAt?: string;
       createdAt?: string;
       updatedAt?: string;
+      accountStatus?: "ACTIVE" | "BLOCKED";
+      blockedAt?: string;
+      blockedBy?: string;
+      blockedReason?: string;
     };
     AdminUserRoleGrantResponse: {
       role?: string;
@@ -74,6 +78,10 @@ export interface components {
       grantedByUserId?: number;
       grantedByLogin?: string;
       reason?: string;
+    };
+    AdminUserRoleUpdateRequest: {
+      roles: Array<"USER" | "ADMIN">;
+      reason: string;
     };
     UserAccountLanguageRequest: {
       preferredLanguage?: string;
@@ -130,8 +138,8 @@ export interface components {
       size?: number;
       content?: components['schemas']["LocalizationResponse"][];
       number?: number;
-      first?: boolean;
       last?: boolean;
+      first?: boolean;
       numberOfElements?: number;
       sort?: components['schemas']["SortObject"];
       pageable?: components['schemas']["PageableObject"];
@@ -139,16 +147,16 @@ export interface components {
     };
     PageableObject: {
       offset?: number;
-      unpaged?: boolean;
-      paged?: boolean;
       sort?: components['schemas']["SortObject"];
+      paged?: boolean;
       pageSize?: number;
       pageNumber?: number;
+      unpaged?: boolean;
     };
     SortObject: {
       empty?: boolean;
-      unsorted?: boolean;
       sorted?: boolean;
+      unsorted?: boolean;
     };
     PageBook: {
       totalPages?: number;
@@ -156,8 +164,8 @@ export interface components {
       size?: number;
       content?: components['schemas']["Book"][];
       number?: number;
-      first?: boolean;
       last?: boolean;
+      first?: boolean;
       numberOfElements?: number;
       sort?: components['schemas']["SortObject"];
       pageable?: components['schemas']["PageableObject"];
@@ -464,6 +472,48 @@ export interface operations {
       "200": { content?: never };
     };
   };
+  replaceStatus: {
+    parameters: {
+      path: {
+        id: number;
+      };
+      header: {
+        "X-XSRF-TOKEN": string;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components['schemas']["AdminUserAccountStatusUpdateRequest"];
+      };
+    };
+    responses: {
+      "200": {
+        content: {
+          "application/json": components['schemas']["AdminUserAccountResponse"];
+        };
+      };
+      "400": {
+        content: {
+          "application/problem+json": components['schemas']["ApiProblemResponse"];
+        };
+      };
+      "401": {
+        content: {
+          "application/problem+json": components['schemas']["ApiProblemResponse"];
+        };
+      };
+      "403": {
+        content: {
+          "application/problem+json": components['schemas']["ApiProblemResponse"];
+        };
+      };
+      "404": {
+        content: {
+          "application/problem+json": components['schemas']["ApiProblemResponse"];
+        };
+      };
+    };
+  };
   replaceRoles: {
     parameters: {
       path: {
@@ -767,6 +817,9 @@ export interface paths {
     get: operations["findById_1"];
     put: operations["update_2"];
     delete: operations["delete_2"];
+  };
+  "/api/admin/users/{id}/status": {
+    put: operations["replaceStatus"];
   };
   "/api/admin/users/{id}/roles": {
     put: operations["replaceRoles"];
