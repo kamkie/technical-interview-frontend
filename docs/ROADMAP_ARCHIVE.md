@@ -87,6 +87,41 @@ Scope: `M-SMOKE-001` responsive layout and smoke evidence.
 
 ## Completed Milestones
 
+### M-I18N-001: Frontend Internationalization
+
+Labels: `type:milestone`, `status:done`
+
+Goal: Render the frontend UI in the user's resolved language using the backend localization mechanism — language negotiation, the public localization catalog, and the existing account language preference — instead of hardcoded English strings. Exact negotiation and endpoint rules stay in `docs/backend/`.
+
+Completion evidence: Delivered 2026-06-11 on `main` through `PLAN-frontend-i18n` checkpoints `ee46d49`, `4a5661b`, `a4f3a41`, `cb4f60b`, `acd2ee9`, and `515789a`; unreleased pending the next release candidate. Full baseline, `npm run a11y`, and `npm run smoke:authenticated` green; mock-browser evidence covers resolution tiers, in-session switching, anonymous cookie selection, and English fallback.
+
+#### E-I18N-001: Language Resolution And Catalog Integration
+
+Labels: `type:epic`, `milestone:M-I18N-001`, `status:done`
+
+Tasks:
+
+- T-I18N-001: Resolve the active UI language from the account preference, the backend `language` cookie, and the browser locale, restricted to backend-supported languages with English fallback.
+- T-I18N-002: Send the resolved language on API requests per the `docs/backend/` negotiation rules so backend payloads arrive localized to match the UI.
+- T-I18N-003: Load frontend display strings from the public backend localization catalog, with English fallback for missing keys or translations.
+
+#### E-I18N-002: Localized UI Surfaces
+
+Labels: `type:epic`, `milestone:M-I18N-001`, `status:done`
+
+Tasks:
+
+- T-I18N-004: Route shell, navigation, catalog, account, and admin chrome strings through the catalog lookup.
+- T-I18N-005: Apply a language change from the existing account preference control (or anonymous selection) to the rendered UI within the same session.
+
+Acceptance Criteria:
+
+- The active language resolves from account preference, then cookie, then browser locale, limited to the backend-supported set with English fallback.
+- API requests carry the resolved language and the UI renders localized backend feedback without branching on localized message text; `messageKey` remains the stable branching field.
+- Frontend chrome strings come from the backend localization catalog, and missing keys or translations fall back to English without breaking the page.
+- Changing the language preference updates the rendered UI language in the same session.
+- Tests at the smallest useful layer cover language resolution, catalog fallback, and localized rendering.
+
 ### M-QUALITY-001: Quality Gates
 
 Labels: `type:milestone`, `status:done`

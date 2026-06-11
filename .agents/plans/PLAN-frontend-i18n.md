@@ -2,7 +2,9 @@
 
 Plan-ID: PLAN-frontend-i18n
 
-Status: Approved
+Status: Closed
+
+Close-Reason: Released
 
 Workers: 1
 
@@ -12,11 +14,11 @@ Filename: `.agents/plans/PLAN-frontend-i18n.md`
 
 ## Readiness
 
-- Plan readiness: Ready for execution; open questions resolved by the user with the recommended options.
+- Plan readiness: Implemented and closed.
 - Approved by: user (chat session, "take the recommendations")
 - Approved at: 2026-06-11
 - Open questions: None; resolutions recorded in `## Open Questions`.
-- Implementation progress: Not started.
+- Implementation progress: Complete; commits ee46d49 (T1), 4a5661b (T2), a4f3a41 (T3), cb4f60b (T4), acd2ee9 (T5), 515789a (T6), plus the closeout docs commit. Full baseline, `npm run a11y`, and `npm run smoke:authenticated` green on 2026-06-11; mock-browser evidence via `preview_eval` covered resolution tiers, in-session switching, anonymous selection, and fallback.
 
 Use `Status: Draft` while shaping the plan. Use `Status: Approved` only after explicit user approval is recorded. Creating or updating this plan is not implementation approval.
 
@@ -24,6 +26,7 @@ Use `Status: Draft` while shaping the plan. Use `Status: Approved` only after ex
 
 - 2026-06-11: none -> Draft by AI agent; plan created from `ROADMAP.md` milestone `M-I18N-001` at user request.
 - 2026-06-11: Draft -> Approved by user ("take the recommendations"); open questions 1-3 resolved with the recommended options and the Open Question 4 roadmap Release Context update applied.
+- 2026-06-11: Approved -> Closed (Released) by AI agent after user-authorized implementation ("implement the plan"); all six packets complete, milestone archived to `docs/ROADMAP_ARCHIVE.md`, changelog and design guide updated.
 
 ## Goal
 
@@ -429,14 +432,14 @@ Result summary:
 ## Long-Run Continuity
 
 - Resume docs reread: latest user request, `AGENTS.md`, this plan's header and `## Readiness`, the current packet and its result summary, `.agents/references/plan-execution.md`, `.agents/references/testing.md`.
-- Current task or wave: T1-language-resolution is next; implementation not started.
-- Completed commits: none (draft plan committed by the user as a0be7f1).
-- Plan status and readiness: Approved 2026-06-11; T1 `Ready`.
-- Validation and self-review state: not started.
-- Coordinator reconciliation state: not started.
-- Changelog, docs, spec, roadmap, or plan updates: `ROADMAP.md` Release Context `Active product plans` now references this plan.
+- Current task or wave: complete; all packets done.
+- Completed commits: ee46d49, 4a5661b, a4f3a41, cb4f60b, acd2ee9, 515789a, plus the closeout docs commit.
+- Plan status and readiness: Closed (Released) 2026-06-11.
+- Validation and self-review state: full baseline, a11y, and authenticated smoke green per packet result summaries.
+- Coordinator reconciliation state: each packet's diff matched its result summary; two recorded scope extensions (locale pinning in browser scripts, `subscribeToAccountValues` in `useCurrentAccount.ts`).
+- Changelog, docs, spec, roadmap, or plan updates: `CHANGELOG.md` Unreleased entries, `docs/DESIGN.md` UI-language bullet, `ROADMAP.md` milestone removal and Release Context update, `docs/ROADMAP_ARCHIVE.md` M-I18N-001 section.
 - Blockers or open questions: none.
-- Next action: execute T1-language-resolution when the user authorizes plan implementation.
+- Next action: none; production catalog content seeding remains a content task outside this plan.
 - Context handoff notes: none.
 
 ## Execution Graph
