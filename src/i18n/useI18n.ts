@@ -15,14 +15,24 @@ export type UiTranslate = (
 ) => string
 
 export type I18nContextValue = {
+  // Drops the remembered account preference and re-resolves; logout calls
+  // this so an anonymous visitor is not pinned to the previous account's
+  // language.
+  clearAccountPreference: () => void
   language: SupportedLocalizationLanguage
+  // Re-runs language resolution against the current account preference,
+  // cookie, and browser locale; anonymous selection calls this after
+  // writing the backend `language` cookie.
+  refreshLanguage: () => void
   t: UiTranslate
 }
 
 // Without a mounted provider (isolated component renders and tests), lookups
 // return the English defaults so chrome never breaks on missing context.
 const DEFAULT_CONTEXT_VALUE: I18nContextValue = {
+  clearAccountPreference: () => undefined,
   language: FALLBACK_LANGUAGE,
+  refreshLanguage: () => undefined,
   t: (key, params) => formatUiMessage(UI_MESSAGES[key], params),
 }
 

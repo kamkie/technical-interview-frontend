@@ -109,6 +109,21 @@ describe('App', () => {
     ).toBeInTheDocument()
   })
 
+  it('persists anonymous language selection in the backend language cookie', async () => {
+    mockAppFetch({
+      session: createSession(),
+    })
+
+    renderApp()
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: /language preference/i }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Polish' }))
+
+    expect(document.cookie).toContain('language=pl')
+  })
+
   it('bootstraps the browser session and keeps diagnostics in session details', async () => {
     const githubAuthorizationPath = '/api/session/from-metadata/primary-provider'
     const smokeAuthorizationPath = '/api/session/from-metadata/fake-provider'

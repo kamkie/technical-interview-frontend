@@ -51,6 +51,7 @@ import { hasAdminRole } from './auth/roles'
 import { CatalogPanel } from './catalog/CatalogPanel'
 import { CATALOG_ROUTE_PATH } from './catalog/catalogQuery'
 import type { UiMessageKey } from './i18n/messages'
+import { LANGUAGE_COOKIE_NAME } from './i18n/resolveLanguage'
 import { useI18n } from './i18n/useI18n'
 import {
   OPERATOR_DIAGNOSTICS_ROUTE_PATH,
@@ -234,7 +235,7 @@ function useDismissibleMenu() {
 }
 
 export function App() {
-  const { t } = useI18n()
+  const { clearAccountPreference, t } = useI18n()
   const { refreshSession, sessionState } = useSessionBootstrap()
   const isAdmin = useAdminVisibility(sessionState)
   const routeContext = useRouteContext()
@@ -253,6 +254,7 @@ export function App() {
     try {
       await logoutCurrentSession(session)
       await refreshSession()
+      clearAccountPreference()
       setLogoutState({ status: 'idle' })
     } catch (error: unknown) {
       setLogoutState({
@@ -278,9 +280,12 @@ export function App() {
           <ShellNavigation authenticated={authenticated} isAdmin={isAdmin} />
         </div>
         <div className="topbar-actions">
-          {authenticated && sessionState.status === 'ready' && (
-            <QuickLanguageMenu session={sessionState.session} />
-          )}
+          {sessionState.status === 'ready' &&
+            (authenticated ? (
+              <QuickLanguageMenu session={sessionState.session} />
+            ) : (
+              <AnonymousLanguageMenu />
+            ))}
           <ThemePreferenceControl
             preference={preference}
             resolvedTheme={resolvedTheme}
@@ -583,6 +588,83 @@ function QuickLanguageMenu({ session }: { session: SessionResponse }) {
               {updateState.message}
             </p>
           )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// The values come from the fixed LANGUAGE_OPTIONS list, so the cookie write
+// needs no encoding; one year keeps the anonymous choice across visits.
+function persistAnonymousLanguageCookie(value: string) {
+  document.cookie = `${LANGUAGE_COOKIE_NAME}=${value}; path=/; max-age=31536000; SameSite=Lax`
+}
+
+// Anonymous visitors choose the UI language by writing the backend `language`
+// negotiation cookie, so the rendered chrome and backend payloads agree
+// before any account exists. The signed-in shortcut stays preference-backed.
+function AnonymousLanguageMenu() {
+  const { language, refreshLanguage, t } = useI18n()
+  const { containerRef, open, setOpen } = useDismissibleMenu()
+  const currentOption =
+    LANGUAGE_OPTIONS.find((option) => option.value === language) ?? null
+  const CurrentFlag = currentOption ? LANGUAGE_FLAGS[currentOption.value] : null
+  const panelId = 'language-menu-panel'
+
+  function selectLanguage(value: string) {
+    persistAnonymousLanguageCookie(value)
+    refreshLanguage()
+    setOpen(false)
+  }
+
+  return (
+    <div className="nav-menu language-menu" ref={containerRef}>
+      <button
+        aria-controls={panelId}
+        aria-expanded={open}
+        aria-label={t('ui.language.menu-label', {
+          label: currentOption
+            ? t(`ui.language.${currentOption.value}`)
+            : t('ui.language.no-preference-inline'),
+        })}
+        className="nav-menu-button language-menu-button"
+        id="language-menu-trigger"
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+      >
+        {CurrentFlag ? (
+          <CurrentFlag className="language-flag" />
+        ) : (
+          <IconGlobe height={14} width={14} />
+        )}
+        <span className="language-code">
+          {currentOption ? currentOption.value.toUpperCase() : '–'}
+        </span>
+        <IconChevronDown className="menu-caret" height={14} width={14} />
+      </button>
+      {open && (
+        <div
+          aria-labelledby="language-menu-trigger"
+          className="nav-menu-panel language-menu-panel"
+          id={panelId}
+          role="group"
+        >
+          {LANGUAGE_OPTIONS.map((option) => {
+            const Flag = LANGUAGE_FLAGS[option.value]
+
+            return (
+              <button
+                aria-current={option.value === language || undefined}
+                className="language-option-button"
+                key={option.value}
+                type="button"
+                onClick={() => selectLanguage(option.value)}
+              >
+                <Flag className="language-flag" />
+                <span>{t(`ui.language.${option.value}`)}</span>
+              </button>
+            )
+          })}
         </div>
       )}
     </div>

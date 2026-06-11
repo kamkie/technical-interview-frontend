@@ -13,6 +13,7 @@ type AccountRequest = {
 
 let activeRequest: AccountRequest | null = null
 const accountUpdateListeners = new Set<() => void>()
+const accountValueListeners = new Set<(account: UserAccount) => void>()
 
 // Account mutations publish their response here so every mounted consumer
 // (topbar menus, admin gates) re-reads the fresh account instead of the
@@ -29,6 +30,26 @@ export function publishAccountUpdate(
   for (const listener of [...accountUpdateListeners]) {
     listener()
   }
+
+  notifyAccountValue(account)
+}
+
+// Value subscribers (the i18n provider) receive every resolved account —
+// initial loads and published mutations — without needing a session prop.
+export function subscribeToAccountValues(
+  listener: (account: UserAccount) => void,
+) {
+  accountValueListeners.add(listener)
+
+  return () => {
+    accountValueListeners.delete(listener)
+  }
+}
+
+function notifyAccountValue(account: UserAccount) {
+  for (const listener of [...accountValueListeners]) {
+    listener(account)
+  }
 }
 
 function loadCurrentAccount(session: SessionResponse) {
@@ -39,13 +60,19 @@ function loadCurrentAccount(session: SessionResponse) {
     }
 
     activeRequest = request
-    request.promise.catch(() => {
-      // Failures are not cached, so the next consumer mount or refresh
-      // retries instead of hiding role-gated UI for the whole session.
-      if (activeRequest === request) {
-        activeRequest = null
-      }
-    })
+    request.promise
+      .then((account) => {
+        if (activeRequest === request) {
+          notifyAccountValue(account)
+        }
+      })
+      .catch(() => {
+        // Failures are not cached, so the next consumer mount or refresh
+        // retries instead of hiding role-gated UI for the whole session.
+        if (activeRequest === request) {
+          activeRequest = null
+        }
+      })
   }
 
   return activeRequest.promise

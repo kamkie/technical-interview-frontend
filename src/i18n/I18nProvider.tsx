@@ -1,5 +1,13 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
 
+import { subscribeToAccountValues } from '../account/useCurrentAccount'
 import { setActiveRequestLanguage } from '../api/http'
 import type { SupportedLocalizationLanguage } from '../api/localizations'
 import { loadUiCatalog, type UiCatalog } from './catalog'
@@ -8,7 +16,7 @@ import { resolveLanguage } from './resolveLanguage'
 import { I18nContext, type I18nContextValue, type UiTranslate } from './useI18n'
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [language] = useState<SupportedLocalizationLanguage>(() => {
+  const [language, setLanguage] = useState<SupportedLocalizationLanguage>(() => {
     const resolved = resolveLanguage({
       cookieSource: typeof document === 'undefined' ? '' : document.cookie,
       browserLanguages:
@@ -22,6 +30,37 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     return resolved
   })
   const [catalog, setCatalog] = useState<UiCatalog | null>(null)
+  // The latest account preference seen on this session, so cookie or browser
+  // changes re-resolve below the preference tier instead of replacing it.
+  const accountPreferenceRef = useRef<string | undefined>(undefined)
+
+  const refreshLanguage = useCallback(() => {
+    setLanguage(
+      resolveLanguage({
+        accountPreferredLanguage: accountPreferenceRef.current,
+        cookieSource: typeof document === 'undefined' ? '' : document.cookie,
+        browserLanguages:
+          typeof navigator === 'undefined' ? [] : navigator.languages,
+      }),
+    )
+  }, [])
+
+  const clearAccountPreference = useCallback(() => {
+    accountPreferenceRef.current = undefined
+    refreshLanguage()
+  }, [refreshLanguage])
+
+  // Account loads and preference mutations re-resolve the language in the
+  // same session; a language change refetches the catalog via the effect
+  // below and re-renders the chrome.
+  useEffect(
+    () =>
+      subscribeToAccountValues((account) => {
+        accountPreferenceRef.current = account.preferredLanguage
+        refreshLanguage()
+      }),
+    [refreshLanguage],
+  )
 
   useEffect(() => {
     setActiveRequestLanguage(language)
@@ -53,7 +92,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       formatUiMessage(catalog?.get(key) ?? UI_MESSAGES[key], params),
     [catalog],
   )
-  const value = useMemo<I18nContextValue>(() => ({ language, t }), [language, t])
+  const value = useMemo<I18nContextValue>(
+    () => ({ clearAccountPreference, language, refreshLanguage, t }),
+    [clearAccountPreference, language, refreshLanguage, t],
+  )
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>
 }

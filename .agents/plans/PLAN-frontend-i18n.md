@@ -100,7 +100,7 @@ All resolved by the user on 2026-06-11 ("take the recommendations"):
 | T3-catalog-provider    | Complete | Coordinator | T1         | 2026-06-11   | T-I18N-003; catalog load + provider   |
 | T4-shell-chrome        | Complete | Coordinator | T3         | 2026-06-11   | T-I18N-004; shell, nav, shared ui     |
 | T5-page-chrome         | Complete | Coordinator | T4         | 2026-06-11   | T-I18N-004; catalog, account, admin   |
-| T6-language-switch     | Ready    | Coordinator | T5         | 2026-06-11   | T-I18N-005; same-session switch, anon |
+| T6-language-switch     | Complete | Coordinator | T5         | 2026-06-11   | T-I18N-005; same-session switch, anon |
 
 T1 is `Ready`; later packets promote to `Ready` as their predecessors land per the dependency order.
 
@@ -408,7 +408,15 @@ Expected output:
 
 Result summary:
 
-- Status: pending
+- Status: Complete (2026-06-11)
+- Worker: session agent (direct execution mode)
+- Changed files: `src/i18n/I18nProvider.tsx` (account-value subscription, `refreshLanguage`, `clearAccountPreference`), `src/i18n/useI18n.ts` (context surface), `src/App.tsx` (anonymous topbar language menu writing the `language` cookie per Open Question 1, logout clears the remembered preference), `src/i18n/I18nProvider.test.tsx` and `src/App.test.tsx` (4 new tests). Scope extension recorded: `src/account/useCurrentAccount.ts` gained `subscribeToAccountValues` so the provider hears initial account loads and published preference mutations without a session prop (the packet goal names this channel; the file was missing from the write scope).
+- Validation: full baseline green (lint, typecheck, `npm test` 234 passed, build, `git diff --check`); `npm run smoke:authenticated` PASSED (10 passed, 0 skipped); `npm run a11y` PASSED (5 passed) after the anonymous menu landed. Mock-browser evidence via `preview_eval`: account preference beats the `language` cookie at boot; selecting Polish from the signed-in menu re-rendered the chrome Polish in-session; after logout, anonymous German selection wrote `language=de` and re-rendered seeded German chrome with English fallback for unseeded keys; re-login applied the account preference tier over the cookie.
+- Self-review: a real defect was found in browser verification — after logout the provider's remembered account preference outranked anonymous cookie selection; fixed with `clearAccountPreference` on logout plus a regression test. Security review for the cookie write: the value comes from the fixed `LANGUAGE_OPTIONS` literal union (no user-controlled string), constant cookie name, `Path=/; Max-Age=31536000; SameSite=Lax`; no `Secure` flag because the cookie is a non-sensitive UI preference and a `Secure` write would silently fail in http dev; auth, session, and CSRF handling untouched.
+- Commit: see checkpoint below.
+- Blockers: none.
+- Review risks: the anonymous menu duplicates the signed-in menu's markup (~50 lines) rather than extracting a shared shell; acceptable for now, candidate for a later cleanup.
+- Handoff: milestone implementation complete; closeout updates `CHANGELOG.md`, `docs/DESIGN.md`, `ROADMAP.md`, and this plan.
 
 ## Execution Model
 

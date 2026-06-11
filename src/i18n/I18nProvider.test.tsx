@@ -1,8 +1,11 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+import { publishAccountUpdate } from '../account/useCurrentAccount'
+import type { UserAccount } from '../api/account'
 import { getActiveRequestLanguage, setActiveRequestLanguage } from '../api/http'
 import { LOCALIZATIONS_PATH } from '../api/localizations'
+import type { SessionResponse } from '../api/session'
 import { I18nProvider } from './I18nProvider'
 import { useI18n } from './useI18n'
 
@@ -14,13 +17,19 @@ afterEach(() => {
 })
 
 function Probe() {
-  const { language, t } = useI18n()
+  const { clearAccountPreference, language, refreshLanguage, t } = useI18n()
 
   return (
     <div>
       <span data-testid="language">{language}</span>
       <span data-testid="brand">{t('ui.shell.brand')}</span>
       <span data-testid="catalog-link">{t('ui.nav.catalog')}</span>
+      <button type="button" onClick={refreshLanguage}>
+        refresh-language
+      </button>
+      <button type="button" onClick={clearAccountPreference}>
+        clear-account-preference
+      </button>
     </div>
   )
 }
@@ -100,4 +109,139 @@ describe('I18nProvider', () => {
     expect(screen.getByTestId('language')).toHaveTextContent('en')
     expect(screen.getByTestId('brand')).toHaveTextContent('Library Console')
   })
+
+  it('re-resolves and reloads the catalog when the account preference arrives', async () => {
+    const fetchMock = vi.fn().mockImplementation((input: RequestInfo | URL) =>
+      Promise.resolve(
+        Response.json({
+          content: String(input).includes('language=pl')
+            ? [
+                {
+                  id: 1,
+                  messageKey: 'ui.shell.brand',
+                  language: 'pl',
+                  messageText: 'Konsola Biblioteki',
+                },
+              ]
+            : [],
+          number: 0,
+          size: 200,
+          totalElements: 1,
+          totalPages: 1,
+          first: true,
+          last: true,
+        }),
+      ),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <I18nProvider>
+        <Probe />
+      </I18nProvider>,
+    )
+
+    expect(screen.getByTestId('language')).toHaveTextContent('en')
+
+    act(() => {
+      publishAccountUpdate(createSession(), createAccount('pl'))
+    })
+
+    expect(screen.getByTestId('language')).toHaveTextContent('pl')
+    expect(getActiveRequestLanguage()).toBe('pl')
+
+    await waitFor(() => {
+      expect(screen.getByTestId('brand')).toHaveTextContent('Konsola Biblioteki')
+    })
+    expect(document.documentElement.lang).toBe('pl')
+  })
+
+  it('re-resolves from the language cookie when refreshLanguage runs', async () => {
+    const fetchMock = vi.fn().mockImplementation(() =>
+      Promise.resolve(
+        Response.json({
+          content: [],
+          number: 0,
+          size: 200,
+          totalElements: 0,
+          totalPages: 0,
+          first: true,
+          last: true,
+        }),
+      ),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <I18nProvider>
+        <Probe />
+      </I18nProvider>,
+    )
+
+    expect(screen.getByTestId('language')).toHaveTextContent('en')
+
+    document.cookie = 'language=de; path=/'
+    act(() => {
+      screen.getByRole('button', { name: 'refresh-language' }).click()
+    })
+
+    expect(screen.getByTestId('language')).toHaveTextContent('de')
+    expect(getActiveRequestLanguage()).toBe('de')
+    await waitFor(() => {
+      const paths = fetchMock.mock.calls.map(([input]) => String(input))
+
+      expect(paths.some((path) => path.includes('language=de'))).toBe(true)
+    })
+  })
+
+  it('drops the account preference on clear so anonymous selection wins', () => {
+    const fetchMock = vi.fn().mockImplementation(() =>
+      Promise.resolve(
+        Response.json({
+          content: [],
+          number: 0,
+          size: 200,
+          totalElements: 0,
+          totalPages: 0,
+          first: true,
+          last: true,
+        }),
+      ),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <I18nProvider>
+        <Probe />
+      </I18nProvider>,
+    )
+
+    act(() => {
+      publishAccountUpdate(createSession(), createAccount('pl'))
+    })
+    expect(screen.getByTestId('language')).toHaveTextContent('pl')
+
+    // Logout clears the remembered preference; the cookie tier wins again.
+    document.cookie = 'language=de; path=/'
+    act(() => {
+      screen.getByRole('button', { name: 'clear-account-preference' }).click()
+    })
+
+    expect(screen.getByTestId('language')).toHaveTextContent('de')
+    expect(getActiveRequestLanguage()).toBe('de')
+  })
 })
+
+function createSession(): SessionResponse {
+  return {
+    authenticated: true,
+  }
+}
+
+function createAccount(preferredLanguage: string): UserAccount {
+  return {
+    id: 42,
+    login: 'kamkie',
+    preferredLanguage,
+  }
+}
