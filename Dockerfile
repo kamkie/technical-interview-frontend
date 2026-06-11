@@ -14,9 +14,9 @@ COPY docs/backend ./docs/backend
 COPY src ./src
 RUN npm run build
 
-FROM nginxinc/nginx-unprivileged:1.31-alpine
+FROM nginxinc/nginx-unprivileged:1.31-alpine@sha256:85bcbc6b2edd325462560c597d784ecee415024f1c6a004e53ac5f202b8ca561
 
-# CVE-2026-45447: base image ships openssl 3.5.6-r0; remove once upstream rebuilds with 3.5.7-r0.
+# CVE-2026-45447: base image ships openssl 3.5.6-r0; remove the upgrade once a digest bump brings 3.5.7-r0.
 USER root
 RUN apk upgrade --no-cache libcrypto3 libssl3
 USER nginx

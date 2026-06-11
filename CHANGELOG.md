@@ -4,6 +4,10 @@ This project follows Keep a Changelog style. Release entries stay under `Unrelea
 
 ## [Unreleased]
 
+### Changed
+
+- The release image now pins its runtime Nginx base by digest so weekly Dependabot digest-bump pull requests signal upstream rebuilds, including the rebuild that allows removing the OpenSSL CVE-2026-45447 package upgrade.
+
 ## [0.4.0] - 2026-06-11
 
 ### Added
