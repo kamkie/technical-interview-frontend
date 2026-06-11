@@ -87,6 +87,14 @@ Scope: `M-SMOKE-001` responsive layout and smoke evidence.
 
 ## Completed Milestones
 
+### M-USERS-001: Admin Account Block And Unblock
+
+Labels: `type:milestone`, `status:done`
+
+Goal: Surface account status on the admin user administration page and add a block/unblock control with a required operator reason beside role replacement, backed by `PUT /api/admin/users/{id}/status` from the imported contract artifacts under `docs/backend/` (refreshed 2026-06-11 from backend commit `0640891`). Behavior detail is owned by `docs/specs/SPEC_admin_user_management.md`.
+
+Completion evidence: Delivered 2026-06-11 on `main` in commit `332d15b` after the contract refresh `ea68377`; unreleased pending the next release candidate. Full baseline green; the users list renders a status column and client-side status filter, blocked-account detail shows block provenance, status replacement requires an operator reason, the control stays disabled for the signed-in administrator's own account, and the mock API implements the status route with a seeded blocked user.
+
 ### M-I18N-001: Frontend Internationalization
 
 Labels: `type:milestone`, `status:done`

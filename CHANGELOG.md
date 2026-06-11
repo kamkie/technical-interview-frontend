@@ -6,12 +6,14 @@ This project follows Keep a Changelog style. Release entries stay under `Unrelea
 
 ### Added
 
+- Added admin account block and unblock: the user administration list and inline detail surface each account's status with a client-side status filter, blocked accounts show block provenance, and administrators can block or unblock an account with a required operator reason beside role replacement, backed by the contract `PUT /api/admin/users/{id}/status`; the control stays disabled for the signed-in administrator's own account because the backend rejects self-targeting.
 - Added frontend internationalization: the UI renders in the user's resolved language (account preference, then the backend `language` cookie, then browser locale, restricted to backend-supported languages with English fallback), loads chrome strings from the public backend localization catalog, and applies language changes from the account preference control or a new anonymous topbar language selector within the same session.
 
 ### Changed
 
 - API requests now carry the resolved UI language as `Accept-Language`, replacing the raw browser-list pass-through on reads, so localized backend payloads match the rendered language.
 - Mock API mode now seeds Polish frontend chrome translations plus a partial German set so localized rendering and English fallback are demonstrable without the sibling backend.
+- Mock API mode now implements the admin account-status route and seeds a blocked user so the block/unblock workflow is demonstrable without the sibling backend.
 
 ## [0.3.1] - 2026-06-09
 
