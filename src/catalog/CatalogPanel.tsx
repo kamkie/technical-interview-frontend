@@ -8,6 +8,7 @@ import {
   type BookPage,
   type Category,
 } from '../api/catalog'
+import { useI18n, type UiTranslate } from '../i18n/useI18n'
 import { getDisplayMessage, type LoadState } from '../ui/asyncState'
 import { PaginationControls } from '../ui/PaginationControls'
 import { SortableColumnHeader } from '../ui/SortableColumnHeader'
@@ -31,6 +32,7 @@ import {
 const LIVE_FILTER_DEBOUNCE_MS = 300
 
 export function CatalogPanel() {
+  const { t } = useI18n()
   const [searchParams, setSearchParams] = useSearchParams()
   const currentSearch = searchParams.toString()
   const canonicalSearch = useMemo(
@@ -233,15 +235,15 @@ export function CatalogPanel() {
   }
 
   return (
-    <section className="catalog-panel" aria-label="Book catalog">
+    <section className="catalog-panel" aria-label={t('ui.catalog.panel-label')}>
       <div className="list-card">
         <form
-          aria-label="Catalog filters"
+          aria-label={t('ui.catalog.filters-label')}
           className="catalog-filters"
           onSubmit={handleFilterSubmit}
         >
           <label>
-            <span>Title</span>
+            <span>{t('ui.catalog.title')}</span>
             <input
               name="title"
               type="search"
@@ -250,7 +252,7 @@ export function CatalogPanel() {
             />
           </label>
           <label>
-            <span>Author</span>
+            <span>{t('ui.catalog.author')}</span>
             <input
               name="author"
               type="search"
@@ -259,7 +261,7 @@ export function CatalogPanel() {
             />
           </label>
           <label>
-            <span>ISBN</span>
+            <span>{t('ui.catalog.isbn')}</span>
             <input
               name="isbn"
               type="search"
@@ -269,9 +271,9 @@ export function CatalogPanel() {
           </label>
         </form>
 
-        <div className="catalog-toolbar" aria-label="Catalog table controls">
+        <div className="catalog-toolbar" aria-label={t('ui.catalog.toolbar-label')}>
           <CategoryFilter
-            ariaLabel="Category filters"
+            ariaLabel={t('ui.catalog.category-filters-label')}
             categories={categories}
             categoriesState={categoriesState}
             selectedCategories={query.categories}
@@ -283,13 +285,13 @@ export function CatalogPanel() {
               // dedicated status line, so the toolbar-to-table gap stays tight.
               <span aria-live="polite" className="toolbar-summary">
                 {isFetchingBooks
-                  ? 'Updating results…'
-                  : formatBookWindow(booksState.value, query)}
+                  ? t('ui.common.updating-results')
+                  : formatBookWindow(t, booksState.value, query)}
               </span>
             )}
             {booksState.status === 'ready' && (
               <ToolbarPagination
-                ariaLabel="Book pagination top"
+                ariaLabel={t('ui.catalog.pagination-top-label')}
                 disabled={isFetchingBooks}
                 page={booksState.value}
                 query={query}
@@ -303,8 +305,8 @@ export function CatalogPanel() {
 
         {booksState.status === 'loading' && (
           <StateBlock
-            message="Loading books..."
-            title="Loading catalog results"
+            message={t('ui.catalog.loading-message')}
+            title={t('ui.catalog.loading-title')}
             variant="loading"
           />
         )}
@@ -312,7 +314,7 @@ export function CatalogPanel() {
         {booksState.status === 'error' && (
           <StateBlock
             message={booksState.message}
-            title="Books could not be displayed"
+            title={t('ui.catalog.error-title')}
             variant="error"
           />
         )}
@@ -409,6 +411,7 @@ function BookResults({
   page: BookPage
   query: CatalogQueryState
 }) {
+  const { t } = useI18n()
   const books = page.content ?? []
   const pageNumber = page.number ?? query.page
   const totalPages = page.totalPages ?? 0
@@ -419,9 +422,9 @@ function BookResults({
   if (books.length === 0) {
     return (
       <div className="book-results">
-        <StateBlock title="No catalog results" variant="empty">
+        <StateBlock title={t('ui.catalog.empty-title')} variant="empty">
           <StateMessage variant="empty">
-            No books match these filters.
+            {t('ui.catalog.empty-message')}
           </StateMessage>
           {hasActiveQuery && (
             <button
@@ -429,12 +432,12 @@ function BookResults({
               type="button"
               onClick={onClearFilters}
             >
-              Clear filters
+              {t('ui.common.clear-filters')}
             </button>
           )}
         </StateBlock>
         <PaginationControls
-          ariaLabel="Book pagination"
+          ariaLabel={t('ui.catalog.pagination-label')}
           disabled={busy}
           pageNumber={pageNumber}
           querySize={query.size}
@@ -455,41 +458,41 @@ function BookResults({
     <div className="book-results">
       <div
         aria-busy={busy || undefined}
-        aria-label="Scrollable public books table"
+        aria-label={t('ui.catalog.table-region-label')}
         className="catalog-table-scroll"
         role="region"
         tabIndex={0}
       >
         <table className="catalog-table public-books-table">
-          <caption className="visually-hidden">Public books</caption>
+          <caption className="visually-hidden">{t('ui.catalog.table-caption')}</caption>
           <thead>
             <tr>
               <SortableColumnHeader
                 field="title"
-                label="Title"
+                label={t('ui.catalog.title')}
                 query={query}
                 onSortByField={onSortByField}
               />
               <SortableColumnHeader
                 field="author"
-                label="Author"
+                label={t('ui.catalog.author')}
                 query={query}
                 onSortByField={onSortByField}
               />
               <SortableColumnHeader
                 field="publicationYear"
-                label="Publication year"
+                label={t('ui.catalog.publication-year')}
                 query={query}
                 onSortByField={onSortByField}
               />
               <SortableColumnHeader
                 field="isbn"
-                label="ISBN"
+                label={t('ui.catalog.isbn')}
                 query={query}
                 onSortByField={onSortByField}
               />
               <th className="plain-column-header" scope="col">
-                Categories
+                {t('ui.catalog.categories')}
               </th>
             </tr>
           </thead>
@@ -505,7 +508,7 @@ function BookResults({
       </div>
 
       <PaginationControls
-        ariaLabel="Book pagination"
+        ariaLabel={t('ui.catalog.pagination-label')}
         disabled={busy}
         pageNumber={pageNumber}
         querySize={query.size}
@@ -523,27 +526,28 @@ function BookResults({
 }
 
 function BookTableRow({ book }: { book: Book }) {
+  const { t } = useI18n()
   const categories = (book.categories ?? [])
     .map((category) => category.name)
     .filter(Boolean)
 
   return (
     <tr>
-      <th scope="row">{book.title ?? 'Untitled book'}</th>
-      <td>{book.author ?? 'Unknown author'}</td>
-      <td>{book.publicationYear ?? 'Unknown'}</td>
-      <td>{book.isbn ?? 'Unknown'}</td>
-      <td>{categories.length > 0 ? categories.join(', ') : 'None'}</td>
+      <th scope="row">{book.title ?? t('ui.catalog.untitled-book')}</th>
+      <td>{book.author ?? t('ui.catalog.unknown-author')}</td>
+      <td>{book.publicationYear ?? t('ui.common.unknown')}</td>
+      <td>{book.isbn ?? t('ui.common.unknown')}</td>
+      <td>{categories.length > 0 ? categories.join(', ') : t('ui.common.none')}</td>
     </tr>
   )
 }
 
-function formatBookWindow(page: BookPage, query: CatalogQueryState) {
+function formatBookWindow(t: UiTranslate, page: BookPage, query: CatalogQueryState) {
   const totalElements = page.totalElements ?? 0
   const numberOfElements = page.numberOfElements ?? page.content?.length ?? 0
 
   if (totalElements <= 0 || numberOfElements <= 0) {
-    return formatBookCount(totalElements)
+    return formatBookCount(t, totalElements)
   }
 
   const pageNumber = page.number ?? query.page
@@ -551,11 +555,18 @@ function formatBookWindow(page: BookPage, query: CatalogQueryState) {
   const start = pageNumber * pageSize + 1
   const end = Math.min(start + numberOfElements - 1, totalElements)
 
-  return `Showing ${start}-${end} of ${formatBookCount(totalElements)}`
+  return t('ui.common.window-summary', {
+    start,
+    end,
+    total: formatBookCount(t, totalElements),
+  })
 }
 
-function formatBookCount(count: number) {
-  return `${count} ${count === 1 ? 'book' : 'books'}`
+function formatBookCount(t: UiTranslate, count: number) {
+  return t(
+    count === 1 ? 'ui.catalog.book-count-one' : 'ui.catalog.book-count-many',
+    { count },
+  )
 }
 
 function createFilterDraftKey(draft: CatalogFilterDraft) {

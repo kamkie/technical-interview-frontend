@@ -21,6 +21,7 @@ import {
 } from '../api/localizations'
 import type { SessionResponse } from '../api/session'
 import { hasAdminRole } from '../auth/roles'
+import { useI18n, type UiTranslate } from '../i18n/useI18n'
 import {
   appendRepeatedParams,
   appendStringParam,
@@ -29,7 +30,6 @@ import {
   uniqueTrimmedValues,
 } from '../routing/queryParams'
 import {
-  formatLoadStatus,
   getDisplayMessage,
   type LoadState,
   type MutationState,
@@ -79,17 +79,18 @@ type LocalizationFormDraft = {
 }
 
 export function AdminLocalizationPage({ session }: { session: SessionResponse }) {
+  const { t } = useI18n()
   const accountState = useCurrentAccount(session)
 
   return (
     <section
       className="admin-localization-panel"
-      aria-label="Localization administration"
+      aria-label={t('ui.admin-localization.panel-label')}
     >
       {accountState.status === 'loading' && (
         <StateBlock
-          message="Loading admin access..."
-          title="Checking admin access"
+          message={t('ui.admin.access-loading-message')}
+          title={t('ui.admin.access-loading-title')}
           variant="loading"
         />
       )}
@@ -97,7 +98,7 @@ export function AdminLocalizationPage({ session }: { session: SessionResponse })
       {accountState.status === 'error' && (
         <StateBlock
           message={accountState.message}
-          title="Admin access unavailable"
+          title={t('ui.admin.access-error-title')}
           variant="error"
         />
       )}
@@ -107,8 +108,8 @@ export function AdminLocalizationPage({ session }: { session: SessionResponse })
           <AdminLocalizationManager session={session} />
         ) : (
           <StateBlock
-            message="Admin access is required for localization management."
-            title="Admin role required"
+            message={t('ui.admin-localization.access-message')}
+            title={t('ui.admin.role-required-title')}
             variant="error"
           />
         ))}
@@ -117,6 +118,7 @@ export function AdminLocalizationPage({ session }: { session: SessionResponse })
 }
 
 function AdminLocalizationManager({ session }: { session: SessionResponse }) {
+  const { t } = useI18n()
   const [formFocusToken, setFormFocusToken] = useState(0)
   const handledFormFocusTokenRef = useRef(0)
   const [searchParams, setSearchParams] = useSearchParams()
@@ -357,7 +359,7 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
     } catch (error: unknown) {
       setMutationState({
         status: 'error',
-        message: getDisplayMessage(error, 'Localization row could not be loaded.'),
+        message: getDisplayMessage(error, t('ui.admin-localization.row-load-failed')),
       })
     }
   }
@@ -379,7 +381,7 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
         setFormDraft(createLocalizationDraft(updatedLocalization))
         setMutationState({
           status: 'success',
-          message: 'Localization updated.',
+          message: t('ui.admin-localization.updated-success'),
         })
         refreshLocalizations()
       } else {
@@ -393,14 +395,14 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
         )
         setMutationState({
           status: 'success',
-          message: 'Localization created.',
+          message: t('ui.admin-localization.created-success'),
         })
         refreshLocalizations()
       }
     } catch (error: unknown) {
       setMutationState({
         status: 'error',
-        message: getDisplayMessage(error, 'Localization row could not be saved.'),
+        message: getDisplayMessage(error, t('ui.admin-localization.row-save-failed')),
       })
     }
   }
@@ -449,13 +451,13 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
 
       setMutationState({
         status: 'success',
-        message: 'Localization deleted.',
+        message: t('ui.admin-localization.deleted-success'),
       })
       refreshLocalizations()
     } catch (error: unknown) {
       setMutationState({
         status: 'error',
-        message: getDisplayMessage(error, 'Localization row could not be deleted.'),
+        message: getDisplayMessage(error, t('ui.admin-localization.row-delete-failed')),
       })
     }
   }
@@ -497,12 +499,21 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
         >
           <div className="workflow-group-heading">
             <div>
-              <h2 id="localization-coverage-title">Locale coverage</h2>
+              <h2 id="localization-coverage-title">
+                {t('ui.admin-localization.coverage-title')}
+              </h2>
             </div>
             <div className="section-actions">
               <span className="coverage-stats">
-                {coverage.length} {coverage.length === 1 ? 'key' : 'keys'} ·{' '}
-                {missingLocaleCount} missing
+                {t('ui.admin-localization.coverage-stats', {
+                  keys: t(
+                    coverage.length === 1
+                      ? 'ui.admin-localization.key-count-one'
+                      : 'ui.admin-localization.key-count-many',
+                    { count: coverage.length },
+                  ),
+                  missing: missingLocaleCount,
+                })}
               </span>
               <button
                 type="button"
@@ -510,7 +521,9 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
                 className="secondary-button compact-action"
                 onClick={toggleCoverageHidden}
               >
-                {coverageHidden ? 'Show coverage' : 'Hide coverage'}
+                {coverageHidden
+                  ? t('ui.admin-localization.show-coverage')
+                  : t('ui.admin-localization.hide-coverage')}
               </button>
             </div>
           </div>
@@ -519,8 +532,7 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
             <>
               {coverageViewPartial && (
                 <p className="session-message muted">
-                  Coverage reflects only the visible rows. Narrow by message
-                  key without a language filter to add missing locales here.
+                  {t('ui.admin-localization.coverage-partial-hint')}
                 </p>
               )}
               <LocalizationCoverageTable
@@ -536,7 +548,9 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
       <section className="admin-section" aria-labelledby="localization-list-title">
         <div className="admin-section-heading">
           <div>
-            <h2 id="localization-list-title">Localization rows</h2>
+            <h2 id="localization-list-title">
+              {t('ui.admin-localization.rows-title')}
+            </h2>
           </div>
           <div className="section-actions">
             <button
@@ -548,15 +562,15 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
               className="compact-action"
               onClick={() => startCreate()}
             >
-              New localization
+              {t('ui.admin-localization.new-localization')}
             </button>
             <button
               type="button"
-              aria-label="Refresh localizations"
+              aria-label={t('ui.admin-localization.refresh-label')}
               className="secondary-button compact-action"
               onClick={refreshLocalizations}
             >
-              Refresh
+              {t('ui.common.refresh')}
             </button>
           </div>
         </div>
@@ -565,7 +579,7 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
 
         {formMode.type === 'create' && (
           <div
-            aria-label="Create localization panel"
+            aria-label={t('ui.admin-localization.create-panel-label')}
             className="workflow-group"
             id="localization-create-panel"
           >
@@ -582,12 +596,12 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
 
         <div className="list-card">
           <form
-            aria-label="Localization filters"
+            aria-label={t('ui.admin-localization.filters-label')}
             className="localization-filters"
             onSubmit={handleFilterSubmit}
           >
             <label>
-              <span>Message key</span>
+              <span>{t('ui.admin-localization.message-key')}</span>
               <input
                 name="messageKey"
                 type="search"
@@ -598,7 +612,7 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
               />
             </label>
             <label>
-              <span>Language</span>
+              <span>{t('ui.admin-localization.language')}</span>
               <select
                 name="language"
                 value={filterDraft.language}
@@ -606,7 +620,7 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
                   updateFilterDraft({ language: event.currentTarget.value })
                 }
               >
-                <option value="">All languages</option>
+                <option value="">{t('ui.admin-localization.all-languages')}</option>
                 {SUPPORTED_LOCALIZATION_LANGUAGES.map((language) => (
                   <option key={language} value={language}>
                     {language}
@@ -618,15 +632,15 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
 
           <div
             className="catalog-toolbar"
-            aria-label="Localization table controls"
+            aria-label={t('ui.admin-localization.toolbar-label')}
           >
             <div className="catalog-toolbar-status">
               <span aria-live="polite" className="toolbar-summary">
-                {formatLocalizationSummary(localizationsState)}
+                {formatLocalizationSummary(t, localizationsState)}
               </span>
               {localizationsState.status === 'ready' && (
                 <PaginationControls
-                  ariaLabel="Localization pagination top"
+                  ariaLabel={t('ui.admin-localization.pagination-top-label')}
                   first={
                     localizationsState.value.first === true || pageNumber <= 0
                   }
@@ -649,8 +663,8 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
 
           {localizationsState.status === 'loading' && (
             <StateBlock
-              message="Loading localizations..."
-              title="Loading localization rows"
+              message={t('ui.admin-localization.loading-message')}
+              title={t('ui.admin-localization.loading-title')}
               variant="loading"
             />
           )}
@@ -658,7 +672,7 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
           {localizationsState.status === 'error' && (
             <StateBlock
               message={localizationsState.message}
-              title="Localization rows could not be loaded"
+              title={t('ui.admin-localization.error-title')}
               variant="error"
             />
           )}
@@ -687,15 +701,15 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
               />
             ) : (
               <StateBlock
-                message="No localization rows match these filters."
-                title="No localization rows found"
+                message={t('ui.admin-localization.empty-message')}
+                title={t('ui.admin-localization.empty-title')}
                 variant="empty"
               />
             ))}
 
           {localizationsState.status === 'ready' && (
             <PaginationControls
-              ariaLabel="Localization pagination"
+              ariaLabel={t('ui.admin-localization.pagination-label')}
               first={localizationsState.value.first === true || pageNumber <= 0}
               last={
                 localizationsState.value.last === true ||
@@ -716,9 +730,11 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
 
       {pendingLocalizationDelete !== null && (
         <ConfirmDialog
-          confirmLabel="Delete localization"
-          message={`Delete ${createLocalizationLabel(pendingLocalizationDelete)}?`}
-          title="Confirm deletion"
+          confirmLabel={t('ui.admin-localization.delete-localization')}
+          message={t('ui.admin-localization.delete-message', {
+            label: createLocalizationLabel(pendingLocalizationDelete),
+          })}
+          title={t('ui.common.confirm-deletion')}
           onCancel={closeLocalizationDeleteDialog}
           onConfirm={() => void confirmLocalizationDelete()}
         />
@@ -736,26 +752,28 @@ function LocalizationCoverageTable({
   createMissingEnabled: boolean
   onCreateMissing: (messageKey: string, language: string) => void
 }) {
+  const { t } = useI18n()
+
   if (coverage.length === 0) {
     return null
   }
 
   return (
     <div
-      aria-label="Scrollable localization coverage table"
+      aria-label={t('ui.admin-localization.coverage-region-label')}
       className="catalog-table-scroll"
       role="region"
       tabIndex={0}
     >
       <table className="catalog-table localization-coverage-table">
-        <caption>Localization coverage</caption>
+        <caption>{t('ui.admin-localization.coverage-caption')}</caption>
         <thead>
           <tr>
             <th className="plain-column-header" scope="col">
-              Message key
+              {t('ui.admin-localization.message-key')}
             </th>
             <th className="plain-column-header" scope="col">
-              Status
+              {t('ui.admin-localization.status')}
             </th>
             {SUPPORTED_LOCALIZATION_LANGUAGES.map((language) => (
               <th className="plain-column-header" key={language} scope="col">
@@ -763,7 +781,7 @@ function LocalizationCoverageTable({
               </th>
             ))}
             <th className="plain-column-header" scope="col">
-              Missing locales
+              {t('ui.admin-localization.missing-locales')}
             </th>
           </tr>
         </thead>
@@ -780,19 +798,24 @@ function LocalizationCoverageTable({
                     <button
                       className="localization-locale-button missing"
                       type="button"
-                      aria-label={`Add ${locale.language} for ${group.messageKey}`}
+                      aria-label={t('ui.admin-localization.add-locale-label', {
+                        language: locale.language,
+                        messageKey: group.messageKey,
+                      })}
                       onClick={() =>
                         onCreateMissing(group.messageKey, locale.language)
                       }
                     >
-                      Add {locale.language}
+                      {t('ui.admin-localization.add-locale', {
+                        language: locale.language,
+                      })}
                     </button>
                   ) : (
                     <CoverageStatus status={locale.status} />
                   )}
                 </td>
               ))}
-              <td>{formatMissingLocales(group)}</td>
+              <td>{formatMissingLocales(group, t)}</td>
             </tr>
           ))}
         </tbody>
@@ -801,14 +824,26 @@ function LocalizationCoverageTable({
   )
 }
 
-function formatLocalizationSummary(state: LoadState<LocalizationPage>) {
+function formatLocalizationSummary(
+  t: UiTranslate,
+  state: LoadState<LocalizationPage>,
+) {
   if (state.status !== 'ready') {
-    return `Localization rows are ${formatLoadStatus(state.status).toLowerCase()}.`
+    return t(
+      state.status === 'error'
+        ? 'ui.admin-localization.rows-status-error'
+        : 'ui.admin-localization.rows-status-loading',
+    )
   }
 
   const rowCount = state.value.numberOfElements ?? state.value.content?.length ?? 0
   const total = state.value.totalElements ?? rowCount
-  const label = `${total} ${total === 1 ? 'localization row' : 'localization rows'}`
+  const label = t(
+    total === 1
+      ? 'ui.admin-localization.row-count-one'
+      : 'ui.admin-localization.row-count-many',
+    { count: total },
+  )
 
   if (total <= 0 || rowCount <= 0) {
     return label
@@ -819,7 +854,7 @@ function formatLocalizationSummary(state: LoadState<LocalizationPage>) {
   const start = page * size + 1
   const end = Math.min(start + rowCount - 1, total)
 
-  return `Showing ${start}-${end} of ${label}`
+  return t('ui.common.window-summary', { start, end, total: label })
 }
 
 function LocalizationResults({
@@ -839,40 +874,44 @@ function LocalizationResults({
   rows: readonly LocalizationResponse[]
   sort: readonly string[]
 }) {
+  const { t } = useI18n()
+
   return (
     <div
-      aria-label="Scrollable localization rows table"
+      aria-label={t('ui.admin-localization.rows-region-label')}
       className="catalog-table-scroll"
       role="region"
       tabIndex={0}
     >
       <table className="catalog-table localization-rows-table">
-        <caption className="visually-hidden">Localization rows</caption>
+        <caption className="visually-hidden">
+          {t('ui.admin-localization.rows-title')}
+        </caption>
         <thead>
           <tr>
             <SortToggleHeader
               direction={getLocalizationSortDirection(sort, 'messageKey')}
-              label="Message key"
+              label={t('ui.admin-localization.message-key')}
               onSort={() => onSortByField('messageKey')}
             />
             <SortToggleHeader
               direction={getLocalizationSortDirection(sort, 'language')}
-              label="Language"
+              label={t('ui.admin-localization.language')}
               onSort={() => onSortByField('language')}
             />
             <th className="plain-column-header" scope="col">
-              Message
+              {t('ui.admin-localization.message')}
             </th>
             <th className="plain-column-header" scope="col">
-              Description
+              {t('ui.admin-localization.description')}
             </th>
             <SortToggleHeader
               direction={getLocalizationSortDirection(sort, 'updatedAt')}
-              label="Updated"
+              label={t('ui.admin-localization.updated')}
               onSort={() => onSortByField('updatedAt')}
             />
             <th className="plain-column-header" scope="col">
-              Actions
+              {t('ui.common.actions')}
             </th>
           </tr>
         </thead>
@@ -910,17 +949,28 @@ function LocalizationRow({
   renderEditForm: () => ReactNode
   row: LocalizationResponse
 }) {
+  const { t } = useI18n()
   const label = createLocalizationLabel(row)
   const editRowId = `localization-edit-row-${row.id ?? 'unsaved'}`
 
   return (
     <>
       <tr>
-        <th scope="row">{row.messageKey ?? 'Unknown key'}</th>
-        <td>{row.language ?? 'Unknown'}</td>
-        <td>{row.messageText?.trim() ? row.messageText : 'Blank message'}</td>
-        <td>{row.description?.trim() ? row.description : 'No description'}</td>
-        <td>{row.updatedAt ?? 'Unknown'}</td>
+        <th scope="row">
+          {row.messageKey ?? t('ui.admin-localization.unknown-key')}
+        </th>
+        <td>{row.language ?? t('ui.common.unknown')}</td>
+        <td>
+          {row.messageText?.trim()
+            ? row.messageText
+            : t('ui.admin-localization.blank-message')}
+        </td>
+        <td>
+          {row.description?.trim()
+            ? row.description
+            : t('ui.admin-localization.no-description')}
+        </td>
+        <td>{row.updatedAt ?? t('ui.common.unknown')}</td>
         <td>
           <div className="row-actions">
             <button
@@ -928,18 +978,18 @@ function LocalizationRow({
               aria-controls={editing ? editRowId : undefined}
               aria-expanded={editing}
               className="secondary-button"
-              aria-label={`Edit ${label}`}
+              aria-label={t('ui.common.edit-label', { label })}
               onClick={() => onEditLocalization(row)}
             >
-              Edit
+              {t('ui.common.edit')}
             </button>
             <button
               type="button"
               className="danger-button"
-              aria-label={`Delete ${label}`}
+              aria-label={t('ui.common.delete-label', { label })}
               onClick={(event) => onDeleteLocalization(row, event.currentTarget)}
             >
-              Delete
+              {t('ui.common.delete')}
             </button>
           </div>
         </td>
@@ -968,20 +1018,22 @@ function LocalizationForm({
   onDraftChange: (update: Partial<LocalizationFormDraft>) => void
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
 }) {
+  const { t } = useI18n()
   const submitting = mutationState.status === 'submitting'
   const editing = mode.type === 'edit'
+  const formTitle = editing
+    ? t('ui.admin-localization.edit-localization')
+    : t('ui.admin-localization.create-localization')
 
   return (
     <form
       className="localization-management-form"
-      aria-label={editing ? 'Edit localization' : 'Create localization'}
+      aria-label={formTitle}
       onSubmit={onSubmit}
     >
       <div className="form-heading-row">
         <div>
-          <h3 id="localization-form-title">
-            {editing ? 'Edit localization' : 'Create localization'}
-          </h3>
+          <h3 id="localization-form-title">{formTitle}</h3>
         </div>
         <div className="section-actions">
           <button
@@ -990,14 +1042,16 @@ function LocalizationForm({
             disabled={submitting}
             onClick={onClose}
           >
-            {editing ? 'Cancel edit' : 'Close'}
+            {editing
+              ? t('ui.admin-localization.cancel-edit')
+              : t('ui.common.close')}
           </button>
         </div>
       </div>
 
       <div className="admin-form-grid localization-form-grid">
         <label>
-          <span>Message key</span>
+          <span>{t('ui.admin-localization.message-key')}</span>
           <input
             id="localization-form-message-key"
             required
@@ -1008,7 +1062,7 @@ function LocalizationForm({
           />
         </label>
         <label>
-          <span>Language</span>
+          <span>{t('ui.admin-localization.language')}</span>
           <select
             required
             value={draft.language}
@@ -1027,7 +1081,7 @@ function LocalizationForm({
           </select>
         </label>
         <label>
-          <span>Description</span>
+          <span>{t('ui.admin-localization.description')}</span>
           <input
             value={draft.description}
             onChange={(event) =>
@@ -1038,7 +1092,7 @@ function LocalizationForm({
       </div>
 
       <label className="localization-message-field">
-        <span>Message text</span>
+        <span>{t('ui.admin-localization.message-text')}</span>
         <textarea
           required
           rows={5}
@@ -1052,10 +1106,10 @@ function LocalizationForm({
       <div className="admin-action-row">
         <button type="submit" disabled={submitting}>
           {submitting
-            ? 'Saving localization...'
+            ? t('ui.admin-localization.saving-localization')
             : editing
-              ? 'Save localization'
-              : 'Create localization'}
+              ? t('ui.admin-localization.save-localization')
+              : t('ui.admin-localization.create-localization')}
         </button>
       </div>
 
@@ -1065,7 +1119,13 @@ function LocalizationForm({
 }
 
 function CoverageStatus({ status }: { status: LocalizationCoverageStatus }) {
-  return <span className={`coverage-pill ${status}`}>{status}</span>
+  const { t } = useI18n()
+
+  return (
+    <span className={`coverage-pill ${status}`}>
+      {t(`ui.coverage.${status}`)}
+    </span>
+  )
 }
 
 const DEFAULT_LOCALIZATION_QUERY: LocalizationQueryState = {
@@ -1164,12 +1224,14 @@ function createLocalizationRequest(
   }
 }
 
-function formatMissingLocales(group: LocalizationKeyCoverage) {
+function formatMissingLocales(group: LocalizationKeyCoverage, t: UiTranslate) {
   const missingLocales = group.locales
     .filter((locale) => locale.status === 'missing')
     .map((locale) => locale.language)
 
-  return missingLocales.length > 0 ? missingLocales.join(', ') : 'None'
+  return missingLocales.length > 0
+    ? missingLocales.join(', ')
+    : t('ui.common.none')
 }
 
 function createLocalizationLabel(row: LocalizationResponse) {

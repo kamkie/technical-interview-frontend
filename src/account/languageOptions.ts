@@ -1,3 +1,7 @@
+import type { UiTranslate } from '../i18n/useI18n'
+
+// Labels stay the canonical English names; display surfaces translate them
+// through the `ui.language.<code>` catalog keys.
 export const LANGUAGE_OPTIONS = [
   { value: 'en', label: 'English' },
   { value: 'es', label: 'Spanish' },
@@ -10,15 +14,19 @@ export const LANGUAGE_OPTIONS = [
 
 export type LanguageOption = (typeof LANGUAGE_OPTIONS)[number]
 
-export function formatLanguagePreference(value: string | undefined) {
+export function formatLanguagePreference(
+  value: string | undefined,
+  t: UiTranslate,
+) {
   const languageValue = value?.trim()
 
   if (!languageValue) {
-    return 'No preference'
+    return t('ui.account.no-preference')
   }
 
-  return (
-    LANGUAGE_OPTIONS.find((language) => language.value === languageValue)
-      ?.label ?? languageValue
+  const option = LANGUAGE_OPTIONS.find(
+    (language) => language.value === languageValue,
   )
+
+  return option ? t(`ui.language.${option.value}`) : languageValue
 }

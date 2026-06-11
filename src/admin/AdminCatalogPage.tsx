@@ -40,6 +40,7 @@ import {
   type SortField,
   type SortValue,
 } from '../catalog/catalogQuery'
+import { useI18n, type UiTranslate } from '../i18n/useI18n'
 import {
   getDisplayMessage,
   type LoadState,
@@ -82,14 +83,15 @@ type CategoryEditState = {
 }
 
 export function AdminCatalogPage({ session }: { session: SessionResponse }) {
+  const { t } = useI18n()
   const accountState = useCurrentAccount(session)
 
   return (
-    <section className="admin-catalog-panel" aria-label="Catalog administration">
+    <section className="admin-catalog-panel" aria-label={t('ui.route.admin-catalog.title')}>
       {accountState.status === 'loading' && (
         <StateBlock
-          message="Loading admin access..."
-          title="Checking admin access"
+          message={t('ui.admin.access-loading-message')}
+          title={t('ui.admin.access-loading-title')}
           variant="loading"
         />
       )}
@@ -97,7 +99,7 @@ export function AdminCatalogPage({ session }: { session: SessionResponse }) {
       {accountState.status === 'error' && (
         <StateBlock
           message={accountState.message}
-          title="Admin access unavailable"
+          title={t('ui.admin.access-error-title')}
           variant="error"
         />
       )}
@@ -107,8 +109,8 @@ export function AdminCatalogPage({ session }: { session: SessionResponse }) {
           <AdminCatalogManager session={session} />
         ) : (
           <StateBlock
-            message="Admin access is required for catalog management."
-            title="Admin role required"
+            message={t('ui.admin-catalog.access-message')}
+            title={t('ui.admin.role-required-title')}
             variant="error"
           />
         ))}
@@ -117,6 +119,7 @@ export function AdminCatalogPage({ session }: { session: SessionResponse }) {
 }
 
 function AdminCatalogManager({ session }: { session: SessionResponse }) {
+  const { t } = useI18n()
   const [searchParams, setSearchParams] = useSearchParams()
   const activeSection = parseCatalogSection(searchParams)
   const querySearch = useMemo(() => {
@@ -412,7 +415,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     if (publicationYear === undefined) {
       setBookMutationState({
         status: 'error',
-        message: 'Publication year must be a whole number.',
+        message: t('ui.admin-catalog.year-invalid'),
       })
 
       return
@@ -446,7 +449,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
         setBookFormMode({ type: 'closed' })
         setBookMutationState({
           status: 'success',
-          message: 'Book updated.',
+          message: t('ui.admin-catalog.book-updated'),
         })
       } else {
         await createBook(session, {
@@ -460,14 +463,14 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
         setBookDraft(createEmptyBookDraft())
         setBookMutationState({
           status: 'success',
-          message: 'Book created.',
+          message: t('ui.admin-catalog.book-created'),
         })
         refreshBooks()
       }
     } catch (error: unknown) {
       setBookMutationState({
         status: 'error',
-        message: getDisplayMessage(error, 'Book could not be saved.'),
+        message: getDisplayMessage(error, t('ui.admin-catalog.book-save-failed')),
       })
     }
   }
@@ -492,7 +495,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     } catch (error: unknown) {
       setBookMutationState({
         status: 'error',
-        message: getDisplayMessage(error, 'Book could not be loaded.'),
+        message: getDisplayMessage(error, t('ui.admin-catalog.book-load-failed')),
       })
     }
   }
@@ -515,12 +518,12 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
       })
       setBookMutationState({
         status: 'success',
-        message: 'Book reloaded.',
+        message: t('ui.admin-catalog.book-reloaded'),
       })
     } catch (error: unknown) {
       setBookMutationState({
         status: 'error',
-        message: getDisplayMessage(error, 'Book could not be reloaded.'),
+        message: getDisplayMessage(error, t('ui.admin-catalog.book-reload-failed')),
       })
     }
   }
@@ -589,12 +592,12 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
 
       setBookMutationState({
         status: 'success',
-        message: 'Book deleted.',
+        message: t('ui.admin-catalog.book-deleted'),
       })
     } catch (error: unknown) {
       setBookMutationState({
         status: 'error',
-        message: getDisplayMessage(error, 'Book could not be deleted.'),
+        message: getDisplayMessage(error, t('ui.admin-catalog.book-delete-failed')),
       })
     }
   }
@@ -643,12 +646,12 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
       setCategoryDraft('')
       setCategoryMutationState({
         status: 'success',
-        message: 'Category created.',
+        message: t('ui.admin-catalog.category-created'),
       })
     } catch (error: unknown) {
       setCategoryMutationState({
         status: 'error',
-        message: getDisplayMessage(error, 'Category could not be created.'),
+        message: getDisplayMessage(error, t('ui.admin-catalog.category-create-failed')),
       })
     }
   }
@@ -679,13 +682,13 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
       setCategoryEditState(null)
       setCategoryMutationState({
         status: 'success',
-        message: 'Category updated.',
+        message: t('ui.admin-catalog.category-updated'),
       })
       refreshBooks()
     } catch (error: unknown) {
       setCategoryMutationState({
         status: 'error',
-        message: getDisplayMessage(error, 'Category could not be updated.'),
+        message: getDisplayMessage(error, t('ui.admin-catalog.category-update-failed')),
       })
     }
   }
@@ -736,13 +739,13 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
       removeCategoryFromLocalState(category.name)
       setCategoryMutationState({
         status: 'success',
-        message: 'Category deleted.',
+        message: t('ui.admin-catalog.category-deleted'),
       })
       refreshBooks()
     } catch (error: unknown) {
       setCategoryMutationState({
         status: 'error',
-        message: getDisplayMessage(error, 'Category could not be deleted.'),
+        message: getDisplayMessage(error, t('ui.admin-catalog.category-delete-failed')),
       })
     }
   }
@@ -800,7 +803,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     <section className="admin-section" aria-labelledby="admin-books-title">
         <div className="admin-section-heading">
           <div>
-            <h2 id="admin-books-title">Book management</h2>
+            <h2 id="admin-books-title">{t('ui.admin-catalog.books-title')}</h2>
           </div>
           <div className="section-actions">
             <button
@@ -812,15 +815,15 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
               className="compact-action"
               onClick={openBookCreate}
             >
-              New book
+              {t('ui.admin-catalog.new-book')}
             </button>
             <button
               type="button"
-              aria-label="Refresh books"
+              aria-label={t('ui.admin-catalog.refresh-books-label')}
               className="secondary-button compact-action"
               onClick={refreshBooks}
             >
-              Refresh
+              {t('ui.common.refresh')}
             </button>
           </div>
         </div>
@@ -843,12 +846,12 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
 
         <div className="list-card">
           <form
-            aria-label="Admin book filters"
+            aria-label={t('ui.admin-catalog.filters-label')}
             className="catalog-filters"
             onSubmit={handleFilterSubmit}
           >
             <label>
-              <span>Title</span>
+              <span>{t('ui.catalog.title')}</span>
               <input
                 name="title"
                 type="search"
@@ -859,7 +862,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
               />
             </label>
             <label>
-              <span>Author</span>
+              <span>{t('ui.catalog.author')}</span>
               <input
                 name="author"
                 type="search"
@@ -870,7 +873,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
               />
             </label>
             <label>
-              <span>ISBN</span>
+              <span>{t('ui.catalog.isbn')}</span>
               <input
                 name="isbn"
                 type="search"
@@ -882,9 +885,9 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
             </label>
           </form>
 
-          <div className="catalog-toolbar" aria-label="Admin book table controls">
+          <div className="catalog-toolbar" aria-label={t('ui.admin-catalog.toolbar-label')}>
             <CategoryFilter
-              ariaLabel="Admin category filters"
+              ariaLabel={t('ui.admin-catalog.category-filters-label')}
               categories={namedCategories}
               categoriesState={categoriesState}
               selectedCategories={query.categories}
@@ -898,7 +901,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
               )}
               {booksState.status === 'ready' && (
                 <span aria-live="polite" className="toolbar-summary">
-                  {formatBookWindow(booksState.value, query)}
+                  {formatBookWindow(t, booksState.value, query)}
                 </span>
               )}
               {booksState.status === 'ready' && (
@@ -915,8 +918,8 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
 
           {booksState.status === 'loading' && (
             <StateBlock
-              message="Loading books..."
-              title="Loading managed books"
+              message={t('ui.catalog.loading-message')}
+              title={t('ui.admin-catalog.books-loading-title')}
               variant="loading"
             />
           )}
@@ -924,7 +927,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
           {booksState.status === 'error' && (
             <StateBlock
               message={booksState.message}
-              title="Books could not be loaded"
+              title={t('ui.admin-catalog.books-error-title')}
               variant="error"
             />
           )}
@@ -962,11 +965,13 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
 
         {pendingBookDelete !== null && (
           <ConfirmDialog
-            confirmLabel="Delete book"
-            message={`Delete ${
-              pendingBookDelete.title ?? `book ${pendingBookDelete.id}`
-            }?`}
-            title="Confirm deletion"
+            confirmLabel={t('ui.admin-catalog.delete-book')}
+            message={t('ui.admin-catalog.delete-message', {
+              label:
+                pendingBookDelete.title ??
+                t('ui.admin-catalog.book-number', { id: pendingBookDelete.id ?? '' }),
+            })}
+            title={t('ui.common.confirm-deletion')}
             onCancel={closeBookDeleteDialog}
             onConfirm={() => void confirmBookDelete()}
           />
@@ -978,7 +983,9 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
       <section className="admin-section" aria-labelledby="admin-categories-title">
         <div className="admin-section-heading">
           <div>
-            <h2 id="admin-categories-title">Category management</h2>
+            <h2 id="admin-categories-title">
+              {t('ui.admin-catalog.categories-title')}
+            </h2>
           </div>
           <div className="section-actions">
             <button
@@ -990,15 +997,15 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
               className="compact-action"
               onClick={openCategoryCreate}
             >
-              New category
+              {t('ui.admin-catalog.new-category')}
             </button>
             <button
               type="button"
-              aria-label="Refresh categories"
+              aria-label={t('ui.admin-catalog.refresh-categories-label')}
               className="secondary-button compact-action"
               onClick={refreshCategories}
             >
-              Refresh
+              {t('ui.common.refresh')}
             </button>
           </div>
         </div>
@@ -1008,15 +1015,15 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
         {categoryFormOpen && (
           <form
             className="category-create-form"
-            aria-label="Create category"
+            aria-label={t('ui.admin-catalog.create-category')}
             id="admin-category-create-form"
             onSubmit={(event) => void handleCategoryCreate(event)}
           >
             <div className="form-heading-row">
               <div>
-                <h3>Create category</h3>
+                <h3>{t('ui.admin-catalog.create-category')}</h3>
                 <p className="form-context">
-                  New categories become available for book tagging immediately.
+                  {t('ui.admin-catalog.create-category-hint')}
                 </p>
               </div>
               <div className="section-actions">
@@ -1026,13 +1033,13 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
                   disabled={categoryMutationState.status === 'submitting'}
                   onClick={closeCategoryCreate}
                 >
-                  Close
+                  {t('ui.common.close')}
                 </button>
               </div>
             </div>
 
             <label>
-              <span>Category name</span>
+              <span>{t('ui.admin-catalog.category-name')}</span>
               <input
                 required
                 value={categoryDraft}
@@ -1048,7 +1055,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
                 type="submit"
                 disabled={categoryMutationState.status === 'submitting'}
               >
-                Create category
+                {t('ui.admin-catalog.create-category')}
               </button>
             </div>
 
@@ -1058,8 +1065,8 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
 
         {categoriesState.status === 'loading' && (
           <StateBlock
-            message="Loading categories..."
-            title="Loading managed categories"
+            message={t('ui.catalog.categories-loading')}
+            title={t('ui.admin-catalog.categories-loading-title')}
             variant="loading"
           />
         )}
@@ -1067,7 +1074,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
         {categoriesState.status === 'error' && (
           <StateBlock
             message={categoriesState.message}
-            title="Categories could not be loaded"
+            title={t('ui.admin-catalog.categories-error-title')}
             variant="error"
           />
         )}
@@ -1110,12 +1117,15 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
 
         {pendingCategoryDelete !== null && (
           <ConfirmDialog
-            confirmLabel="Delete category"
-            message={`Delete ${
-              pendingCategoryDelete.name ??
-              `category ${pendingCategoryDelete.id}`
-            }?`}
-            title="Confirm deletion"
+            confirmLabel={t('ui.admin-catalog.delete-category')}
+            message={t('ui.admin-catalog.delete-message', {
+              label:
+                pendingCategoryDelete.name ??
+                t('ui.admin-catalog.category-number', {
+                  id: pendingCategoryDelete.id ?? '',
+                }),
+            })}
+            title={t('ui.common.confirm-deletion')}
             onCancel={closeCategoryDeleteDialog}
             onConfirm={() => void confirmCategoryDelete()}
           />
@@ -1127,12 +1137,16 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     <div className="admin-catalog-layout">
       <Tabs
         activeTab={activeSection}
-        ariaLabel="Catalog administration sections"
+        ariaLabel={t('ui.admin-catalog.sections-label')}
         idPrefix="admin-catalog"
         onTabChange={changeSection}
         tabs={[
-          { id: 'books', label: 'Books', panel: booksPanel },
-          { id: 'categories', label: 'Categories', panel: categoriesPanel },
+          { id: 'books', label: t('ui.admin-catalog.books-tab'), panel: booksPanel },
+          {
+            id: 'categories',
+            label: t('ui.admin-catalog.categories-tab'),
+            panel: categoriesPanel,
+          },
         ]}
       />
     </div>
@@ -1152,6 +1166,7 @@ function AdminToolbarPagination({
   page: BookPage
   query: CatalogQueryState
 }) {
+  const { t } = useI18n()
   const pageNumber = page.number ?? query.page
   const totalPages = page.totalPages ?? 0
   const first = page.first === true || pageNumber <= 0
@@ -1160,7 +1175,7 @@ function AdminToolbarPagination({
 
   return (
     <PaginationControls
-      ariaLabel="Admin book pagination top"
+      ariaLabel={t('ui.admin-catalog.book-pagination-top-label')}
       first={first}
       last={last}
       pageNumber={pageNumber}
@@ -1196,24 +1211,28 @@ function BookManagementForm({
   onSubmit: (event: FormEvent<HTMLFormElement>) => void
   onToggleCategory: (categoryName: string) => void
 }) {
+  const { t } = useI18n()
   const submitting = mutationState.status === 'submitting'
   const editing = mode.type === 'edit'
+  const formTitle = editing
+    ? t('ui.admin-catalog.edit-book')
+    : t('ui.admin-catalog.create-book')
 
   return (
     <form
       className={`book-management-form ${editing ? 'editing-book-form' : 'create-book-form'}`}
-      aria-label={editing ? 'Edit book' : 'Create book'}
+      aria-label={formTitle}
       data-mode={mode.type}
       id={editing ? undefined : 'admin-book-create-form'}
       onSubmit={onSubmit}
     >
       <div className="form-heading-row">
         <div>
-          <h3>{editing ? 'Edit book' : 'Create book'}</h3>
+          <h3>{formTitle}</h3>
           <p className="form-context">
             {editing
-              ? `Updating loaded version ${mode.version}`
-              : 'New books are saved with the selected categories.'}
+              ? t('ui.admin-catalog.version-context', { version: mode.version })
+              : t('ui.admin-catalog.create-book-hint')}
           </p>
         </div>
         <div className="section-actions">
@@ -1223,14 +1242,14 @@ function BookManagementForm({
             onClick={onClose}
             disabled={submitting}
           >
-            {editing ? 'Cancel edit' : 'Close'}
+            {editing ? t('ui.admin-catalog.cancel-edit') : t('ui.common.close')}
           </button>
         </div>
       </div>
 
       <div className="admin-form-grid">
         <label>
-          <span>Book title</span>
+          <span>{t('ui.admin-catalog.book-title')}</span>
           <input
             required
             value={draft.title}
@@ -1238,7 +1257,7 @@ function BookManagementForm({
           />
         </label>
         <label>
-          <span>Book author</span>
+          <span>{t('ui.admin-catalog.book-author')}</span>
           <input
             required
             value={draft.author}
@@ -1246,7 +1265,7 @@ function BookManagementForm({
           />
         </label>
         <label>
-          <span>Book ISBN</span>
+          <span>{t('ui.admin-catalog.book-isbn')}</span>
           <input
             required
             disabled={editing}
@@ -1255,7 +1274,7 @@ function BookManagementForm({
           />
         </label>
         <label>
-          <span>Publication year</span>
+          <span>{t('ui.catalog.publication-year')}</span>
           <input
             required
             inputMode="numeric"
@@ -1269,9 +1288,11 @@ function BookManagementForm({
       </div>
 
       <fieldset className="admin-checkbox-group">
-        <legend>Book categories</legend>
+        <legend>{t('ui.admin-catalog.book-categories')}</legend>
         {categories.length === 0 && (
-          <p className="session-message muted">No categories available.</p>
+          <p className="session-message muted">
+            {t('ui.catalog.categories-empty')}
+          </p>
         )}
         {categories.map((category) => (
           <label key={category.id ?? category.name}>
@@ -1287,7 +1308,11 @@ function BookManagementForm({
 
       <div className="admin-action-row">
         <button type="submit" disabled={submitting}>
-          {submitting ? 'Saving book...' : editing ? 'Save book' : 'Create book'}
+          {submitting
+            ? t('ui.admin-catalog.saving-book')
+            : editing
+              ? t('ui.admin-catalog.save-book')
+              : t('ui.admin-catalog.create-book')}
         </button>
         {editing && mutationState.status === 'error' && (
           <button
@@ -1295,7 +1320,7 @@ function BookManagementForm({
             className="secondary-button"
             onClick={onReloadBook}
           >
-            Reload book
+            {t('ui.admin-catalog.reload-book')}
           </button>
         )}
       </div>
@@ -1330,6 +1355,7 @@ function AdminBookResults({
   query: CatalogQueryState
   renderEditForm: () => ReactNode
 }) {
+  const { t } = useI18n()
   const books = page.content ?? []
   const pageNumber = page.number ?? query.page
   const totalPages = page.totalPages ?? 0
@@ -1341,12 +1367,12 @@ function AdminBookResults({
     return (
       <div className="book-results">
         <StateBlock
-          message="No books match these filters."
-          title="No managed books found"
+          message={t('ui.catalog.empty-message')}
+          title={t('ui.admin-catalog.books-empty-title')}
           variant="empty"
         />
         <PaginationControls
-          ariaLabel="Admin book pagination"
+          ariaLabel={t('ui.admin-catalog.book-pagination-label')}
           pageNumber={pageNumber}
           querySize={query.size}
           totalPages={totalPages}
@@ -1365,44 +1391,46 @@ function AdminBookResults({
   return (
     <div className="book-results">
       <div
-        aria-label="Scrollable admin books table"
+        aria-label={t('ui.admin-catalog.books-region-label')}
         className="catalog-table-scroll"
         role="region"
         tabIndex={0}
       >
         <table className="catalog-table admin-books-table">
-          <caption className="visually-hidden">Admin books</caption>
+          <caption className="visually-hidden">
+            {t('ui.admin-catalog.books-caption')}
+          </caption>
           <thead>
             <tr>
               <SortableColumnHeader
                 field="title"
-                label="Title"
+                label={t('ui.catalog.title')}
                 query={query}
                 onSortByField={onSortByField}
               />
               <SortableColumnHeader
                 field="author"
-                label="Author"
+                label={t('ui.catalog.author')}
                 query={query}
                 onSortByField={onSortByField}
               />
               <SortableColumnHeader
                 field="publicationYear"
-                label="Publication year"
+                label={t('ui.catalog.publication-year')}
                 query={query}
                 onSortByField={onSortByField}
               />
               <SortableColumnHeader
                 field="isbn"
-                label="ISBN"
+                label={t('ui.catalog.isbn')}
                 query={query}
                 onSortByField={onSortByField}
               />
               <th className="plain-column-header" scope="col">
-                Categories
+                {t('ui.catalog.categories')}
               </th>
               <th className="plain-column-header admin-books-actions-header" scope="col">
-                Actions
+                {t('ui.common.actions')}
               </th>
             </tr>
           </thead>
@@ -1422,7 +1450,7 @@ function AdminBookResults({
       </div>
 
       <PaginationControls
-        ariaLabel="Admin book pagination"
+        ariaLabel={t('ui.admin-catalog.book-pagination-label')}
         pageNumber={pageNumber}
         querySize={query.size}
         totalPages={totalPages}
@@ -1451,7 +1479,8 @@ function AdminBookRow({
   onEditBook: (book: Book) => void
   renderEditForm: () => ReactNode
 }) {
-  const title = book.title ?? 'Untitled book'
+  const { t } = useI18n()
+  const title = book.title ?? t('ui.catalog.untitled-book')
   const editRowId = `book-edit-row-${book.id ?? 'unsaved'}`
   const categories = (book.categories ?? [])
     .map((category) => category.name)
@@ -1461,13 +1490,13 @@ function AdminBookRow({
     <>
       <tr>
         <th scope="row">{title}</th>
-        <td>{book.author ?? 'Unknown author'}</td>
-        <td>{book.publicationYear ?? 'Unknown'}</td>
-        <td>{book.isbn ?? 'Unknown'}</td>
-        <td>{categories.length > 0 ? categories.join(', ') : 'None'}</td>
+        <td>{book.author ?? t('ui.catalog.unknown-author')}</td>
+        <td>{book.publicationYear ?? t('ui.common.unknown')}</td>
+        <td>{book.isbn ?? t('ui.common.unknown')}</td>
+        <td>{categories.length > 0 ? categories.join(', ') : t('ui.common.none')}</td>
         <td className="admin-books-actions-cell">
           <div
-            aria-label={`Actions for ${title}`}
+            aria-label={t('ui.admin-catalog.actions-for', { title })}
             className="row-actions admin-books-row-actions"
             role="group"
           >
@@ -1478,18 +1507,18 @@ function AdminBookRow({
               className={`admin-books-action-button secondary-button ${
                 editing ? 'selected-row-action' : ''
               }`}
-              aria-label={`Edit ${title}`}
+              aria-label={t('ui.common.edit-label', { label: title })}
               onClick={() => onEditBook(book)}
             >
-              {editing ? 'Editing' : 'Edit'}
+              {editing ? t('ui.admin-catalog.editing') : t('ui.common.edit')}
             </button>
             <button
               type="button"
               className="danger-button admin-books-action-button"
-              aria-label={`Delete ${title}`}
+              aria-label={t('ui.common.delete-label', { label: title })}
               onClick={(event) => onDeleteBook(book, event.currentTarget)}
             >
-              Delete
+              {t('ui.common.delete')}
             </button>
           </div>
         </td>
@@ -1526,6 +1555,7 @@ function CategoryManagementSection({
   categories: readonly Category[]
   feedback: ReactNode
 }) {
+  const { t } = useI18n()
   const [filterText, setFilterText] = useState('')
   const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
   const [page, setPage] = useState(0)
@@ -1561,12 +1591,12 @@ function CategoryManagementSection({
   return (
     <div className="list-card">
       <form
-        aria-label="Admin category filters"
+        aria-label={t('ui.admin-catalog.category-filters-label')}
         className="admin-list-filters"
         onSubmit={(event) => event.preventDefault()}
       >
         <label>
-          <span>Name</span>
+          <span>{t('ui.admin-catalog.name')}</span>
           <input
             name="categoryName"
             type="search"
@@ -1579,16 +1609,16 @@ function CategoryManagementSection({
         </label>
       </form>
 
-      <div className="catalog-toolbar" aria-label="Admin category table controls">
+      <div className="catalog-toolbar" aria-label={t('ui.admin-catalog.category-toolbar-label')}>
         <div className="catalog-toolbar-status">
           {/* Mutation feedback borrows the fixed-height toolbar row so
               messages never shift the table. */}
           {feedback}
           <span aria-live="polite" className="toolbar-summary">
-            {formatCategoryWindow(filteredCategories.length, currentPage, size)}
+            {formatCategoryWindow(t, filteredCategories.length, currentPage, size)}
           </span>
           <PaginationControls
-            ariaLabel="Admin category pagination top"
+            ariaLabel={t('ui.admin-catalog.category-pagination-top-label')}
             first={firstPage}
             last={lastPage}
             pageNumber={currentPage}
@@ -1618,7 +1648,7 @@ function CategoryManagementSection({
       />
 
       <PaginationControls
-        ariaLabel="Admin category pagination"
+        ariaLabel={t('ui.admin-catalog.category-pagination-label')}
         first={firstPage}
         last={lastPage}
         pageNumber={currentPage}
@@ -1637,8 +1667,18 @@ function CategoryManagementSection({
   )
 }
 
-function formatCategoryWindow(total: number, page: number, size: number) {
-  const label = `${total} ${total === 1 ? 'category' : 'categories'}`
+function formatCategoryWindow(
+  t: UiTranslate,
+  total: number,
+  page: number,
+  size: number,
+) {
+  const label = t(
+    total === 1
+      ? 'ui.admin-catalog.category-count-one'
+      : 'ui.admin-catalog.category-count-many',
+    { count: total },
+  )
 
   if (total <= 0) {
     return label
@@ -1647,7 +1687,7 @@ function formatCategoryWindow(total: number, page: number, size: number) {
   const start = page * size + 1
   const end = Math.min((page + 1) * size, total)
 
-  return `Showing ${start}-${end} of ${label}`
+  return t('ui.common.window-summary', { start, end, total: label })
 }
 
 function CategoryManagementList({
@@ -1667,17 +1707,19 @@ function CategoryManagementList({
   onToggleSort: () => void
   sortDirection: SortDirection
 }) {
+  const { t } = useI18n()
+
   if (categories.length === 0) {
     return hasCategories ? (
       <StateBlock
-        message="No categories match this filter."
-        title="No matching categories"
+        message={t('ui.admin-catalog.categories-no-match-message')}
+        title={t('ui.admin-catalog.categories-no-match-title')}
         variant="empty"
       />
     ) : (
       <StateBlock
-        message="No categories available."
-        title="No managed categories"
+        message={t('ui.catalog.categories-empty')}
+        title={t('ui.admin-catalog.categories-empty-title')}
         variant="empty"
       />
     )
@@ -1685,31 +1727,37 @@ function CategoryManagementList({
 
   return (
     <div
-      aria-label="Scrollable admin categories table"
+      aria-label={t('ui.admin-catalog.categories-region-label')}
       className="catalog-table-scroll"
       role="region"
       tabIndex={0}
     >
       <table className="catalog-table admin-categories-table">
-        <caption className="visually-hidden">Admin categories</caption>
+        <caption className="visually-hidden">
+          {t('ui.admin-catalog.categories-caption')}
+        </caption>
         <thead>
           <tr>
             <SortToggleHeader
               direction={sortDirection}
-              label="Name"
+              label={t('ui.admin-catalog.name')}
               onSort={onToggleSort}
             />
             <th
               className="plain-column-header admin-categories-actions-header"
               scope="col"
             >
-              Actions
+              {t('ui.common.actions')}
             </th>
           </tr>
         </thead>
         <tbody>
           {categories.map((category) => {
-            const label = category.name ?? `Category ${category.id ?? 'unknown'}`
+            const label =
+              category.name ??
+              t('ui.admin-catalog.category-fallback', {
+                id: category.id ?? 'unknown',
+              })
             const editing =
               category.id !== undefined && editState?.id === category.id
 
@@ -1718,7 +1766,7 @@ function CategoryManagementList({
                 <th scope="row">
                   {editing ? (
                     <input
-                      aria-label={`Name for ${label}`}
+                      aria-label={t('ui.admin-catalog.name-for', { label })}
                       value={editState.name}
                       onChange={(event) =>
                         onEditNameChange(event.currentTarget.value)
@@ -1734,18 +1782,18 @@ function CategoryManagementList({
                       <>
                         <button
                           type="button"
-                          aria-label="Save category"
+                          aria-label={t('ui.admin-catalog.save-category')}
                           onClick={() => onSaveCategory(category)}
                         >
-                          Save
+                          {t('ui.common.save')}
                         </button>
                         <button
                           type="button"
-                          aria-label="Cancel category edit"
+                          aria-label={t('ui.admin-catalog.cancel-category-edit')}
                           className="secondary-button"
                           onClick={onCancelEdit}
                         >
-                          Cancel
+                          {t('ui.common.cancel')}
                         </button>
                       </>
                     ) : (
@@ -1753,20 +1801,20 @@ function CategoryManagementList({
                         <button
                           type="button"
                           className="secondary-button"
-                          aria-label={`Edit ${label}`}
+                          aria-label={t('ui.common.edit-label', { label })}
                           onClick={() => onEditCategory(category)}
                         >
-                          Edit
+                          {t('ui.common.edit')}
                         </button>
                         <button
                           type="button"
                           className="danger-button"
-                          aria-label={`Delete ${label}`}
+                          aria-label={t('ui.common.delete-label', { label })}
                           onClick={(event) =>
                             onDeleteCategory(category, event.currentTarget)
                           }
                         >
-                          Delete
+                          {t('ui.common.delete')}
                         </button>
                       </>
                     )}
@@ -1866,12 +1914,16 @@ function sortCategories(categories: readonly Category[]) {
   )
 }
 
-function formatBookWindow(page: BookPage, query: CatalogQueryState) {
+function formatBookWindow(
+  t: UiTranslate,
+  page: BookPage,
+  query: CatalogQueryState,
+) {
   const totalElements = page.totalElements ?? 0
   const numberOfElements = page.numberOfElements ?? page.content?.length ?? 0
 
   if (totalElements <= 0 || numberOfElements <= 0) {
-    return formatBookCount(totalElements)
+    return formatBookCount(t, totalElements)
   }
 
   const pageNumber = page.number ?? query.page
@@ -1879,11 +1931,18 @@ function formatBookWindow(page: BookPage, query: CatalogQueryState) {
   const start = pageNumber * pageSize + 1
   const end = Math.min(start + numberOfElements - 1, totalElements)
 
-  return `Showing ${start}-${end} of ${formatBookCount(totalElements)}`
+  return t('ui.common.window-summary', {
+    start,
+    end,
+    total: formatBookCount(t, totalElements),
+  })
 }
 
-function formatBookCount(count: number) {
-  return `${count} ${count === 1 ? 'book' : 'books'}`
+function formatBookCount(t: UiTranslate, count: number) {
+  return t(
+    count === 1 ? 'ui.catalog.book-count-one' : 'ui.catalog.book-count-many',
+    { count },
+  )
 }
 
 function normalizeCatalogSection(value: string | null | undefined): CatalogSection {

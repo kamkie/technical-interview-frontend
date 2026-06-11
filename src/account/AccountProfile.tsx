@@ -7,6 +7,7 @@ import {
 } from '../api/account'
 import type { SessionResponse } from '../api/session'
 import { publishAccountUpdate } from './useCurrentAccount'
+import { useI18n, type UiTranslate } from '../i18n/useI18n'
 import {
   getDisplayMessage,
   type LoadState,
@@ -21,6 +22,7 @@ import {
 } from './languageOptions'
 
 export function AccountProfile({ session }: { session: SessionResponse }) {
+  const { t } = useI18n()
   const [accountState, setAccountState] = useState<LoadState<UserAccount>>({
     status: 'loading',
   })
@@ -52,11 +54,11 @@ export function AccountProfile({ session }: { session: SessionResponse }) {
   }, [session])
 
   return (
-    <section className="account-panel" aria-label="Account profile">
+    <section className="account-panel" aria-label={t('ui.account.panel-label')}>
       {accountState.status === 'loading' && (
         <StateBlock
-          message="Loading account..."
-          title="Loading account profile"
+          message={t('ui.account.loading-message')}
+          title={t('ui.account.loading-title')}
           variant="loading"
         />
       )}
@@ -64,7 +66,7 @@ export function AccountProfile({ session }: { session: SessionResponse }) {
       {accountState.status === 'error' && (
         <StateBlock
           message={accountState.message}
-          title="Account profile unavailable"
+          title={t('ui.account.error-title')}
           variant="error"
         />
       )}
@@ -91,11 +93,16 @@ function AccountProfileDetails({
   onAccountChange: (account: UserAccount) => void
   session: SessionResponse
 }) {
+  const { t } = useI18n()
   const displayName =
-    account.displayName || account.login || account.email || 'Current user'
+    account.displayName ||
+    account.login ||
+    account.email ||
+    t('ui.account.current-user')
   const roles = (account.roles ?? []).filter(Boolean)
-  const contactLabel = account.email || account.login || 'Contact unavailable'
-  const preferredLanguage = formatLanguagePreference(account.preferredLanguage)
+  const contactLabel =
+    account.email || account.login || t('ui.account.contact-unavailable')
+  const preferredLanguage = formatLanguagePreference(account.preferredLanguage, t)
 
   return (
     <div className="account-profile">
@@ -104,15 +111,17 @@ function AccountProfileDetails({
           <p className="account-name">{displayName}</p>
           <p className="account-subtitle">{contactLabel}</p>
         </div>
-        <div className="account-roles" aria-label="Account access">
+        <div className="account-roles" aria-label={t('ui.account.access-label')}>
           {roles.length > 0 ? (
             roles.map((role) => (
               <span className="role-pill" key={role}>
-                {formatRoleLabel(role)}
+                {formatRoleLabel(role, t)}
               </span>
             ))
           ) : (
-            <span className="session-message muted">No access roles assigned.</span>
+            <span className="session-message muted">
+              {t('ui.account.no-roles')}
+            </span>
           )}
         </div>
       </div>
@@ -126,15 +135,30 @@ function AccountProfileDetails({
 
       <dl className="account-metadata">
         <ProfileField
-          label="Language preference"
+          label={t('ui.account.language-preference')}
           value={preferredLanguage}
         />
-        <ProfileField label="Login name" value={account.login} />
-        <ProfileField label="Identity provider" value={account.provider} />
-        <ProfileField label="Account record" value={formatNumber(account.id)} />
-        <ProfileField label="Last sign-in" value={formatProfileTimestamp(account.lastLoginAt)} />
-        <ProfileField label="Created" value={formatProfileTimestamp(account.createdAt)} />
-        <ProfileField label="Updated" value={formatProfileTimestamp(account.updatedAt)} />
+        <ProfileField label={t('ui.account.login-name')} value={account.login} />
+        <ProfileField
+          label={t('ui.account.identity-provider')}
+          value={account.provider}
+        />
+        <ProfileField
+          label={t('ui.account.account-record')}
+          value={formatNumber(account.id)}
+        />
+        <ProfileField
+          label={t('ui.account.last-sign-in')}
+          value={formatProfileTimestamp(account.lastLoginAt)}
+        />
+        <ProfileField
+          label={t('ui.account.created')}
+          value={formatProfileTimestamp(account.createdAt)}
+        />
+        <ProfileField
+          label={t('ui.account.updated')}
+          value={formatProfileTimestamp(account.updatedAt)}
+        />
       </dl>
     </div>
   )
@@ -149,6 +173,7 @@ function LanguagePreferenceForm({
   onAccountChange: (account: UserAccount) => void
   session: SessionResponse
 }) {
+  const { t } = useI18n()
   const currentLanguage = account.preferredLanguage?.trim() ?? ''
   const [languageInput, setLanguageInput] = useState(currentLanguage)
   const [mutationState, setMutationState] = useState<MutationState>({
@@ -177,16 +202,13 @@ function LanguagePreferenceForm({
       setMutationState({
         status: 'success',
         message: preferredLanguage
-          ? 'Language preference updated.'
-          : 'Language preference cleared.',
+          ? t('ui.account.preference-updated')
+          : t('ui.account.preference-cleared'),
       })
     } catch (error: unknown) {
       setMutationState({
         status: 'error',
-        message: getDisplayMessage(
-          error,
-          'Language preference could not be saved.',
-        ),
+        message: getDisplayMessage(error, t('ui.language.save-failed')),
       })
     }
   }
@@ -194,7 +216,7 @@ function LanguagePreferenceForm({
   return (
     <form
       className="language-preference"
-      aria-label="Language preference"
+      aria-label={t('ui.account.language-preference')}
       onSubmit={(event) => {
         event.preventDefault()
         void submitLanguage(languageInput)
@@ -202,15 +224,15 @@ function LanguagePreferenceForm({
     >
       <div className="language-preference-header">
         <div>
-          <h2>Language preference</h2>
+          <h2>{t('ui.account.language-preference')}</h2>
           <p className="section-description">
-            Choose the language used for account and workflow messages.
+            {t('ui.account.language-hint')}
           </p>
         </div>
       </div>
 
       <div className="language-preference-controls">
-        <label htmlFor="preferred-language">Language</label>
+        <label htmlFor="preferred-language">{t('ui.account.language')}</label>
         <select
           id="preferred-language"
           value={languageInput}
@@ -220,13 +242,13 @@ function LanguagePreferenceForm({
             setMutationState({ status: 'idle' })
           }}
         >
-          <option value="">No preference</option>
+          <option value="">{t('ui.account.no-preference')}</option>
           {unknownCurrentLanguage && (
             <option value={currentLanguage}>{currentLanguage}</option>
           )}
           {LANGUAGE_OPTIONS.map((language) => (
             <option key={language.value} value={language.value}>
-              {language.label} ({language.value})
+              {t(`ui.language.${language.value}`)} ({language.value})
             </option>
           ))}
         </select>
@@ -234,7 +256,7 @@ function LanguagePreferenceForm({
 
       <div className="language-preference-actions">
         <button type="submit" disabled={submitting || unchanged}>
-          {submitting ? 'Saving...' : 'Save language'}
+          {submitting ? t('ui.account.saving') : t('ui.account.save-language')}
         </button>
         <button
           className="secondary-button"
@@ -245,7 +267,7 @@ function LanguagePreferenceForm({
             void submitLanguage('')
           }}
         >
-          Clear preference
+          {t('ui.account.clear-preference')}
         </button>
       </div>
 
@@ -261,10 +283,12 @@ function ProfileField({
   label: string
   value: number | string | undefined
 }) {
+  const { t } = useI18n()
+
   return (
     <div>
       <dt>{label}</dt>
-      <dd>{value ?? 'Unavailable'}</dd>
+      <dd>{value ?? t('ui.common.unavailable')}</dd>
     </div>
   )
 }
@@ -278,11 +302,11 @@ function formatProfileTimestamp(value: string | undefined) {
   return value ? formatTimestamp(value) : undefined
 }
 
-function formatRoleLabel(role: string) {
+function formatRoleLabel(role: string, t: UiTranslate) {
   const normalizedRole = role.trim().replace(/^ROLE_/, '').replaceAll('_', ' ')
 
   if (!normalizedRole) {
-    return 'Access role'
+    return t('ui.account.access-role')
   }
 
   return normalizedRole

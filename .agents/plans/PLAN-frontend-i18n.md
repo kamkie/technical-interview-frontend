@@ -99,8 +99,8 @@ All resolved by the user on 2026-06-11 ("take the recommendations"):
 | T2-request-language    | Complete | Coordinator | T1         | 2026-06-11   | T-I18N-002; resolved language on API  |
 | T3-catalog-provider    | Complete | Coordinator | T1         | 2026-06-11   | T-I18N-003; catalog load + provider   |
 | T4-shell-chrome        | Complete | Coordinator | T3         | 2026-06-11   | T-I18N-004; shell, nav, shared ui     |
-| T5-page-chrome         | Ready    | Coordinator | T4         | 2026-06-11   | T-I18N-004; catalog, account, admin   |
-| T6-language-switch     | Waiting  | Coordinator | T5         | 2026-06-11   | T-I18N-005; same-session switch, anon |
+| T5-page-chrome         | Complete | Coordinator | T4         | 2026-06-11   | T-I18N-004; catalog, account, admin   |
+| T6-language-switch     | Ready    | Coordinator | T5         | 2026-06-11   | T-I18N-005; same-session switch, anon |
 
 T1 is `Ready`; later packets promote to `Ready` as their predecessors land per the dependency order.
 
@@ -356,7 +356,15 @@ Expected output:
 
 Result summary:
 
-- Status: pending
+- Status: Complete (2026-06-11)
+- Worker: session agent (direct execution mode)
+- Changed files: `src/catalog/CatalogPanel.tsx`, `src/catalog/CategoryFilter.tsx`, `src/account/AccountProfile.tsx`, `src/account/languageOptions.ts` (`formatLanguagePreference` now takes the translate function), `src/admin/AdminLocalizationPage.tsx`, `src/admin/AdminUsersPage.tsx`, `src/admin/AdminCatalogPage.tsx`, `src/i18n/messages.ts` (~230 new keys across `ui.account`, `ui.catalog`, `ui.admin`, `ui.admin-catalog`, `ui.admin-localization`, `ui.admin-users`, `ui.common`, `ui.coverage`). Full breadth per Open Question 3: headings, buttons, table headers/captions, form labels, empty/loading/error states, aria-labels, confirm dialogs, mutation feedback, and pluralized summary strings (singular/plural key pairs with `{count}` interpolation; shared `ui.common.window-summary`).
+- Validation: full baseline green (lint, typecheck, `npm test` 230 passed unchanged — defaults stay byte-identical, build, `git diff --check`); 375px overflow sweep via `preview_eval` across `/admin/users`, `/admin/catalog`, `/admin/localizations`, `/account`, `/catalog` with `language=pl` active — no horizontal overflow.
+- Self-review: data-fetch-effect error fallbacks stay English literals (they fire only for non-`Error` throws and adding `t` to effect deps would refetch on catalog load); event-handler fallbacks and success messages localize. `formatLoadStatus` left untouched (shared with the out-of-scope operator page); the localization summary uses status-specific keys instead. `createUserLabel`'s `User {n}` fallback stays literal because it also feeds client-side sorting.
+- Commit: see checkpoint below.
+- Blockers: none.
+- Review risks: operator pages now show localized shell/shared-component strings but English page internals (documented non-goal).
+- Handoff: T6 promoted to `Ready`.
 
 ### Task Packet: T6-language-switch
 

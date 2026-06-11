@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
 import type { Category } from '../api/catalog'
+import { useI18n } from '../i18n/useI18n'
 import type { LoadState } from '../ui/asyncState'
 import { StateMessage } from '../ui/StateBlock'
 
@@ -17,6 +18,7 @@ export function CategoryFilter({
   onToggleCategory: (categoryName: string) => void
   selectedCategories: readonly string[]
 }) {
+  const { t } = useI18n()
   const namedCategories = useMemo(
     () =>
       categories.filter(
@@ -29,7 +31,7 @@ export function CategoryFilter({
   return (
     <div className="category-filter" aria-label={ariaLabel}>
       {categoriesState.status === 'loading' && (
-        <StateMessage variant="loading">Loading categories...</StateMessage>
+        <StateMessage variant="loading">{t('ui.catalog.categories-loading')}</StateMessage>
       )}
 
       {categoriesState.status === 'error' && (
@@ -37,7 +39,7 @@ export function CategoryFilter({
       )}
 
       {categoriesState.status === 'ready' && namedCategories.length === 0 && (
-        <StateMessage variant="empty">No categories available.</StateMessage>
+        <StateMessage variant="empty">{t('ui.catalog.categories-empty')}</StateMessage>
       )}
 
       {namedCategories.map((category) => {

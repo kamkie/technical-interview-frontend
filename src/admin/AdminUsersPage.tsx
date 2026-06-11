@@ -24,6 +24,7 @@ import {
 } from '../api/adminUsers'
 import type { SessionResponse } from '../api/session'
 import { hasAdminRole } from '../auth/roles'
+import { useI18n, type UiTranslate } from '../i18n/useI18n'
 import {
   getDisplayMessage,
   type LoadState,
@@ -86,6 +87,7 @@ type RoleDraft = {
 }
 
 export function AdminUsersPage({ session }: { session: SessionResponse }) {
+  const { t } = useI18n()
   const accountState = useCurrentAccount(
     session.authenticated === true ? session : null,
   )
@@ -94,16 +96,15 @@ export function AdminUsersPage({ session }: { session: SessionResponse }) {
     return (
       <section className="admin-user-panel" aria-labelledby="admin-users-title">
         <div className="section-heading">
-          <p className="eyebrow">Admin users</p>
-          <h2 id="admin-users-title">User management</h2>
+          <p className="eyebrow">{t('ui.admin-users.eyebrow')}</p>
+          <h2 id="admin-users-title">{t('ui.admin-users.management-title')}</h2>
           <p className="section-description">
-            Review application users and role-grant provenance after
-            authenticated admin access is confirmed.
+            {t('ui.admin-users.sign-in-required-hint')}
           </p>
         </div>
         <StateBlock
-          message="Sign in is required for user management."
-          title="Sign in required"
+          message={t('ui.admin-users.sign-in-message')}
+          title={t('ui.admin-users.sign-in-title')}
           variant="error"
         />
       </section>
@@ -111,11 +112,11 @@ export function AdminUsersPage({ session }: { session: SessionResponse }) {
   }
 
   return (
-    <section className="admin-user-panel" aria-label="User administration">
+    <section className="admin-user-panel" aria-label={t('ui.route.admin-users.title')}>
       {accountState.status === 'loading' && (
         <StateBlock
-          message="Loading admin access..."
-          title="Checking admin access"
+          message={t('ui.admin.access-loading-message')}
+          title={t('ui.admin.access-loading-title')}
           variant="loading"
         />
       )}
@@ -123,7 +124,7 @@ export function AdminUsersPage({ session }: { session: SessionResponse }) {
       {accountState.status === 'error' && (
         <StateBlock
           message={accountState.message}
-          title="Admin access unavailable"
+          title={t('ui.admin.access-error-title')}
           variant="error"
         />
       )}
@@ -136,8 +137,8 @@ export function AdminUsersPage({ session }: { session: SessionResponse }) {
           />
         ) : (
           <StateBlock
-            message="Admin access is required for user management."
-            title="Admin role required"
+            message={t('ui.admin-users.access-message')}
+            title={t('ui.admin.role-required-title')}
             variant="error"
           />
         ))}
@@ -152,6 +153,7 @@ function AdminUsersManager({
   currentAccount: UserAccount
   session: SessionResponse
 }) {
+  const { t } = useI18n()
   const navigate = useNavigate()
   const params = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -298,7 +300,7 @@ function AdminUsersManager({
     if (user.id === undefined) {
       setRoleMutationState({
         status: 'error',
-        message: 'Role replacement requires a persisted user id.',
+        message: t('ui.admin-users.persisted-id-required'),
       })
 
       return
@@ -307,7 +309,7 @@ function AdminUsersManager({
     if (!request.reason.trim()) {
       setRoleMutationState({
         status: 'error',
-        message: 'Operator reason is required.',
+        message: t('ui.admin-users.reason-required'),
       })
 
       return
@@ -389,12 +391,12 @@ function AdminUsersManager({
 
       setRoleMutationState({
         status: 'success',
-        message: 'User roles updated.',
+        message: t('ui.admin-users.roles-updated'),
       })
     } catch (error: unknown) {
       setRoleMutationState({
         status: 'error',
-        message: getDisplayMessage(error, 'User roles could not be updated.'),
+        message: getDisplayMessage(error, t('ui.admin-users.roles-update-failed')),
       })
     }
   }
@@ -404,32 +406,31 @@ function AdminUsersManager({
       <section className="admin-section" aria-labelledby="admin-users-list-title">
         <div className="admin-section-heading">
           <div>
-            <h2 id="admin-users-list-title">Application users</h2>
+            <h2 id="admin-users-list-title">{t('ui.admin-users.list-title')}</h2>
             <p className="section-description">
-              Select a user to review profile details, roles, and grant
-              history.
+              {t('ui.admin-users.list-description')}
             </p>
           </div>
           <div className="section-actions">
             <button
               type="button"
-              aria-label="Refresh users"
+              aria-label={t('ui.admin-users.refresh-label')}
               className="secondary-button compact-action"
               onClick={refreshUsers}
             >
-              Refresh
+              {t('ui.common.refresh')}
             </button>
           </div>
         </div>
 
         <div className="list-card">
           <form
-            aria-label="Admin user filters"
+            aria-label={t('ui.admin-users.filters-label')}
             className="admin-list-filters"
             onSubmit={(event) => event.preventDefault()}
           >
             <label>
-              <span>Search</span>
+              <span>{t('ui.admin-users.search')}</span>
               <input
                 name="q"
                 type="search"
@@ -443,7 +444,7 @@ function AdminUsersManager({
               />
             </label>
             <label>
-              <span>Role</span>
+              <span>{t('ui.admin-users.role')}</span>
               <select
                 name="role"
                 value={listQuery.role}
@@ -455,7 +456,7 @@ function AdminUsersManager({
                   })
                 }
               >
-                <option value="">All roles</option>
+                <option value="">{t('ui.admin-users.all-roles')}</option>
                 {MANAGED_ADMIN_USER_ROLES.map((role) => (
                   <option key={role} value={role}>
                     {role}
@@ -465,16 +466,16 @@ function AdminUsersManager({
             </label>
           </form>
 
-          <div className="catalog-toolbar" aria-label="Admin user table controls">
+          <div className="catalog-toolbar" aria-label={t('ui.admin-users.toolbar-label')}>
             <div className="catalog-toolbar-status">
               {usersState.status === 'ready' && (
                 <span aria-live="polite" className="toolbar-summary">
-                  {formatUserWindow(filteredUsers.length, currentPage, listQuery.size)}
+                  {formatUserWindow(t, filteredUsers.length, currentPage, listQuery.size)}
                 </span>
               )}
               {usersState.status === 'ready' && (
                 <PaginationControls
-                  ariaLabel="Admin user pagination top"
+                  ariaLabel={t('ui.admin-users.pagination-top-label')}
                   first={firstPage}
                   last={lastPage}
                   pageNumber={currentPage}
@@ -498,8 +499,8 @@ function AdminUsersManager({
 
           {usersState.status === 'loading' && (
             <StateBlock
-              message="Loading users..."
-              title="Loading users"
+              message={t('ui.admin-users.loading-message')}
+              title={t('ui.admin-users.loading-title')}
               variant="loading"
             />
           )}
@@ -507,7 +508,7 @@ function AdminUsersManager({
           {usersState.status === 'error' && (
             <StateBlock
               message={usersState.message}
-              title="Users could not be loaded"
+              title={t('ui.admin-users.error-title')}
               variant="error"
             />
           )}
@@ -518,7 +519,7 @@ function AdminUsersManager({
                 hasUsers={usersState.value.length > 0}
                 listQuery={listQuery}
                 renderUserDetail={(user) => (
-                  <section aria-label="User detail">
+                  <section aria-label={t('ui.admin-users.detail-title')}>
                     <AdminUserDetail
                       mutationState={roleMutationState}
                       user={user}
@@ -532,7 +533,7 @@ function AdminUsersManager({
                 onSortByField={sortByField}
               />
               <PaginationControls
-                ariaLabel="Admin user pagination"
+                ariaLabel={t('ui.admin-users.pagination-label')}
                 first={firstPage}
                 last={lastPage}
                 pageNumber={currentPage}
@@ -567,11 +568,11 @@ function AdminUsersManager({
 
       {pendingSelfDemotion !== null && (
         <ConfirmDialog
-          confirmLabel="Remove my admin access"
-          message={`Removing ADMIN from ${createUserLabel(
-            pendingSelfDemotion.user,
-          )} demotes the account you are signed in with; admin workflows close after saving.`}
-          title="Confirm self-demotion"
+          confirmLabel={t('ui.admin-users.self-demotion-confirm')}
+          message={t('ui.admin-users.self-demotion-message', {
+            label: createUserLabel(pendingSelfDemotion.user),
+          })}
+          title={t('ui.admin-users.self-demotion-title')}
           onCancel={closeSelfDemotionDialog}
           onConfirm={confirmSelfDemotion}
         />
@@ -597,17 +598,19 @@ function AdminUserResults({
   selectedRouteId: string
   users: readonly AdminUserAccount[]
 }) {
+  const { t } = useI18n()
+
   if (users.length === 0) {
     return hasUsers ? (
       <StateBlock
-        message="No users match these filters."
-        title="No matching users"
+        message={t('ui.admin-users.no-match-message')}
+        title={t('ui.admin-users.no-match-title')}
         variant="empty"
       />
     ) : (
       <StateBlock
-        message="No users are available."
-        title="No users returned"
+        message={t('ui.admin-users.empty-message')}
+        title={t('ui.admin-users.empty-title')}
         variant="empty"
       />
     )
@@ -621,40 +624,42 @@ function AdminUserResults({
 
   return (
     <div
-      aria-label="Scrollable admin users table"
+      aria-label={t('ui.admin-users.table-region-label')}
       className="catalog-table-scroll"
       role="region"
       tabIndex={0}
     >
       <table className="catalog-table admin-users-table">
-        <caption className="visually-hidden">Admin users</caption>
+        <caption className="visually-hidden">
+          {t('ui.admin-users.table-caption')}
+        </caption>
         <thead>
           <tr>
             <SortToggleHeader
               direction={headerDirection('user')}
-              label="User"
+              label={t('ui.admin-users.user')}
               onSort={() => onSortByField('user')}
             />
             <SortToggleHeader
               direction={headerDirection('provider')}
-              label="Provider"
+              label={t('ui.admin-users.provider')}
               onSort={() => onSortByField('provider')}
             />
             <SortToggleHeader
               direction={headerDirection('email')}
-              label="Email"
+              label={t('ui.admin-users.email')}
               onSort={() => onSortByField('email')}
             />
             <th className="plain-column-header" scope="col">
-              Roles
+              {t('ui.admin-users.roles')}
             </th>
             <SortToggleHeader
               direction={headerDirection('lastLogin')}
-              label="Last login"
+              label={t('ui.admin-users.last-login')}
               onSort={() => onSortByField('lastLogin')}
             />
             <th className="plain-column-header audit-expand-cell" scope="col">
-              <span className="visually-hidden">Details</span>
+              <span className="visually-hidden">{t('ui.admin-users.details')}</span>
             </th>
           </tr>
         </thead>
@@ -693,6 +698,7 @@ function AdminUserRow({
   selected: boolean
   user: AdminUserAccount
 }) {
+  const { t } = useI18n()
   const label = createUserLabel(user, index)
   const detailRowId = `user-detail-row-${user.id ?? index}`
 
@@ -712,11 +718,11 @@ function AdminUserRow({
         <th scope="row">
           <span>{label}</span>
           <span className="table-subtext">
-            {user.login?.trim() ? user.login : 'Login unavailable'}
+            {user.login?.trim() ? user.login : t('ui.admin-users.login-unavailable')}
           </span>
         </th>
-        <td>{user.provider?.trim() ? user.provider : 'Unknown'}</td>
-        <td>{user.email?.trim() ? user.email : 'Unavailable'}</td>
+        <td>{user.provider?.trim() ? user.provider : t('ui.common.unknown')}</td>
+        <td>{user.email?.trim() ? user.email : t('ui.common.unavailable')}</td>
         <td>
           <RolePills roles={user.roles} />
         </td>
@@ -725,7 +731,7 @@ function AdminUserRow({
           <button
             aria-controls={selected ? detailRowId : undefined}
             aria-expanded={selected}
-            aria-label={`Details for ${label}`}
+            aria-label={t('ui.admin-users.details-for', { label })}
             className="row-expand-button"
             type="button"
             disabled={user.id === undefined}
@@ -767,6 +773,8 @@ function AdminUserDetailPanel({
   state: LoadState<AdminUserAccount[]>
   user: AdminUserAccount | null
 }) {
+  const { t } = useI18n()
+
   return (
     <section
       className="admin-user-detail-panel"
@@ -774,30 +782,32 @@ function AdminUserDetailPanel({
     >
       <div className="admin-section-heading">
         <div>
-          <h2 id="admin-user-detail-title">User detail</h2>
+          <h2 id="admin-user-detail-title">{t('ui.admin-users.detail-title')}</h2>
         </div>
       </div>
 
       {state.status === 'loading' && (
         <StateBlock
-          message="Loading user detail..."
-          title="Loading selected user"
+          message={t('ui.admin-users.detail-loading-message')}
+          title={t('ui.admin-users.detail-loading-title')}
           variant="loading"
         />
       )}
 
       {state.status === 'error' && (
         <StateBlock
-          message="User detail is unavailable until the user list loads."
-          title="Detail unavailable"
+          message={t('ui.admin-users.detail-unavailable-message')}
+          title={t('ui.admin-users.detail-unavailable-title')}
           variant="empty"
         />
       )}
 
       {state.status === 'ready' && user === null && (
         <StateBlock
-          message={`No user was found for id ${selectedRouteId}.`}
-          title="User not found"
+          message={t('ui.admin-users.not-found-message', {
+            id: selectedRouteId,
+          })}
+          title={t('ui.admin-users.not-found-title')}
           variant="error"
         />
       )}
@@ -825,16 +835,17 @@ function AdminUserDetail({
   ) => void
   user: AdminUserAccount
 }) {
+  const { t } = useI18n()
   const label = createUserLabel(user)
 
   return (
     <div className="admin-user-detail-content">
-      <div className="workflow-group" aria-label="Selected user identity">
+      <div className="workflow-group" aria-label={t('ui.admin-users.identity-label')}>
         <div className="account-summary">
           <div>
             <p className="account-name">{label}</p>
             <p className="account-subtitle">
-              {user.login?.trim() ? user.login : 'Login unavailable'}
+              {user.login?.trim() ? user.login : t('ui.admin-users.login-unavailable')}
             </p>
           </div>
           <RolePills roles={user.roles} />
@@ -842,23 +853,23 @@ function AdminUserDetail({
 
         <dl className="account-metadata">
           <div>
-            <dt>Provider</dt>
-            <dd>{user.provider?.trim() ? user.provider : 'Unknown'}</dd>
+            <dt>{t('ui.admin-users.provider')}</dt>
+            <dd>{user.provider?.trim() ? user.provider : t('ui.common.unknown')}</dd>
           </div>
           <div>
-            <dt>Email</dt>
-            <dd>{user.email?.trim() ? user.email : 'Unavailable'}</dd>
+            <dt>{t('ui.admin-users.email')}</dt>
+            <dd>{user.email?.trim() ? user.email : t('ui.common.unavailable')}</dd>
           </div>
           <div>
-            <dt>Preferred language</dt>
+            <dt>{t('ui.admin-users.preferred-language')}</dt>
             <dd>
               {user.preferredLanguage?.trim()
                 ? user.preferredLanguage
-                : 'No preference'}
+                : t('ui.account.no-preference')}
             </dd>
           </div>
           <div>
-            <dt>Updated</dt>
+            <dt>{t('ui.admin-users.updated')}</dt>
             <dd>{formatTimestamp(user.updatedAt)}</dd>
           </div>
         </dl>
@@ -880,6 +891,7 @@ function RoleGrantProvenance({
 }: {
   grants: readonly AdminUserRoleGrant[] | undefined
 }) {
+  const { t } = useI18n()
   const visibleGrants = grants ?? []
 
   return (
@@ -889,50 +901,58 @@ function RoleGrantProvenance({
     >
       <div className="workflow-group-heading">
         <div>
-          <h3 id="role-grants-title">Audit role grants</h3>
+          <h3 id="role-grants-title">{t('ui.admin-users.grants-title')}</h3>
         </div>
       </div>
 
       {visibleGrants.length === 0 ? (
         <p className="session-message muted">
-          No role-grant provenance is available.
+          {t('ui.admin-users.grants-empty')}
         </p>
       ) : (
         <div
-          aria-label="Scrollable role grants table"
+          aria-label={t('ui.admin-users.grants-region-label')}
           className="catalog-table-scroll"
           role="region"
           tabIndex={0}
         >
           <table className="catalog-table role-grants-table">
-            <caption className="visually-hidden">Role grant provenance</caption>
+            <caption className="visually-hidden">
+              {t('ui.admin-users.grants-caption')}
+            </caption>
             <thead>
               <tr>
                 <th className="plain-column-header" scope="col">
-                  Role
+                  {t('ui.admin-users.role')}
                 </th>
                 <th className="plain-column-header" scope="col">
-                  Source
+                  {t('ui.admin-users.source')}
                 </th>
                 <th className="plain-column-header" scope="col">
-                  Granted
+                  {t('ui.admin-users.granted')}
                 </th>
                 <th className="plain-column-header" scope="col">
-                  Granted by
+                  {t('ui.admin-users.granted-by')}
                 </th>
                 <th className="plain-column-header" scope="col">
-                  Reason
+                  {t('ui.admin-users.reason')}
                 </th>
               </tr>
             </thead>
             <tbody>
               {visibleGrants.map((grant, index) => (
                 <tr key={createGrantKey(grant, index)}>
-                  <th scope="row">{grant.role ?? 'Unknown role'}</th>
-                  <td>{grant.source ?? 'Unknown source'}</td>
+                  <th scope="row">
+                    {grant.role ?? t('ui.admin-users.unknown-role')}
+                  </th>
+                  <td>{grant.source ?? t('ui.admin-users.unknown-source')}</td>
                   <td>{formatTimestamp(grant.grantedAt)}</td>
-                  <td>{formatGrantingOperator(grant)}</td>
-                  <td>{grant.reason?.trim() ? grant.reason : 'No reason recorded'}</td>
+                  <td>{formatGrantingOperator(grant, t)}</td>
+                  <td>
+                    {grant.reason?.trim()
+                      ? grant.reason
+                      : t('ui.admin-users.no-reason')}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -955,6 +975,7 @@ function RoleReplacementForm({
   ) => void
   user: AdminUserAccount
 }) {
+  const { t } = useI18n()
   const userKey = createRoleDraftKey(user)
   const [draftState, setDraftState] = useState(() => ({
     key: userKey,
@@ -995,20 +1016,22 @@ function RoleReplacementForm({
   return (
     <form
       className="role-replacement-form workflow-group"
-      aria-label={`Replace roles for ${createUserLabel(user)}`}
+      aria-label={t('ui.admin-users.replace-roles-label', {
+        label: createUserLabel(user),
+      })}
       onSubmit={handleSubmit}
     >
       <div className="workflow-group-heading">
         <div>
-          <h3>Replace managed roles</h3>
+          <h3>{t('ui.admin-users.replace-roles-title')}</h3>
           <p className="section-description">
-            Submit the complete managed role set with an operator reason.
+            {t('ui.admin-users.replace-roles-hint')}
           </p>
         </div>
       </div>
 
       <fieldset className="admin-checkbox-group">
-        <legend>Managed roles</legend>
+        <legend>{t('ui.admin-users.managed-roles')}</legend>
         {MANAGED_ADMIN_USER_ROLES.map((role) => {
           const isUserRole = role === 'USER'
 
@@ -1027,7 +1050,7 @@ function RoleReplacementForm({
       </fieldset>
 
       <label className="admin-user-reason-field">
-        <span>Operator reason</span>
+        <span>{t('ui.admin-users.operator-reason')}</span>
         <textarea
           required
           rows={4}
@@ -1038,13 +1061,15 @@ function RoleReplacementForm({
 
       <div className="admin-action-row">
         <button type="submit" disabled={!canSubmit}>
-          {submitting ? 'Saving roles...' : 'Save roles'}
+          {submitting
+            ? t('ui.admin-users.saving-roles')
+            : t('ui.admin-users.save-roles')}
         </button>
       </div>
 
       {user.id === undefined && (
         <p className="session-message error" role="alert">
-          Role replacement requires a persisted user id.
+          {t('ui.admin-users.persisted-id-required')}
         </p>
       )}
 
@@ -1054,14 +1079,15 @@ function RoleReplacementForm({
 }
 
 function RolePills({ roles }: { roles: readonly string[] | undefined }) {
+  const { t } = useI18n()
   const visibleRoles = roles ?? []
 
   if (visibleRoles.length === 0) {
-    return <span className="session-message muted">No roles</span>
+    return <span className="session-message muted">{t('ui.admin-users.no-roles')}</span>
   }
 
   return (
-    <div className="account-roles" aria-label="Current roles">
+    <div className="account-roles" aria-label={t('ui.admin-users.current-roles-label')}>
       {visibleRoles.map((role) => (
         <span className="role-pill" key={role}>
           {role}
@@ -1210,8 +1236,16 @@ function userSortText(user: AdminUserAccount, field: UsersSortField) {
   return createUserLabel(user)
 }
 
-function formatUserWindow(total: number, page: number, size: number) {
-  const label = `${total} ${total === 1 ? 'user' : 'users'}`
+function formatUserWindow(
+  t: UiTranslate,
+  total: number,
+  page: number,
+  size: number,
+) {
+  const label = t(
+    total === 1 ? 'ui.admin-users.user-count-one' : 'ui.admin-users.user-count-many',
+    { count: total },
+  )
 
   if (total <= 0) {
     return label
@@ -1220,7 +1254,7 @@ function formatUserWindow(total: number, page: number, size: number) {
   const start = page * size + 1
   const end = Math.min((page + 1) * size, total)
 
-  return `Showing ${start}-${end} of ${label}`
+  return t('ui.common.window-summary', { start, end, total: label })
 }
 
 function findUserByRouteId(
@@ -1295,12 +1329,12 @@ function createGrantKey(grant: AdminUserRoleGrant, index: number) {
   }`
 }
 
-function formatGrantingOperator(grant: AdminUserRoleGrant) {
+function formatGrantingOperator(grant: AdminUserRoleGrant, t: UiTranslate) {
   const login = grant.grantedByLogin?.trim()
   const userId = grant.grantedByUserId
 
   if (login && userId !== undefined) {
-    return `${login} (ID ${userId})`
+    return t('ui.admin-users.granted-by-operator', { login, id: userId })
   }
 
   if (login) {
@@ -1308,8 +1342,8 @@ function formatGrantingOperator(grant: AdminUserRoleGrant) {
   }
 
   if (userId !== undefined) {
-    return `User ${userId}`
+    return t('ui.admin-users.user-number', { id: userId })
   }
 
-  return 'System'
+  return t('ui.admin-users.system')
 }
