@@ -97,8 +97,8 @@ All resolved by the user on 2026-06-11 ("take the recommendations"):
 | ---------------------- | -------- | ----------- | ---------- | ------------ | ------------------------------------- |
 | T1-language-resolution | Complete | Coordinator | None       | 2026-06-11   | T-I18N-001; pure resolution module    |
 | T2-request-language    | Complete | Coordinator | T1         | 2026-06-11   | T-I18N-002; resolved language on API  |
-| T3-catalog-provider    | Ready    | Coordinator | T1         | 2026-06-11   | T-I18N-003; catalog load + provider   |
-| T4-shell-chrome        | Waiting  | Coordinator | T3         | 2026-06-11   | T-I18N-004; shell, nav, shared ui     |
+| T3-catalog-provider    | Complete | Coordinator | T1         | 2026-06-11   | T-I18N-003; catalog load + provider   |
+| T4-shell-chrome        | Ready    | Coordinator | T3         | 2026-06-11   | T-I18N-004; shell, nav, shared ui     |
 | T5-page-chrome         | Waiting  | Coordinator | T4         | 2026-06-11   | T-I18N-004; catalog, account, admin   |
 | T6-language-switch     | Waiting  | Coordinator | T5         | 2026-06-11   | T-I18N-005; same-session switch, anon |
 
@@ -252,7 +252,15 @@ Expected output:
 
 Result summary:
 
-- Status: pending
+- Status: Complete (2026-06-11)
+- Worker: session agent (direct execution mode)
+- Changed files: new `src/i18n/messages.ts` (registry + `{name}` interpolation), `src/i18n/catalog.ts` (paged loader, blank-text skip), `src/i18n/useI18n.ts` (context + hook; split from the provider for the react-refresh lint rule), `src/i18n/I18nProvider.tsx`, tests for all three; `src/main.tsx` mounts the provider; `src/mock-api/handler.ts` seeds 16 `pl` chrome rows and a 4-row partial `de` set with `nextLocalizationId` derived from the seed count.
+- Validation: full baseline green (lint, typecheck, `npm test` 230 passed, build, `git diff --check`).
+- Self-review: provider sets the T2 holder synchronously in the state initializer so first child fetches carry the resolved language; catalog failure is non-fatal (English defaults); unmounted-provider context default serves English so isolated component tests keep working; `document.documentElement.lang` tracks the active language.
+- Commit: see checkpoint below.
+- Blockers: none.
+- Review risks: registry holds the 16 shell-critical keys; T4/T5 grow it. Mock seeds cover a subset by design — uncovered keys demonstrate English fallback.
+- Handoff: T4 promoted to `Ready`; route chrome through `useI18n().t` and register keys in `messages.ts`.
 
 ### Task Packet: T4-shell-chrome
 

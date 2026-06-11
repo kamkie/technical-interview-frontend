@@ -139,6 +139,7 @@ export function createMockApiState(options: Pick<MockApiOptions, 'session' | 'sc
           createdAt: '2026-06-07T10:05:00Z',
           updatedAt: '2026-06-07T10:05:00Z',
         },
+        ...createChromeLocalizations(3),
       ]
 
   return {
@@ -151,8 +152,46 @@ export function createMockApiState(options: Pick<MockApiOptions, 'session' | 'sc
     localizations,
     nextBookId: 4,
     nextCategoryId: 4,
-    nextLocalizationId: 3,
+    nextLocalizationId: empty ? 3 : localizations.length + 1,
   }
+}
+
+// Seeded frontend chrome translations: full Polish coverage for the shell
+// keys plus a deliberately partial German set so missing rows demonstrate
+// the English fallback. Keys mirror src/i18n/messages.ts.
+function createChromeLocalizations(startId: number): LocalizationResponse[] {
+  const rows: readonly [string, string, string][] = [
+    ['pl', 'ui.nav.admin', 'Administracja'],
+    ['pl', 'ui.nav.catalog', 'Katalog'],
+    ['pl', 'ui.nav.catalog-admin', 'Administracja katalogiem'],
+    ['pl', 'ui.nav.diagnostics', 'Diagnostyka'],
+    ['pl', 'ui.nav.localizations', 'Tłumaczenia'],
+    ['pl', 'ui.nav.operations', 'Operacje'],
+    ['pl', 'ui.nav.operations-console', 'Konsola operacyjna'],
+    ['pl', 'ui.nav.users', 'Użytkownicy'],
+    ['pl', 'ui.session.account-settings', 'Ustawienia konta'],
+    ['pl', 'ui.session.guest', 'Przeglądasz jako gość'],
+    ['pl', 'ui.session.sign-in', 'Zaloguj się'],
+    ['pl', 'ui.session.sign-out', 'Wyloguj się'],
+    ['pl', 'ui.session.signed-in', 'Zalogowano'],
+    ['pl', 'ui.session.signing-out', 'Wylogowywanie...'],
+    ['pl', 'ui.shell.brand', 'Konsola Biblioteki'],
+    ['pl', 'ui.shell.skip-link', 'Przejdź do głównej treści'],
+    ['de', 'ui.nav.catalog', 'Katalog'],
+    ['de', 'ui.nav.users', 'Benutzer'],
+    ['de', 'ui.session.sign-in', 'Anmelden'],
+    ['de', 'ui.session.sign-out', 'Abmelden'],
+  ]
+
+  return rows.map(([language, messageKey, messageText], index) => ({
+    id: startId + index,
+    messageKey,
+    language,
+    messageText,
+    description: 'Seeded frontend chrome translation.',
+    createdAt: '2026-06-11T09:00:00Z',
+    updatedAt: '2026-06-11T09:00:00Z',
+  }))
 }
 
 export function createMockApiHandler(options: MockApiOptions = {}) {
