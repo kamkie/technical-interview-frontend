@@ -16,6 +16,11 @@ RUN npm run build
 
 FROM nginxinc/nginx-unprivileged:1.31-alpine
 
+# CVE-2026-45447: base image ships openssl 3.5.6-r0; remove once upstream rebuilds with 3.5.7-r0.
+USER root
+RUN apk upgrade --no-cache libcrypto3 libssl3
+USER nginx
+
 ENV FRONTEND_API_UPSTREAM=http://host.docker.internal:8080
 
 COPY docker/nginx/templates/default.conf.template /etc/nginx/templates/default.conf.template

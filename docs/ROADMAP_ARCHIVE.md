@@ -93,7 +93,7 @@ Labels: `type:milestone`, `status:done`
 
 Goal: Surface account status on the admin user administration page and add a block/unblock control with a required operator reason beside role replacement, backed by `PUT /api/admin/users/{id}/status` from the imported contract artifacts under `docs/backend/` (refreshed 2026-06-11 from backend commit `0640891`). Behavior detail is owned by `docs/specs/SPEC_admin_user_management.md`.
 
-Completion evidence: Delivered 2026-06-11 on `main` in commit `332d15b` after the contract refresh `ea68377`; unreleased pending the next release candidate. Full baseline green; the users list renders a status column and client-side status filter, blocked-account detail shows block provenance, status replacement requires an operator reason, the control stays disabled for the signed-in administrator's own account, and the mock API implements the status route with a seeded blocked user.
+Completion evidence: Delivered 2026-06-11 on `main` in commit `332d15b` after the contract refresh `ea68377`; released in `v0.4.0`. Full baseline green; the users list renders a status column and client-side status filter, blocked-account detail shows block provenance, status replacement requires an operator reason, the control stays disabled for the signed-in administrator's own account, and the mock API implements the status route with a seeded blocked user.
 
 ### M-I18N-001: Frontend Internationalization
 
@@ -101,7 +101,7 @@ Labels: `type:milestone`, `status:done`
 
 Goal: Render the frontend UI in the user's resolved language using the backend localization mechanism — language negotiation, the public localization catalog, and the existing account language preference — instead of hardcoded English strings. Exact negotiation and endpoint rules stay in `docs/backend/`.
 
-Completion evidence: Delivered 2026-06-11 on `main` through `PLAN-frontend-i18n` checkpoints `ee46d49`, `4a5661b`, `a4f3a41`, `cb4f60b`, `acd2ee9`, and `515789a`; unreleased pending the next release candidate. Full baseline, `npm run a11y`, and `npm run smoke:authenticated` green; mock-browser evidence covers resolution tiers, in-session switching, anonymous cookie selection, and English fallback.
+Completion evidence: Delivered 2026-06-11 on `main` through `PLAN-frontend-i18n` checkpoints `ee46d49`, `4a5661b`, `a4f3a41`, `cb4f60b`, `acd2ee9`, and `515789a`; released in `v0.4.0`. Full baseline, `npm run a11y`, and `npm run smoke:authenticated` green; mock-browser evidence covers resolution tiers, in-session switching, anonymous cookie selection, and English fallback.
 
 #### E-I18N-001: Language Resolution And Catalog Integration
 

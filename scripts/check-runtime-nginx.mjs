@@ -61,9 +61,11 @@ function checkDockerfile(dockerfile) {
     /HEALTHCHECK[\s\S]*http:\/\/127\.0\.0\.1:8080\/healthz/im.test(dockerfile),
     'Dockerfile healthcheck must target /healthz on port 8080',
   )
+  const userLines = dockerfile.match(/^USER\s+\S+/gim) ?? []
+  const finalUser = userLines.at(-1) ?? ''
   expect(
-    !/^USER\s+root\b/im.test(dockerfile),
-    'Dockerfile must not switch the runtime image to root',
+    !/^USER\s+(?:root|0)\b/i.test(finalUser),
+    'Dockerfile must not leave the runtime image running as root',
   )
 }
 

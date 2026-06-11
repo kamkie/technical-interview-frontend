@@ -4,6 +4,8 @@ This project follows Keep a Changelog style. Release entries stay under `Unrelea
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-06-11
+
 ### Added
 
 - Added admin account block and unblock: the user administration list and inline detail surface each account's status with a client-side status filter, blocked accounts show block provenance, and administrators can block or unblock an account with a required operator reason beside role replacement, backed by the contract `PUT /api/admin/users/{id}/status`; the control stays disabled for the signed-in administrator's own account because the backend rejects self-targeting.
@@ -14,6 +16,10 @@ This project follows Keep a Changelog style. Release entries stay under `Unrelea
 - API requests now carry the resolved UI language as `Accept-Language`, replacing the raw browser-list pass-through on reads, so localized backend payloads match the rendered language.
 - Mock API mode now seeds Polish frontend chrome translations plus a partial German set so localized rendering and English fallback are demonstrable without the sibling backend.
 - Mock API mode now implements the admin account-status route and seeds a blocked user so the block/unblock workflow is demonstrable without the sibling backend.
+
+### Fixed
+
+- Upgraded the release image's OpenSSL packages past CVE-2026-45447 because the upstream `nginxinc/nginx-unprivileged:1.31-alpine` tag still ships the vulnerable version, and refined the runtime invariant check to assert the effective runtime user stays unprivileged instead of rejecting any `USER root` build step.
 
 ## [0.3.1] - 2026-06-09
 

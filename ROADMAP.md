@@ -18,10 +18,10 @@ Stable IDs:
 
 ## Release Context
 
-- Release phase: `v0.3.1` is published; no next release candidate is selected.
-- Latest release: `v0.3.1`.
+- Release phase: `v0.4.0` is published; no next release candidate is selected.
+- Latest release: `v0.4.0`.
 - Next target version: Not selected; select the next maintenance target before more release prep.
-- Current priority: `M-USERS-001` admin account block/unblock is delivered and unreleased; select the next maintenance target before more release prep.
+- Current priority: Select the next maintenance target or roadmap scope before more release prep.
 - Active product plans: None; `PLAN-frontend-i18n` closed on 2026-06-11.
 - Selection policy: Breaking user-facing or backend-contract integration changes require a selected roadmap item.
 
