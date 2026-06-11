@@ -17,10 +17,13 @@ import {
   MANAGED_ADMIN_USER_ROLES,
   fetchAdminUsers,
   replaceAdminUserRoles,
+  replaceAdminUserStatus,
   type AdminUserAccount,
+  type AdminUserAccountStatus,
   type AdminUserRole,
   type AdminUserRoleGrant,
   type AdminUserRoleUpdateRequest,
+  type AdminUserStatusUpdateRequest,
 } from '../api/adminUsers'
 import type { SessionResponse } from '../api/session'
 import { hasAdminRole } from '../auth/roles'
@@ -64,6 +67,7 @@ type AdminUsersListQuery = {
   role: '' | AdminUserRole
   size: UsersPageSize
   sort: UsersSortValue
+  status: '' | AdminUserAccountStatus
 }
 
 const DEFAULT_USERS_QUERY: AdminUsersListQuery = {
@@ -72,7 +76,10 @@ const DEFAULT_USERS_QUERY: AdminUsersListQuery = {
   role: '',
   size: 10,
   sort: 'user,ASC',
+  status: '',
 }
+
+const ACCOUNT_STATUS_FILTERS = ['ACTIVE', 'BLOCKED'] as const satisfies readonly AdminUserAccountStatus[]
 
 const USERS_SORT_FIELDS: readonly UsersSortField[] = [
   'user',
@@ -167,6 +174,9 @@ function AdminUsersManager({
   })
   const [refreshKey, setRefreshKey] = useState(0)
   const [roleMutationState, setRoleMutationState] = useState<MutationState>({
+    status: 'idle',
+  })
+  const [statusMutationState, setStatusMutationState] = useState<MutationState>({
     status: 'idle',
   })
   const [pendingSelfDemotion, setPendingSelfDemotion] = useState<{
@@ -282,6 +292,7 @@ function AdminUsersManager({
     }
 
     setRoleMutationState({ status: 'idle' })
+    setStatusMutationState({ status: 'idle' })
     // Keep the list query in the URL so the filtered view survives selection.
     // Selecting the already-open user collapses its inline detail row.
     navigate({
@@ -401,6 +412,65 @@ function AdminUsersManager({
     }
   }
 
+  function handleReplaceStatus(
+    user: AdminUserAccount,
+    request: AdminUserStatusUpdateRequest,
+  ) {
+    if (user.id === undefined) {
+      setStatusMutationState({
+        status: 'error',
+        message: t('ui.admin-users.persisted-id-required'),
+      })
+
+      return
+    }
+
+    if (!request.reason.trim()) {
+      setStatusMutationState({
+        status: 'error',
+        message: t('ui.admin-users.reason-required'),
+      })
+
+      return
+    }
+
+    void submitStatusReplacement(user, request)
+  }
+
+  async function submitStatusReplacement(
+    user: AdminUserAccount,
+    request: AdminUserStatusUpdateRequest,
+  ) {
+    if (user.id === undefined) {
+      return
+    }
+
+    setStatusMutationState({ status: 'submitting' })
+
+    try {
+      const updatedUser = await replaceAdminUserStatus(session, user.id, request)
+
+      setUsersState((current) =>
+        current.status === 'ready'
+          ? {
+              status: 'ready',
+              value: upsertUser(current.value, updatedUser),
+            }
+          : current,
+      )
+
+      setStatusMutationState({
+        status: 'success',
+        message: t('ui.admin-users.status-updated'),
+      })
+    } catch (error: unknown) {
+      setStatusMutationState({
+        status: 'error',
+        message: getDisplayMessage(error, t('ui.admin-users.status-update-failed')),
+      })
+    }
+  }
+
   return (
     <div className="admin-users-layout">
       <section className="admin-section" aria-labelledby="admin-users-list-title">
@@ -464,6 +534,27 @@ function AdminUsersManager({
                 ))}
               </select>
             </label>
+            <label>
+              <span>{t('ui.admin-users.status')}</span>
+              <select
+                name="status"
+                value={listQuery.status}
+                onChange={(event) =>
+                  updateListQuery({
+                    ...listQuery,
+                    page: 0,
+                    status: parseStatusFilter(event.currentTarget.value),
+                  })
+                }
+              >
+                <option value="">{t('ui.admin-users.all-statuses')}</option>
+                {ACCOUNT_STATUS_FILTERS.map((status) => (
+                  <option key={status} value={status}>
+                    {formatAccountStatus(status, t)}
+                  </option>
+                ))}
+              </select>
+            </label>
           </form>
 
           <div className="catalog-toolbar" aria-label={t('ui.admin-users.toolbar-label')}>
@@ -521,9 +612,12 @@ function AdminUsersManager({
                 renderUserDetail={(user) => (
                   <section aria-label={t('ui.admin-users.detail-title')}>
                     <AdminUserDetail
+                      currentAccountId={currentAccount.id}
                       mutationState={roleMutationState}
+                      statusMutationState={statusMutationState}
                       user={user}
                       onReplaceRoles={handleReplaceRoles}
+                      onReplaceStatus={handleReplaceStatus}
                     />
                   </section>
                 )}
@@ -558,11 +652,14 @@ function AdminUsersManager({
 
       {selectedRouteId !== '' && !selectedUserVisible && (
         <AdminUserDetailPanel
+          currentAccountId={currentAccount.id}
           mutationState={roleMutationState}
           selectedRouteId={selectedRouteId}
           state={usersState}
+          statusMutationState={statusMutationState}
           user={selectedUser}
           onReplaceRoles={handleReplaceRoles}
+          onReplaceStatus={handleReplaceStatus}
         />
       )}
 
@@ -653,6 +750,9 @@ function AdminUserResults({
             <th className="plain-column-header" scope="col">
               {t('ui.admin-users.roles')}
             </th>
+            <th className="plain-column-header" scope="col">
+              {t('ui.admin-users.status')}
+            </th>
             <SortToggleHeader
               direction={headerDirection('lastLogin')}
               label={t('ui.admin-users.last-login')}
@@ -726,6 +826,9 @@ function AdminUserRow({
         <td>
           <RolePills roles={user.roles} />
         </td>
+        <td>
+          <AccountStatusPill status={user.accountStatus} />
+        </td>
         <td>{formatTimestamp(user.lastLoginAt)}</td>
         <td className="audit-expand-cell">
           <button
@@ -750,7 +853,7 @@ function AdminUserRow({
       </tr>
       {selected && (
         <tr className="user-detail-row" id={detailRowId}>
-          <td colSpan={6}>{renderUserDetail(user)}</td>
+          <td colSpan={7}>{renderUserDetail(user)}</td>
         </tr>
       )}
     </>
@@ -758,19 +861,28 @@ function AdminUserRow({
 }
 
 function AdminUserDetailPanel({
+  currentAccountId,
   mutationState,
   onReplaceRoles,
+  onReplaceStatus,
   selectedRouteId,
   state,
+  statusMutationState,
   user,
 }: {
+  currentAccountId: number | undefined
   mutationState: MutationState
   onReplaceRoles: (
     user: AdminUserAccount,
     request: AdminUserRoleUpdateRequest,
   ) => void
+  onReplaceStatus: (
+    user: AdminUserAccount,
+    request: AdminUserStatusUpdateRequest,
+  ) => void
   selectedRouteId: string
   state: LoadState<AdminUserAccount[]>
+  statusMutationState: MutationState
   user: AdminUserAccount | null
 }) {
   const { t } = useI18n()
@@ -814,9 +926,12 @@ function AdminUserDetailPanel({
 
       {state.status === 'ready' && user !== null && (
         <AdminUserDetail
+          currentAccountId={currentAccountId}
           mutationState={mutationState}
+          statusMutationState={statusMutationState}
           user={user}
           onReplaceRoles={onReplaceRoles}
+          onReplaceStatus={onReplaceStatus}
         />
       )}
     </section>
@@ -824,19 +939,29 @@ function AdminUserDetailPanel({
 }
 
 function AdminUserDetail({
+  currentAccountId,
   mutationState,
   onReplaceRoles,
+  onReplaceStatus,
+  statusMutationState,
   user,
 }: {
+  currentAccountId: number | undefined
   mutationState: MutationState
   onReplaceRoles: (
     user: AdminUserAccount,
     request: AdminUserRoleUpdateRequest,
   ) => void
+  onReplaceStatus: (
+    user: AdminUserAccount,
+    request: AdminUserStatusUpdateRequest,
+  ) => void
+  statusMutationState: MutationState
   user: AdminUserAccount
 }) {
   const { t } = useI18n()
   const label = createUserLabel(user)
+  const blocked = user.accountStatus === 'BLOCKED'
 
   return (
     <div className="admin-user-detail-content">
@@ -872,6 +997,36 @@ function AdminUserDetail({
             <dt>{t('ui.admin-users.updated')}</dt>
             <dd>{formatTimestamp(user.updatedAt)}</dd>
           </div>
+          <div>
+            <dt>{t('ui.admin-users.status')}</dt>
+            <dd>
+              <AccountStatusPill status={user.accountStatus} />
+            </dd>
+          </div>
+          {blocked && (
+            <>
+              <div>
+                <dt>{t('ui.admin-users.blocked-at')}</dt>
+                <dd>{formatTimestamp(user.blockedAt)}</dd>
+              </div>
+              <div>
+                <dt>{t('ui.admin-users.blocked-by')}</dt>
+                <dd>
+                  {user.blockedBy?.trim()
+                    ? user.blockedBy
+                    : t('ui.admin-users.system')}
+                </dd>
+              </div>
+              <div>
+                <dt>{t('ui.admin-users.blocked-reason')}</dt>
+                <dd>
+                  {user.blockedReason?.trim()
+                    ? user.blockedReason
+                    : t('ui.admin-users.no-reason')}
+                </dd>
+              </div>
+            </>
+          )}
         </dl>
       </div>
 
@@ -881,6 +1036,13 @@ function AdminUserDetail({
         mutationState={mutationState}
         user={user}
         onReplaceRoles={onReplaceRoles}
+      />
+
+      <StatusReplacementForm
+        currentAccountId={currentAccountId}
+        mutationState={statusMutationState}
+        user={user}
+        onReplaceStatus={onReplaceStatus}
       />
     </div>
   )
@@ -1078,6 +1240,134 @@ function RoleReplacementForm({
   )
 }
 
+function StatusReplacementForm({
+  currentAccountId,
+  mutationState,
+  onReplaceStatus,
+  user,
+}: {
+  currentAccountId: number | undefined
+  mutationState: MutationState
+  onReplaceStatus: (
+    user: AdminUserAccount,
+    request: AdminUserStatusUpdateRequest,
+  ) => void
+  user: AdminUserAccount
+}) {
+  const { t } = useI18n()
+  const draftKey = createStatusDraftKey(user)
+  const [draftState, setDraftState] = useState(() => ({
+    key: draftKey,
+    value: '',
+  }))
+  const reasonDraft = draftState.key === draftKey ? draftState.value : ''
+  const submitting = mutationState.status === 'submitting'
+  const reason = reasonDraft.trim()
+  const selfTarget =
+    user.id !== undefined &&
+    currentAccountId !== undefined &&
+    user.id === currentAccountId
+  const statusKnown =
+    user.accountStatus === 'ACTIVE' || user.accountStatus === 'BLOCKED'
+  const nextStatus: AdminUserAccountStatus =
+    user.accountStatus === 'BLOCKED' ? 'ACTIVE' : 'BLOCKED'
+  const canSubmit =
+    user.id !== undefined &&
+    statusKnown &&
+    !selfTarget &&
+    reason.length > 0 &&
+    !submitting
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    onReplaceStatus(user, { status: nextStatus, reason })
+  }
+
+  return (
+    <form
+      className="status-replacement-form workflow-group"
+      aria-label={t('ui.admin-users.replace-status-label', {
+        label: createUserLabel(user),
+      })}
+      onSubmit={handleSubmit}
+    >
+      <div className="workflow-group-heading">
+        <div>
+          <h3>{t('ui.admin-users.replace-status-title')}</h3>
+          <p className="section-description">
+            {t('ui.admin-users.replace-status-hint')}
+          </p>
+        </div>
+      </div>
+
+      <label className="admin-user-reason-field">
+        <span>{t('ui.admin-users.operator-reason')}</span>
+        <textarea
+          required
+          disabled={selfTarget || !statusKnown}
+          rows={4}
+          value={reasonDraft}
+          onChange={(event) =>
+            setDraftState({ key: draftKey, value: event.currentTarget.value })
+          }
+        />
+      </label>
+
+      <div className="admin-action-row">
+        <button type="submit" disabled={!canSubmit}>
+          {submitting
+            ? t('ui.admin-users.saving-status')
+            : nextStatus === 'BLOCKED'
+              ? t('ui.admin-users.block-user')
+              : t('ui.admin-users.unblock-user')}
+        </button>
+      </div>
+
+      {selfTarget && (
+        <p className="session-message muted">
+          {t('ui.admin-users.self-status-hint')}
+        </p>
+      )}
+
+      {!statusKnown && (
+        <p className="session-message muted">
+          {t('ui.admin-users.status-unknown-hint')}
+        </p>
+      )}
+
+      {user.id === undefined && (
+        <p className="session-message error" role="alert">
+          {t('ui.admin-users.persisted-id-required')}
+        </p>
+      )}
+
+      <MutationFeedback state={mutationState} />
+    </form>
+  )
+}
+
+function AccountStatusPill({
+  status,
+}: {
+  status: AdminUserAccount['accountStatus']
+}) {
+  const { t } = useI18n()
+
+  if (status !== 'ACTIVE' && status !== 'BLOCKED') {
+    return (
+      <span className="session-message muted">{t('ui.common.unknown')}</span>
+    )
+  }
+
+  return (
+    <span
+      className={`status-pill ${status === 'BLOCKED' ? 'status-pill-blocked' : 'status-pill-active'}`}
+    >
+      {formatAccountStatus(status, t)}
+    </span>
+  )
+}
+
 function RolePills({ roles }: { roles: readonly string[] | undefined }) {
   const { t } = useI18n()
   const visibleRoles = roles ?? []
@@ -1114,6 +1404,7 @@ function parseAdminUsersSearchParams(
     size: USERS_PAGE_SIZE_OPTIONS.find((option) => option === size) ??
       DEFAULT_USERS_QUERY.size,
     sort: parseUsersSort(searchParams.get('sort')),
+    status: parseStatusFilter(searchParams.get('status') ?? ''),
   }
 }
 
@@ -1126,6 +1417,10 @@ function adminUsersQueryToSearchParams(query: AdminUsersListQuery) {
 
   if (query.role) {
     params.set('role', query.role)
+  }
+
+  if (query.status) {
+    params.set('status', query.status)
   }
 
   if (query.sort !== DEFAULT_USERS_QUERY.sort) {
@@ -1147,6 +1442,19 @@ function parseRoleFilter(value: string): '' | AdminUserRole {
   return (
     MANAGED_ADMIN_USER_ROLES.find((role) => role === value.toUpperCase()) ?? ''
   )
+}
+
+function parseStatusFilter(value: string): '' | AdminUserAccountStatus {
+  return (
+    ACCOUNT_STATUS_FILTERS.find((status) => status === value.toUpperCase()) ??
+    ''
+  )
+}
+
+function formatAccountStatus(status: AdminUserAccountStatus, t: UiTranslate) {
+  return status === 'BLOCKED'
+    ? t('ui.admin-users.status-blocked')
+    : t('ui.admin-users.status-active')
 }
 
 function parseUsersSort(value: string | null): UsersSortValue {
@@ -1188,6 +1496,10 @@ function filterAndSortUsers(
   const text = query.q.toLocaleLowerCase()
   const filtered = users.filter((user) => {
     if (query.role && !(user.roles ?? []).includes(query.role)) {
+      return false
+    }
+
+    if (query.status && user.accountStatus !== query.status) {
       return false
     }
 
@@ -1308,6 +1620,12 @@ function createRoleDraftKey(user: AdminUserAccount) {
   return `${user.id ?? 'unknown'}\u0000${(user.roles ?? []).join('|')}\u0000${
     user.updatedAt ?? ''
   }`
+}
+
+function createStatusDraftKey(user: AdminUserAccount) {
+  return [user.id ?? 'unknown', user.accountStatus ?? '', user.updatedAt ?? ''].join(
+    ' ',
+  )
 }
 
 function createUserKey(user: AdminUserAccount, index: number) {

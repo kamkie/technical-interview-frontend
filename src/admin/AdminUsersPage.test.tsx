@@ -15,6 +15,7 @@ import {
 import {
   ADMIN_USERS_PATH,
   getAdminUserRolesPath,
+  getAdminUserStatusPath,
   type AdminUserAccount,
 } from '../api/adminUsers'
 import type { SessionResponse } from '../api/session'
@@ -443,6 +444,152 @@ describe('AdminUsersPage', () => {
       await screen.findByText('Admin access is required for user management.'),
     ).toBeInTheDocument()
   })
+
+  it('renders account status pills and filters by status client-side', async () => {
+    mockAdminUsersFetch({ users: createUsersWithBlockedReviewer() })
+    const { container, router } = renderAdminUsers()
+
+    expect(await screen.findByText('Admin User')).toBeInTheDocument()
+    expect(container.querySelectorAll('.status-pill-active')).toHaveLength(1)
+    expect(container.querySelectorAll('.status-pill-blocked')).toHaveLength(1)
+
+    fireEvent.change(screen.getByLabelText('Status'), {
+      target: { value: 'BLOCKED' },
+    })
+
+    expect(await screen.findByText('Showing 1-1 of 1 user')).toBeInTheDocument()
+    expect(screen.getByText('Reviewer User')).toBeInTheDocument()
+    expect(screen.queryByText('Admin User')).not.toBeInTheDocument()
+    expect(router.state.location.search).toBe('?status=BLOCKED')
+  })
+
+  it('shows block provenance in detail and requires a reason before status changes', async () => {
+    const fetchMock = mockAdminUsersFetch({
+      users: createUsersWithBlockedReviewer(),
+    })
+
+    renderAdminUsers(`${ADMIN_USERS_ROUTE_PATH}/8`)
+
+    const form = await screen.findByRole('form', {
+      name: 'Replace account status for Reviewer User',
+    })
+    const details = screen.getByRole('region', { name: 'User detail' })
+
+    expect(within(details).getByText('Blocked at')).toBeInTheDocument()
+    expect(within(details).getByText('owner-admin')).toBeInTheDocument()
+    expect(within(details).getByText('Spam activity')).toBeInTheDocument()
+
+    const submit = within(form).getByRole('button', { name: 'Unblock user' })
+    expect(submit).toBeDisabled()
+
+    fireEvent.change(within(form).getByLabelText('Operator reason'), {
+      target: { value: 'Appeal accepted' },
+    })
+
+    expect(submit).toBeEnabled()
+    expect(
+      fetchMock.mock.calls.some(([input]) => String(input).endsWith('/status')),
+    ).toBe(false)
+  })
+
+  it('submits a status replacement and patches row/detail from the backend response', async () => {
+    document.cookie = 'XSRF-TOKEN=token%201'
+    const fetchMock = mockAdminUsersFetch()
+
+    renderAdminUsers(`${ADMIN_USERS_ROUTE_PATH}/8`)
+
+    const form = await screen.findByRole('form', {
+      name: 'Replace account status for Reviewer User',
+    })
+    fireEvent.change(within(form).getByLabelText('Operator reason'), {
+      target: { value: ' Spam activity ' },
+    })
+    fireEvent.click(within(form).getByRole('button', { name: 'Block user' }))
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(getAdminUserStatusPath(8), {
+        method: 'PUT',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'X-XSRF-TOKEN': 'token 1',
+        },
+        body: JSON.stringify({
+          status: 'BLOCKED',
+          reason: 'Spam activity',
+        }),
+      })
+    })
+    expect(await screen.findByText('Account status updated.')).toBeInTheDocument()
+
+    const details = screen.getByRole('region', { name: 'User detail' })
+    expect(within(details).getByText('Block reason')).toBeInTheDocument()
+    expect(within(details).getByText('Spam activity')).toBeInTheDocument()
+    expect(
+      within(details).getByRole('button', { name: 'Unblock user' }),
+    ).toBeInTheDocument()
+  })
+
+  it('keeps previous user state visible for failed status changes', async () => {
+    const fetchMock = mockAdminUsersFetch({
+      replaceStatusResponse: problemResponse(
+        403,
+        'Token CSRF jest wymagany.',
+      ),
+    })
+
+    renderAdminUsers(`${ADMIN_USERS_ROUTE_PATH}/8`)
+
+    const form = await screen.findByRole('form', {
+      name: 'Replace account status for Reviewer User',
+    })
+    fireEvent.change(within(form).getByLabelText('Operator reason'), {
+      target: { value: 'Spam activity' },
+    })
+    fireEvent.click(within(form).getByRole('button', { name: 'Block user' }))
+
+    await waitFor(() => {
+      expect(
+        fetchMock.mock.calls.some(([input]) =>
+          String(input).endsWith('/status'),
+        ),
+      ).toBe(true)
+    })
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Token CSRF jest wymagany.',
+    )
+    expect(screen.getAllByText('Reviewer User').length).toBeGreaterThan(0)
+    expect(screen.queryByText('Account status updated.')).not.toBeInTheDocument()
+  })
+
+  it('disables block and unblock for the signed-in administrator account', async () => {
+    const selfUser = createAdminUser({
+      id: 42,
+      displayName: 'Kamil Kiewisz',
+      email: 'kamil@example.test',
+      login: 'kamkie',
+      roles: ['USER', 'ADMIN'],
+    })
+    const fetchMock = mockAdminUsersFetch({
+      users: [...createUsers(), selfUser],
+    })
+
+    renderAdminUsers(`${ADMIN_USERS_ROUTE_PATH}/42`)
+
+    const form = await screen.findByRole('form', {
+      name: 'Replace account status for Kamil Kiewisz',
+    })
+
+    expect(within(form).getByRole('button', { name: 'Block user' })).toBeDisabled()
+    expect(within(form).getByLabelText('Operator reason')).toBeDisabled()
+    expect(
+      within(form).getByText('You cannot block or unblock your own account.'),
+    ).toBeInTheDocument()
+    expect(
+      fetchMock.mock.calls.some(([input]) => String(input).endsWith('/status')),
+    ).toBe(false)
+  })
 })
 
 function renderAdminUsers(
@@ -480,10 +627,22 @@ function mockAdminUsersFetch({
     login: 'reviewer',
     roles: ['USER', 'ADMIN'],
   }),
+  replaceStatusResponse = createAdminUser({
+    id: 8,
+    displayName: 'Reviewer User',
+    email: 'reviewer@example.test',
+    login: 'reviewer',
+    accountStatus: 'BLOCKED',
+    blockedAt: '2026-06-11T10:00:00Z',
+    blockedBy: 'admin-user',
+    blockedReason: 'Spam activity',
+    updatedAt: '2026-06-11T10:00:00Z',
+  }),
   users = createUsers(),
 }: {
   account?: UserAccount | Response
   replaceRolesResponse?: AdminUserAccount | Response
+  replaceStatusResponse?: AdminUserAccount | Response
   users?: AdminUserAccount[] | Response
 } = {}) {
   const fetchMock = vi.fn().mockImplementation((
@@ -503,6 +662,10 @@ function mockAdminUsersFetch({
 
     if (path.endsWith('/roles') && method === 'PUT') {
       return Promise.resolve(toResponse(replaceRolesResponse))
+    }
+
+    if (path.endsWith('/status') && method === 'PUT') {
+      return Promise.resolve(toResponse(replaceStatusResponse))
     }
 
     return Promise.resolve(new Response(null, { status: 404 }))
@@ -553,6 +716,21 @@ function createUsers(): AdminUserAccount[] {
   ]
 }
 
+function createUsersWithBlockedReviewer(): AdminUserAccount[] {
+  const [admin, reviewer] = createUsers()
+
+  return [
+    admin,
+    {
+      ...reviewer,
+      accountStatus: 'BLOCKED',
+      blockedAt: '2026-06-10T15:00:00Z',
+      blockedBy: 'owner-admin',
+      blockedReason: 'Spam activity',
+    },
+  ]
+}
+
 function createAdminUser(overrides: AdminUserAccount = {}): AdminUserAccount {
   return {
     id: 7,
@@ -563,6 +741,7 @@ function createAdminUser(overrides: AdminUserAccount = {}): AdminUserAccount {
     preferredLanguage: 'en',
     roles: ['USER'],
     roleGrants: [createRoleGrant()],
+    accountStatus: 'ACTIVE',
     lastLoginAt: '2026-06-06T22:10:00Z',
     createdAt: '2026-05-11T12:00:00Z',
     updatedAt: '2026-06-06T22:10:00Z',

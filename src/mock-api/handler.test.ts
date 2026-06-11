@@ -217,6 +217,134 @@ describe('mock API handler', () => {
     expect(problem.messageKey).toBe('error.adminUser.reasonRequired')
   })
 
+  it('blocks and unblocks a user through the status endpoint', async () => {
+    const handler = createMockApiHandler()
+    const blockResponse = await handler(
+      request('/api/admin/users/2/status', {
+        body: JSON.stringify({ status: 'BLOCKED', reason: 'Abuse review' }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...CSRF_HEADERS,
+        },
+        method: 'PUT',
+      }),
+    )
+    const blocked = await jsonBody<components['schemas']['AdminUserAccountResponse']>(
+      blockResponse,
+    )
+
+    expect(blockResponse?.status).toBe(200)
+    expect(blocked).toMatchObject({
+      id: 2,
+      accountStatus: 'BLOCKED',
+      blockedBy: 'admin-user',
+      blockedReason: 'Abuse review',
+    })
+    expect(blocked.blockedAt).toBeDefined()
+
+    const listResponse = await handler(request('/api/admin/users'))
+    const users = await jsonBody<components['schemas']['AdminUserAccountResponse'][]>(
+      listResponse,
+    )
+
+    expect(users.find((user) => user.id === 2)?.accountStatus).toBe('BLOCKED')
+
+    const unblockResponse = await handler(
+      request('/api/admin/users/2/status', {
+        body: JSON.stringify({ status: 'ACTIVE', reason: 'Appeal accepted' }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...CSRF_HEADERS,
+        },
+        method: 'PUT',
+      }),
+    )
+    const unblocked = await jsonBody<components['schemas']['AdminUserAccountResponse']>(
+      unblockResponse,
+    )
+
+    expect(unblockResponse?.status).toBe(200)
+    expect(unblocked.accountStatus).toBe('ACTIVE')
+    expect(unblocked.blockedAt).toBeUndefined()
+    expect(unblocked.blockedBy).toBeUndefined()
+    expect(unblocked.blockedReason).toBeUndefined()
+  })
+
+  it('validates status payloads, self-targeting, and missing users', async () => {
+    const handler = createMockApiHandler()
+    const blankReason = await handler(
+      request('/api/admin/users/2/status', {
+        body: JSON.stringify({ status: 'BLOCKED', reason: '   ' }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...CSRF_HEADERS,
+        },
+        method: 'PUT',
+      }),
+    )
+    const invalidStatus = await handler(
+      request('/api/admin/users/2/status', {
+        body: JSON.stringify({ status: 'SUSPENDED', reason: 'Bad value' }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...CSRF_HEADERS,
+        },
+        method: 'PUT',
+      }),
+    )
+    const selfTarget = await handler(
+      request('/api/admin/users/1/status', {
+        body: JSON.stringify({ status: 'BLOCKED', reason: 'Self block' }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...CSRF_HEADERS,
+        },
+        method: 'PUT',
+      }),
+    )
+    const missingUser = await handler(
+      request('/api/admin/users/99/status', {
+        body: JSON.stringify({ status: 'BLOCKED', reason: 'Ghost user' }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...CSRF_HEADERS,
+        },
+        method: 'PUT',
+      }),
+    )
+    const missingCsrf = await handler(
+      request('/api/admin/users/2/status', {
+        body: JSON.stringify({ status: 'BLOCKED', reason: 'No token' }),
+        headers: {
+          'Content-Type': 'application/json',
+          Cookie: SESSION_COOKIE,
+        },
+        method: 'PUT',
+      }),
+    )
+
+    expect(blankReason?.status).toBe(400)
+    expect((await jsonBody<ApiProblem>(blankReason)).messageKey).toBe(
+      'error.adminUser.reasonRequired',
+    )
+    expect(invalidStatus?.status).toBe(400)
+    expect((await jsonBody<ApiProblem>(invalidStatus)).messageKey).toBe(
+      'error.adminUser.statusInvalid',
+    )
+    expect(selfTarget?.status).toBe(400)
+    expect((await jsonBody<ApiProblem>(selfTarget)).messageKey).toBe(
+      'error.adminUser.selfStatusChange',
+    )
+    expect(missingUser?.status).toBe(404)
+    expect((await jsonBody<ApiProblem>(missingUser)).messageKey).toBe(
+      'error.adminUser.notFound',
+    )
+    expect(missingCsrf?.status).toBe(403)
+    expect((await jsonBody<ApiProblem>(missingCsrf)).messageKey).toBe(
+      'error.csrf.invalid',
+    )
+  })
+
   it('moves through anonymous login, CSRF-backed logout, and anonymous session state', async () => {
     const handler = createMockApiHandler({ session: 'anonymous' })
     const anonymous = await jsonBody<Session>(await handler(request('/api/session')))

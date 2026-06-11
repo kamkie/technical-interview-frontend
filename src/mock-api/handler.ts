@@ -6,8 +6,6 @@ export const MOCK_OPENAPI_PATHS = [
   '/api/categories/{id}',
   '/api/books/{id}',
   '/api/admin/users/{id}/roles',
-  // Tracked from the refreshed contract; the mock does not implement the
-  // admin status endpoint until M-USERS-001 is selected.
   '/api/admin/users/{id}/status',
   '/api/account/language',
   '/api/session/logout',
@@ -24,6 +22,8 @@ export const MOCK_OPENAPI_PATHS = [
 type Account = components['schemas']['UserAccountResponse']
 type AdminUser = components['schemas']['AdminUserAccountResponse']
 type AdminUserRoleUpdateRequest = components['schemas']['AdminUserRoleUpdateRequest']
+type AdminUserStatusUpdateRequest =
+  components['schemas']['AdminUserAccountStatusUpdateRequest']
 type ApiProblem = components['schemas']['ApiProblemResponse']
 type AuditLog = components['schemas']['AuditLogResponse']
 type AuditLogPage = components['schemas']['AuditLogPageResponse']
@@ -147,7 +147,9 @@ export function createMockApiState(options: Pick<MockApiOptions, 'session' | 'sc
 
   return {
     account,
-    adminUsers: empty ? [] : [toAdminUser(account), createUserAccount()],
+    adminUsers: empty
+      ? []
+      : [toAdminUser(account), createUserAccount(), createBlockedUserAccount()],
     auditLogs: empty ? [] : createAuditLogs(),
     books,
     categories,
@@ -296,6 +298,12 @@ export function createMockApiHandler(options: MockApiOptions = {}) {
 
     if (userRolesId !== undefined) {
       return routeAdminUserRoles(request, state, userRolesId)
+    }
+
+    const userStatusId = matchId(url.pathname, /^\/api\/admin\/users\/(\d+)\/status$/)
+
+    if (userStatusId !== undefined) {
+      return routeAdminUserStatus(request, state, userStatusId)
     }
 
     if (url.pathname === '/api/admin/operator-surface') {
@@ -614,6 +622,54 @@ async function routeAdminUserRoles(request: Request, state: MockApiState, id: nu
   })
 }
 
+async function routeAdminUserStatus(request: Request, state: MockApiState, id: number) {
+  return requireMethod(request, 'PUT', async () => {
+    const adminFailure = validateAdminAccess(request, state)
+
+    if (adminFailure) {
+      return adminFailure
+    }
+
+    const csrfFailure = validateUnsafeWrite(request, state)
+
+    if (csrfFailure) {
+      return csrfFailure
+    }
+
+    const body = await readJson<AdminUserStatusUpdateRequest>(request)
+    const user = state.adminUsers.find((item) => item.id === id)
+
+    if (body.status !== 'ACTIVE' && body.status !== 'BLOCKED') {
+      return problem(400, 'error.adminUser.statusInvalid', request)
+    }
+
+    if (!body.reason.trim()) {
+      return problem(400, 'error.adminUser.reasonRequired', request)
+    }
+
+    if (!user) {
+      return problem(404, 'error.adminUser.notFound', request)
+    }
+
+    if (id === state.account.id) {
+      return problem(400, 'error.adminUser.selfStatusChange', request)
+    }
+
+    const blocked = body.status === 'BLOCKED'
+    const updated: AdminUser = {
+      ...user,
+      accountStatus: body.status,
+      blockedAt: blocked ? now() : undefined,
+      blockedBy: blocked ? state.account.login : undefined,
+      blockedReason: blocked ? body.reason : undefined,
+      updatedAt: now(),
+    }
+    state.adminUsers = state.adminUsers.map((item) => (item.id === id ? updated : item))
+
+    return json(updated)
+  })
+}
+
 function createSession(kind: MockSessionKind): Session {
   const authenticated = kind !== 'anonymous'
 
@@ -684,9 +740,37 @@ function createUserAccount(): AdminUser {
         reason: 'Mock user login',
       },
     ],
+    accountStatus: 'ACTIVE',
     lastLoginAt: '2026-06-07T09:30:00Z',
     createdAt: '2026-06-07T09:10:00Z',
     updatedAt: '2026-06-07T09:30:00Z',
+  }
+}
+
+function createBlockedUserAccount(): AdminUser {
+  return {
+    id: 3,
+    provider: 'mock',
+    login: 'blocked-user',
+    displayName: 'Mock Blocked User',
+    email: 'blocked@example.test',
+    preferredLanguage: 'en',
+    roles: ['USER'],
+    roleGrants: [
+      {
+        role: 'USER',
+        source: 'AUTHENTICATED_LOGIN',
+        grantedAt: '2026-06-08T08:00:00Z',
+        reason: 'Mock user login',
+      },
+    ],
+    accountStatus: 'BLOCKED',
+    blockedAt: '2026-06-10T15:00:00Z',
+    blockedBy: 'admin-user',
+    blockedReason: 'Abusive API usage pending review.',
+    lastLoginAt: '2026-06-10T14:55:00Z',
+    createdAt: '2026-06-08T08:00:00Z',
+    updatedAt: '2026-06-10T15:00:00Z',
   }
 }
 
@@ -700,6 +784,7 @@ function toAdminUser(account: Account): AdminUser {
       grantedByLogin: role === 'ADMIN' ? 'system' : undefined,
       reason: role === 'ADMIN' ? 'Mock administrator' : 'Mock login',
     })),
+    accountStatus: 'ACTIVE',
   }
 }
 

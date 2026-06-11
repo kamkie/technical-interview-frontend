@@ -21,7 +21,7 @@ Stable IDs:
 - Release phase: `v0.3.1` is published; no next release candidate is selected.
 - Latest release: `v0.3.1`.
 - Next target version: Not selected; select the next maintenance target before more release prep.
-- Current priority: `M-I18N-001` frontend internationalization is delivered and unreleased; select the next maintenance target before more release prep.
+- Current priority: `M-USERS-001` admin account block/unblock is selected and in progress; select the next maintenance target before more release prep.
 - Active product plans: None; `PLAN-frontend-i18n` closed on 2026-06-11.
 - Selection policy: Breaking user-facing or backend-contract integration changes require a selected roadmap item.
 
@@ -36,11 +36,11 @@ Stable IDs:
 
 ## Milestones
 
-No milestone is currently selected. `M-I18N-001` is delivered and archived in `docs/ROADMAP_ARCHIVE.md`; select the next slice from the Blocked Backlog or new scope.
+- `M-USERS-001` (Ready, selected 2026-06-11): Admin block/unblock action on the user administration page — surface account status in the users list and inline detail, and add a block/unblock control with an operator reason beside role replacement. Backed by `PUT /api/admin/users/{id}/status` from the imported contract artifacts under `docs/backend/` (refreshed 2026-06-11 from backend commit `0640891`). Behavior detail is owned by `docs/specs/SPEC_admin_user_management.md`.
 
 ## Blocked Backlog
 
-- `M-USERS-001` (Unblocked, awaiting selection): Admin block/unblock action on the user administration page — surface account status in the users list and inline detail, and add a block/unblock control with an operator reason beside role replacement. The sibling backend shipped account block/unblock and the imported contract artifacts under `docs/backend/` now expose `/api/admin/users/{id}/status` (refreshed 2026-06-11 from backend commit `0640891`); the mock API tracks the path without implementing it. Select the milestone to start; until then the strongest admin sanction remains demoting a user to `USER`-only via role replacement.
+No blocked items. `M-USERS-001` moved to Milestones on 2026-06-11.
 
 ## Product Non-Goals
 

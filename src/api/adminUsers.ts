@@ -17,6 +17,9 @@ export type AdminUserRoleGrant =
 export type AdminUserRoleUpdateRequest =
   components['schemas']['AdminUserRoleUpdateRequest']
 export type AdminUserRole = AdminUserRoleUpdateRequest['roles'][number]
+export type AdminUserStatusUpdateRequest =
+  components['schemas']['AdminUserAccountStatusUpdateRequest']
+export type AdminUserAccountStatus = AdminUserStatusUpdateRequest['status']
 
 export type AdminUsersFetchOptions = {
   fetchImplementation?: FetchImplementation
@@ -95,8 +98,54 @@ export async function replaceAdminUserRoles(
   return (await response.json()) as AdminUserAccount
 }
 
+export async function replaceAdminUserStatus(
+  session: SessionResponse,
+  id: number,
+  request: AdminUserStatusUpdateRequest,
+  options: AdminUserMutationOptions = {},
+): Promise<AdminUserAccount> {
+  if (session.authenticated !== true) {
+    throw new Error(
+      'Admin user status changes require an authenticated session.',
+    )
+  }
+
+  const path = getAdminUserStatusPath(id)
+  const normalizedRequest: AdminUserStatusUpdateRequest = {
+    status: request.status,
+    reason: request.reason.trim(),
+  }
+  const response = await (options.fetchImplementation ?? globalThis.fetch)(path, {
+    method: 'PUT',
+    credentials: 'same-origin',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      ...getActiveLanguageHeaders(),
+      ...getCsrfHeaders(session, options.cookieSource),
+    },
+    body: JSON.stringify(normalizedRequest),
+  })
+
+  if (!response.ok) {
+    throw new ApiRequestError(
+      'PUT',
+      path,
+      response.status,
+      response.statusText || 'Unknown status',
+      await parseApiProblem(response),
+    )
+  }
+
+  return (await response.json()) as AdminUserAccount
+}
+
 export function getAdminUserRolesPath(id: number) {
   return `${ADMIN_USERS_PATH}/${encodeURIComponent(String(id))}/roles`
+}
+
+export function getAdminUserStatusPath(id: number) {
+  return `${ADMIN_USERS_PATH}/${encodeURIComponent(String(id))}/status`
 }
 
 export function createAdminUserRoleUpdateRequest(

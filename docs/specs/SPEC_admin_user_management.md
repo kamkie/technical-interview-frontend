@@ -1,12 +1,13 @@
-# M11 Admin User Management Spec
+# Admin User Management Spec
 
 ## Status
 
-Ready for coordinator review.
+Delivered for M11 role management. Extended for `M-USERS-001` account block/unblock.
 
 ## Sources Of Truth
 
 - `ROADMAP.md` M11: admin user list/detail with contract-backed role management.
+- `ROADMAP.md` `M-USERS-001`: account status surfacing and block/unblock with an operator reason.
 - `docs/backend/approved-openapi.json`: exact endpoint, request, response, problem, and role-grant schemas.
 - `docs/backend/FRONTEND_AI_CONTRACT.md`: same-origin `/api/**`, session-cookie authentication, metadata-driven CSRF, access, and localized-error rules.
 - Existing M7 account mutation pattern: unsafe writes use current session metadata to mirror the readable CSRF cookie into the configured CSRF request header.
@@ -23,11 +24,18 @@ M11 adds an admin-only user-management surface where an administrator can:
 - replace the user's managed role set with an operator-supplied reason;
 - see localized backend errors for access, validation, missing CSRF, not-found, and other API failures.
 
-M11 does not add user enablement, disablement, deletion, invitation, impersonation, password management, OAuth-provider management, audit-log browsing, or arbitrary role creation. Those behaviors require separate roadmap and backend contract changes.
+`M-USERS-001` extends the same surface so an administrator can:
+
+- see each user's account status (`ACTIVE` or `BLOCKED`) in the list and in the detail view;
+- filter the list by account status alongside the existing role filter;
+- review block provenance (`blockedAt`, `blockedBy`, `blockedReason`) for a blocked user in the detail view;
+- block or unblock a user with a required operator reason, beside role replacement.
+
+This spec does not add user deletion, invitation, impersonation, password management, OAuth-provider management, audit-log browsing, or arbitrary role creation. Those behaviors require separate roadmap and backend contract changes.
 
 ## Backend Contract
 
-Use only these M11 endpoints:
+Use only these endpoints:
 
 - `GET /api/admin/users`
   - Operation `listUsers`.
@@ -40,8 +48,16 @@ Use only these M11 endpoints:
   - Request body is `AdminUserRoleUpdateRequest`.
   - Successful response is the refreshed `AdminUserAccountResponse`.
   - Error responses use `ApiProblemResponse`.
+- `PUT /api/admin/users/{id}/status`
+  - Operation `replaceStatus`.
+  - Replaces the account status (`ACTIVE` or `BLOCKED`) for one persisted user.
+  - Path parameter `id` is the persisted user id from `AdminUserAccountResponse`.
+  - Request body is `AdminUserAccountStatusUpdateRequest` with a required status and a required operator reason.
+  - Self-targeting is rejected by the backend with `400`.
+  - Successful response is the refreshed `AdminUserAccountResponse`.
+  - Error responses use `ApiProblemResponse`.
 
-The contract owns exact fields for `AdminUserAccountResponse`, `AdminUserRoleGrantResponse`, `AdminUserRoleUpdateRequest`, and `ApiProblemResponse`. Implementation may name these generated types directly, but must not define divergent hand-written endpoint shapes.
+The contract owns exact fields for `AdminUserAccountResponse`, `AdminUserRoleGrantResponse`, `AdminUserRoleUpdateRequest`, `AdminUserAccountStatusUpdateRequest`, and `ApiProblemResponse`. Implementation may name these generated types directly, but must not define divergent hand-written endpoint shapes.
 
 There is no separate `GET /api/admin/users/{id}` endpoint in the approved contract. The detail route must be backed by the loaded list response and by the refreshed account returned from role replacement. A direct deep link to a user detail route may load the list first and select the matching id; it must not call an invented detail endpoint.
 
@@ -88,15 +104,29 @@ Role management is replacement-based, not patch-based.
 - When a successful replacement targets the signed-in account, propagate the returned roles to the shared current-account state so navigation and admin gates react without a reload.
 - When the backend returns `400`, `401`, `403`, or `404`, render the localized `ApiProblemResponse.message` and keep the previous user state visible.
 
+## Account Status Behavior
+
+Status management is replacement-based, mirroring role replacement.
+
+- Show `accountStatus` from `AdminUserAccountResponse` in the list and detail view. Treat a missing `accountStatus` as unknown display state, not as `ACTIVE`.
+- Offer a status filter in the list beside the existing role filter, applied client-side over the loaded list like search and role filtering.
+- In the detail view of a blocked user, show `blockedAt`, `blockedBy`, and `blockedReason` when present.
+- Submit `PUT /api/admin/users/{id}/status` with the opposite of the user's current status and a required operator reason from `AdminUserAccountStatusUpdateRequest`.
+- Require a non-blank operator reason in the UI before enabling or submitting the status change. Backend validation remains authoritative for exact accepted values and length.
+- Disable the block/unblock control for the signed-in administrator's own account with an explanatory hint; the backend rejects self-targeting with `400` and the UI must not offer a write the contract forbids.
+- On success, replace the list row and selected detail state with the returned `AdminUserAccountResponse`; do not assume the submitted status is the final state.
+- Keep status mutation feedback separate from role mutation feedback so one workflow's result does not overwrite the other's.
+- When the backend returns `400`, `401`, `403`, or `404`, render the localized `ApiProblemResponse.message` and keep the previous user state visible.
+
 ## CSRF Rules
 
 Only unsafe writes need CSRF handling.
 
 - Do not send CSRF headers on `GET /api/admin/users`.
-- For authenticated role replacement, use the current session's `csrf.cookieName` and `csrf.headerName` metadata to mirror the readable CSRF cookie into the configured request header.
+- For authenticated role and status replacement, use the current session's `csrf.cookieName` and `csrf.headerName` metadata to mirror the readable CSRF cookie into the configured request header.
 - Reuse the same CSRF helper pattern as account-language updates and logout.
 - If the readable cookie is absent, do not invent a token or header. Let the backend reject the write and render the localized problem response.
-- Refresh session state after login or logout before an admin role replacement can be submitted.
+- Refresh session state after login or logout before an admin role or status replacement can be submitted.
 
 ## Error And Localization Rules
 
@@ -112,6 +142,7 @@ API-client tests:
 - `GET /api/admin/users` calls the same-origin path, sends no invented auth headers, sends no unsupported query parameters, and returns the contract array type.
 - `GET /api/admin/users` surfaces localized `401` and `403` problem responses.
 - `PUT /api/admin/users/{id}/roles` sends the selected user id, JSON replacement body, and CSRF header from the session metadata and readable cookie.
+- `PUT /api/admin/users/{id}/status` sends the selected user id, JSON status body with the operator reason, and CSRF header from the session metadata and readable cookie.
 - Missing readable CSRF cookie does not produce an invented header and surfaces the backend problem response.
 - `400` validation, `403` access, and `404` not-found responses preserve the localized backend message.
 
@@ -126,6 +157,11 @@ Route/component tests:
 - Detail view renders role-grant provenance.
 - Role replacement requires an operator reason and keeps `USER` in the submitted role set.
 - Successful role replacement updates the row and detail from the backend response.
+- The list renders each user's account status, and the status filter narrows the list client-side.
+- The detail view of a blocked user renders block provenance fields.
+- Status replacement requires an operator reason and submits the opposite of the current status.
+- The block/unblock control is disabled for the signed-in administrator's own account.
+- Successful status replacement updates the row and detail from the backend response.
 - Backend validation and missing-CSRF failures keep previous user state visible and render localized error text.
 
 Validation for implementation should run the repository's normal app checks: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, and `git diff --check`. Browser smoke should cover `/admin/users` access and a mocked or live authenticated role-replacement path when the supporting harness exists.

@@ -5,7 +5,9 @@ import {
   createAdminUserRoleUpdateRequest,
   fetchAdminUsers,
   getAdminUserRolesPath,
+  getAdminUserStatusPath,
   replaceAdminUserRoles,
+  replaceAdminUserStatus,
   type AdminUserAccount,
 } from './adminUsers'
 import type { SessionResponse } from './session'
@@ -165,6 +167,126 @@ describe('admin users API client', () => {
         { fetchImplementation },
       ),
     ).rejects.toThrow('Admin user role changes require an authenticated session.')
+    expect(fetchImplementation).not.toHaveBeenCalled()
+  })
+
+  it('replaces status with the selected id, trimmed reason body, and CSRF metadata', async () => {
+    const updatedUser = createAdminUser({
+      id: 7,
+      accountStatus: 'BLOCKED',
+      blockedAt: '2026-06-11T10:00:00Z',
+      blockedBy: 'admin-user',
+      blockedReason: 'Abusive API usage pending review.',
+    })
+    const fetchImplementation = vi.fn().mockResolvedValue(Response.json(updatedUser))
+
+    await expect(
+      replaceAdminUserStatus(
+        createSession(),
+        7,
+        {
+          status: 'BLOCKED',
+          reason: ' Abusive API usage pending review. ',
+        },
+        {
+          cookieSource: 'language=en; XSRF-TOKEN=token%201',
+          fetchImplementation,
+        },
+      ),
+    ).resolves.toEqual(updatedUser)
+
+    expect(fetchImplementation).toHaveBeenCalledWith(getAdminUserStatusPath(7), {
+      method: 'PUT',
+      credentials: 'same-origin',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'X-XSRF-TOKEN': 'token 1',
+      },
+      body: JSON.stringify({
+        status: 'BLOCKED',
+        reason: 'Abusive API usage pending review.',
+      }),
+    })
+  })
+
+  it('omits invented CSRF headers on status changes when the readable cookie is missing', async () => {
+    const fetchImplementation = vi
+      .fn()
+      .mockResolvedValue(problemResponse(403, 'Token CSRF jest wymagany.'))
+
+    await expect(
+      replaceAdminUserStatus(
+        createSession(),
+        7,
+        {
+          status: 'ACTIVE',
+          reason: 'Reviewed appeal',
+        },
+        {
+          cookieSource: 'language=en',
+          fetchImplementation,
+        },
+      ),
+    ).rejects.toThrow('Token CSRF jest wymagany.')
+
+    expect(fetchImplementation).toHaveBeenCalledWith(getAdminUserStatusPath(7), {
+      method: 'PUT',
+      credentials: 'same-origin',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        status: 'ACTIVE',
+        reason: 'Reviewed appeal',
+      }),
+    })
+  })
+
+  it.each([
+    [400, 'Nie mozesz zablokowac wlasnego konta.'],
+    [403, 'Nie masz uprawnien do zmiany statusu.'],
+    [404, 'Uzytkownik nie istnieje.'],
+  ])('preserves localized %i status replacement errors', async (status, message) => {
+    const fetchImplementation = vi
+      .fn()
+      .mockResolvedValue(problemResponse(status, message))
+
+    await expect(
+      replaceAdminUserStatus(
+        createSession(),
+        9,
+        {
+          status: 'BLOCKED',
+          reason: 'Status audit',
+        },
+        {
+          cookieSource: 'XSRF-TOKEN=token',
+          fetchImplementation,
+        },
+      ),
+    ).rejects.toThrow(message)
+  })
+
+  it('does not issue status changes for anonymous sessions', async () => {
+    const fetchImplementation = vi.fn()
+
+    await expect(
+      replaceAdminUserStatus(
+        createSession({
+          authenticated: false,
+        }),
+        9,
+        {
+          status: 'BLOCKED',
+          reason: 'Status audit',
+        },
+        { fetchImplementation },
+      ),
+    ).rejects.toThrow(
+      'Admin user status changes require an authenticated session.',
+    )
     expect(fetchImplementation).not.toHaveBeenCalled()
   })
 })
