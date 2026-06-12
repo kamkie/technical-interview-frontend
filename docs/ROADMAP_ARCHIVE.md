@@ -87,6 +87,207 @@ Scope: `M-SMOKE-001` responsive layout and smoke evidence.
 
 ## Completed Milestones
 
+### M-WORKFLOW-002: Session And Admin Chrome Demotion
+
+Labels: `type:milestone`, `status:done`
+
+Goal: Let primary actions lead in session menus and admin toolbars per the reduced-control-clutter design rule.
+
+Completion evidence: Delivered 2026-06-12 on `main`. The sign-in and account menus move the endpoint, session-cookie, and CSRF metadata tiles behind a native `details` connection-details disclosure so sign-in and sign-out actions lead; the admin list Refresh buttons on the books, categories, localization, and users pages were removed per the decision recorded in `docs/DESIGN.md` (mutations refresh in place, URL changes re-fetch, error states carry retry actions), with the orphaned refresh message keys removed from the frontend registry and flagged to the backend seed-alignment plan; and the operator audit filters disable on permission-denied (401/403) load failures via the new stable `httpStatus` field on load-error state while staying enabled during outages. Full baseline and light+dark `npm run a11y` green with new denied-state and disclosure tests.
+
+#### E-WORKFLOW-002: Diagnostics Demotion And Denied-State Polish
+
+Labels: `type:epic`, `milestone:M-WORKFLOW-002`, `status:done`
+
+Tasks:
+
+- T-WORKFLOW-004: Move the session metadata tiles behind a compact connection-details disclosure in the sign-in and account menus.
+- T-WORKFLOW-005: Decide whether the admin Refresh buttons stay or are demoted, and record the decision in `docs/DESIGN.md`.
+- T-WORKFLOW-006: Present the operator filter controls consistently with the permission-denied state instead of leaving them enabled.
+
+Acceptance Criteria:
+
+- Sign-in and sign-out actions visually lead their menus, with session metadata available behind a disclosure.
+- The Refresh-button decision is recorded in `docs/DESIGN.md` and the UI matches it.
+- The denied operator view does not offer interactive filters that cannot produce results.
+
+### M-MOBILE-001: Dense-Table Action Reachability
+
+Labels: `type:milestone`, `status:done`
+
+Goal: Keep row actions usable and discoverable on narrow viewports.
+
+Completion evidence: Delivered 2026-06-12 on `main`. The selected pattern — recorded in `docs/DESIGN.md` — is a sticky right-pinned action column below the 720px breakpoint: the admin books and categories action cells, the localization rows action cells (`row-actions-cell`), and the admin users and operator audit expand cells (`audit-expand-cell`) pin to the right edge with an opaque surface background and edge shadow while the rest of the table scrolls beneath them, with stacked full-width action buttons in the slimmer pinned column. A 390px Playwright mock-browser check verified the pinned cells render sticky and fully in-viewport on `/admin/catalog`, `/admin/localizations`, `/admin/users`, and `/operator`. Full baseline and light+dark `npm run a11y` green.
+
+#### E-MOBILE-001: Narrow-Viewport Table Actions
+
+Labels: `type:epic`, `milestone:M-MOBILE-001`, `status:done`
+
+Tasks:
+
+- T-MOBILE-001: Select the narrow-viewport pattern: a sticky action column or a visible horizontal-scroll affordance.
+- T-MOBILE-002: Apply the selected pattern consistently across the catalog, admin, and operator tables.
+
+Acceptance Criteria:
+
+- Row actions are reachable and discoverable at 390px on every list route.
+- The same pattern is used across catalog, admin, and operator tables.
+
+### M-CATALOG-001: Category Filter Usability
+
+Labels: `type:milestone`, `status:done`
+
+Goal: Keep category filtering scannable and searchable as the category set grows.
+
+Completion evidence: Delivered 2026-06-12 on `main`. The shared `CategoryFilter` chip group gained a client-side search input (`ui.catalog.category-search-label`/`-placeholder`) that narrows rendered chips with a `ui.catalog.categories-no-match` state on both the public and admin catalog pages; selected chips always stay visible, the search text never enters the URL, and the repeated `category` query contract is unchanged. Below the 720px breakpoint the chip wall renders as a single scrollable row (verified at 390px: 38px-tall `flex`/`overflow-x: auto` row that dissolves back to `display: contents` on wide viewports), and the backend `ui.catalog.*` seeding follow-up was recorded as a Candidate row in the backend repository `ROADMAP.md` Conceptualization table. Full baseline and light+dark `npm run a11y` green with new `CategoryFilter` component tests and a catalog URL-contract test.
+
+#### E-CATALOG-002: Chip Search And Narrow-Viewport Bounding
+
+Labels: `type:epic`, `milestone:M-CATALOG-001`, `status:done`
+
+Tasks:
+
+- T-CATALOG-004: Add a client-side search input to the shared category chip group; selected chips always remain visible, and the search text stays out of the URL while selected categories keep the repeated `category` URL contract.
+- T-CATALOG-005: Bound the chip wall on narrow viewports with a collapse or scrollable row so the catalog table returns near the top of the page on mobile.
+- T-CATALOG-006: Add the new `ui.catalog.*` message keys with English defaults and record the backend localization seeding follow-up.
+
+Acceptance Criteria:
+
+- Categories can be narrowed by typing, with a no-match state, on the public and admin catalog pages.
+- Selected categories are never hidden by the search text, and URL query behavior is unchanged.
+- The mobile catalog shows table content without multiple screens of chips when no search is active.
+
+### M-I18N-002: Anonymous Language Access And Catalog Load Alignment
+
+Labels: `type:milestone`, `status:done`
+
+Selected as `M-I18N-001` in the 2026-06-12 review and renumbered the same day because `M-I18N-001` is the retired ID of the completed internationalization milestone below.
+
+Goal: Keep language choice available to anonymous visitors on narrow viewports and align catalog loading with the backend's documented pagination.
+
+Completion evidence: Delivered 2026-06-12 on `main`. The anonymous topbar language menu (`language-menu-anonymous`) is exempt from the 960px hide rule while signed-in visitors keep the account-page control, verified in a 390px Playwright mock-browser check (trigger visible in-viewport, Polish selection writes the backend `language` cookie); the UI localization catalog walk requests `size=100` per the backend clamp surfaced as `ConfigurationDetails.pagination.maxPageSize` in `docs/backend/approved-openapi.json`, and after the first page the remaining enumerated pages load as one parallel wave with the sequential `last`-marker walk kept as fallback, so chrome localization settles in two round-trip waves at current catalog sizes. Full baseline and light+dark `npm run a11y` green with new parallel-wave and fallback-walk tests.
+
+#### E-I18N-003: Narrow-Viewport Anonymous Language Control
+
+Labels: `type:epic`, `milestone:M-I18N-002`, `status:done`
+
+Tasks:
+
+- T-I18N-006: Give anonymous visitors a usable language control below the 960px topbar breakpoint, preserving the backend `language` cookie negotiation behavior.
+
+Acceptance Criteria:
+
+- An anonymous visitor on a 390px viewport can change the UI language without widening the window.
+
+#### E-I18N-004: Localization Catalog Walk Alignment
+
+Labels: `type:epic`, `milestone:M-I18N-002`, `status:done`
+
+Tasks:
+
+- T-I18N-007: Align the UI localization catalog page size with the backend's documented maximum; route the exact pagination rule to `docs/backend/`.
+- T-I18N-008: Fetch remaining catalog pages in parallel after the first page while keeping the `last`-based walk as fallback.
+
+Acceptance Criteria:
+
+- Catalog requests use a page size the backend actually serves, with the rule sourced from `docs/backend/`.
+- Chrome localization settles in at most two round-trip waves per language at current catalog sizes.
+
+### M-DIAGNOSTICS-001: Frontend Build Identity On Diagnostics
+
+Labels: `type:milestone`, `status:done`
+
+Goal: Let support escalations identify the running SPA build from the system diagnostics route.
+
+Completion evidence: Delivered 2026-06-12 on `main`. The Vite config injects the package name, `package.json` version, and config-evaluation build time as typed compile-time constants (declared in `src/vite-env.d.ts`), and `/operator/diagnostics` renders a frontend-owned `Frontend build` card with application, version, build time, and `import.meta.env.MODE` runtime mode outside the operator-surface load state, so the card stays visible when that request fails. Diagnostics page tests cover the loaded state and the operator-surface failure state; full baseline green.
+
+#### E-DIAGNOSTICS-001: Frontend Build Card
+
+Labels: `type:epic`, `milestone:M-DIAGNOSTICS-001`, `status:done`
+
+Tasks:
+
+- T-DIAGNOSTICS-001: Inject the frontend application name, `package.json` version, build time, and runtime mode at build time through the Vite config, with typed declarations.
+- T-DIAGNOSTICS-002: Render a frontend build card on the diagnostics route that also renders when the operator-surface request fails.
+- T-DIAGNOSTICS-003: Cover the card with diagnostics page tests, including the operator-surface failure state.
+
+Acceptance Criteria:
+
+- The diagnostics route shows frontend name, version, build time, and runtime mode.
+- The frontend build card renders while the operator surface is unavailable.
+- The card is frontend-owned display only; no new backend fields or invented contract data.
+
+### M-RESILIENCE-001: Backend-Unavailable Behavior
+
+Labels: `type:milestone`, `status:done`
+
+Goal: Replace raw technical failure strings with localized, recoverable backend-unavailable handling.
+
+Completion evidence: Delivered 2026-06-12 on `main`. The shared API client (`src/api/http.ts`) classifies unreachable-backend failures as `BackendUnavailableError` on stable fields (rejected fetch, or 5xx without problem details), every load and mutation display site renders the localized `ui.common.backend-unavailable` message for classified failures instead of raw request lines, the session connection panel and the public catalog error state gained `Try again` retry actions, and idempotent GET reads get a single bounded automatic retry (250ms) while problem-details responses and unsafe writes are never retried; the selected behavior is recorded in `docs/DESIGN.md`. Full baseline and light+dark `npm run a11y` green, with API-level retry/classification tests and browser-level recovery tests for the session and catalog retry flows.
+
+#### E-RESILIENCE-001: Unreachable-Backend Classification And Recovery
+
+Labels: `type:epic`, `milestone:M-RESILIENCE-001`, `status:done`
+
+Tasks:
+
+- T-RESILIENCE-001: Classify unreachable-backend failures (fetch rejection, or 5xx responses without problem details) on stable fields in the shared API client.
+- T-RESILIENCE-002: Replace raw fallback strings, including the session bootstrap fallback, with localized backend-unavailable messaging.
+- T-RESILIENCE-003: Add retry affordances to the session connection-issue panel and the public catalog error state.
+- T-RESILIENCE-004: Decide whether idempotent GET reads get a single bounded automatic retry when classified unreachable, and implement the selected behavior; problem-details responses and unsafe writes are never retried.
+
+Acceptance Criteria:
+
+- No user-visible raw request-line or untranslated fallback strings remain for unreachable-backend failures.
+- Branching uses status and payload shape, never localized message text.
+- A user can recover from a transient backend outage without a manual page reload.
+
+### M-COPY-001: Status And Empty-State Copy Correctness
+
+Labels: `type:milestone`, `status:done`
+
+Goal: Make status and empty-state chrome strings grammatical and accurate in every list state.
+
+Completion evidence: Delivered 2026-06-12 on `main`. The operator audit summary and the `ui.admin-localization.rows-status-error` default now read `Audit rows need attention.` and `Localization rows need attention.` in error states, the unfiltered empty catalog renders the new `ui.catalog.empty-unfiltered-title`/`ui.catalog.empty-unfiltered-message` keys (`The catalog is empty` / `There are no books in the catalog yet.`) without the `Clear filters` action while the filtered no-match state keeps its existing copy, and the backend `ui.*` seed alignment was recorded as a Candidate row in the backend repository `ROADMAP.md` Conceptualization table. Full baseline green with updated catalog, operator, and localization page tests.
+
+#### E-COPY-001: Table Status And Catalog Empty Copy
+
+Labels: `type:epic`, `milestone:M-COPY-001`, `status:done`
+
+Tasks:
+
+- T-COPY-001: Rewrite the `rows-status-error` message family so composed status lines read grammatically in error states.
+- T-COPY-002: Give the unfiltered empty catalog its own message, distinct from the filtered no-match message and its `Clear filters` action.
+- T-COPY-003: Record the matching backend-seeded `ui.*` localization row updates as backend-owned follow-up.
+
+Acceptance Criteria:
+
+- Status lines read grammatically in loading and error states on the operator and localization tables.
+- The unfiltered empty catalog and the filtered no-match state show distinct, accurate messages.
+- The backend localization seed follow-up is recorded where the backend tracks work.
+
+### M-A11Y-001: Dark-Mode Accessibility Parity
+
+Labels: `type:milestone`, `status:done`
+
+Goal: Make dark mode meet the same automated accessibility bar as light mode.
+
+Completion evidence: Delivered 2026-06-12 on `main`. The dark-theme `--color-rule-red` token was raised to `#d97f73` so the route-header call number meets WCAG contrast on the catalog-card surface, and `npm run a11y` scans every covered route in light and dark mode through a fresh mock server and browser context per scheme with a resolved-theme assertion, keeping the serious-or-critical failure threshold, evidence locations, and maintainer failure owner unchanged. Full baseline and the expanded `npm run a11y` green with zero serious or critical findings in both modes.
+
+#### E-A11Y-002: Dark-Mode Contrast And Scan Coverage
+
+Labels: `type:epic`, `milestone:M-A11Y-001`, `status:done`
+
+Tasks:
+
+- T-A11Y-004: Fix the dark-theme `.call-number` color token so the route-header call number meets WCAG contrast in dark mode.
+- T-A11Y-005: Add a dark-mode pass to the accessibility automation over the existing route scope, reusing the current `npm run a11y` command, serious-or-critical failure threshold, evidence locations, and maintainer failure owner.
+
+Acceptance Criteria:
+
+- axe reports no serious or critical violations in dark mode on the scanned route scope.
+- `npm run a11y` covers light and dark mode with unchanged pass/fail semantics, evidence locations, and failure owner.
+
 ### M-USERS-001: Admin Account Block And Unblock
 
 Labels: `type:milestone`, `status:done`
