@@ -4,16 +4,27 @@ This project follows Keep a Changelog style. Release entries stay under `Unrelea
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-06-12
+
 ### Added
 
+- Added a frontend build identity card to the operator diagnostics page showing the app name, version, build time, and runtime mode from compile-time constants, rendered outside the operator-surface load state so it stays visible when that backend request fails.
+- Added a client-side search input with a no-match state to the category chip groups on the public and admin catalog pages; selected chips always stay visible, the search text never enters the URL, and the repeated category query contract is unchanged.
 - Added `./scripts/dev-live-auth.ps1`, which starts the sibling backend with the GitHub and fake OAuth login providers (`local,oauth,fake-oauth`), verifies both providers from `GET /api/session`, and runs the frontend dev server against that backend.
 
 ### Changed
 
+- An unreachable backend or a 5xx response without problem details is now classified as backend-unavailable and renders a localized recovery message at every load and mutation display site instead of raw request lines, with Try again actions on the session connection panel and the public catalog error state and a single bounded automatic retry for idempotent reads; problem-details responses and unsafe writes are never retried.
+- The session endpoint, cookie, and CSRF metadata tiles moved behind a compact connection-details disclosure so sign-in and sign-out lead their menus, the admin list Refresh buttons were removed because mutations refresh in place, URL changes re-fetch, and error states carry retry actions, and the operator audit filters disable while the route is permission-denied.
+- Below the 720px breakpoint, the row action and expand columns of the admin books, categories, localization, users, and operator audit tables pin to the right edge as sticky cells with stacked full-width buttons so row actions stay reachable while the rest of the table scrolls, and the catalog category chip wall renders as a single scrollable row so the table returns near the top of the page.
+- The UI localization catalog now loads at the backend pagination clamp of 100 entries per page and fetches the remaining enumerated pages as one parallel wave, keeping the sequential last-marker walk as a fallback.
 - The release image now pins its runtime Nginx base by digest so weekly Dependabot digest-bump pull requests signal upstream rebuilds, including the rebuild that allows removing the OpenSSL CVE-2026-45447 package upgrade.
 
 ### Fixed
 
+- The anonymous topbar language menu is exempt from the narrow-viewport hide rule, so visitors below the 960px breakpoint keep a language control with the backend language-cookie negotiation intact.
+- Raised the dark-theme call-number color so the route-header call number meets WCAG contrast on the catalog-card surface, and the accessibility scan now runs in both light and dark mode with a resolved-theme assertion.
+- The operator and localization table status lines now read grammatically in error states, and the unfiltered empty catalog has its own copy distinct from the filtered no-match state and its Clear filters action.
 - The dev and preview servers now forward the backend fake provider's browser-facing `/test-support/oauth2/**` endpoints to the backend, so the fake-OAuth login can complete on the frontend origin during live-backend auth smoke instead of dead-ending in the SPA fallback.
 
 ## [0.4.0] - 2026-06-11

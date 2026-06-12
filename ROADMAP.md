@@ -18,10 +18,10 @@ Stable IDs:
 
 ## Release Context
 
-- Release phase: `v0.4.0` is published; no next release candidate is selected.
-- Latest release: `v0.4.0`.
+- Release phase: `v0.5.0` is committed and tagged locally; remote publication of `main` and the tag is pending.
+- Latest release: `v0.5.0`.
 - Next target version: Not selected; select the next maintenance target before more release prep.
-- Current priority: All eight milestones from the 2026-06-12 full-app UI/UX/accessibility review completed on 2026-06-12 and are archived in `docs/ROADMAP_ARCHIVE.md`; the work is uncommitted on `main` pending review. Select the next maintenance target (a `v0.4.1` or `v0.5.0` candidate) before more release prep.
+- Current priority: Push `main` and the `v0.5.0` tag so the tag-driven Release workflow publishes the container image and GitHub Release, then select the next maintenance target.
 - Active product plans: None; `PLAN-frontend-i18n` closed on 2026-06-11.
 - Selection policy: Breaking user-facing or backend-contract integration changes require a selected roadmap item.
 
@@ -36,7 +36,7 @@ Stable IDs:
 
 ## Milestones
 
-No milestones are currently selected. All eight milestones from the 2026-06-12 full-app UI, UX, accessibility, and design review — `M-A11Y-001`, `M-COPY-001`, `M-RESILIENCE-001`, `M-DIAGNOSTICS-001`, `M-I18N-002` (selected as `M-I18N-001` and renumbered to avoid the retired archive ID), `M-CATALOG-001`, `M-MOBILE-001`, and `M-WORKFLOW-002` — completed on 2026-06-12.
+No milestones are currently selected. The eight milestones from the 2026-06-12 full-app UI, UX, accessibility, and design review shipped in `v0.5.0`.
 
 Completed milestones are archived in `docs/ROADMAP_ARCHIVE.md`.
 
