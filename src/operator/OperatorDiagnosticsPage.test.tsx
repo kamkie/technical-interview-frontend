@@ -32,6 +32,13 @@ describe('OperatorDiagnosticsPage', () => {
     expect(
       screen.getByRole('heading', { name: 'Runtime summary' }),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Frontend build' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('technical-interview-frontend')).toBeInTheDocument()
+    // Vitest runs with the Vite mode "test", which the card surfaces as the
+    // runtime mode value.
+    expect(screen.getByText('test')).toBeInTheDocument()
     expect(screen.getAllByText('technical-interview-demo').length).toBeGreaterThan(0)
     expect(screen.getByText('main')).toBeInTheDocument()
     expect(screen.getByText('UP')).toBeInTheDocument()
@@ -112,6 +119,39 @@ describe('OperatorDiagnosticsPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Nie masz dostepu do audytu.',
     )
+  })
+
+  it('renders the frontend build card while the operator surface is unavailable', async () => {
+    mockSurfaceFetch({
+      surface: Response.json(
+        {
+          status: 403,
+          messageKey: 'error.operator',
+          message: 'Nie masz dostepu do audytu.',
+          language: 'pl',
+        },
+        {
+          status: 403,
+          statusText: 'Forbidden',
+          headers: {
+            'Content-Type': 'application/problem+json',
+          },
+        },
+      ),
+    })
+
+    renderDiagnostics()
+
+    expect(
+      await screen.findByText('Operator overview unavailable'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Frontend build' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('technical-interview-frontend')).toBeInTheDocument()
+    expect(screen.getByText('Version')).toBeInTheDocument()
+    expect(screen.getByText('Build time')).toBeInTheDocument()
+    expect(screen.getByText('Runtime mode')).toBeInTheDocument()
   })
 })
 

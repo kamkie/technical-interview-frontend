@@ -119,6 +119,41 @@ export function OperatorDiagnosticsPage({
       <section className="operator-section" aria-label="Diagnostics overview">
         <OperatorOverview state={overviewState} />
       </section>
+      <section className="operator-section" aria-label="Frontend build">
+        <FrontendBuildCard />
+      </section>
+    </section>
+  )
+}
+
+// The SPA's own build identity, frontend-owned display only; rendered
+// outside the operator-surface load state so support escalations can
+// identify the running frontend build even when that request fails.
+function FrontendBuildCard() {
+  return (
+    <section
+      className="operator-card operator-card-frontend-build"
+      aria-labelledby="frontend-build-title"
+    >
+      <h2 id="frontend-build-title">Frontend build</h2>
+      <dl className="operator-metadata">
+        <div>
+          <dt>Application</dt>
+          <dd>{__APP_NAME__}</dd>
+        </div>
+        <div>
+          <dt>Version</dt>
+          <dd>{__APP_VERSION__}</dd>
+        </div>
+        <div>
+          <dt>Build time</dt>
+          <dd>{formatTimestamp(__APP_BUILD_TIME__)}</dd>
+        </div>
+        <div>
+          <dt>Runtime mode</dt>
+          <dd>{import.meta.env.MODE}</dd>
+        </div>
+      </dl>
     </section>
   )
 }

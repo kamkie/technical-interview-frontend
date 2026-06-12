@@ -7,10 +7,17 @@ import {
   type Module,
 } from '@codecov/bundler-plugin-core'
 import react from '@vitejs/plugin-react'
+import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import type { Plugin, ProxyOptions } from 'vite'
 import { defineConfig } from 'vitest/config'
 import { mockApiPlugin } from './src/mock-api/vite'
+
+// Frontend build identity injected as compile-time constants; the typed
+// declarations live in src/vite-env.d.ts.
+const packageJson = JSON.parse(
+  readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
+) as { name: string; version: string }
 
 const apiProxy = {
   '^/api(?:$|/(?!.*\\.(?:ts|tsx|js|jsx|css|map)(?:\\?|$)).*)': {
@@ -166,6 +173,11 @@ export default defineConfig(({ mode }) => {
     build: {
       emptyOutDir: true,
       outDir: '../dist',
+    },
+    define: {
+      __APP_BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+      __APP_NAME__: JSON.stringify(packageJson.name),
+      __APP_VERSION__: JSON.stringify(packageJson.version),
     },
     server: {
       host: '127.0.0.1',
