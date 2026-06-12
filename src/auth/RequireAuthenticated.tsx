@@ -6,7 +6,11 @@ import {
   type SessionResponse,
 } from '../api/session'
 import { useI18n } from '../i18n/useI18n'
-import { getLoadErrorMessage } from '../ui/asyncState'
+import {
+  getLoadErrorMessage,
+  requestConnectionRecovery,
+  usePageConnectionSurface,
+} from '../ui/asyncState'
 
 export type SessionState =
   | { status: 'loading' }
@@ -21,6 +25,10 @@ export function RequireAuthenticated({
   state: SessionState
 }) {
   const { t } = useI18n()
+
+  // While this guard shows the session error it is the page's connection
+  // surface, so the topbar suppresses its duplicate "Connection issue" menu.
+  usePageConnectionSurface(state.status === 'error')
 
   if (state.status === 'loading') {
     return (
@@ -40,6 +48,13 @@ export function RequireAuthenticated({
         <p className="session-message error" role="alert">
           {getLoadErrorMessage(t, state) || t('ui.session.bootstrap-failed')}
         </p>
+        <button
+          className="secondary-button"
+          type="button"
+          onClick={requestConnectionRecovery}
+        >
+          {t('ui.common.retry')}
+        </button>
       </section>
     )
   }

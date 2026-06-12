@@ -498,6 +498,159 @@ describe('App', () => {
     ).toBeInTheDocument()
   })
 
+  it('shows one connection surface on the catalog and heals session and page data through a single retry', async () => {
+    let backendHealthy = false
+
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((input: RequestInfo | URL) => {
+      if (!backendHealthy) {
+        return Promise.resolve(
+          new Response(null, { status: 503, statusText: 'Service Unavailable' }),
+        )
+      }
+
+      const path = String(input)
+
+      if (path === SESSION_PATH) {
+        return Promise.resolve(Response.json(createSession()))
+      }
+
+      if (path === CATEGORIES_PATH) {
+        return Promise.resolve(Response.json([{ id: 1, name: 'Java' }]))
+      }
+
+      if (path.startsWith(BOOKS_PATH)) {
+        return Promise.resolve(Response.json(createBookPage()))
+      }
+
+      return Promise.resolve(new Response(null, { status: 404 }))
+    }))
+
+    renderApp()
+
+    expect(
+      await screen.findByText('Books could not be displayed'),
+    ).toBeInTheDocument()
+    // The page-level block owns the connection story: the topbar renders no
+    // second simultaneous surface once the session check settles.
+    await waitFor(() => {
+      expect(screen.queryByText('Checking sign-in...')).not.toBeInTheDocument()
+      expect(screen.queryByText('Connection issue')).not.toBeInTheDocument()
+    })
+
+    backendHealthy = true
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
+
+    // One retry recovers the books table, the categories chips, and the
+    // session chrome together; no error surface survives the recovery.
+    expect(await screen.findByText('Clean Code')).toBeInTheDocument()
+    expect(
+      await screen.findByRole('button', { name: 'Sign in' }),
+    ).toBeInTheDocument()
+    expect(
+      await screen.findByRole('button', { name: 'Java' }),
+    ).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+    expect(screen.queryByText('Connection issue')).not.toBeInTheDocument()
+  })
+
+  it('keeps the auth guard as the only connection surface on guarded routes and recovers through its retry', async () => {
+    let backendHealthy = false
+
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((input: RequestInfo | URL) => {
+      if (!backendHealthy) {
+        return Promise.resolve(
+          new Response(null, { status: 503, statusText: 'Service Unavailable' }),
+        )
+      }
+
+      const path = String(input)
+
+      if (path === SESSION_PATH) {
+        return Promise.resolve(
+          Response.json(createSession({ authenticated: true })),
+        )
+      }
+
+      if (path === ACCOUNT_PATH) {
+        return Promise.resolve(Response.json(createAccount()))
+      }
+
+      return Promise.resolve(new Response(null, { status: 404 }))
+    }))
+
+    renderApp('/account')
+
+    expect(
+      await screen.findByRole('heading', { name: 'Session unavailable' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'The service cannot be reached right now. Check your connection or try again shortly.',
+    )
+    await waitFor(() => {
+      expect(screen.queryByText('Checking sign-in...')).not.toBeInTheDocument()
+      expect(screen.queryByText('Connection issue')).not.toBeInTheDocument()
+    })
+
+    backendHealthy = true
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
+
+    // The guard's retry recovers the session and the page renders its data.
+    expect(
+      await screen.findByRole('button', { name: 'Kamil Kiewisz' }),
+    ).toBeInTheDocument()
+    expect(await screen.findByLabelText('Language')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: 'Session unavailable' }),
+    ).not.toBeInTheDocument()
+    expect(screen.queryByText('Connection issue')).not.toBeInTheDocument()
+  })
+
+  it('clears a stale session connection error once a page request succeeds', async () => {
+    let sessionHealthy = false
+
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((input: RequestInfo | URL) => {
+      const path = String(input)
+
+      if (path === SESSION_PATH) {
+        return sessionHealthy
+          ? Promise.resolve(Response.json(createSession()))
+          : Promise.reject(new TypeError('fetch failed'))
+      }
+
+      if (path === CATEGORIES_PATH) {
+        return Promise.resolve(Response.json([{ id: 1, name: 'Java' }]))
+      }
+
+      if (path.startsWith(BOOKS_PATH)) {
+        return new Promise<Response>((resolve) => {
+          setTimeout(() => resolve(Response.json(createBookPage())), 800)
+        })
+      }
+
+      return Promise.resolve(new Response(null, { status: 404 }))
+    }))
+
+    renderApp()
+
+    // The bootstrap fails while books are still loading, so the topbar is
+    // the only connection surface.
+    expect(await screen.findByText('Connection issue')).toBeInTheDocument()
+
+    // The backend recovers; the next successful page response is recovery
+    // evidence and heals the session without any manual retry.
+    sessionHealthy = true
+
+    expect(
+      await screen.findByText('Clean Code', undefined, { timeout: 4000 }),
+    ).toBeInTheDocument()
+    expect(
+      await screen.findByRole('button', { name: 'Sign in' }, { timeout: 4000 }),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('Connection issue')).not.toBeInTheDocument()
+  })
+
   it('renders authenticated header state and the guarded account profile', async () => {
     const fetchMock = mockAppFetch({
       account: createAccount({

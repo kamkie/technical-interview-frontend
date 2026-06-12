@@ -63,6 +63,9 @@ import {
   createLoadError,
   getApiDisplayMessage,
   getLoadErrorMessage,
+  requestConnectionRecovery,
+  subscribeToConnectionRecovery,
+  useHasPageConnectionSurface,
   type MutationState,
 } from './ui/asyncState'
 import {
@@ -300,7 +303,7 @@ export function App() {
             logoutState={logoutState}
             state={sessionState}
             onLogout={handleLogout}
-            onRetrySession={refreshSession}
+            onRetrySession={requestConnectionRecovery}
           />
         </div>
       </header>
@@ -895,6 +898,19 @@ function useSessionBootstrap() {
     }
   }, [])
 
+  // While the bootstrap holds an error, any connection-recovery signal — a
+  // retry pressed on any connection surface, or a page request succeeding —
+  // re-runs it, so the session chrome never stays stale after recovery.
+  useEffect(() => {
+    if (sessionState.status !== 'error') {
+      return undefined
+    }
+
+    return subscribeToConnectionRecovery(() => {
+      void refreshSession()
+    })
+  }, [refreshSession, sessionState])
+
   return { refreshSession, sessionState }
 }
 
@@ -916,6 +932,7 @@ function SessionAccountMenu({
       ? state.session
       : null,
   )
+  const pageOwnsConnectionSurface = useHasPageConnectionSurface()
   const panelId = 'account-menu-panel'
 
   if (state.status === 'loading') {
@@ -929,6 +946,13 @@ function SessionAccountMenu({
   }
 
   if (state.status === 'error') {
+    // A page-level block (the auth guard or the page's own data error)
+    // already tells the connection story; the chrome renders no second
+    // simultaneous surface for the same outage.
+    if (pageOwnsConnectionSurface) {
+      return null
+    }
+
     return (
       <div className="account-menu" ref={containerRef}>
         <button

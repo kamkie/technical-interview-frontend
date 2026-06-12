@@ -87,7 +87,7 @@ Ship five user-approved UX improvements: globally true localization coverage wit
 | T5-mobile-topbar           | Complete | Coordinator | None       | 2026-06-12   | Theme menu idiom changes all viewports |
 | T6-catalog-chip-search     | Complete | Coordinator | None       | 2026-06-12   | User-reported chip search issues       |
 | T7-diagnostics-layout      | Complete | Coordinator | None       | 2026-06-12   | Fill the two-column hole               |
-| T8-connection-errors       | Ready    | Coordinator | None       | 2026-06-12   | Repro required first                   |
+| T8-connection-errors       | Complete | Coordinator | None       | 2026-06-12   | Repro required first                   |
 | T9-i18n-cache-and-gaps     | Ready    | Coordinator | None       | 2026-06-12   | Session cache + hardcoded-string audit |
 
 ## Task Packets
@@ -327,7 +327,7 @@ Stop conditions:
 
 Result summary:
 
-- Status: pending
+- Status: complete (2026-06-12). Repro record (non-mock Vite, `/api` proxy to a dead port, 502 → `BackendUnavailableError`): on `/catalog` THREE surfaces rendered simultaneously — the topbar "Connection issue" menu (`SessionAccountMenu`/`SessionBootstrapPanel` in `src/App.tsx`, retry called only `refreshSession`), the page block in `src/catalog/CatalogPanel.tsx` (retry called only `retryBooksLoad`), and a retry-less categories inline error in `CategoryFilter`; sticky in BOTH directions (page retry left the topbar+categories stale; topbar retry left the page+categories stale); on guarded routes the second surface is `RequireAuthenticated`'s "Session unavailable" block (no retry of its own). All copy frontend-owned — no stop condition. Fix: a connection-recovery channel plus a page connection-surface registry in `src/ui/asyncState.ts`; any connection retry or any successful response signals every subscriber still holding a connection error to reload; the topbar suppresses its surface while a page-level block is registered; `RequireAuthenticated` registers as the page surface and gained a retry (reuses `ui.common.retry`, no new keys); `CatalogPanel` wiring only. After-evidence: same dead-backend scenario shows exactly one surface and one retry heals session+books+categories. Validation: scoped vitest 65/65 (incl. double-surface prevention, single-retry recovery, success-signal clearing), full `npm run test` 294/294 (worker run), typecheck pass, `npx eslint src scripts` pass, `git diff --check` pass; worker servers stopped with port-probe proof (user 5173 and shared 5199 untouched); evidence files under gitignored `temp/`. Residuals: categories inline error still renders beside the books block during an outage (CategoryFilter rendering out of scope; it now heals with any retry); brief topbar-trigger flash possible before a page block registers.
 
 ### Task Packet: T9-i18n-cache-and-gaps
 

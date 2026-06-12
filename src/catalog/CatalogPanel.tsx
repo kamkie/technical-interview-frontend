@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import {
@@ -12,6 +12,10 @@ import { useI18n, type UiTranslate } from '../i18n/useI18n'
 import {
   createLoadError,
   getLoadErrorMessage,
+  isUnreachableLoadError,
+  requestConnectionRecovery,
+  subscribeToConnectionRecovery,
+  usePageConnectionSurface,
   type LoadState,
 } from '../ui/asyncState'
 import { PaginationControls } from '../ui/PaginationControls'
@@ -59,6 +63,9 @@ export function CatalogPanel() {
   // Bumped by the error-state retry action to re-run the books effect for an
   // unchanged query without a page reload.
   const [booksReloadToken, setBooksReloadToken] = useState(0)
+  // Bumped by connection recovery to re-run the categories effect, which
+  // otherwise only runs on mount.
+  const [categoriesReloadToken, setCategoriesReloadToken] = useState(0)
   // The fetching flag is derived by comparing the active query against the
   // last query whose request settled, so no effect has to set state twice.
   const [settledBooksQueryKey, setSettledBooksQueryKey] = useState<
@@ -95,7 +102,7 @@ export function CatalogPanel() {
     return () => {
       ignore = true
     }
-  }, [])
+  }, [categoriesReloadToken])
 
   useEffect(() => {
     let ignore = false
@@ -130,11 +137,54 @@ export function CatalogPanel() {
     }
   }, [canonicalSearch, currentSearch, setSearchParams])
 
-  function retryBooksLoad() {
+  const retryBooksLoad = useCallback(() => {
     setSettledBooksQueryKey(null)
     setBooksState({ status: 'loading' })
     setBooksReloadToken((current) => current + 1)
-  }
+  }, [])
+
+  const retryCategoriesLoad = useCallback(() => {
+    setCategoriesState({ status: 'loading' })
+    setCategoriesReloadToken((current) => current + 1)
+  }, [])
+
+  // Connection-story wiring (see src/ui/asyncState.ts): the books error
+  // block is this page's reachability surface, any recovery signal reloads
+  // whatever is still unreachable here, and a load settling successfully is
+  // recovery evidence for surfaces stuck elsewhere (the session chrome, the
+  // sibling load).
+  usePageConnectionSurface(isUnreachableLoadError(booksState))
+
+  useEffect(() => {
+    if (
+      !isUnreachableLoadError(booksState) &&
+      !isUnreachableLoadError(categoriesState)
+    ) {
+      return undefined
+    }
+
+    return subscribeToConnectionRecovery(() => {
+      if (isUnreachableLoadError(booksState)) {
+        retryBooksLoad()
+      }
+
+      if (isUnreachableLoadError(categoriesState)) {
+        retryCategoriesLoad()
+      }
+    })
+  }, [booksState, categoriesState, retryBooksLoad, retryCategoriesLoad])
+
+  useEffect(() => {
+    if (booksState.status === 'ready') {
+      requestConnectionRecovery()
+    }
+  }, [booksState])
+
+  useEffect(() => {
+    if (categoriesState.status === 'ready') {
+      requestConnectionRecovery()
+    }
+  }, [categoriesState])
 
   function updateCatalogQuery(nextQuery: CatalogQueryState) {
     const nextSearchParams = catalogQueryToSearchParams(nextQuery)
@@ -328,7 +378,14 @@ export function CatalogPanel() {
             <button
               className="secondary-button state-block-action"
               type="button"
-              onClick={retryBooksLoad}
+              onClick={
+                // Unreachable-backend retries go through the shared recovery
+                // signal so the session chrome and the categories load heal
+                // together with the books table.
+                booksState.unreachable === true
+                  ? requestConnectionRecovery
+                  : retryBooksLoad
+              }
             >
               {t('ui.common.retry')}
             </button>
