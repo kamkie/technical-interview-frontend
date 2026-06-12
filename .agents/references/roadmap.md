@@ -40,19 +40,28 @@ Preserve the current roadmap shape unless the task explicitly changes roadmap st
 
 Do not recreate older procedure-adoption or smoke/local candidate sections. Procedure guidance belongs in focused references, active plans, owner docs, or executable validation rather than in roadmap candidate sections.
 
-## Row Shaping
+## Item Shaping
 
-Roadmap rows should name the outcome and stable ID clearly enough that an implementation plan can select the next slice. Keep detailed procedures in owner documents or executable tests.
+Milestones, epics, and tasks should name the outcome and stable ID clearly enough that an implementation plan can select the next slice. Keep detailed procedures in owner documents or executable tests.
 
-Use these status terms:
+Shape `## Milestones` and `## Blocked Backlog` entries as a labeled heading hierarchy, not a table:
 
-- `Ready`: the milestone can start from the current repository state.
-- `Waiting`: the milestone has a normal predecessor dependency.
-- `Blocked`: the milestone needs a product choice, credential, backend contract refresh, selected threshold, failure owner, or external state before implementation can start.
+- Milestone: a `### M-AREA-NNN: Title` heading, a `Labels:` line with `type:milestone` and a status label, then a one-line `Goal:`.
+- Epic: a `#### E-AREA-NNN: Title` heading under its milestone, with a `Labels:` line carrying `type:epic`, `milestone:M-AREA-NNN`, and a status label.
+- Epic body: optional observed-fact context lines such as `Current evidence:`, `Selected gap:`, or `Blocked by:`, then a `Tasks:` list of `T-AREA-NNN:` bullets, then an `Acceptance Criteria:` list.
+- Blocked entries live under `## Blocked Backlog` and name the missing input in a `Blocked by:` line.
+- Record selection dates and review provenance as short prose near the affected milestones instead of extra labels.
+- End `## Milestones` with the pointer to `docs/ROADMAP_ARCHIVE.md` for completed work.
 
-Defined work belongs in `Ready`, `Waiting`, or `Blocked` rows. Do not move planned waiting work into deferred or candidate language merely because it depends on an earlier milestone.
+Use these status labels:
 
-For roadmap work that needs execution coordination, create or update a plan under `.agents/plans/` and reference it with a stable plan ID. Add a separate spec only when user-facing behavior is too broad or ambiguous for a roadmap row plus `docs/DESIGN.md`.
+- `status:ready`: the item can start from the current repository state.
+- `status:waiting`: the item has a normal predecessor dependency.
+- `status:blocked`: the item needs a product choice, credential, backend contract refresh, selected threshold, failure owner, or external state before implementation can start.
+
+Defined work belongs in `status:ready`, `status:waiting`, or `status:blocked` items. Do not move planned waiting work into deferred or candidate language merely because it depends on an earlier milestone.
+
+For roadmap work that needs execution coordination, create or update a plan under `.agents/plans/` and reference it with a stable plan ID. Add a separate spec only when user-facing behavior is too broad or ambiguous for a roadmap item plus `docs/DESIGN.md`.
 
 ## Editing Checks
 
