@@ -86,7 +86,7 @@ Ship five user-approved UX improvements: globally true localization coverage wit
 | T4-copy-and-timestamps     | Complete | Coordinator | None       | 2026-06-12   | Safest packet                          |
 | T5-mobile-topbar           | Complete | Coordinator | None       | 2026-06-12   | Theme menu idiom changes all viewports |
 | T6-catalog-chip-search     | Complete | Coordinator | None       | 2026-06-12   | User-reported chip search issues       |
-| T7-diagnostics-layout      | Ready    | Coordinator | None       | 2026-06-12   | Fill the two-column hole               |
+| T7-diagnostics-layout      | Complete | Coordinator | None       | 2026-06-12   | Fill the two-column hole               |
 | T8-connection-errors       | Ready    | Coordinator | None       | 2026-06-12   | Repro required first                   |
 | T9-i18n-cache-and-gaps     | Ready    | Coordinator | None       | 2026-06-12   | Session cache + hardcoded-string audit |
 
@@ -297,7 +297,7 @@ Validation:
 
 Result summary:
 
-- Status: pending
+- Status: complete (2026-06-12). Combined the plan's two directions: `operator-overview-grid` became CSS `columns: 2` with `break-inside: avoid` per card AND the two fixed side stacks were flattened to direct children (Status, Runtime, Audit, Dependencies, Configuration) with the Frontend build card pulled into the flow — pure multicol over the old five cards still reproduced the hole because the dominant Runtime card defeats contiguous balancing. Frontend build keeps failure-independence by rendering in its own section while the operator surface is pending/failed. Single column under 720px. Measured on mock data at 1280px: column bottoms 673 vs 737 (was 492 vs 720, a 228px hole). Validation: scoped vitest 6/6 (full and `{}` payload variants), typecheck pass, `npx eslint src scripts` pass, `git diff --check` pass, preview measurements at 1280px/375px. Residual: an extremely tall future card caps how even multicol balancing can get, degrading gracefully.
 
 ### Task Packet: T8-connection-errors
 

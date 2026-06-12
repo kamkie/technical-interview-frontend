@@ -79,10 +79,28 @@ describe('OperatorDiagnosticsPage', () => {
     ).toHaveLength(1)
   })
 
+  it('flows every overview card as a direct child of the balanced column container', async () => {
+    mockSurfaceFetch()
+
+    const { container } = renderDiagnostics()
+
+    expect(
+      await screen.findByRole('heading', { name: 'Audit summary' }),
+    ).toBeInTheDocument()
+    expect(overviewCardClassNames(container)).toEqual([
+      'operator-card operator-card-status',
+      'operator-card operator-card-runtime',
+      'operator-card operator-card-audit',
+      'operator-card operator-card-dependencies',
+      'operator-card operator-card-configuration',
+      'operator-card operator-card-frontend-build',
+    ])
+  })
+
   it('renders partial overview payloads without crashing', async () => {
     mockSurfaceFetch({ surface: {} })
 
-    renderDiagnostics()
+    const { container } = renderDiagnostics()
 
     expect(
       await screen.findByText('Build details unavailable.'),
@@ -93,6 +111,16 @@ describe('OperatorDiagnosticsPage', () => {
     expect(
       screen.getByRole('link', { name: 'Browse audit rows' }),
     ).toHaveAttribute('href', '/operator')
+    // The shrunken "unavailable" cards keep the same flat flow, so the
+    // balanced columns cannot leave a hole in this state either.
+    expect(overviewCardClassNames(container)).toEqual([
+      'operator-card operator-card-status',
+      'operator-card operator-card-runtime',
+      'operator-card operator-card-audit',
+      'operator-card operator-card-dependencies',
+      'operator-card operator-card-configuration',
+      'operator-card operator-card-frontend-build',
+    ])
   })
 
   it('displays localized backend access failures', async () => {
@@ -154,6 +182,13 @@ describe('OperatorDiagnosticsPage', () => {
     expect(screen.getByText('Runtime mode')).toBeInTheDocument()
   })
 })
+
+function overviewCardClassNames(container: HTMLElement) {
+  return Array.from(
+    container.querySelectorAll('.operator-overview-grid > *'),
+    (card) => card.className,
+  )
+}
 
 function renderDiagnostics(session = createSession()) {
   const router = createMemoryRouter(

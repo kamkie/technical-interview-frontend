@@ -1232,7 +1232,6 @@ h1 {
   }
 }
 
-.operator-overview-grid,
 .operator-card,
 .audit-results,
 .audit-detail-content {
@@ -1240,19 +1239,19 @@ h1 {
   gap: 1rem;
 }
 
-/* The two short cards (status, audit) stack in one column beside the tall
-   runtime card so neither column carries all the height. */
+/* Overview cards flow down then across two balanced CSS columns, so
+   backend-dependent card heights (for example "Git details unavailable")
+   never leave a column hole; break-inside keeps each card whole. */
 .operator-overview-grid {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 1.25rem;
-  align-items: start;
+  columns: 2;
+  column-gap: 1.25rem;
+  /* Offsets the last card's trailing margin so panel spacing stays even. */
+  margin-bottom: -1.25rem;
 }
 
-.operator-overview-side {
-  display: grid;
-  gap: 1.25rem;
-  align-content: start;
-  min-width: 0;
+.operator-overview-grid > .operator-card {
+  margin-bottom: 1.25rem;
+  break-inside: avoid;
 }
 
 .operator-card {
@@ -3023,7 +3022,7 @@ input[type='search']:placeholder-shown::-webkit-search-cancel-button {
   }
 
   .operator-overview-grid {
-    grid-template-columns: 1fr;
+    columns: 1;
   }
 }
 

@@ -119,16 +119,19 @@ export function OperatorDiagnosticsPage({
       <section className="operator-section" aria-label="Diagnostics overview">
         <OperatorOverview state={overviewState} />
       </section>
-      <section className="operator-section" aria-label="Frontend build">
-        <FrontendBuildCard />
-      </section>
+      {overviewState.status !== 'ready' && (
+        <section className="operator-section" aria-label="Frontend build">
+          <FrontendBuildCard />
+        </section>
+      )}
     </section>
   )
 }
 
-// The SPA's own build identity, frontend-owned display only; rendered
-// outside the operator-surface load state so support escalations can
-// identify the running frontend build even when that request fails.
+// The SPA's own build identity, frontend-owned display only; it joins the
+// overview card flow once that loads, but stays rendered in its own section
+// while the operator-surface request is pending or failed so support
+// escalations can always identify the running frontend build.
 function FrontendBuildCard() {
   return (
     <section
@@ -183,17 +186,18 @@ function OperatorOverview({ state }: { state: LoadState<OperatorSurface> }) {
 
   const surface = state.value
 
+  // Cards are direct children so the CSS multi-column layout can balance
+  // them; reading and focus order stay this DOM order. The tall runtime
+  // card sits second so the column break lands near the middle whatever
+  // heights the backend-dependent cards take.
   return (
     <div className="operator-overview-grid">
-      <div className="operator-overview-side">
-        <OperationalStatus operations={surface.operations} />
-        <AuditSummary audit={surface.audit} />
-        <DependenciesCard runtime={surface.runtime} />
-      </div>
-      <div className="operator-overview-side">
-        <RuntimeSummary runtime={surface.runtime} />
-        <ConfigurationCard runtime={surface.runtime} />
-      </div>
+      <OperationalStatus operations={surface.operations} />
+      <RuntimeSummary runtime={surface.runtime} />
+      <AuditSummary audit={surface.audit} />
+      <DependenciesCard runtime={surface.runtime} />
+      <ConfigurationCard runtime={surface.runtime} />
+      <FrontendBuildCard />
     </div>
   )
 }
