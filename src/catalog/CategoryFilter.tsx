@@ -72,29 +72,51 @@ export function CategoryFilter({
         />
       )}
 
-      <div className="category-chip-row">
-        {visibleCategories.map((category) => {
-          const selected = selectedCategories.includes(category.name)
+      {namedCategories.length > 0 && (
+        <div className="category-chip-area">
+          <div className="category-chip-row">
+            {visibleCategories.map((category) => {
+              const selected = selectedCategories.includes(category.name)
 
-          return (
-            <button
-              aria-pressed={selected}
-              className={`category-chip ${selected ? 'selected' : ''}`}
-              key={category.id ?? category.name}
-              type="button"
-              onClick={() => onToggleCategory(category.name)}
-            >
-              {category.name}
-            </button>
-          )
-        })}
+              return (
+                <button
+                  aria-pressed={selected}
+                  className={`category-chip ${selected ? 'selected' : ''}`}
+                  key={category.id ?? category.name}
+                  type="button"
+                  onClick={() => onToggleCategory(category.name)}
+                >
+                  {category.name}
+                </button>
+              )
+            })}
 
-        {noSearchMatches && (
-          <StateMessage variant="empty">
-            {t('ui.catalog.categories-no-match')}
-          </StateMessage>
-        )}
-      </div>
+            {noSearchMatches && (
+              <StateMessage variant="empty">
+                {t('ui.catalog.categories-no-match')}
+              </StateMessage>
+            )}
+          </div>
+
+          {/* Invisible copy of the full chip set: it shares the grid cell
+              with the live row above, so the area keeps the unfiltered
+              height while typing narrows the visible chips. This keeps the
+              table and toolbar below from jumping vertically. */}
+          <div aria-hidden="true" className="category-chip-row category-chip-row-sizer">
+            {namedCategories.map((category) => (
+              <button
+                className="category-chip"
+                disabled
+                key={category.id ?? category.name}
+                tabIndex={-1}
+                type="button"
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -85,7 +85,7 @@ Ship five user-approved UX improvements: globally true localization coverage wit
 | T3-language-continuity     | Complete | Coordinator | None       | 2026-06-12   | Cookie write + account-page alignment  |
 | T4-copy-and-timestamps     | Complete | Coordinator | None       | 2026-06-12   | Safest packet                          |
 | T5-mobile-topbar           | Complete | Coordinator | None       | 2026-06-12   | Theme menu idiom changes all viewports |
-| T6-catalog-chip-search     | Ready    | Coordinator | None       | 2026-06-12   | User-reported chip search issues       |
+| T6-catalog-chip-search     | Complete | Coordinator | None       | 2026-06-12   | User-reported chip search issues       |
 | T7-diagnostics-layout      | Ready    | Coordinator | None       | 2026-06-12   | Fill the two-column hole               |
 | T8-connection-errors       | Ready    | Coordinator | None       | 2026-06-12   | Repro required first                   |
 | T9-i18n-cache-and-gaps     | Ready    | Coordinator | None       | 2026-06-12   | Session cache + hardcoded-string audit |
@@ -272,7 +272,7 @@ Validation:
 
 Result summary:
 
-- Status: pending
+- Status: complete (2026-06-12). Layout jump fixed with a pure-CSS grid stack: `CategoryFilter` renders the live chip row plus an `aria-hidden` `visibility: hidden` sizer copy of the full chip set in one `.category-chip-area` grid cell, so the area keeps the unfiltered footprint while typing narrows chips — zero-shift proven by identical before/after Y positions on public catalog and admin catalog at desktop and 375px. The new wrapper class leaves the admin localization matrix (bare chip-class reuse from T1) untouched and verified intact. Placeholder clip fixed by widening the input 12rem→14rem plus `::placeholder` ellipsis (measured: EN 130.8px, PL 164.1px both fit in 203px content width); no copy change needed. Cancel affordance collapses via `:placeholder-shown::-webkit-search-cancel-button { width: 0 }` so it occupies space only with text present, theme-visible in light/dark; Firefox unaffected by design (no pseudo rendered, layout independent of it). Validation: scoped vitest 5/5, typecheck pass, `npx eslint src scripts` pass, `git diff --check` pass, manual mock-mode measurements at both widths with language switched to pl and restored. Residual: placeholder-less search inputs keep WebKit's pre-existing empty reserved box (unchanged behavior).
 
 ### Task Packet: T7-diagnostics-layout
 

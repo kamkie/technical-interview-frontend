@@ -69,6 +69,34 @@ describe('CategoryFilter', () => {
     expect(screen.queryByRole('button', { name: 'Java' })).toBeNull()
   })
 
+  it('keeps a hidden full-set sizer row so filtering cannot change the reserved chip area', () => {
+    renderFilter()
+
+    fireEvent.change(screen.getByLabelText('Search categories'), {
+      target: { value: 'jav' },
+    })
+
+    // The live row narrows to the match while the sizer keeps every chip,
+    // reserving the unfiltered height for the area below.
+    expect(screen.queryByRole('button', { name: 'Testing' })).toBeNull()
+
+    const sizer = document.querySelector('.category-chip-row-sizer')
+
+    expect(sizer).not.toBeNull()
+    expect(sizer).toHaveAttribute('aria-hidden', 'true')
+
+    const sizerChips = [...(sizer?.querySelectorAll('.category-chip') ?? [])]
+
+    expect(sizerChips.map((chip) => chip.textContent)).toEqual([
+      'Architecture',
+      'Java',
+      'Testing',
+    ])
+    expect(
+      sizerChips.every((chip) => chip.hasAttribute('disabled')),
+    ).toBe(true)
+  })
+
   it('still toggles a chip selected through the page-owned category contract', () => {
     const onToggleCategory = renderFilter()
 
