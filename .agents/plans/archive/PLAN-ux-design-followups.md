@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-ux-design-followups
 
-Status: Approved
+Status: Complete
 
 Workers: 1
 
@@ -16,7 +16,7 @@ Filename: `.agents/plans/PLAN-ux-design-followups.md`
 - Approved by: Kamil Kiewisz (user request: "implement PLAN-ux-design-followups.md")
 - Approved at: 2026-06-12T18:11:00+02:00
 - Open questions: No blocking questions; see `## Assumptions` for recorded defaults.
-- Implementation progress: In progress.
+- Implementation progress: Complete. All nine packets landed as one checkpoint commit each (`264428b`, `580010d`, `1af0bae`, `a97873e`, `2c41b44`, `628b296`, `a8a590f`, `929e859`, `d00fb8a`).
 
 Use `Status: Approved` only after explicit user approval is recorded. Creating or updating this plan is not implementation approval.
 
@@ -25,6 +25,7 @@ Use `Status: Approved` only after explicit user approval is recorded. Creating o
 - 2026-06-12T18:30:00+02:00: none -> Draft by Claude (interactive design session with user); plan created.
 - 2026-06-12T19:10:00+02:00: Draft updated by Claude; user-reported issues added as T6-T9 (chip search truncation and layout jump, diagnostics empty space, double connection error, translation caching and hardcoded-string gaps).
 - 2026-06-12T18:11:00+02:00 (later session): Draft -> Approved by Kamil Kiewisz via the request "implement PLAN-ux-design-followups.md"; execution started.
+- 2026-06-12T20:30:00+02:00: Approved -> Complete by Claude (coordinator); all nine packets validated and committed. Cross-cutting validation on the final tree: full `npm run test` 304/304, `npm run a11y` 10 passed / 0 failed (light+dark), `npm run build` pass, `npx eslint src scripts` pass, `npm run lint:markdown` pass, `git diff --check` clean, manual mock-mode browser pass at desktop (56px single-row topbar, theme menu, full display name) and 375px (101px two-row topbar, initials circle, scrollable nav, single catalog fetch per load confirming the session cache). `M-I18N-003`/`E-I18N-005` archived to `docs/ROADMAP_ARCHIVE.md`. Full `npm run lint` not run (fails on user-local gitignored scripts; ESLint + Markdown surfaces covered separately).
 
 ## Goal
 

@@ -85,6 +85,14 @@ Record: `.agents/plans/archive/PLAN_responsive_layout_smoke_evidence.md`
 
 Scope: `M-SMOKE-001` responsive layout and smoke evidence.
 
+### PLAN-ux-design-followups
+
+Labels: `type:plan`, `status:archived`
+
+Record: `.agents/plans/archive/PLAN-ux-design-followups.md`
+
+Scope: 2026-06-12 UX design-session follow-ups T1-T9, including the `M-I18N-003` localization catalog caching slice.
+
 ## Completed Milestones
 
 ### M-I18N-003: Localization Catalog Caching
