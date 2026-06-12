@@ -3032,4 +3032,44 @@ input[type='search']::-webkit-search-cancel-button:hover {
     min-width: 0;
     width: 100%;
   }
+
+  /* Narrow-viewport table pattern: the action and expand columns pin to the
+     right edge while the rest of the table scrolls beneath them, so row
+     actions stay reachable without hunting through horizontal scroll. The
+     header cells already carry the opaque table-header background, and the
+     row-hover rules outrank these backgrounds, so hover still reads. */
+  .admin-books-actions-header,
+  .admin-books-actions-cell,
+  .admin-categories-actions-header,
+  .admin-categories-actions-cell,
+  .row-actions-cell,
+  .audit-expand-cell {
+    position: sticky;
+    right: 0;
+    z-index: 1;
+    background: var(--color-surface);
+    box-shadow: -8px 0 8px -8px rgb(0 0 0 / 0.35);
+  }
+
+  /* Stacked action buttons need less width than the desktop side-by-side
+     pair, and a slimmer pinned column hides less of the scrolling table. */
+  .admin-books-table .admin-books-actions-header,
+  .admin-books-table .admin-books-actions-cell,
+  .admin-categories-table .admin-categories-actions-header,
+  .admin-categories-table .admin-categories-actions-cell {
+    width: 7rem;
+    min-width: 7rem;
+  }
+
+  .admin-categories-actions-cell .row-actions,
+  .row-actions-cell .row-actions {
+    display: grid;
+    white-space: normal;
+  }
+
+  .admin-categories-actions-cell .row-actions button,
+  .row-actions-cell .row-actions button {
+    min-width: 0;
+    width: 100%;
+  }
 }

@@ -920,7 +920,7 @@ function LocalizationResults({
               label={t('ui.admin-localization.updated')}
               onSort={() => onSortByField('updatedAt')}
             />
-            <th className="plain-column-header" scope="col">
+            <th className="plain-column-header row-actions-cell" scope="col">
               {t('ui.common.actions')}
             </th>
           </tr>
@@ -981,7 +981,7 @@ function LocalizationRow({
             : t('ui.admin-localization.no-description')}
         </td>
         <td>{row.updatedAt ?? t('ui.common.unknown')}</td>
-        <td>
+        <td className="row-actions-cell">
           <div className="row-actions">
             <button
               type="button"
