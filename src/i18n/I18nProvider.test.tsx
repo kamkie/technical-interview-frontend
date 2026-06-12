@@ -6,6 +6,7 @@ import type { UserAccount } from '../api/account'
 import { getActiveRequestLanguage, setActiveRequestLanguage } from '../api/http'
 import { LOCALIZATIONS_PATH } from '../api/localizations'
 import { readCookie, type SessionResponse } from '../api/session'
+import { clearUiCatalogCache, invalidateUiCatalog } from './catalog'
 import { CatalogCoverage, I18nProvider } from './I18nProvider'
 import { UI_MESSAGES } from './messages'
 import { LANGUAGE_COOKIE_NAME, resolveLanguage } from './resolveLanguage'
@@ -16,6 +17,9 @@ afterEach(() => {
   setActiveRequestLanguage(undefined)
   document.documentElement.lang = 'en'
   document.cookie = 'language=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/'
+  // The session-scoped catalog cache would otherwise serve one test's mocked
+  // rows to the next test's render.
+  clearUiCatalogCache()
 })
 
 function Probe() {
@@ -205,6 +209,73 @@ describe('I18nProvider', () => {
       )
     })
     expect(screen.getByTestId('coverage')).toHaveTextContent(/^1$/)
+  })
+
+  it('refetches and re-renders the chrome when the active language is invalidated', async () => {
+    document.cookie = 'language=pl; path=/'
+
+    // The first load serves the pre-mutation text; every later load serves
+    // the post-mutation text, standing in for an admin editing the row.
+    let catalogLoadCount = 0
+    const fetchMock = vi.fn().mockImplementation(() => {
+      catalogLoadCount += 1
+
+      return Promise.resolve(
+        Response.json({
+          content: [
+            {
+              id: 1,
+              messageKey: 'ui.shell.brand',
+              language: 'pl',
+              messageText:
+                catalogLoadCount === 1
+                  ? 'Konsola Biblioteki'
+                  : 'Nowa Konsola Biblioteki',
+            },
+          ],
+          number: 0,
+          size: 100,
+          totalElements: 1,
+          totalPages: 1,
+          first: true,
+          last: true,
+        }),
+      )
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <I18nProvider>
+        <Probe />
+      </I18nProvider>,
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('brand')).toHaveTextContent('Konsola Biblioteki')
+    })
+
+    const brandNodeBeforeInvalidation = screen.getByTestId('brand')
+
+    // An invalidation for a language that is not on screen must not refetch.
+    act(() => {
+      invalidateUiCatalog('de')
+    })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(screen.getByTestId('brand')).toHaveTextContent('Konsola Biblioteki')
+
+    // Invalidating the rendered language reloads its catalog and the fresh
+    // text re-renders the chrome in the same session, without a remount.
+    act(() => {
+      invalidateUiCatalog('pl')
+    })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('brand')).toHaveTextContent(
+        'Nowa Konsola Biblioteki',
+      )
+    })
+    expect(screen.getByTestId('brand')).toBe(brandNodeBeforeInvalidation)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
   it('re-resolves and reloads the catalog when the account preference arrives', async () => {

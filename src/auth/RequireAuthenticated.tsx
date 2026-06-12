@@ -33,9 +33,9 @@ export function RequireAuthenticated({
   if (state.status === 'loading') {
     return (
       <section className="auth-guard" aria-labelledby="auth-guard-title">
-        <h2 id="auth-guard-title">Checking authentication</h2>
+        <h2 id="auth-guard-title">{t('ui.session.guard-checking-title')}</h2>
         <p className="session-message" role="status">
-          Loading session...
+          {t('ui.session.loading')}
         </p>
       </section>
     )
@@ -44,7 +44,7 @@ export function RequireAuthenticated({
   if (state.status === 'error') {
     return (
       <section className="auth-guard" aria-labelledby="auth-guard-title">
-        <h2 id="auth-guard-title">Session unavailable</h2>
+        <h2 id="auth-guard-title">{t('ui.session.guard-unavailable-title')}</h2>
         <p className="session-message error" role="alert">
           {getLoadErrorMessage(t, state) || t('ui.session.bootstrap-failed')}
         </p>
@@ -62,10 +62,8 @@ export function RequireAuthenticated({
   if (state.session.authenticated !== true) {
     return (
       <section className="auth-guard" aria-labelledby="auth-guard-title">
-        <h2 id="auth-guard-title">Sign in required</h2>
-        <p className="session-message">
-          Use an available login provider to access this area.
-        </p>
+        <h2 id="auth-guard-title">{t('ui.session.guard-sign-in-title')}</h2>
+        <p className="session-message">{t('ui.session.guard-sign-in-hint')}</p>
         <LoginProviderActions session={state.session} />
       </section>
     )
@@ -75,25 +73,26 @@ export function RequireAuthenticated({
 }
 
 function LoginProviderActions({ session }: { session: SessionResponse }) {
+  const { t } = useI18n()
   const loginProviders = getAvailableLoginProviders(session)
 
   if (loginProviders.length === 0) {
     return (
-      <p className="session-message muted">
-        No sign-in options are available for this session.
-      </p>
+      <p className="session-message muted">{t('ui.session.no-providers')}</p>
     )
   }
 
   return (
-    <nav className="login-actions" aria-label="Login providers">
+    <nav className="login-actions" aria-label={t('ui.session.login-providers-label')}>
       {loginProviders.map((provider, index) => (
         <a
           className="login-link"
           href={provider.authorizationPath}
           key={`${provider.authorizationPath}-${index}`}
         >
-          Sign in with {formatLoginProviderName(provider)}
+          {t('ui.session.sign-in-with', {
+            provider: formatLoginProviderName(provider),
+          })}
         </a>
       ))}
     </nav>

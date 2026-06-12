@@ -36,32 +36,7 @@ Stable IDs:
 
 ## Milestones
 
-Selected on 2026-06-12 from the interactive UX design session; execution coordination lives in `PLAN-ux-design-followups` (Draft).
-
-### M-I18N-003: Localization Catalog Caching
-
-Labels: type:milestone, status:ready
-
-Goal: Stop refetching the UI localization catalog on every page load and language switch by caching it per browser session and revalidating when admin localization edits change the active language.
-
-#### E-I18N-005: Session Catalog Cache And Revalidation
-
-Labels: type:epic, milestone:M-I18N-003, status:ready
-
-Current evidence: `loadUiCatalog` walks every page of `GET /api/localizations` on each full page load and each language switch, twice per load under dev StrictMode, and admin localization mutations leave any loaded catalog stale until the next reload.
-
-Tasks:
-
-- T-I18N-009: Cache loaded UI catalogs per language for the browser session and serve repeat language switches from the cache.
-- T-I18N-010: Invalidate or update the cached catalog when an admin localization mutation touches the cached language, so saved chrome translations appear without a full reload.
-
-Acceptance Criteria:
-
-- Switching back to an already-loaded language within one session issues no catalog refetch.
-- Creating, editing, or deleting a localization row for the active language updates the rendered chrome in the same session.
-- Backend HTTP caching for `GET /api/localizations` stays backend-owned and is tracked as a Candidate row in the sibling `technical-interview-demo` roadmap intake.
-
-The remaining UX design-session work in `PLAN-ux-design-followups` stays plan-scoped until selected here.
+No milestone is currently selected. The 2026-06-12 UX design-session follow-ups, including the selected `M-I18N-003` catalog caching slice, were delivered through `PLAN-ux-design-followups`; select the next maintenance target here.
 
 Completed milestones are archived in `docs/ROADMAP_ARCHIVE.md`.
 

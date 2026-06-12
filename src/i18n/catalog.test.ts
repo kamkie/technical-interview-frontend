@@ -1,9 +1,19 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { LocalizationPage } from '../api/localizations'
-import { UI_CATALOG_PAGE_SIZE, loadUiCatalog } from './catalog'
+import {
+  UI_CATALOG_PAGE_SIZE,
+  clearUiCatalogCache,
+  invalidateUiCatalog,
+  loadUiCatalog,
+  subscribeToUiCatalogInvalidations,
+} from './catalog'
 
 describe('loadUiCatalog', () => {
+  beforeEach(() => {
+    clearUiCatalogCache()
+  })
+
   it('follows pagination until the last page and maps keys to text', async () => {
     const fetchImplementation = vi
       .fn()
@@ -171,7 +181,174 @@ describe('loadUiCatalog', () => {
     expect(catalog.get('ui.page-2')).toBe('Strona 2')
     expect(fetchImplementation).toHaveBeenCalledTimes(3)
   })
+
+  it('serves the session cache for a repeated language without a second fetch', async () => {
+    const fetchImplementation = createSinglePageFetch('pl')
+
+    const firstCatalog = await loadUiCatalog('pl', { fetchImplementation })
+    const secondCatalog = await loadUiCatalog('pl', { fetchImplementation })
+
+    expect(secondCatalog).toBe(firstCatalog)
+    expect(fetchImplementation).toHaveBeenCalledTimes(1)
+
+    // The cache is keyed by language, so another language still loads.
+    await loadUiCatalog('de', { fetchImplementation })
+
+    expect(fetchImplementation).toHaveBeenCalledTimes(2)
+  })
+
+  it('shares one in-flight load between concurrent requests for the same language', async () => {
+    let resolveFetch: ((response: Response) => void) | undefined
+    const fetchImplementation = vi.fn().mockImplementation(
+      () =>
+        new Promise<Response>((resolve) => {
+          resolveFetch = resolve
+        }),
+    )
+
+    const firstLoad = loadUiCatalog('pl', { fetchImplementation })
+    const secondLoad = loadUiCatalog('pl', { fetchImplementation })
+
+    expect(fetchImplementation).toHaveBeenCalledTimes(1)
+
+    resolveFetch?.(
+      Response.json(
+        createPage({
+          content: [
+            { id: 1, messageKey: 'ui.nav.catalog', language: 'pl', messageText: 'Katalog' },
+          ],
+          last: true,
+        }),
+      ),
+    )
+
+    const [firstCatalog, secondCatalog] = await Promise.all([
+      firstLoad,
+      secondLoad,
+    ])
+
+    expect(firstCatalog).toBe(secondCatalog)
+    expect(firstCatalog.get('ui.nav.catalog')).toBe('Katalog')
+    expect(fetchImplementation).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not cache failed loads, so the next request retries', async () => {
+    // Two rejections: `fetchBackendRead` retries an unreachable GET once
+    // before the failure propagates out of the load.
+    const fetchImplementation = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockImplementation(createSinglePageFetch('pl'))
+
+    await expect(loadUiCatalog('pl', { fetchImplementation })).rejects.toThrow(
+      'could not reach the backend service',
+    )
+    expect(fetchImplementation).toHaveBeenCalledTimes(2)
+
+    const catalog = await loadUiCatalog('pl', { fetchImplementation })
+
+    expect(catalog.get('ui.nav.catalog')).toBe('Katalog')
+    expect(fetchImplementation).toHaveBeenCalledTimes(3)
+  })
+
+  it('refetches a language after its cache entry is invalidated', async () => {
+    const fetchImplementation = createSinglePageFetch('pl')
+
+    await loadUiCatalog('pl', { fetchImplementation })
+    invalidateUiCatalog('de')
+    await loadUiCatalog('pl', { fetchImplementation })
+
+    // Invalidating another language leaves this entry cached.
+    expect(fetchImplementation).toHaveBeenCalledTimes(1)
+
+    invalidateUiCatalog('pl')
+
+    const catalog = await loadUiCatalog('pl', { fetchImplementation })
+
+    expect(catalog.get('ui.nav.catalog')).toBe('Katalog')
+    expect(fetchImplementation).toHaveBeenCalledTimes(2)
+  })
+
+  it('notifies subscribed listeners with the invalidated language', () => {
+    const firstListener = vi.fn()
+    const secondListener = vi.fn()
+    const unsubscribeFirst = subscribeToUiCatalogInvalidations(firstListener)
+    const unsubscribeSecond = subscribeToUiCatalogInvalidations(secondListener)
+
+    try {
+      invalidateUiCatalog('pl')
+
+      expect(firstListener).toHaveBeenCalledTimes(1)
+      expect(firstListener).toHaveBeenCalledWith('pl')
+      expect(secondListener).toHaveBeenCalledTimes(1)
+      expect(secondListener).toHaveBeenCalledWith('pl')
+
+      invalidateUiCatalog('de')
+
+      expect(firstListener).toHaveBeenNthCalledWith(2, 'de')
+      expect(secondListener).toHaveBeenNthCalledWith(2, 'de')
+    } finally {
+      unsubscribeFirst()
+      unsubscribeSecond()
+    }
+  })
+
+  it('stops notifying a listener after unsubscribe', () => {
+    const listener = vi.fn()
+    const unsubscribe = subscribeToUiCatalogInvalidations(listener)
+
+    invalidateUiCatalog('pl')
+    expect(listener).toHaveBeenCalledTimes(1)
+
+    unsubscribe()
+    invalidateUiCatalog('pl')
+
+    expect(listener).toHaveBeenCalledTimes(1)
+  })
+
+  it('deletes the cache entry before notifying, so a listener-triggered load refetches', async () => {
+    const fetchImplementation = createSinglePageFetch('pl')
+
+    await loadUiCatalog('pl', { fetchImplementation })
+    expect(fetchImplementation).toHaveBeenCalledTimes(1)
+
+    let loadDuringNotification: Promise<unknown> | undefined
+    const unsubscribe = subscribeToUiCatalogInvalidations(() => {
+      loadDuringNotification = loadUiCatalog('pl', { fetchImplementation })
+    })
+
+    try {
+      invalidateUiCatalog('pl')
+
+      await loadDuringNotification
+
+      expect(fetchImplementation).toHaveBeenCalledTimes(2)
+    } finally {
+      unsubscribe()
+    }
+  })
 })
+
+function createSinglePageFetch(language: string) {
+  return vi.fn().mockImplementation(() =>
+    Promise.resolve(
+      Response.json(
+        createPage({
+          content: [
+            {
+              id: 1,
+              messageKey: 'ui.nav.catalog',
+              language,
+              messageText: 'Katalog',
+            },
+          ],
+          last: true,
+        }),
+      ),
+    ),
+  )
+}
 
 function createPage(overrides: Partial<LocalizationPage>): LocalizationPage {
   return {

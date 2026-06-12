@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
 import type { AuditLog } from '../api/operator'
+import { useI18n } from '../i18n/useI18n'
 import { formatTimestamp } from '../ui/format'
 import {
   createAuditEntryLabel,
@@ -17,6 +18,7 @@ export type SelectedAuditEntry = {
 }
 
 export function AuditEntryDetails({ entry, index }: SelectedAuditEntry) {
+  const { t } = useI18n()
   const structuredDetailsJson = useMemo(() => {
     const details = entry.details
 
@@ -34,28 +36,28 @@ export function AuditEntryDetails({ entry, index }: SelectedAuditEntry) {
         </div>
         <div>
           <dt>Created</dt>
-          <dd>{formatTimestamp(entry.createdAt)}</dd>
+          <dd>{formatTimestamp(entry.createdAt, t('ui.common.unknown'))}</dd>
         </div>
         <div>
           <dt>Target type</dt>
-          <dd>{formatEnumValue(entry.targetType)}</dd>
+          <dd>{formatEnumValue(entry.targetType, t('ui.common.unknown'))}</dd>
         </div>
         <div>
           <dt>Target ID</dt>
-          <dd>{formatOptionalNumber(entry.targetId)}</dd>
+          <dd>{formatOptionalNumber(entry.targetId, t('ui.common.unavailable'))}</dd>
         </div>
         <div>
           <dt>Action</dt>
-          <dd>{formatEnumValue(entry.action)}</dd>
+          <dd>{formatEnumValue(entry.action, t('ui.common.unknown'))}</dd>
         </div>
         <div>
           <dt>Actor</dt>
-          <dd>{formatActor(entry.actorLogin)}</dd>
+          <dd>{formatActor(entry.actorLogin, t('ui.operator.unknown-actor'))}</dd>
         </div>
       </dl>
       <div className="audit-detail-summary">
         <h3>Summary</h3>
-        <p>{formatSummary(entry.summary)}</p>
+        <p>{formatSummary(entry.summary, t('ui.operator.no-summary'))}</p>
       </div>
       <div className="audit-detail-json">
         <h3>Structured details</h3>

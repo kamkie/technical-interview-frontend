@@ -195,7 +195,7 @@ export function PaginationControls({
     <nav className="pagination-controls pager" aria-label={ariaLabel}>
       <button
         aria-disabled={disabled || undefined}
-        aria-label="Previous page"
+        aria-label={t('ui.pagination.previous')}
         type="button"
         disabled={first}
         onClick={() => {
@@ -209,7 +209,7 @@ export function PaginationControls({
       <span>{pageStatus}</span>
       <button
         aria-disabled={disabled || undefined}
-        aria-label="Next page"
+        aria-label={t('ui.pagination.next')}
         type="button"
         disabled={last}
         onClick={() => {

@@ -12,7 +12,11 @@ import {
 import { subscribeToAccountValues } from '../account/useCurrentAccount'
 import { setActiveRequestLanguage } from '../api/http'
 import type { SupportedLocalizationLanguage } from '../api/localizations'
-import { loadUiCatalog, type UiCatalog } from './catalog'
+import {
+  loadUiCatalog,
+  subscribeToUiCatalogInvalidations,
+  type UiCatalog,
+} from './catalog'
 import { UI_MESSAGES, formatUiMessage } from './messages'
 import {
   FALLBACK_LANGUAGE,
@@ -82,6 +86,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [loadedCatalog, setLoadedCatalog] = useState<LoadedCatalog | null>(
     null,
   )
+  // Bumped when the rendered language's cache entry is invalidated (admin
+  // localization mutations); the load effect below depends on it, so the
+  // bump re-runs the load against the now-empty cache and the refetched
+  // catalog re-renders the chrome in the same session.
+  const [catalogReloadToken, setCatalogReloadToken] = useState(0)
   // The latest account preference seen on this session, so cookie or browser
   // changes re-resolve below the preference tier instead of replacing it.
   const accountPreferenceRef = useRef<string | undefined>(undefined)
@@ -115,6 +124,19 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     [refreshLanguage],
   )
 
+  // Reload the catalog when its cache entry is invalidated for the language
+  // currently rendered; other languages' invalidations have nothing on screen
+  // to refresh, so they must not trigger a refetch.
+  useEffect(
+    () =>
+      subscribeToUiCatalogInvalidations((invalidatedLanguage) => {
+        if (invalidatedLanguage === language) {
+          setCatalogReloadToken((token) => token + 1)
+        }
+      }),
+    [language],
+  )
+
   useEffect(() => {
     setActiveRequestLanguage(language)
     document.documentElement.lang = language
@@ -138,7 +160,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     return () => {
       ignore = true
     }
-  }, [language])
+  }, [language, catalogReloadToken])
 
   const t = useCallback<UiTranslate>(
     (key, params) =>

@@ -21,20 +21,31 @@ export function formatAuditDescriptor(entry: AuditLog) {
   ].join(' - ')
 }
 
-export function formatActor(actorLogin: string | undefined) {
-  return actorLogin?.trim() ? actorLogin : 'Unknown actor'
+// Callers pass localized fallback text (for example `t('ui.common.unknown')`)
+// for missing values; the English defaults keep older call sites compiling.
+export function formatActor(
+  actorLogin: string | undefined,
+  fallback = 'Unknown actor',
+) {
+  return actorLogin?.trim() ? actorLogin : fallback
 }
 
-export function formatSummary(summary: string | undefined) {
-  return summary?.trim() ? summary : 'No summary'
+export function formatSummary(
+  summary: string | undefined,
+  fallback = 'No summary',
+) {
+  return summary?.trim() ? summary : fallback
 }
 
-export function formatEnumValue(value: string | undefined) {
-  return value?.trim() ? value : 'Unknown'
+export function formatEnumValue(value: string | undefined, fallback = 'Unknown') {
+  return value?.trim() ? value : fallback
 }
 
-export function formatOptionalNumber(value: number | undefined) {
-  return value === undefined ? 'Unavailable' : String(value)
+export function formatOptionalNumber(
+  value: number | undefined,
+  fallback = 'Unavailable',
+) {
+  return value === undefined ? fallback : String(value)
 }
 
 export function hasStructuredDetails(value: unknown) {

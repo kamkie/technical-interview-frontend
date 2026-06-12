@@ -344,6 +344,8 @@ export const UI_MESSAGES = {
   'ui.coverage.missing': 'missing',
   'ui.coverage.partial': 'partial',
   'ui.coverage.unknown': 'unknown',
+  'ui.diagnostics.sign-in-message':
+    'Sign in is required for system diagnostics.',
   'ui.language.complete-translation': 'Complete this translation',
   'ui.language.de': 'German',
   'ui.language.en': 'English',
@@ -369,6 +371,15 @@ export const UI_MESSAGES = {
   'ui.nav.operations-label': 'Operations workflows',
   'ui.nav.primary-label': 'Primary navigation',
   'ui.nav.users': 'Users',
+  'ui.operator.description':
+    'Inspect read-only operational and audit evidence for an authenticated session.',
+  'ui.operator.eyebrow': 'Operator',
+  'ui.operator.no-summary': 'No summary',
+  'ui.operator.sign-in-message':
+    'Sign in is required for operator audit access.',
+  'ui.operator.sign-in-title': 'Sign in required',
+  'ui.operator.title': 'Operator audit',
+  'ui.operator.unknown-actor': 'Unknown actor',
   'ui.pagination.next': 'Next page',
   'ui.pagination.page': 'Page {page}',
   'ui.pagination.page-of': 'Page {page} of {total}',
@@ -407,6 +418,11 @@ export const UI_MESSAGES = {
   'ui.session.connection-menu-label': 'Connection menu',
   'ui.session.cookie': 'Session cookie',
   'ui.session.csrf-label': 'Cookie {cookie}; header {header}',
+  'ui.session.guard-checking-title': 'Checking authentication',
+  'ui.session.guard-sign-in-hint':
+    'Use an available login provider to access this area.',
+  'ui.session.guard-sign-in-title': 'Sign in required',
+  'ui.session.guard-unavailable-title': 'Session unavailable',
   'ui.session.guest': 'Browsing as guest',
   'ui.session.loading': 'Loading session...',
   'ui.session.login-providers-label': 'Login providers',

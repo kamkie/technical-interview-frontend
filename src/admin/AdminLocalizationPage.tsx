@@ -23,6 +23,7 @@ import {
 } from '../api/localizations'
 import type { SessionResponse } from '../api/session'
 import { hasAdminRole } from '../auth/roles'
+import { invalidateUiCatalog } from '../i18n/catalog'
 import { useI18n, type UiTranslate } from '../i18n/useI18n'
 import {
   appendRepeatedParams,
@@ -503,6 +504,7 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
 
         setFormDraft(createLocalizationDraft(updatedLocalization))
         applyCoverageRowSaved(updatedLocalization)
+        invalidateUiCatalog(updatedLocalization.language ?? formDraft.language)
         setMutationState({
           status: 'success',
           message: t('ui.admin-localization.updated-success'),
@@ -512,6 +514,7 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
         const createdLocalization = await createLocalization(session, request)
 
         applyCoverageRowSaved(createdLocalization)
+        invalidateUiCatalog(createdLocalization.language ?? formDraft.language)
         setFormDraft(
           createEmptyLocalizationDraft({
             language: formDraft.language,
@@ -575,6 +578,10 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
       await deleteLocalization(session, row.id)
 
       applyCoverageRowDeleted(row.id)
+
+      if (row.language) {
+        invalidateUiCatalog(row.language)
+      }
 
       if (formMode.type === 'edit' && formMode.id === row.id) {
         closeForm()

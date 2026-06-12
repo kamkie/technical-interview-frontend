@@ -87,6 +87,23 @@ Scope: `M-SMOKE-001` responsive layout and smoke evidence.
 
 ## Completed Milestones
 
+### M-I18N-003: Localization Catalog Caching
+
+Labels: `type:milestone`, `status:done`
+
+Goal: Stop refetching the UI localization catalog on every page load and language switch by caching it per browser session and revalidating when admin localization edits change the active language.
+
+Completion evidence: Delivered 2026-06-12 on `main` through `PLAN-ux-design-followups` packet T9-i18n-cache-and-gaps. `loadUiCatalog` serves a session-scoped promise cache keyed by language (concurrent loads share one in-flight promise so the dev StrictMode double fetch collapses, and failed loads self-evict so retries work), admin localization create, update, and delete call `invalidateUiCatalog` with the touched row's language, and `I18nProvider` subscribes to invalidations so a mutation on the active language refetches and re-renders the chrome in the same session. Backend HTTP caching for `GET /api/localizations` stays backend-owned as a Candidate row in the sibling `technical-interview-demo` roadmap intake. Full vitest suite green with cache-hit, in-flight-sharing, failed-load-not-cached, language-selective invalidation, and active-language refresh tests.
+
+#### E-I18N-005: Session Catalog Cache And Revalidation
+
+Labels: `type:epic`, `milestone:M-I18N-003`, `status:done`
+
+Tasks:
+
+- T-I18N-009: Cache loaded UI catalogs per language for the browser session and serve repeat language switches from the cache.
+- T-I18N-010: Invalidate or update the cached catalog when an admin localization mutation touches the cached language, so saved chrome translations appear without a full reload.
+
 ### M-WORKFLOW-002: Session And Admin Chrome Demotion
 
 Labels: `type:milestone`, `status:done`

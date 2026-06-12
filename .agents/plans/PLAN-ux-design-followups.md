@@ -88,7 +88,7 @@ Ship five user-approved UX improvements: globally true localization coverage wit
 | T6-catalog-chip-search     | Complete | Coordinator | None       | 2026-06-12   | User-reported chip search issues       |
 | T7-diagnostics-layout      | Complete | Coordinator | None       | 2026-06-12   | Fill the two-column hole               |
 | T8-connection-errors       | Complete | Coordinator | None       | 2026-06-12   | Repro required first                   |
-| T9-i18n-cache-and-gaps     | Ready    | Coordinator | None       | 2026-06-12   | Session cache + hardcoded-string audit |
+| T9-i18n-cache-and-gaps     | Complete | Coordinator | None       | 2026-06-12   | Session cache + hardcoded-string audit |
 
 ## Task Packets
 
@@ -343,7 +343,7 @@ Goal:
 
 Write scope:
 
-- `src/i18n/catalog.ts` (+ test), `src/i18n/I18nProvider.tsx` (+ test), `src/auth/RequireAuthenticated.tsx` (+ test), `src/i18n/messages.ts`; audit findings may add call-site files with coordinator approval.
+- `src/i18n/catalog.ts` (+ test), `src/i18n/I18nProvider.tsx` (+ test), `src/auth/RequireAuthenticated.tsx` (+ test), `src/i18n/messages.ts`; audit findings may add call-site files with coordinator approval. Coordinator approvals recorded 2026-06-12: `src/admin/AdminLocalizationPage.tsx` (+ test) for cache-invalidation calls in the T1 mutation paths only, and audit call-site files under `src/` provided each diff is strictly limited to replacing hardcoded user-visible strings with `t()` keys (plus colocated test updates) and every touched file is listed in the handoff.
 
 Dependencies: none (coordinate cache invalidation hooks with T1 if both run).
 
@@ -353,7 +353,7 @@ Validation:
 
 Result summary:
 
-- Status: pending
+- Status: complete (2026-06-12, two worker passes). Cache: `loadUiCatalog` now serves a module-level session-scoped `Map<language, Promise<UiCatalog>>` — concurrent loads share one in-flight promise (StrictMode double fetch collapses), failed loads self-evict (identity-guarded), `invalidateUiCatalog(language)` is called from the T1 mutation paths (create/update/delete) per the coordinator-approved scope addition, and a second pass added `subscribeToUiCatalogInvalidations` plus an `I18nProvider` reload-token subscription so a mutation on the ACTIVE language refetches and re-renders chrome in the same session — closing M-I18N-003 acceptance criterion 2, which invalidation-only left unmet. Audit: `RequireAuthenticated` guard copy fully keyed (4 new `ui.session.guard-*` keys + existing-key reuse), operator signed-out blocks and audit/diagnostics fallbacks keyed (`auditFormat.ts` fallback params mirroring `formatTimestamp`), `PaginationControls` fallback-pager aria-labels keyed; 12 new keys total. HTTP-level caching untouched (backend-owned, recorded in sibling roadmap). Validation: scoped vitest green, full `npm run test` 304/304, typecheck pass, `npx eslint src scripts` pass, `git diff --check` pass. Coordinator close-out: `M-I18N-003`/`E-I18N-005` archived to `docs/ROADMAP_ARCHIVE.md` with completion evidence; `ROADMAP.md` milestones section now points at selecting the next target. Residuals recorded: remaining operator-area chrome (~70+ keys: filter labels, table headers, enum maps, StateBlock strings) left as a coherent follow-up; load-effect fallback strings stay English by the documented asyncState design; `formatLoginProviderName`'s 'this provider' edge fallback unkeyed; an edit that changes a row's language invalidates only the new language (old language stale until reload — accepted class).
 
 ## Execution Model
 

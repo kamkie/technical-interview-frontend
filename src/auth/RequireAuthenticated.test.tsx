@@ -44,6 +44,39 @@ describe('RequireAuthenticated', () => {
     unsubscribe()
   })
 
+  it('renders the sign-in guard with the available login providers', () => {
+    render(
+      <RequireAuthenticated
+        state={{
+          status: 'ready',
+          session: {
+            authenticated: false,
+            loginProviders: [
+              {
+                clientName: 'GitHub',
+                registrationId: 'github',
+                authorizationPath: '/api/oauth2/authorization/github',
+              },
+            ],
+          },
+        }}
+      >
+        <p>guarded content</p>
+      </RequireAuthenticated>,
+    )
+
+    expect(
+      screen.getByRole('heading', { name: 'Sign in required' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Use an available login provider to access this area.'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'Sign in with GitHub' }),
+    ).toHaveAttribute('href', '/api/oauth2/authorization/github')
+    expect(screen.queryByText('guarded content')).not.toBeInTheDocument()
+  })
+
   it('registers the error block as the page connection surface only while erroring', () => {
     const { rerender } = render(
       <>

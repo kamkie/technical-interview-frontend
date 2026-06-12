@@ -89,6 +89,7 @@ type AuditFilterDraft = Pick<
 >
 
 export function OperatorPage({ session }: { session: SessionResponse }) {
+  const { t } = useI18n()
   const [searchParams, setSearchParams] = useSearchParams()
   const query = useMemo(() => parseAuditSearchParams(searchParams), [searchParams])
   const routeFilterDraft = createAuditFilterDraft(query)
@@ -241,16 +242,13 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
     return (
       <section className="operator-panel" aria-labelledby="operator-title">
         <div className="section-heading">
-          <p className="eyebrow">Operator</p>
-          <h2 id="operator-title">Operator audit</h2>
-          <p className="section-description">
-            Inspect read-only operational and audit evidence for an
-            authenticated session.
-          </p>
+          <p className="eyebrow">{t('ui.operator.eyebrow')}</p>
+          <h2 id="operator-title">{t('ui.operator.title')}</h2>
+          <p className="section-description">{t('ui.operator.description')}</p>
         </div>
         <StateBlock
-          message="Sign in is required for operator audit access."
-          title="Sign in required"
+          message={t('ui.operator.sign-in-message')}
+          title={t('ui.operator.sign-in-title')}
           variant="error"
         />
       </section>
@@ -559,12 +557,14 @@ function AuditLogRow({
       <tr className="audit-row" onClick={handleRowClick}>
         <td>{formatTimestamp(entry.createdAt, t('ui.common.unknown'))}</td>
         <td>
-          {formatEnumValue(entry.targetType)}
-          <span className="table-subtext">ID {formatOptionalNumber(entry.targetId)}</span>
+          {formatEnumValue(entry.targetType, t('ui.common.unknown'))}
+          <span className="table-subtext">
+            ID {formatOptionalNumber(entry.targetId, t('ui.common.unavailable'))}
+          </span>
         </td>
-        <td>{formatEnumValue(entry.action)}</td>
-        <td>{formatActor(entry.actorLogin)}</td>
-        <td>{formatSummary(entry.summary)}</td>
+        <td>{formatEnumValue(entry.action, t('ui.common.unknown'))}</td>
+        <td>{formatActor(entry.actorLogin, t('ui.operator.unknown-actor'))}</td>
+        <td>{formatSummary(entry.summary, t('ui.operator.no-summary'))}</td>
         <td className="audit-expand-cell">
           <button
             aria-controls={detailRowId}

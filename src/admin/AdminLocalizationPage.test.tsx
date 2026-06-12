@@ -20,6 +20,7 @@ import {
   type LocalizationResponse,
 } from '../api/localizations'
 import type { SessionResponse } from '../api/session'
+import { clearUiCatalogCache, loadUiCatalog } from '../i18n/catalog'
 import { formatTimestamp } from '../ui/format'
 import {
   ADMIN_LOCALIZATION_ROUTE_PATH,
@@ -31,6 +32,7 @@ describe('AdminLocalizationPage', () => {
     vi.restoreAllMocks()
     vi.unstubAllGlobals()
     clearDocumentCookies()
+    clearUiCatalogCache()
   })
 
   it('loads admin localizations with URL filters and repeated sort values', async () => {
@@ -504,6 +506,9 @@ describe('AdminLocalizationPage', () => {
 
   it('updates existing rows through a fresh row read and list refresh', async () => {
     document.cookie = 'XSRF-TOKEN=token'
+    const uiCatalogFetch = createUiCatalogFetch()
+    await loadUiCatalog('en', { fetchImplementation: uiCatalogFetch })
+
     let localizationReads = 0
     const fetchMock = mockAdminLocalizationFetch({
       localizationById: createLocalizationRow({
@@ -577,10 +582,18 @@ describe('AdminLocalizationPage', () => {
     })
     expect(await screen.findAllByText('Account settings')).not.toHaveLength(0)
     expect(localizationReads).toBeGreaterThanOrEqual(2)
+
+    // The update invalidated the saved language, so its next UI catalog load
+    // refetches instead of serving the session cache.
+    await loadUiCatalog('en', { fetchImplementation: uiCatalogFetch })
+    expect(uiCatalogFetch).toHaveBeenCalledTimes(2)
   })
 
   it('confirms, deletes, and refreshes rows from the current results', async () => {
     document.cookie = 'XSRF-TOKEN=token'
+    const uiCatalogFetch = createUiCatalogFetch()
+    await loadUiCatalog('en', { fetchImplementation: uiCatalogFetch })
+
     let localizationReads = 0
     const fetchMock = mockAdminLocalizationFetch({
       localizations: (path) => {
@@ -652,6 +665,56 @@ describe('AdminLocalizationPage', () => {
       ).not.toBeInTheDocument()
     })
     expect(localizationReads).toBeGreaterThanOrEqual(2)
+
+    // The delete invalidated the removed row's language, so its next UI
+    // catalog load refetches instead of serving the session cache.
+    await loadUiCatalog('en', { fetchImplementation: uiCatalogFetch })
+    expect(uiCatalogFetch).toHaveBeenCalledTimes(2)
+  })
+
+  it('invalidates only the created row language in the UI catalog cache', async () => {
+    document.cookie = 'XSRF-TOKEN=token'
+    const deCatalogFetch = createUiCatalogFetch()
+    const enCatalogFetch = createUiCatalogFetch()
+
+    await loadUiCatalog('de', { fetchImplementation: deCatalogFetch })
+    await loadUiCatalog('en', { fetchImplementation: enCatalogFetch })
+
+    mockAdminLocalizationFetch({
+      createLocalizationResponse: createLocalizationRow({
+        id: 3,
+        language: 'de',
+        messageText: 'Konto',
+      }),
+    })
+
+    renderAdminLocalization(
+      `${ADMIN_LOCALIZATION_ROUTE_PATH}?messageKey=account.title`,
+    )
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Add de for account.title' }),
+    )
+
+    const form = screen.getByRole('form', { name: 'Create localization' })
+    fireEvent.change(within(form).getByLabelText('Message text'), {
+      target: { value: 'Konto' },
+    })
+    fireEvent.submit(form)
+
+    // Re-query inside waitFor: the post-save list refresh can remount the
+    // form panel, detaching an element captured by findByText.
+    await waitFor(() => {
+      expect(screen.getByText('Localization created.')).toBeInTheDocument()
+    })
+
+    // The mutated language refetches on its next load; other cached
+    // languages keep serving the session cache.
+    await loadUiCatalog('de', { fetchImplementation: deCatalogFetch })
+    await loadUiCatalog('en', { fetchImplementation: enCatalogFetch })
+
+    expect(deCatalogFetch).toHaveBeenCalledTimes(2)
+    expect(enCatalogFetch).toHaveBeenCalledTimes(1)
   })
 
   it('closes the delete dialog without deleting when cancelled', async () => {
@@ -853,6 +916,16 @@ function mockAdminLocalizationFetch({
   vi.stubGlobal('fetch', fetchMock)
 
   return fetchMock
+}
+
+// Standalone single-page catalog fetch for seeding the session-scoped UI
+// catalog cache without involving the page's stubbed global fetch.
+function createUiCatalogFetch() {
+  return vi
+    .fn()
+    .mockImplementation(() =>
+      Promise.resolve(Response.json(createLocalizationPage())),
+    )
 }
 
 function createLocalizationPage(

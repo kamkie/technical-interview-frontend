@@ -69,6 +69,7 @@ export function OperatorDiagnosticsPage({
 }: {
   session: SessionResponse
 }) {
+  const { t } = useI18n()
   const [overviewState, setOverviewState] = useState<LoadState<OperatorSurface>>(
     () =>
       surfaceCache?.session === session && surfaceCache.value !== undefined
@@ -106,8 +107,8 @@ export function OperatorDiagnosticsPage({
     return (
       <section className="operator-panel" aria-label="System diagnostics">
         <StateBlock
-          message="Sign in is required for system diagnostics."
-          title="Sign in required"
+          message={t('ui.diagnostics.sign-in-message')}
+          title={t('ui.operator.sign-in-title')}
           variant="error"
         />
       </section>
@@ -133,6 +134,8 @@ export function OperatorDiagnosticsPage({
 // while the operator-surface request is pending or failed so support
 // escalations can always identify the running frontend build.
 function FrontendBuildCard() {
+  const { t } = useI18n()
+
   return (
     <section
       className="operator-card operator-card-frontend-build"
@@ -150,7 +153,7 @@ function FrontendBuildCard() {
         </div>
         <div>
           <dt>Build time</dt>
-          <dd>{formatTimestamp(__APP_BUILD_TIME__)}</dd>
+          <dd>{formatTimestamp(__APP_BUILD_TIME__, t('ui.common.unknown'))}</dd>
         </div>
         <div>
           <dt>Runtime mode</dt>
@@ -205,6 +208,7 @@ function OperatorOverview({ state }: { state: LoadState<OperatorSurface> }) {
 // Browsing, filtering, and pagination of audit rows live on the operations
 // console; this card stays a stats summary that links there.
 function AuditSummary({ audit }: { audit: OperatorSurface['audit'] }) {
+  const { t } = useI18n()
   const safeAuditEndpoint = getSafeOperatorApiPath(audit?.auditLogEndpoint)
 
   return (
@@ -216,11 +220,13 @@ function AuditSummary({ audit }: { audit: OperatorSurface['audit'] }) {
       <dl className="operator-metadata">
         <div>
           <dt>Total entries</dt>
-          <dd>{formatOptionalNumber(audit?.totalEntries)}</dd>
+          <dd>
+            {formatOptionalNumber(audit?.totalEntries, t('ui.common.unavailable'))}
+          </dd>
         </div>
         <div>
           <dt>Audit API</dt>
-          <dd>{safeAuditEndpoint ?? 'Unavailable'}</dd>
+          <dd>{safeAuditEndpoint ?? t('ui.common.unavailable')}</dd>
         </div>
       </dl>
       <p className="audit-summary-link">
@@ -235,6 +241,7 @@ function RuntimeSummary({
 }: {
   runtime: OperatorSurface['runtime']
 }) {
+  const { t } = useI18n()
   const overview = runtime?.technicalOverview
   const buildItems = compactMetadataItems([
     ['Name', overview?.build?.name],
@@ -264,7 +271,7 @@ function RuntimeSummary({
       <dl className="operator-metadata single-column">
         <div>
           <dt>Technical overview endpoint</dt>
-          <dd>{runtime?.technicalOverviewEndpoint ?? 'Unavailable'}</dd>
+          <dd>{runtime?.technicalOverviewEndpoint ?? t('ui.common.unavailable')}</dd>
         </div>
       </dl>
       <OperatorMetadataGroup title="Build" items={buildItems} />
