@@ -10,7 +10,7 @@ Workers: 1
 
 Clean verifier: None declared.
 
-Filename: `.agents/plans/PLAN-graphical-review-fixes.md`
+Filename: `.agents/plans/archive/PLAN-graphical-review-fixes.md`
 
 ## Readiness
 
@@ -24,6 +24,7 @@ Filename: `.agents/plans/PLAN-graphical-review-fixes.md`
 
 - 2026-06-11: none -> Draft by AI agent; plan created from full-app graphical review (route walk, layout audits at 375/768/1280, token contrast computation, axe scan).
 - 2026-06-11: Draft -> Closed (Released) by AI agent after user approval; decisions: chevron unification for the users table, Operations nav menu split, one commit per issue. Findings re-verified against HEAD (8 newer commits) before implementation; all 7 still applied.
+- 2026-06-12: Closed plan moved to `.agents/plans/archive/` by AI agent during archive cleanup.
 
 ## Goal
 

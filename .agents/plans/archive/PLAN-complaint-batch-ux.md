@@ -2,21 +2,23 @@
 
 Plan-ID: PLAN-complaint-batch-ux
 
-Status: Approved
+Status: Closed
+
+Close-Reason: Released
 
 Workers: 1
 
 Clean verifier: None declared.
 
-Filename: `.agents/plans/PLAN-complaint-batch-ux.md`
+Filename: `.agents/plans/archive/PLAN-complaint-batch-ux.md`
 
 ## Readiness
 
-- Plan readiness: Complete; all packets implemented and validated.
+- Plan readiness: Implemented and closed; all packets implemented and validated.
 - Approved by: Kamil Kiewisz (interactive session answer: "Yes, implement all packets").
 - Approved at: 2026-06-10
 - Open questions: None; Q1-Q3 answered, see `## Open Questions`.
-- Implementation progress: T1-T7 complete on 2026-06-10; uncommitted in the working tree pending user review.
+- Implementation progress: T1-T7 complete on 2026-06-10; landed on `main` in commits 5a9eb82, 57b4374, 4e129e1, 95a4f4d, 5183c5d, and 9b33a3d, released in `v0.4.0`.
 
 Use `Status: Draft` while shaping the plan. Use `Status: Approved` only after explicit user approval is recorded. Creating or updating this plan is not implementation approval.
 
@@ -25,6 +27,7 @@ Use `Status: Draft` while shaping the plan. Use `Status: Approved` only after ex
 - 2026-06-10T18:30:00+02:00: none -> Draft by Claude (interactive complaining session); plan created from a 12-item user complaint batch plus one queued pagination complaint.
 - 2026-06-10T18:45:00+02:00: Draft -> Approved by Kamil Kiewisz; Q1 = collapsible create form on top plus inline editing in an expander row, Q2 = inline SVG flags, Q3 = detail below the list. Coordinator implements directly per this plan's `Workers: 1` sequential execution model; no commits until the user asks.
 - 2026-06-10T20:10:00+02:00: Approved -> implementation complete by Claude; T1-T7 landed in one uncommitted working tree. Full baseline green (`npm run lint`, `npm run typecheck`, `npm test` 179/179, `npm run build`, `git diff --check`), `npm run a11y` passed 5/5, and browser evidence was collected on the mock preview (port 5199) for catalog live filters and dual pagination, the localization coverage widget and inline edit row, operator row-click details, the fixed diagnostics gap (20 px with an expanded entry), the always-visible account profile with searchable language input, the topbar SVG-flag language menu, and the full-width users detail. The diagnostics fix abandoned the grid-area row-span (still inflated row one) in favor of an explicit side-column wrapper.
+- 2026-06-12: Approved -> Closed (Released) by AI agent during archive cleanup; T1-T7 landed on `main` in commits 5a9eb82, 57b4374, 4e129e1, 95a4f4d, 5183c5d, and 9b33a3d on 2026-06-10 and shipped in `v0.4.0`. Plan moved to `.agents/plans/archive/`.
 
 ## Goal
 

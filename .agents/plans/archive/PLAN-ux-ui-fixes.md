@@ -2,17 +2,19 @@
 
 Plan-ID: PLAN-ux-ui-fixes
 
-Status: Approved
+Status: Closed
+
+Close-Reason: Released
 
 Workers: 1
 
 Clean verifier: None declared.
 
-Filename: `.agents/plans/PLAN-ux-ui-fixes.md`
+Filename: `.agents/plans/archive/PLAN-ux-ui-fixes.md`
 
 ## Readiness
 
-- Plan readiness: Approved; all open questions resolved by the user.
+- Plan readiness: Implemented and closed; all open questions resolved by the user.
 - Approved by: user (chat session)
 - Approved at: 2026-06-10
 - Open questions: None; see `## Open Questions` for resolutions.
@@ -22,6 +24,7 @@ Filename: `.agents/plans/PLAN-ux-ui-fixes.md`
 
 - 2026-06-10: none -> Draft by AI agent; plan created from UX audit plus user screenshot walkthrough.
 - 2026-06-10: Draft -> Approved by user; decisions: 1440px workspace cap everywhere, no audit condensing but inline expanding detail rows replace the side panel, implement everything, one commit per group.
+- 2026-06-12: Approved -> Closed (Released) by AI agent during archive cleanup; all five commit groups (ccfc1fe, 6a1c879, a5adab5, 014c605, 414fb89) and the evidence commit b997746 landed on 2026-06-10 and shipped in `v0.4.0`. Plan moved to `.agents/plans/archive/`.
 
 ## Goal
 

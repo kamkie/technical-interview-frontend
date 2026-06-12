@@ -10,7 +10,7 @@ Workers: 1
 
 Clean verifier: None declared.
 
-Filename: `.agents/plans/PLAN-frontend-i18n.md`
+Filename: `.agents/plans/archive/PLAN-frontend-i18n.md`
 
 ## Readiness
 
@@ -27,6 +27,7 @@ Use `Status: Draft` while shaping the plan. Use `Status: Approved` only after ex
 - 2026-06-11: none -> Draft by AI agent; plan created from `ROADMAP.md` milestone `M-I18N-001` at user request.
 - 2026-06-11: Draft -> Approved by user ("take the recommendations"); open questions 1-3 resolved with the recommended options and the Open Question 4 roadmap Release Context update applied.
 - 2026-06-11: Approved -> Closed (Released) by AI agent after user-authorized implementation ("implement the plan"); all six packets complete, milestone archived to `docs/ROADMAP_ARCHIVE.md`, changelog and design guide updated.
+- 2026-06-12: Closed plan moved to `.agents/plans/archive/` by AI agent during archive cleanup.
 
 ## Goal
 
