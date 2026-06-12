@@ -63,7 +63,12 @@ describe('App', () => {
 
     renderApp()
 
-    expect(screen.getByRole('radio', { name: 'System' })).toBeChecked()
+    const themeTrigger = screen.getByRole('button', {
+      name: 'Theme preference, currently System using dark mode',
+    })
+
+    expect(themeTrigger).toHaveAttribute('aria-expanded', 'false')
+    expect(themeTrigger).toHaveAttribute('aria-controls', 'theme-menu-panel')
 
     await waitFor(() => {
       expect(document.documentElement).toHaveAttribute('data-theme', 'dark')
@@ -73,9 +78,26 @@ describe('App', () => {
       'system',
     )
     expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBeNull()
+
+    fireEvent.click(themeTrigger)
+
+    expect(themeTrigger).toHaveAttribute('aria-expanded', 'true')
+
+    // The menu marks the active preference the way the language menus mark
+    // the active language: aria-current on exactly one option.
+    const themeMenu = screen.getByRole('group', {
+      name: 'Theme preference, currently System using dark mode',
+    })
+
     expect(
-      screen.getByRole('radiogroup', { name: /using dark mode/i }),
-    ).toBeInTheDocument()
+      within(themeMenu).getByRole('button', { name: 'System' }),
+    ).toHaveAttribute('aria-current', 'true')
+    expect(
+      within(themeMenu).getByRole('button', { name: 'Light' }),
+    ).not.toHaveAttribute('aria-current')
+    expect(
+      within(themeMenu).getByRole('button', { name: 'Dark' }),
+    ).not.toHaveAttribute('aria-current')
   })
 
   it('persists explicit theme selections and reapplies them on authenticated routes', async () => {
@@ -89,7 +111,6 @@ describe('App', () => {
 
     const view = renderApp('/account')
 
-    expect(screen.getByRole('radio', { name: 'Dark' })).toBeChecked()
     await waitFor(() => {
       expect(document.documentElement).toHaveAttribute('data-theme', 'dark')
     })
@@ -97,23 +118,130 @@ describe('App', () => {
       await screen.findByRole('heading', { level: 1, name: 'Account settings' }),
     ).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('radio', { name: 'Light' }))
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Theme preference, currently Dark using dark mode',
+      }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Light' }))
 
     await waitFor(() => {
       expect(document.documentElement).toHaveAttribute('data-theme', 'light')
     })
     expect(window.localStorage.getItem(THEME_STORAGE_KEY)).toBe('light')
+    // Selecting an option dismisses the menu and relabels the trigger.
+    expect(
+      screen.queryByRole('button', { name: 'Light' }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', {
+        name: 'Theme preference, currently Light using light mode',
+      }),
+    ).toHaveAttribute('aria-expanded', 'false')
 
     view.unmount()
     renderApp('/operator')
 
-    expect(screen.getByRole('radio', { name: 'Light' })).toBeChecked()
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Theme preference, currently Light using light mode',
+      }),
+    )
+
+    expect(screen.getByRole('button', { name: 'Light' })).toHaveAttribute(
+      'aria-current',
+      'true',
+    )
     await waitFor(() => {
       expect(document.documentElement).toHaveAttribute('data-theme', 'light')
     })
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Operations console' }),
     ).toBeInTheDocument()
+  })
+
+  it('dismisses the theme menu on Escape and outside pointer interactions', async () => {
+    mockColorScheme('light')
+    mockAppFetch({
+      session: createSession(),
+    })
+
+    renderApp()
+
+    const themeTrigger = screen.getByRole('button', {
+      name: 'Theme preference, currently System using light mode',
+    })
+
+    fireEvent.click(themeTrigger)
+
+    const darkOption = screen.getByRole('button', { name: 'Dark' })
+
+    darkOption.focus()
+    fireEvent.keyDown(darkOption, { key: 'Escape' })
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('button', { name: 'Dark' }),
+      ).not.toBeInTheDocument()
+    })
+    expect(themeTrigger).toHaveAttribute('aria-expanded', 'false')
+    expect(themeTrigger).toHaveFocus()
+
+    fireEvent.click(themeTrigger)
+
+    expect(screen.getByRole('button', { name: 'Dark' })).toBeInTheDocument()
+
+    fireEvent.pointerDown(document.body)
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('button', { name: 'Dark' }),
+      ).not.toBeInTheDocument()
+    })
+    expect(themeTrigger).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  it('renders the signed-in account trigger with display-name initials for narrow viewports', async () => {
+    mockAppFetch({
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    renderApp()
+
+    const accountButton = await screen.findByRole('button', {
+      name: 'Kamil Kiewisz',
+    })
+
+    // The full display name stays the accessible name on every viewport; CSS
+    // alone swaps the visible name span for the initials circle.
+    expect(accountButton).toHaveAccessibleName('Kamil Kiewisz')
+    expect(
+      accountButton.querySelector('.account-menu-name'),
+    ).toHaveTextContent('Kamil Kiewisz')
+    expect(
+      accountButton.querySelector('.account-menu-initials'),
+    ).toHaveTextContent(/^KK$/)
+  })
+
+  it('derives a single initial for single-word account labels', async () => {
+    mockAppFetch({
+      account: createAccount({
+        displayName: undefined,
+      }),
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    renderApp()
+
+    const accountButton = await screen.findByRole('button', { name: 'kamkie' })
+
+    expect(
+      accountButton.querySelector('.account-menu-initials'),
+    ).toHaveTextContent(/^K$/)
   })
 
   it('persists anonymous language selection in the backend language cookie', async () => {

@@ -289,15 +289,6 @@ input[type='radio'] {
   outline-color: var(--color-brass);
 }
 
-.topbar-primary {
-  display: flex;
-  flex: 1 1 36rem;
-  min-width: 0;
-  align-items: center;
-  gap: 1.25rem;
-  flex-wrap: wrap;
-}
-
 .brand-lockup {
   display: flex;
   min-width: 0;
@@ -385,66 +376,6 @@ input[type='radio'] {
   justify-content: flex-end;
   gap: 0.625rem;
   flex-wrap: wrap;
-}
-
-/* Theme segmented control ------------------------------------------------- */
-
-.theme-control {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: 0.125rem;
-  max-width: 100%;
-  padding: 0.1875rem;
-  border: 1px solid rgb(255 255 255 / 0.2);
-  border-radius: 5px;
-  background: rgb(0 0 0 / 0.2);
-}
-
-.theme-option {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  color: var(--color-topbar-text);
-  cursor: pointer;
-}
-
-.theme-option input {
-  position: absolute;
-  inset: 0;
-  cursor: pointer;
-  opacity: 0;
-}
-
-.theme-option input:focus-visible {
-  outline: 0;
-}
-
-.theme-option-indicator {
-  display: inline-grid;
-  width: 1.75rem;
-  height: 1.75rem;
-  place-items: center;
-  border-radius: 3px;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease,
-    box-shadow 0.15s ease;
-}
-
-.theme-option:hover .theme-option-indicator,
-.theme-option input:focus-visible + .theme-option-indicator {
-  color: var(--color-topbar-heading);
-}
-
-.theme-option input:focus-visible + .theme-option-indicator {
-  outline: 2px solid var(--color-brass);
-  outline-offset: 1px;
-}
-
-.theme-option input:checked + .theme-option-indicator {
-  background: rgb(255 255 255 / 0.14);
-  color: var(--color-topbar-heading);
 }
 
 /* Session area ------------------------------------------------------------- */
@@ -557,6 +488,14 @@ input[type='radio'] {
   white-space: nowrap;
 }
 
+/* The initials circle replaces the display name below the 720px breakpoint. */
+.account-menu-initials {
+  display: none;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
 .account-menu-button:not(.sign-in, .connection-issue):hover,
 .account-menu-button:not(.sign-in, .connection-issue):focus-visible,
 .account-menu-button:not(.sign-in, .connection-issue)[aria-expanded='true'] {
@@ -617,8 +556,9 @@ input[type='radio'] {
   font-weight: 600;
 }
 
-/* Quick language menu — wide-viewport shortcut in the topbar. */
-.language-menu .nav-menu-panel {
+/* Topbar quick menus — the language and theme shortcuts share one idiom. */
+.language-menu .nav-menu-panel,
+.theme-menu .nav-menu-panel {
   right: 0;
   left: auto;
   min-width: 11rem;
@@ -636,7 +576,8 @@ input[type='radio'] {
   box-shadow: 0 0 0 1px rgb(0 0 0 / 0.25);
 }
 
-.language-option-button {
+.language-option-button,
+.theme-option-button {
   display: flex;
   min-height: 2.25rem;
   width: 100%;
@@ -654,24 +595,18 @@ input[type='radio'] {
 }
 
 .language-option-button:hover,
-.language-option-button:focus-visible {
+.language-option-button:focus-visible,
+.theme-option-button:hover,
+.theme-option-button:focus-visible {
   background: var(--color-surface-hover);
   color: var(--color-heading);
 }
 
-.language-option-button[aria-current] {
+.language-option-button[aria-current],
+.theme-option-button[aria-current] {
   background: var(--color-accent-surface);
   color: var(--color-accent);
   font-weight: 600;
-}
-
-@media (max-width: 960px) {
-  /* Signed-in visitors keep the account-page language control on narrow
-     viewports; anonymous visitors have no alternative, so their topbar menu
-     stays visible at every width. */
-  .language-menu:not(.language-menu-anonymous) {
-    display: none;
-  }
 }
 
 .nav-menu-panel a:focus-visible,
@@ -2894,32 +2829,57 @@ input[type='search']::-webkit-search-cancel-button:hover {
 }
 
 @media (max-width: 720px) {
+  /* Two-row topbar: the brand and quick menus share the first row while the
+     nav links scroll horizontally in the second. The bar stays positioned
+     (relative, not sticky) so the workflow menu panels can anchor below the
+     whole bar instead of being clipped by the scrollable nav row. */
   .topbar {
-    align-items: flex-start;
-    flex-direction: column;
-    position: static;
-    padding: 0.75rem 1rem;
+    position: relative;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
   }
 
-  .topbar-primary {
-    align-items: flex-start;
-    flex-direction: column;
-    flex: 0 1 auto;
-    gap: 0.75rem;
-    width: 100%;
+  .brand-lockup {
+    flex: 1 1 auto;
+  }
+
+  .brand-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .topbar-actions {
-    flex: 0 1 auto;
-    width: 100%;
-    justify-content: space-between;
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    gap: 0.375rem;
   }
 
+  .nav-menu-button {
+    padding: 0 0.5rem;
+  }
+
+  /* The nav row keeps every link visible in one scrollable line; the inset
+     padding with a matching negative margin keeps focus outlines unclipped
+     inside the scroll container. */
   .shell-navigation {
-    flex: 0 1 auto;
-    flex-wrap: wrap;
-    width: 100%;
-    gap: 0.25rem;
+    order: 1;
+    flex: 1 1 100%;
+    flex-wrap: nowrap;
+    margin: 0 -0.25rem;
+    padding: 0.25rem;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  /* Workflow menu panels escape the scrollable nav row by anchoring to the
+     positioned topbar. */
+  .shell-navigation .nav-menu {
+    position: static;
+  }
+
+  .shell-navigation .nav-menu-panel {
+    right: 1rem;
+    left: 1rem;
   }
 
   .nav-menu-panel {
@@ -2927,24 +2887,20 @@ input[type='search']::-webkit-search-cancel-button:hover {
     gap: 0.25rem;
   }
 
-  .header-session {
-    justify-content: flex-start;
+  .account-menu-button.signed-in {
+    width: 2.125rem;
+    height: 2.125rem;
+    padding: 0;
+    border-radius: 999px;
   }
 
-  .account-menu {
-    flex: 1 1 auto;
+  .account-menu-button.signed-in .menu-caret,
+  .account-menu-button.signed-in .account-menu-name {
+    display: none;
   }
 
-  .account-menu-button {
-    width: 100%;
-  }
-
-  .nav-menu-panel,
-  .account-menu-panel {
-    position: static;
-    width: 100%;
-    margin-top: 0.75rem;
-    box-shadow: none;
+  .account-menu-initials {
+    display: inline;
   }
 
   .workspace {
@@ -3021,17 +2977,10 @@ input[type='search']::-webkit-search-cancel-button:hover {
 }
 
 @media (max-width: 480px) {
-  .brand-lockup {
-    width: 100%;
-  }
-
-  .topbar-actions {
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-
-  .theme-control {
-    justify-self: start;
+  /* The flag alone marks the current language, so the first topbar row keeps
+     the whole brand name visible on phone-width viewports. */
+  .language-code {
+    display: none;
   }
 
   .account-menu-panel,

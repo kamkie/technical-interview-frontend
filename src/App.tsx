@@ -277,15 +277,13 @@ export function App() {
         {t('ui.shell.skip-link')}
       </a>
       <header className="topbar">
-        <div className="topbar-primary">
-          <Link className="brand-lockup" to={CATALOG_ROUTE_PATH}>
-            <span className="brand-mark" aria-hidden="true">
-              <IconBookOpen height={18} width={18} />
-            </span>
-            <span className="brand-name">{t('ui.shell.brand')}</span>
-          </Link>
-          <ShellNavigation authenticated={authenticated} isAdmin={isAdmin} />
-        </div>
+        <Link className="brand-lockup" to={CATALOG_ROUTE_PATH}>
+          <span className="brand-mark" aria-hidden="true">
+            <IconBookOpen height={18} width={18} />
+          </span>
+          <span className="brand-name">{t('ui.shell.brand')}</span>
+        </Link>
+        <ShellNavigation authenticated={authenticated} isAdmin={isAdmin} />
         <div className="topbar-actions">
           {sessionState.status === 'ready' &&
             (authenticated ? (
@@ -791,6 +789,9 @@ function useRouteFocusReset() {
   }, [navigationType, pathname])
 }
 
+// The theme preference is a topbar menu like the language menus: an
+// icon-and-caret trigger, options marked with `aria-current`, and outside-
+// pointer plus Escape dismissal through the shared dismissible-menu hook.
 function ThemePreferenceControl({
   onPreferenceChange,
   preference,
@@ -801,41 +802,57 @@ function ThemePreferenceControl({
   resolvedTheme: 'dark' | 'light'
 }) {
   const { t } = useI18n()
+  const { containerRef, open, setOpen } = useDismissibleMenu()
+  const CurrentIcon = THEME_ICONS[preference]
+  const panelId = 'theme-menu-panel'
+
+  function selectPreference(option: ThemePreference) {
+    onPreferenceChange(option)
+    setOpen(false)
+  }
 
   return (
-    <div
-      className="theme-control"
-      role="radiogroup"
-      aria-label={t('ui.theme.group-label', {
-        label: t(THEME_LABEL_KEYS[preference]),
-        mode: t(`ui.theme.mode.${resolvedTheme}`),
-      })}
-    >
-      {THEME_PREFERENCES.map((option) => {
-        const Icon = THEME_ICONS[option]
+    <div className="nav-menu theme-menu" ref={containerRef}>
+      <button
+        aria-controls={panelId}
+        aria-expanded={open}
+        aria-label={t('ui.theme.group-label', {
+          label: t(THEME_LABEL_KEYS[preference]),
+          mode: t(`ui.theme.mode.${resolvedTheme}`),
+        })}
+        className="nav-menu-button"
+        id="theme-menu-trigger"
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+      >
+        <CurrentIcon height={16} width={16} />
+        <IconChevronDown className="menu-caret" height={14} width={14} />
+      </button>
+      {open && (
+        <div
+          aria-labelledby="theme-menu-trigger"
+          className="nav-menu-panel theme-menu-panel"
+          id={panelId}
+          role="group"
+        >
+          {THEME_PREFERENCES.map((option) => {
+            const Icon = THEME_ICONS[option]
 
-        return (
-          <label
-            className="theme-option"
-            key={option}
-            title={t('ui.theme.option-title', {
-              label: t(THEME_LABEL_KEYS[option]),
-            })}
-          >
-            <input
-              type="radio"
-              name="theme-preference"
-              value={option}
-              checked={preference === option}
-              onChange={() => onPreferenceChange(option)}
-            />
-            <span className="theme-option-indicator">
-              <Icon />
-              <span className="visually-hidden">{t(THEME_LABEL_KEYS[option])}</span>
-            </span>
-          </label>
-        )
-      })}
+            return (
+              <button
+                aria-current={option === preference || undefined}
+                className="theme-option-button"
+                key={option}
+                type="button"
+                onClick={() => selectPreference(option)}
+              >
+                <Icon height={16} width={16} />
+                <span>{t(THEME_LABEL_KEYS[option])}</span>
+              </button>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
@@ -988,15 +1005,23 @@ function SessionAccountMenu({
 
   return (
     <div className="account-menu" ref={containerRef}>
+      {/* The aria-label keeps the full name as the accessible name on narrow
+          viewports, where CSS swaps the name span for the initials circle. */}
       <button
         aria-controls={panelId}
         aria-expanded={open}
+        aria-label={accountLabel}
         className="account-menu-button signed-in"
         id="account-menu-trigger"
         type="button"
         onClick={() => setOpen((current) => !current)}
       >
-        <span className="account-menu-name">{accountLabel}</span>
+        <span aria-hidden="true" className="account-menu-name">
+          {accountLabel}
+        </span>
+        <span aria-hidden="true" className="account-menu-initials">
+          {deriveAccountInitials(accountLabel)}
+        </span>
         <IconChevronDown className="menu-caret" height={14} width={14} />
       </button>
       {open && (
@@ -1040,6 +1065,17 @@ function SessionAccountMenu({
       )}
     </div>
   )
+}
+
+// Initials for the narrow-viewport account trigger: the first letters of the
+// first and last words of the display label, so "Kamil Kiewisz" reads "KK"
+// while single-word logins keep one letter.
+function deriveAccountInitials(label: string): string {
+  const words = label.trim().split(/\s+/).filter((word) => word.length > 0)
+  const first = words.at(0)?.charAt(0) ?? ''
+  const last = words.length > 1 ? words.at(-1)?.charAt(0) ?? '' : ''
+
+  return `${first}${last}`.toLocaleUpperCase()
 }
 
 // Session metadata stays one disclosure away so the sign-in and sign-out

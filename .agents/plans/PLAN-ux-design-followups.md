@@ -84,7 +84,7 @@ Ship five user-approved UX improvements: globally true localization coverage wit
 | T2-partial-language-notice | Complete | Coordinator | None       | 2026-06-12   | User-confirmed in session              |
 | T3-language-continuity     | Complete | Coordinator | None       | 2026-06-12   | Cookie write + account-page alignment  |
 | T4-copy-and-timestamps     | Complete | Coordinator | None       | 2026-06-12   | Safest packet                          |
-| T5-mobile-topbar           | Ready    | Coordinator | None       | 2026-06-12   | Theme menu idiom changes all viewports |
+| T5-mobile-topbar           | Complete | Coordinator | None       | 2026-06-12   | Theme menu idiom changes all viewports |
 | T6-catalog-chip-search     | Ready    | Coordinator | None       | 2026-06-12   | User-reported chip search issues       |
 | T7-diagnostics-layout      | Ready    | Coordinator | None       | 2026-06-12   | Fill the two-column hole               |
 | T8-connection-errors       | Ready    | Coordinator | None       | 2026-06-12   | Repro required first                   |
@@ -246,7 +246,7 @@ Stop conditions:
 
 Result summary:
 
-- Status: pending
+- Status: complete (2026-06-12). Theme radiogroup replaced by a `useDismissibleMenu` menu on all viewports (icon+caret trigger, `aria-expanded`/`aria-controls`, `role="group"` panel, options marked with `aria-current`, Escape/outside-pointer dismissal — same idiom as the language menu). Header DOM flattened (brand → nav → actions) so ≤720px forms two rows via CSS `order`: brand + language/theme/account-initials circle on row one, nav links in a no-wrap `overflow-x: auto` row two; workflow panels anchor to the positioned topbar to escape the scroll row; `.language-code` hidden ≤480px. Desktop keeps single row + display name. Measured topbar chrome at 375px: 101px (target ≤ ~104, was ~194). No new icons or keys needed. Validation: scoped vitest 38/38 (incl. dismissal + initials tests), typecheck pass, `npx eslint src scripts` pass, `npm run a11y` 10 passed/0 failed (light+dark), `git diff --check` pass, 375px + 1280px manual measurements in mock mode. `docs/DESIGN.md` does not codify the radiogroup — no doc edit required. Residuals: `ui.theme.option-title` key now unused (cleanup outside scope); signed-in quick language menu now visible on mobile (removed 960px hiding rule), intentionally widening T2's notice reach.
 
 ### Task Packet: T6-catalog-chip-search
 
