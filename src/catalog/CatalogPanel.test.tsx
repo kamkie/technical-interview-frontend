@@ -201,6 +201,20 @@ describe('CatalogPanel', () => {
     )
   })
 
+  it('keeps the chip search text out of the catalog URL', async () => {
+    mockCatalogFetch()
+
+    const { router } = renderCatalogRoute()
+
+    expect(await screen.findByText('Effective Java')).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Search categories'), {
+      target: { value: 'arch' },
+    })
+
+    expect(router.state.location.search).toBe('')
+  })
+
   it('recovers from a backend outage through the books error retry action', async () => {
     let backendHealthy = false
 

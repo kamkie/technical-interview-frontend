@@ -286,7 +286,10 @@ export const UI_MESSAGES = {
   'ui.catalog.categories': 'Categories',
   'ui.catalog.categories-empty': 'No categories available.',
   'ui.catalog.categories-loading': 'Loading categories...',
+  'ui.catalog.categories-no-match': 'No categories match this search.',
   'ui.catalog.category-filters-label': 'Category filters',
+  'ui.catalog.category-search-label': 'Search categories',
+  'ui.catalog.category-search-placeholder': 'Type to find categories',
   'ui.catalog.empty-message': 'No books match these filters.',
   'ui.catalog.empty-title': 'No catalog results',
   'ui.catalog.empty-unfiltered-message':
