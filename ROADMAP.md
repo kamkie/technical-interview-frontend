@@ -36,7 +36,32 @@ Stable IDs:
 
 ## Milestones
 
-No milestone is currently selected. The 2026-06-12 UX design-session follow-ups, including the selected `M-I18N-003` catalog caching slice, were delivered through `PLAN-ux-design-followups`; select the next maintenance target here.
+Selected on 2026-06-12 after the UX design-session follow-ups (`PLAN-ux-design-followups`, archived) delivered `M-I18N-003`; no execution plan is attached yet.
+
+### M-I18N-004: Operator Localization Coverage
+
+Labels: type:milestone, status:ready
+
+Goal: Route every user-visible operator-area string through the localization registry so admin-supplied translations apply on the operator pages, and drop the message keys orphaned by the theme-menu and coverage-matrix reworks.
+
+#### E-I18N-006: Operator Chrome Keying And Registry Cleanup
+
+Labels: type:epic, milestone:M-I18N-004, status:ready
+
+Current evidence: The 2026-06-12 T9 audit keyed the operator signed-out blocks and unknown-value fallbacks but recorded the remaining operator chrome as a follow-up: filter labels and options, table headers, StateBlock loading/empty/error strings, `formatAuditSummary`, aria-labels, the `AUDIT_TARGET_TYPE_LABELS` and `AUDIT_ACTION_LABELS` enum display maps, `createAuditEntryLabel`, and the diagnostics card and metadata labels including literal Yes/No values bypass `t()` (~70+ strings), so `/operator` and `/operator/diagnostics` render mixed languages when a non-English language is active (user-confirmed on `/operator`, 2026-06-12). `ui.theme.option-title` and `ui.admin-localization.status`/`ui.admin-localization.missing-locales` remain in the registry with no call sites after the theme-menu and coverage-matrix reworks.
+
+Tasks:
+
+- T-I18N-011: Key the remaining operator audit chrome (filter labels and options, table headers, state blocks, summaries, enum display maps, aria-labels) through `t()` with English defaults.
+- T-I18N-012: Key the remaining diagnostics chrome (card titles, metadata labels, Yes/No values) through `t()` with English defaults.
+- T-I18N-013: Remove the orphaned `ui.theme.option-title` and `ui.admin-localization.status`/`ui.admin-localization.missing-locales` keys from the registry along with any mock seeds that mirror them.
+
+Acceptance Criteria:
+
+- With a non-English language active, every user-visible string on `/operator` and `/operator/diagnostics` resolves through the localization registry, with English appearing only as the documented per-key fallback.
+- Audit enum values keep stable identifiers in code and URLs; only their display labels localize.
+- The registry contains no keys without call sites.
+- Backend `ui.*` seed alignment for new keys stays backend-owned through the existing seed-alignment intake in the sibling `technical-interview-demo` roadmap.
 
 Completed milestones are archived in `docs/ROADMAP_ARCHIVE.md`.
 
