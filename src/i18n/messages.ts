@@ -105,8 +105,6 @@ export const UI_MESSAGES = {
   'ui.admin-catalog.name-for': 'Name for {label}',
   'ui.admin-catalog.new-book': 'New book',
   'ui.admin-catalog.new-category': 'New category',
-  'ui.admin-catalog.refresh-books-label': 'Refresh books',
-  'ui.admin-catalog.refresh-categories-label': 'Refresh categories',
   'ui.admin-catalog.reload-book': 'Reload book',
   'ui.admin-catalog.save-book': 'Save book',
   'ui.admin-catalog.save-category': 'Save category',
@@ -157,7 +155,6 @@ export const UI_MESSAGES = {
   'ui.admin-localization.pagination-label': 'Localization pagination',
   'ui.admin-localization.pagination-top-label': 'Localization pagination top',
   'ui.admin-localization.panel-label': 'Localization administration',
-  'ui.admin-localization.refresh-label': 'Refresh localizations',
   'ui.admin-localization.row-count-many': '{count} localization rows',
   'ui.admin-localization.row-count-one': '{count} localization row',
   'ui.admin-localization.row-delete-failed':
@@ -232,7 +229,6 @@ export const UI_MESSAGES = {
   'ui.admin-users.provider': 'Provider',
   'ui.admin-users.reason': 'Reason',
   'ui.admin-users.reason-required': 'Operator reason is required.',
-  'ui.admin-users.refresh-label': 'Refresh users',
   'ui.admin-users.replace-roles-hint':
     'Submit the complete managed role set with an operator reason.',
   'ui.admin-users.replace-roles-label': 'Replace roles for {label}',
@@ -323,7 +319,6 @@ export const UI_MESSAGES = {
   'ui.common.edit': 'Edit',
   'ui.common.edit-label': 'Edit {label}',
   'ui.common.none': 'None',
-  'ui.common.refresh': 'Refresh',
   'ui.common.retry': 'Try again',
   'ui.common.save': 'Save',
   'ui.common.unavailable': 'Unavailable',

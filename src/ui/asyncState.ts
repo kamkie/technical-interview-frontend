@@ -1,10 +1,10 @@
-import { isBackendUnavailableError } from '../api/http'
+import { ApiRequestError, isBackendUnavailableError } from '../api/http'
 import type { UiTranslate } from '../i18n/useI18n'
 
 export type LoadState<T> =
   | { status: 'loading' }
   | { status: 'ready'; value: T }
-  | { status: 'error'; message: string; unreachable?: boolean }
+  | { status: 'error'; message: string; unreachable?: boolean; httpStatus?: number }
 
 export type MutationState =
   | { status: 'idle' }
@@ -22,11 +22,17 @@ export function getDisplayMessage(error: unknown, fallback: string) {
 export function createLoadError(
   error: unknown,
   fallback: string,
-): { status: 'error'; message: string; unreachable: boolean } {
+): {
+  status: 'error'
+  message: string
+  unreachable: boolean
+  httpStatus?: number
+} {
   return {
     status: 'error',
     message: getDisplayMessage(error, fallback),
     unreachable: isBackendUnavailableError(error),
+    httpStatus: error instanceof ApiRequestError ? error.status : undefined,
   }
 }
 

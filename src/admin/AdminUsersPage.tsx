@@ -174,7 +174,6 @@ function AdminUsersManager({
   const [usersState, setUsersState] = useState<LoadState<AdminUserAccount[]>>({
     status: 'loading',
   })
-  const [refreshKey, setRefreshKey] = useState(0)
   const [roleMutationState, setRoleMutationState] = useState<MutationState>({
     status: 'idle',
   })
@@ -236,7 +235,7 @@ function AdminUsersManager({
     return () => {
       ignore = true
     }
-  }, [refreshKey])
+  }, [])
 
   const users =
     usersState.status === 'ready' ? usersState.value : EMPTY_USERS
@@ -280,11 +279,6 @@ function AdminUsersManager({
       page: 0,
       sort: nextUsersSort(listQuery.sort, field),
     })
-  }
-
-  function refreshUsers() {
-    setUsersState({ status: 'loading' })
-    setRefreshKey((key) => key + 1)
   }
 
   function selectUser(user: AdminUserAccount) {
@@ -489,16 +483,6 @@ function AdminUsersManager({
             <p className="section-description">
               {t('ui.admin-users.list-description')}
             </p>
-          </div>
-          <div className="section-actions">
-            <button
-              type="button"
-              aria-label={t('ui.admin-users.refresh-label')}
-              className="secondary-button compact-action"
-              onClick={refreshUsers}
-            >
-              {t('ui.common.refresh')}
-            </button>
           </div>
         </div>
 

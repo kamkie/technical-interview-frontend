@@ -159,7 +159,6 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     status: 'loading',
   })
   const [booksRefreshKey, setBooksRefreshKey] = useState(0)
-  const [categoriesRefreshKey, setCategoriesRefreshKey] = useState(0)
   const routeFilterDraft = createCatalogFilterDraft(query)
   const routeFilterDraftKey = createFilterDraftKey(routeFilterDraft)
   const [filterDraftState, setFilterDraftState] = useState(() => ({
@@ -217,7 +216,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     return () => {
       ignore = true
     }
-  }, [categoriesRefreshKey])
+  }, [])
 
   useEffect(() => {
     let ignore = false
@@ -258,11 +257,6 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
   function refreshBooks() {
     setBooksState({ status: 'loading' })
     setBooksRefreshKey((key) => key + 1)
-  }
-
-  function refreshCategories() {
-    setCategoriesState({ status: 'loading' })
-    setCategoriesRefreshKey((key) => key + 1)
   }
 
   function updateCatalogQuery(nextQuery: CatalogQueryState) {
@@ -843,14 +837,6 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
             >
               {t('ui.admin-catalog.new-book')}
             </button>
-            <button
-              type="button"
-              aria-label={t('ui.admin-catalog.refresh-books-label')}
-              className="secondary-button compact-action"
-              onClick={refreshBooks}
-            >
-              {t('ui.common.refresh')}
-            </button>
           </div>
         </div>
 
@@ -1024,14 +1010,6 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
               onClick={openCategoryCreate}
             >
               {t('ui.admin-catalog.new-category')}
-            </button>
-            <button
-              type="button"
-              aria-label={t('ui.admin-catalog.refresh-categories-label')}
-              className="secondary-button compact-action"
-              onClick={refreshCategories}
-            >
-              {t('ui.common.refresh')}
             </button>
           </div>
         </div>

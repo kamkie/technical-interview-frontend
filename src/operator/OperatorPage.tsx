@@ -257,6 +257,13 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
     )
   }
 
+  // A permission-denied audit response means no filter combination can
+  // produce results, so the filter controls present disabled with the
+  // denied state instead of inviting dead-end input.
+  const accessDenied =
+    auditPageState.status === 'error' &&
+    (auditPageState.httpStatus === 401 || auditPageState.httpStatus === 403)
+
   return (
     <section className="operator-panel" aria-label="Operator audit">
       <section className="operator-section" aria-labelledby="audit-log-title">
@@ -275,6 +282,7 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
             <label>
               <span>Target type</span>
               <select
+                disabled={accessDenied}
                 name="targetType"
                 value={filterDraft.targetType}
                 onChange={(event) =>
@@ -294,6 +302,7 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
             <label>
               <span>Action</span>
               <select
+                disabled={accessDenied}
                 name="action"
                 value={filterDraft.action}
                 onChange={(event) =>
@@ -313,6 +322,7 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
             <label>
               <span>Actor login</span>
               <input
+                disabled={accessDenied}
                 name="actorLogin"
                 type="search"
                 value={filterDraft.actorLogin}

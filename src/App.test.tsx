@@ -393,6 +393,13 @@ describe('App', () => {
       'href',
       '/account',
     )
+    // Session metadata sits behind the connection-details disclosure so the
+    // sign-out action leads the menu.
+    const disclosure = within(accountMenu).getByText('Connection details')
+    expect(disclosure.closest('details')).not.toHaveAttribute('open')
+    expect(
+      within(accountMenu).getByText('Account endpoint').closest('details'),
+    ).toBe(disclosure.closest('details'))
     expect(
       screen.getByRole('heading', { name: 'Language preference' }),
     ).toBeInTheDocument()

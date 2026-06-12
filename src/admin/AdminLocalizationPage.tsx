@@ -574,14 +574,6 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
             >
               {t('ui.admin-localization.new-localization')}
             </button>
-            <button
-              type="button"
-              aria-label={t('ui.admin-localization.refresh-label')}
-              className="secondary-button compact-action"
-              onClick={refreshLocalizations}
-            >
-              {t('ui.common.refresh')}
-            </button>
           </div>
         </div>
 

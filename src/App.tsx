@@ -905,7 +905,7 @@ function SessionAccountMenu({
             </div>
             <SessionLoginActions session={state.session} />
             <SessionStatusSummary session={state.session} />
-            <SessionDetails session={state.session} showStatus={false} />
+            <SessionDetailsDisclosure session={state.session} showStatus={false} />
           </div>
         )}
       </div>
@@ -971,10 +971,29 @@ function SessionAccountMenu({
               {logoutState.message}
             </p>
           )}
-          <SessionDetails session={state.session} />
+          <SessionDetailsDisclosure session={state.session} />
         </div>
       )}
     </div>
+  )
+}
+
+// Session metadata stays one disclosure away so the sign-in and sign-out
+// actions visually lead their menus.
+function SessionDetailsDisclosure({
+  session,
+  showStatus = true,
+}: {
+  session: SessionResponse
+  showStatus?: boolean
+}) {
+  const { t } = useI18n()
+
+  return (
+    <details className="session-details-disclosure">
+      <summary>{t('ui.session.connection-details')}</summary>
+      <SessionDetails session={session} showStatus={showStatus} />
+    </details>
   )
 }
 

@@ -306,6 +306,21 @@ describe('OperatorPage', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('disables the audit filters while the route is permission-denied', async () => {
+    mockOperatorFetch({
+      auditPage: problemResponse(403, 'Brak dostepu do audytu.'),
+    })
+
+    renderOperator()
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Brak dostepu do audytu.',
+    )
+    expect(screen.getByLabelText('Target type')).toBeDisabled()
+    expect(screen.getByLabelText('Action')).toBeDisabled()
+    expect(screen.getByLabelText('Actor login')).toBeDisabled()
+  })
+
   it('surfaces unreachable-backend audit failures with localized messaging', async () => {
     const fetchMock = mockOperatorFetch({
       auditPage: () =>
@@ -326,6 +341,8 @@ describe('OperatorPage', () => {
     ).not.toBeInTheDocument()
     // The idempotent audit read gets exactly one bounded automatic retry.
     expect(fetchMock).toHaveBeenCalledTimes(2)
+    // An outage is not a permission denial, so the filters stay usable.
+    expect(screen.getByLabelText('Actor login')).toBeEnabled()
   })
 })
 
