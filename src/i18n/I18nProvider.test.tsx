@@ -6,7 +6,8 @@ import type { UserAccount } from '../api/account'
 import { getActiveRequestLanguage, setActiveRequestLanguage } from '../api/http'
 import { LOCALIZATIONS_PATH } from '../api/localizations'
 import type { SessionResponse } from '../api/session'
-import { I18nProvider } from './I18nProvider'
+import { CatalogCoverage, I18nProvider } from './I18nProvider'
+import { UI_MESSAGES } from './messages'
 import { useI18n } from './useI18n'
 
 afterEach(() => {
@@ -30,6 +31,9 @@ function Probe() {
       <button type="button" onClick={clearAccountPreference}>
         clear-account-preference
       </button>
+      <CatalogCoverage>
+        {(coverage) => <span data-testid="coverage">{String(coverage)}</span>}
+      </CatalogCoverage>
     </div>
   )
 }
@@ -101,6 +105,8 @@ describe('I18nProvider', () => {
     })
     expect(screen.getByTestId('brand')).toHaveTextContent('Library Console')
     expect(screen.getByTestId('catalog-link')).toHaveTextContent('Catalog')
+    // A failed load leaves no catalog evidence, so coverage stays complete.
+    expect(screen.getByTestId('coverage')).toHaveTextContent(/^1$/)
   })
 
   it('serves English defaults without a mounted provider', () => {
@@ -108,6 +114,96 @@ describe('I18nProvider', () => {
 
     expect(screen.getByTestId('language')).toHaveTextContent('en')
     expect(screen.getByTestId('brand')).toHaveTextContent('Library Console')
+    expect(screen.getByTestId('coverage')).toHaveTextContent(/^1$/)
+  })
+
+  it('reports coverage as the share of UI_MESSAGES keys the loaded catalog covers', async () => {
+    document.cookie = 'language=pl; path=/'
+
+    const fetchMock = vi.fn().mockImplementation(() =>
+      Promise.resolve(
+        Response.json({
+          content: [
+            {
+              id: 1,
+              messageKey: 'ui.shell.brand',
+              language: 'pl',
+              messageText: 'Konsola Biblioteki',
+            },
+            {
+              // Backend-owned keys outside UI_MESSAGES never count toward
+              // chrome coverage.
+              id: 2,
+              messageKey: 'account.title',
+              language: 'pl',
+              messageText: 'Konto',
+            },
+          ],
+          number: 0,
+          size: 100,
+          totalElements: 2,
+          totalPages: 1,
+          first: true,
+          last: true,
+        }),
+      ),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <I18nProvider>
+        <Probe />
+      </I18nProvider>,
+    )
+
+    // Until the catalog loads there is no evidence of a gap.
+    expect(screen.getByTestId('coverage')).toHaveTextContent(/^1$/)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('brand')).toHaveTextContent('Konsola Biblioteki')
+    })
+    expect(screen.getByTestId('coverage')).toHaveTextContent(
+      String(1 / Object.keys(UI_MESSAGES).length),
+    )
+  })
+
+  it('keeps the fallback language at full coverage regardless of catalog rows', async () => {
+    const fetchMock = vi.fn().mockImplementation(() =>
+      Promise.resolve(
+        Response.json({
+          content: [
+            {
+              id: 1,
+              messageKey: 'ui.shell.brand',
+              language: 'en',
+              messageText: 'Library Console Catalog Row',
+            },
+          ],
+          number: 0,
+          size: 100,
+          totalElements: 1,
+          totalPages: 1,
+          first: true,
+          last: true,
+        }),
+      ),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <I18nProvider>
+        <Probe />
+      </I18nProvider>,
+    )
+
+    expect(screen.getByTestId('language')).toHaveTextContent('en')
+
+    await waitFor(() => {
+      expect(screen.getByTestId('brand')).toHaveTextContent(
+        'Library Console Catalog Row',
+      )
+    })
+    expect(screen.getByTestId('coverage')).toHaveTextContent(/^1$/)
   })
 
   it('re-resolves and reloads the catalog when the account preference arrives', async () => {

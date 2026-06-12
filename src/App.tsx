@@ -50,6 +50,7 @@ import {
 import { hasAdminRole } from './auth/roles'
 import { CatalogPanel } from './catalog/CatalogPanel'
 import { CATALOG_ROUTE_PATH } from './catalog/catalogQuery'
+import { CatalogCoverage } from './i18n/I18nProvider'
 import type { UiMessageKey } from './i18n/messages'
 import { LANGUAGE_COOKIE_NAME } from './i18n/resolveLanguage'
 import { useI18n } from './i18n/useI18n'
@@ -589,6 +590,10 @@ function QuickLanguageMenu({ session }: { session: SessionResponse }) {
               </button>
             )
           })}
+          <LanguageCoverageNotice
+            isAdmin={hasAdminRole(account)}
+            onNavigate={() => setOpen(false)}
+          />
           {updateState.status === 'error' && (
             <p className="session-message error" role="alert">
               {updateState.message}
@@ -671,9 +676,59 @@ function AnonymousLanguageMenu() {
               </button>
             )
           })}
+          <LanguageCoverageNotice
+            isAdmin={false}
+            onNavigate={() => setOpen(false)}
+          />
         </div>
       )}
     </div>
+  )
+}
+
+// Partial-translation notice under the language options: when the loaded
+// catalog covers less than the full `UI_MESSAGES` registry, the menu states
+// how much of the interface the active language covers and that the rest
+// appears in English. Admins also get a direct path to finish the
+// translation; following it dismisses the menu like other menu links.
+function LanguageCoverageNotice({
+  isAdmin,
+  onNavigate,
+}: {
+  isAdmin: boolean
+  onNavigate: () => void
+}) {
+  const { language, t } = useI18n()
+
+  return (
+    <CatalogCoverage>
+      {(coverage) => {
+        const percent = Math.round(coverage * 100)
+
+        if (percent >= 100) {
+          return null
+        }
+
+        return (
+          <>
+            <p className="session-message muted">
+              {t('ui.language.partial-coverage', {
+                language: t(`ui.language.${language}`),
+                percent,
+              })}
+            </p>
+            {isAdmin && (
+              <Link
+                to={`${ADMIN_LOCALIZATION_ROUTE_PATH}?language=${language}`}
+                onClick={onNavigate}
+              >
+                {t('ui.language.complete-translation')}
+              </Link>
+            )}
+          </>
+        )
+      }}
+    </CatalogCoverage>
   )
 }
 

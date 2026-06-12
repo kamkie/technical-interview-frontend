@@ -81,7 +81,7 @@ Ship five user-approved UX improvements: globally true localization coverage wit
 | Packet                     | Status   | Owner       | Depends On | Last Updated | Notes                                  |
 | -------------------------- | -------- | ----------- | ---------- | ------------ | -------------------------------------- |
 | T1-localization-coverage   | Complete | Coordinator | None       | 2026-06-12   | Largest packet                         |
-| T2-partial-language-notice | Ready    | Coordinator | None       | 2026-06-12   | User-confirmed in session              |
+| T2-partial-language-notice | Complete | Coordinator | None       | 2026-06-12   | User-confirmed in session              |
 | T3-language-continuity     | Ready    | Coordinator | None       | 2026-06-12   | Cookie write + account-page alignment  |
 | T4-copy-and-timestamps     | Ready    | Coordinator | None       | 2026-06-12   | Safest packet                          |
 | T5-mobile-topbar           | Ready    | Coordinator | None       | 2026-06-12   | Theme menu idiom changes all viewports |
@@ -155,7 +155,7 @@ Stop conditions:
 
 Result summary:
 
-- Status: pending
+- Status: complete (2026-06-12). `I18nProvider` tags the loaded catalog with its language and derives `catalogCoverage` (0..1) over `UI_MESSAGES` keys — forced to 1 for `en`, unloaded/failed catalogs, and in-flight switches. Exposed via a render-prop `CatalogCoverage` component (module-private context; no catalog internals leaked). Both language menus render `LanguageCoverageNotice` under the options ("{language} covers {percent}% of the interface. The rest appears in English."); admins also get a "Complete this translation" link to `/admin/localizations?language=<lang>` that dismisses the menu. Two new keys. No extra network requests. Validation: scoped vitest 42/42, typecheck pass, `npx eslint src scripts` pass, `git diff --check` pass; mock-mode preview confirmed pl 4% / de 1% notices, admin link, and no notice for `en`. Anonymous-menu browser check skipped (mock boots as admin; signing out would mutate the shared preview session) — covered by vitest instead. Follow-up noted: a `catalogCoverage` member on `I18nContextValue` in `useI18n.ts` would replace the render-prop cleanly; left out as an out-of-scope edit.
 
 ### Task Packet: T3-language-continuity
 

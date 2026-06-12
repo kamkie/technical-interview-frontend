@@ -37,7 +37,10 @@ import {
   type AuditLogPage,
   type OperatorSurface,
 } from './api/operator'
+import { setActiveRequestLanguage } from './api/http'
 import { SESSION_PATH, type SessionResponse } from './api/session'
+import { I18nProvider } from './i18n/I18nProvider'
+import { UI_MESSAGES } from './i18n/messages'
 import { THEME_STORAGE_KEY } from './ui/theme'
 
 describe('App', () => {
@@ -46,6 +49,10 @@ describe('App', () => {
     window.localStorage.clear()
     clearDocumentTheme()
     clearDocumentCookies()
+    // Provider-wrapped renders below pin the active request language and the
+    // document language; reset both so unwrapped renders stay on defaults.
+    setActiveRequestLanguage(undefined)
+    document.documentElement.lang = 'en'
   })
 
   it('uses the system dark preference on first visit without storing an explicit preference', async () => {
@@ -1157,6 +1164,97 @@ describe('App', () => {
       ).toHaveFocus()
     })
   })
+
+  it('shows the partial-translation notice in the anonymous language menu without an admin link', async () => {
+    document.cookie = 'language=pl; path=/'
+    const coveredKeys = Object.keys(UI_MESSAGES).slice(0, 22)
+    mockAppFetch({
+      localizations: createUiCatalogPage('pl', coveredKeys),
+      session: createSession(),
+    })
+
+    renderAppWithI18n()
+
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Language preference, currently Polish',
+      }),
+    )
+
+    expect(
+      await screen.findByText(coverageNoticeText('Polish', coveredKeys.length)),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: 'Complete this translation' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('links admins from the quick language menu notice to the localization admin page', async () => {
+    const coveredKeys = Object.keys(UI_MESSAGES).slice(0, 22)
+    const noticeText = coverageNoticeText('Polish', coveredKeys.length)
+    mockAppFetch({
+      account: createAccount({
+        roles: ['USER', 'ADMIN'],
+      }),
+      localizations: createUiCatalogPage('pl', coveredKeys),
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    renderAppWithI18n()
+
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Language preference, currently Polish',
+      }),
+    )
+
+    expect(await screen.findByText(noticeText)).toBeInTheDocument()
+
+    const completeLink = screen.getByRole('link', {
+      name: 'Complete this translation',
+    })
+
+    expect(completeLink).toHaveAttribute(
+      'href',
+      '/admin/localizations?language=pl',
+    )
+
+    fireEvent.click(completeLink)
+
+    // Following the link dismisses the menu like the other menu links.
+    await waitFor(() => {
+      expect(screen.queryByText(noticeText)).not.toBeInTheDocument()
+    })
+    expect(
+      await screen.findByRole('heading', {
+        level: 1,
+        name: 'Localization administration',
+      }),
+    ).toBeInTheDocument()
+  })
+
+  it('shows no partial-translation notice for the English default catalog', async () => {
+    mockAppFetch({
+      session: createSession(),
+    })
+
+    renderAppWithI18n()
+
+    expect(await screen.findByText('Clean Code')).toBeInTheDocument()
+
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Language preference, currently English',
+      }),
+    )
+
+    expect(screen.getByRole('button', { name: 'Polish' })).toBeInTheDocument()
+    expect(
+      screen.queryByText(/covers \d+% of the interface/),
+    ).not.toBeInTheDocument()
+  })
 })
 
 function renderApp(initialEntry = '/catalog') {
@@ -1165,6 +1263,48 @@ function renderApp(initialEntry = '/catalog') {
       <App />
     </MemoryRouter>,
   )
+}
+
+// Mirrors the production tree in `main.tsx` for coverage-notice tests that
+// need the real catalog-backed i18n provider around the shell.
+function renderAppWithI18n(initialEntry = '/catalog') {
+  return render(
+    <MemoryRouter initialEntries={[initialEntry]}>
+      <I18nProvider>
+        <App />
+      </I18nProvider>
+    </MemoryRouter>,
+  )
+}
+
+function createUiCatalogPage(
+  language: string,
+  messageKeys: readonly string[],
+): LocalizationPage {
+  return {
+    content: messageKeys.map((messageKey, index) => ({
+      id: 100 + index,
+      messageKey,
+      language,
+      messageText: `${messageKey} [${language}]`,
+    })),
+    first: true,
+    last: true,
+    number: 0,
+    numberOfElements: messageKeys.length,
+    size: 100,
+    totalElements: messageKeys.length,
+    totalPages: 1,
+  }
+}
+
+// Builds the expected notice copy from the same rounding the menu applies.
+function coverageNoticeText(languageLabel: string, coveredCount: number) {
+  const percent = Math.round(
+    (coveredCount / Object.keys(UI_MESSAGES).length) * 100,
+  )
+
+  return `${languageLabel} covers ${percent}% of the interface. The rest appears in English.`
 }
 
 function mockAppFetch({

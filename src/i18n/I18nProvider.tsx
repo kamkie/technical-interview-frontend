@@ -1,5 +1,7 @@
 import {
+  createContext,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -12,8 +14,33 @@ import { setActiveRequestLanguage } from '../api/http'
 import type { SupportedLocalizationLanguage } from '../api/localizations'
 import { loadUiCatalog, type UiCatalog } from './catalog'
 import { UI_MESSAGES, formatUiMessage } from './messages'
-import { resolveLanguage } from './resolveLanguage'
+import { FALLBACK_LANGUAGE, resolveLanguage } from './resolveLanguage'
 import { I18nContext, type I18nContextValue, type UiTranslate } from './useI18n'
+
+// The loaded catalog stays tagged with its language so coverage is never
+// derived from the previous language's rows while a switch is in flight.
+type LoadedCatalog = {
+  catalog: UiCatalog
+  language: SupportedLocalizationLanguage
+}
+
+// Share of `UI_MESSAGES` keys the active language's loaded catalog covers, as
+// a 0..1 ratio. Consumers read only this number, never the catalog rows. The
+// fallback language is definitionally complete because its defaults live in
+// `UI_MESSAGES`; unloaded and failed catalogs also count as complete so no
+// partial-translation hint renders without loaded evidence.
+const CatalogCoverageContext = createContext(1)
+
+// Render-prop accessor for the coverage ratio. A component export keeps this
+// file within react-refresh/only-export-components; hook and context exports
+// belong in non-component modules such as `useI18n.ts`.
+export function CatalogCoverage({
+  children,
+}: {
+  children: (coverage: number) => ReactNode
+}) {
+  return children(useContext(CatalogCoverageContext))
+}
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<SupportedLocalizationLanguage>(() => {
@@ -29,7 +56,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
     return resolved
   })
-  const [catalog, setCatalog] = useState<UiCatalog | null>(null)
+  const [loadedCatalog, setLoadedCatalog] = useState<LoadedCatalog | null>(
+    null,
+  )
   // The latest account preference seen on this session, so cookie or browser
   // changes re-resolve below the preference tier instead of replacing it.
   const accountPreferenceRef = useRef<string | undefined>(undefined)
@@ -71,14 +100,14 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     loadUiCatalog(language)
       .then((loaded) => {
         if (!ignore) {
-          setCatalog(loaded)
+          setLoadedCatalog({ catalog: loaded, language })
         }
       })
       .catch(() => {
         // Catalog load failures are non-fatal; chrome renders the English
         // defaults until the next language change retries the load.
         if (!ignore) {
-          setCatalog(null)
+          setLoadedCatalog(null)
         }
       })
 
@@ -89,13 +118,33 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const t = useCallback<UiTranslate>(
     (key, params) =>
-      formatUiMessage(catalog?.get(key) ?? UI_MESSAGES[key], params),
-    [catalog],
+      formatUiMessage(loadedCatalog?.catalog.get(key) ?? UI_MESSAGES[key], params),
+    [loadedCatalog],
   )
   const value = useMemo<I18nContextValue>(
     () => ({ clearAccountPreference, language, refreshLanguage, t }),
     [clearAccountPreference, language, refreshLanguage, t],
   )
+  const catalogCoverage = useMemo(() => {
+    if (
+      language === FALLBACK_LANGUAGE ||
+      loadedCatalog === null ||
+      loadedCatalog.language !== language
+    ) {
+      return 1
+    }
 
-  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>
+    const keys = Object.keys(UI_MESSAGES)
+    const covered = keys.filter((key) => loadedCatalog.catalog.has(key)).length
+
+    return covered / keys.length
+  }, [language, loadedCatalog])
+
+  return (
+    <I18nContext.Provider value={value}>
+      <CatalogCoverageContext.Provider value={catalogCoverage}>
+        {children}
+      </CatalogCoverageContext.Provider>
+    </I18nContext.Provider>
+  )
 }

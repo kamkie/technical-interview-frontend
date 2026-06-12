@@ -341,6 +341,7 @@ export const UI_MESSAGES = {
   'ui.coverage.missing': 'missing',
   'ui.coverage.partial': 'partial',
   'ui.coverage.unknown': 'unknown',
+  'ui.language.complete-translation': 'Complete this translation',
   'ui.language.de': 'German',
   'ui.language.en': 'English',
   'ui.language.es': 'Spanish',
@@ -348,6 +349,8 @@ export const UI_MESSAGES = {
   'ui.language.menu-label': 'Language preference, currently {label}',
   'ui.language.no': 'Norwegian',
   'ui.language.no-preference-inline': 'no preference',
+  'ui.language.partial-coverage':
+    '{language} covers {percent}% of the interface. The rest appears in English.',
   'ui.language.pl': 'Polish',
   'ui.language.save-failed': 'Language preference could not be saved.',
   'ui.language.uk': 'Ukrainian',
