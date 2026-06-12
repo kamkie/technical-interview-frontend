@@ -50,7 +50,7 @@ describe('I18nProvider', () => {
             },
           ],
           number: 0,
-          size: 200,
+          size: 100,
           totalElements: 1,
           totalPages: 1,
           first: true,
@@ -125,7 +125,7 @@ describe('I18nProvider', () => {
               ]
             : [],
           number: 0,
-          size: 200,
+          size: 100,
           totalElements: 1,
           totalPages: 1,
           first: true,
@@ -162,7 +162,7 @@ describe('I18nProvider', () => {
         Response.json({
           content: [],
           number: 0,
-          size: 200,
+          size: 100,
           totalElements: 0,
           totalPages: 0,
           first: true,
@@ -200,7 +200,7 @@ describe('I18nProvider', () => {
         Response.json({
           content: [],
           number: 0,
-          size: 200,
+          size: 100,
           totalElements: 0,
           totalPages: 0,
           first: true,

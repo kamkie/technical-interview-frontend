@@ -624,7 +624,7 @@ function AnonymousLanguageMenu() {
   }
 
   return (
-    <div className="nav-menu language-menu" ref={containerRef}>
+    <div className="nav-menu language-menu language-menu-anonymous" ref={containerRef}>
       <button
         aria-controls={panelId}
         aria-expanded={open}

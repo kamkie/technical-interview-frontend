@@ -666,7 +666,10 @@ input[type='radio'] {
 }
 
 @media (max-width: 960px) {
-  .language-menu {
+  /* Signed-in visitors keep the account-page language control on narrow
+     viewports; anonymous visitors have no alternative, so their topbar menu
+     stays visible at every width. */
+  .language-menu:not(.language-menu-anonymous) {
     display: none;
   }
 }
