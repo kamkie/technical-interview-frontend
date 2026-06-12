@@ -558,6 +558,9 @@ describe('AdminLocalizationPage', () => {
     expect(
       await screen.findByText('Localization rows could not be loaded'),
     ).toBeInTheDocument()
+    expect(
+      screen.getByText('Localization rows need attention.'),
+    ).toBeInTheDocument()
     expect(container.querySelector('.state-block[data-state="error"]')).not.toBeNull()
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Nie masz dostepu do tlumaczen.',

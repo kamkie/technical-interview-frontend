@@ -319,6 +319,7 @@ describe('OperatorPage', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'GET /api/admin/audit-logs?page=0&size=20&sort=id%2CDESC failed with 503 Service Unavailable',
     )
+    expect(screen.getByText('Audit rows need attention.')).toBeInTheDocument()
   })
 })
 

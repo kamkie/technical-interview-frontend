@@ -167,8 +167,7 @@ export const UI_MESSAGES = {
   'ui.admin-localization.row-save-failed':
     'Localization row could not be saved.',
   'ui.admin-localization.rows-region-label': 'Scrollable localization rows table',
-  'ui.admin-localization.rows-status-error':
-    'Localization rows are needs attention.',
+  'ui.admin-localization.rows-status-error': 'Localization rows need attention.',
   'ui.admin-localization.rows-status-loading': 'Localization rows are loading.',
   'ui.admin-localization.rows-title': 'Localization rows',
   'ui.admin-localization.save-localization': 'Save localization',
@@ -290,6 +289,9 @@ export const UI_MESSAGES = {
   'ui.catalog.category-filters-label': 'Category filters',
   'ui.catalog.empty-message': 'No books match these filters.',
   'ui.catalog.empty-title': 'No catalog results',
+  'ui.catalog.empty-unfiltered-message':
+    'There are no books in the catalog yet.',
+  'ui.catalog.empty-unfiltered-title': 'The catalog is empty',
   'ui.catalog.error-title': 'Books could not be displayed',
   'ui.catalog.filters-label': 'Catalog filters',
   'ui.catalog.isbn': 'ISBN',

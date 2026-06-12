@@ -20,11 +20,7 @@ import {
   sameValues,
   trimmedValues,
 } from '../routing/queryParams'
-import {
-  formatLoadStatus,
-  getDisplayMessage,
-  type LoadState,
-} from '../ui/asyncState'
+import { getDisplayMessage, type LoadState } from '../ui/asyncState'
 import { formatTimestamp } from '../ui/format'
 import { IconChevronDown } from '../ui/icons'
 import { PaginationControls } from '../ui/PaginationControls'
@@ -493,8 +489,12 @@ function AuditLogResults({
 }
 
 function formatAuditSummary(state: LoadState<AuditLogPage>) {
-  if (state.status !== 'ready') {
-    return `Audit rows are ${formatLoadStatus(state.status).toLowerCase()}.`
+  if (state.status === 'error') {
+    return 'Audit rows need attention.'
+  }
+
+  if (state.status === 'loading') {
+    return 'Audit rows are loading.'
   }
 
   const rowCount = state.value.numberOfElements ?? state.value.content?.length ?? 0

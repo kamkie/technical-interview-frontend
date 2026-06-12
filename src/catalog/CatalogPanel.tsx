@@ -422,9 +422,20 @@ function BookResults({
   if (books.length === 0) {
     return (
       <div className="book-results">
-        <StateBlock title={t('ui.catalog.empty-title')} variant="empty">
+        <StateBlock
+          title={t(
+            hasActiveQuery
+              ? 'ui.catalog.empty-title'
+              : 'ui.catalog.empty-unfiltered-title',
+          )}
+          variant="empty"
+        >
           <StateMessage variant="empty">
-            {t('ui.catalog.empty-message')}
+            {t(
+              hasActiveQuery
+                ? 'ui.catalog.empty-message'
+                : 'ui.catalog.empty-unfiltered-message',
+            )}
           </StateMessage>
           {hasActiveQuery && (
             <button

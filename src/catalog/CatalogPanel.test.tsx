@@ -155,17 +155,18 @@ describe('CatalogPanel', () => {
     ).toBeInTheDocument()
   })
 
-  it('renders an empty state when no books match the current filters', async () => {
+  it('renders a catalog-is-empty state without filters and no clear-filters action', async () => {
     mockCatalogFetch({ books: emptyBookPage })
 
     const { container } = renderCatalogRoute()
 
     expect(await screen.findByText('0 books')).toBeInTheDocument()
     expect(container.querySelector('.state-block[data-state="empty"]')).not.toBeNull()
-    expect(screen.getByText('No catalog results')).toBeInTheDocument()
+    expect(screen.getByText('The catalog is empty')).toBeInTheDocument()
     expect(
-      screen.getByText('No books match these filters.'),
+      screen.getByText('There are no books in the catalog yet.'),
     ).toBeInTheDocument()
+    expect(screen.queryByText('No books match these filters.')).toBeNull()
     expect(
       screen.queryByRole('button', { name: 'Clear filters' }),
     ).not.toBeInTheDocument()
@@ -180,6 +181,10 @@ describe('CatalogPanel', () => {
     const { router } = renderCatalogRoute(`${CATALOG_ROUTE_PATH}?title=nomatch`)
 
     expect(await screen.findByText('No catalog results')).toBeInTheDocument()
+    expect(
+      screen.getByText('No books match these filters.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText('The catalog is empty')).toBeNull()
 
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }))
 
