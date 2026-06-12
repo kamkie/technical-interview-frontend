@@ -120,6 +120,65 @@ describe('AccountProfile', () => {
     expect(screen.getByLabelText('Language')).toHaveValue('de')
   })
 
+  it('lists the same option labels and ordering as the topbar language menu', async () => {
+    mockAccountFetch()
+
+    render(<AccountProfile session={createSession()} />)
+
+    const select = await screen.findByLabelText('Language')
+    const optionLabels = within(select)
+      .getAllByRole('option')
+      .map((option) => option.textContent)
+
+    // Translated names without code suffixes, in the shared
+    // LANGUAGE_OPTIONS order, behind the form-only no-preference entry.
+    expect(optionLabels).toEqual([
+      'No preference',
+      'English',
+      'Spanish',
+      'German',
+      'French',
+      'Polish',
+      'Ukrainian',
+      'Norwegian',
+    ])
+  })
+
+  it('shows the resolved-language hint only while no preference is set', async () => {
+    mockAccountFetch({
+      account: createAccount({ preferredLanguage: undefined }),
+      languageResponse: createAccount({ preferredLanguage: 'de' }),
+    })
+
+    render(<AccountProfile session={createSession()} />)
+
+    // Without a stored preference the form names the language the UI
+    // actually resolved (English here, from the test environment defaults).
+    expect(
+      await screen.findByText(
+        'No preference — currently following your browser: English',
+      ),
+    ).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Language'), {
+      target: {
+        value: 'de',
+      },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Save language' }))
+
+    await waitFor(() => {
+      expect(
+        screen.queryByText(
+          'No preference — currently following your browser: English',
+        ),
+      ).not.toBeInTheDocument()
+    })
+    expect(
+      await screen.findByText('Language preference updated.'),
+    ).toHaveAttribute('data-state', 'success')
+  })
+
   it('renders localized backend account failures inside the error state', async () => {
     mockAccountFetch({
       account: Response.json(

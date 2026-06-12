@@ -171,7 +171,7 @@ function LanguagePreferenceForm({
   onAccountChange: (account: UserAccount) => void
   session: SessionResponse
 }) {
-  const { t } = useI18n()
+  const { language, t } = useI18n()
   const currentLanguage = account.preferredLanguage?.trim() ?? ''
   const [languageInput, setLanguageInput] = useState(currentLanguage)
   const [mutationState, setMutationState] = useState<MutationState>({
@@ -184,7 +184,7 @@ function LanguagePreferenceForm({
   // selectable entry so the select reflects the account state faithfully.
   const unknownCurrentLanguage =
     currentLanguage !== '' &&
-    !LANGUAGE_OPTIONS.some((language) => language.value === currentLanguage)
+    !LANGUAGE_OPTIONS.some((option) => option.value === currentLanguage)
 
   async function submitLanguage(preferredLanguage: string) {
     setMutationState({ status: 'submitting' })
@@ -244,13 +244,23 @@ function LanguagePreferenceForm({
           {unknownCurrentLanguage && (
             <option value={currentLanguage}>{currentLanguage}</option>
           )}
-          {LANGUAGE_OPTIONS.map((language) => (
-            <option key={language.value} value={language.value}>
-              {t(`ui.language.${language.value}`)} ({language.value})
+          {LANGUAGE_OPTIONS.map((option) => (
+            // Labels match the topbar language menu: translated names without
+            // code suffixes, in the shared LANGUAGE_OPTIONS order.
+            <option key={option.value} value={option.value}>
+              {t(`ui.language.${option.value}`)}
             </option>
           ))}
         </select>
       </div>
+
+      {currentLanguage === '' && (
+        <p className="session-message muted">
+          {t('ui.account.no-preference-hint', {
+            language: t(`ui.language.${language}`),
+          })}
+        </p>
+      )}
 
       <div className="language-preference-actions">
         <button type="submit" disabled={submitting || unchanged}>

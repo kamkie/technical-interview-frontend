@@ -14,7 +14,12 @@ import { setActiveRequestLanguage } from '../api/http'
 import type { SupportedLocalizationLanguage } from '../api/localizations'
 import { loadUiCatalog, type UiCatalog } from './catalog'
 import { UI_MESSAGES, formatUiMessage } from './messages'
-import { FALLBACK_LANGUAGE, resolveLanguage } from './resolveLanguage'
+import {
+  FALLBACK_LANGUAGE,
+  LANGUAGE_COOKIE_NAME,
+  resolveLanguage,
+  toSupportedLanguage,
+} from './resolveLanguage'
 import { I18nContext, type I18nContextValue, type UiTranslate } from './useI18n'
 
 // The loaded catalog stays tagged with its language so coverage is never
@@ -40,6 +45,24 @@ export function CatalogCoverage({
   children: (coverage: number) => ReactNode
 }) {
   return children(useContext(CatalogCoverageContext))
+}
+
+// When an account arrives with a usable language preference, mirror the
+// resolved supported language into the backend `language` negotiation cookie
+// with the same write mechanics as the anonymous menu in `App.tsx`. The next
+// full page load then resolves the account's language at the cookie tier
+// before `/api/account` returns, eliminating the wrong-language flash; after
+// logout the cookie intentionally keeps the last language. Accounts without a
+// supported preference write nothing, so they keep following the cookie and
+// browser tiers.
+function persistResolvedPreferenceCookie(
+  preferredLanguage: string | undefined,
+) {
+  const resolved = toSupportedLanguage(preferredLanguage)
+
+  if (resolved) {
+    document.cookie = `${LANGUAGE_COOKIE_NAME}=${resolved}; path=/; max-age=31536000; SameSite=Lax`
+  }
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
@@ -86,6 +109,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     () =>
       subscribeToAccountValues((account) => {
         accountPreferenceRef.current = account.preferredLanguage
+        persistResolvedPreferenceCookie(account.preferredLanguage)
         refreshLanguage()
       }),
     [refreshLanguage],

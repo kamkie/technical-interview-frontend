@@ -83,6 +83,7 @@ import {
   IconMoon,
   IconSun,
 } from './ui/icons'
+import { MutationFeedback } from './ui/MutationFeedback'
 import {
   THEME_PREFERENCES,
   useThemePreference,
@@ -531,8 +532,12 @@ function QuickLanguageMenu({ session }: { session: SessionResponse }) {
       const nextAccount = await updateAccountLanguage(session, value)
 
       publishAccountUpdate(session, nextAccount)
-      setUpdateState({ status: 'idle' })
-      setOpen(false)
+      // The menu stays open so the saved confirmation below the options is
+      // visible, matching the account page's MutationFeedback idiom.
+      setUpdateState({
+        status: 'success',
+        message: t('ui.account.preference-updated'),
+      })
     } catch (error: unknown) {
       setUpdateState({
         status: 'error',
@@ -554,7 +559,12 @@ function QuickLanguageMenu({ session }: { session: SessionResponse }) {
         className="nav-menu-button language-menu-button"
         id="language-menu-trigger"
         type="button"
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => {
+          // Reopening starts a fresh interaction, so feedback from the
+          // previous visit to the menu never lingers.
+          setUpdateState({ status: 'idle' })
+          setOpen((current) => !current)
+        }}
       >
         {CurrentFlag ? (
           <CurrentFlag className="language-flag" />
@@ -594,11 +604,10 @@ function QuickLanguageMenu({ session }: { session: SessionResponse }) {
             isAdmin={hasAdminRole(account)}
             onNavigate={() => setOpen(false)}
           />
-          {updateState.status === 'error' && (
-            <p className="session-message error" role="alert">
-              {updateState.message}
-            </p>
-          )}
+          <Link to={ACCOUNT_ROUTE_PATH} onClick={() => setOpen(false)}>
+            {t('ui.language.settings')}
+          </Link>
+          <MutationFeedback state={updateState} />
         </div>
       )}
     </div>

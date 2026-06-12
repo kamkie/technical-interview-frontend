@@ -21,6 +21,8 @@ export const UI_MESSAGES = {
   'ui.account.loading-title': 'Loading account profile',
   'ui.account.login-name': 'Login name',
   'ui.account.no-preference': 'No preference',
+  'ui.account.no-preference-hint':
+    'No preference — currently following your browser: {language}',
   'ui.account.no-roles': 'No access roles assigned.',
   'ui.account.panel-label': 'Account profile',
   'ui.account.preference-cleared': 'Language preference cleared.',
@@ -353,6 +355,7 @@ export const UI_MESSAGES = {
     '{language} covers {percent}% of the interface. The rest appears in English.',
   'ui.language.pl': 'Polish',
   'ui.language.save-failed': 'Language preference could not be saved.',
+  'ui.language.settings': 'Language settings',
   'ui.language.uk': 'Ukrainian',
   'ui.nav.admin': 'Admin',
   'ui.nav.admin-label': 'Admin workflows',

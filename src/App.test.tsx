@@ -126,6 +126,10 @@ describe('App', () => {
     fireEvent.click(
       await screen.findByRole('button', { name: /language preference/i }),
     )
+    // The account-backed settings entry stays out of the anonymous menu.
+    expect(
+      screen.queryByRole('link', { name: 'Language settings' }),
+    ).not.toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Polish' }))
 
     expect(document.cookie).toContain('language=pl')
@@ -591,6 +595,44 @@ describe('App', () => {
       await screen.findByRole('button', {
         name: 'Language preference, currently German',
       }),
+    ).toBeInTheDocument()
+    // The menu stays open with the same saved confirmation the account page
+    // shows, instead of dismissing silently.
+    expect(
+      await screen.findByText('Language preference updated.'),
+    ).toHaveAttribute('data-state', 'success')
+    expect(screen.getByRole('button', { name: 'German' })).toBeInTheDocument()
+  })
+
+  it('links the quick language menu to account language settings', async () => {
+    mockAppFetch({
+      session: createSession({
+        authenticated: true,
+      }),
+    })
+
+    renderApp()
+
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Language preference, currently Polish',
+      }),
+    )
+
+    const settingsLink = screen.getByRole('link', { name: 'Language settings' })
+
+    expect(settingsLink).toHaveAttribute('href', '/account')
+
+    fireEvent.click(settingsLink)
+
+    // Following the link dismisses the menu like the other menu links.
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('link', { name: 'Language settings' }),
+      ).not.toBeInTheDocument()
+    })
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Account settings' }),
     ).toBeInTheDocument()
   })
 

@@ -5,9 +5,10 @@ import { publishAccountUpdate } from '../account/useCurrentAccount'
 import type { UserAccount } from '../api/account'
 import { getActiveRequestLanguage, setActiveRequestLanguage } from '../api/http'
 import { LOCALIZATIONS_PATH } from '../api/localizations'
-import type { SessionResponse } from '../api/session'
+import { readCookie, type SessionResponse } from '../api/session'
 import { CatalogCoverage, I18nProvider } from './I18nProvider'
 import { UI_MESSAGES } from './messages'
+import { LANGUAGE_COOKIE_NAME, resolveLanguage } from './resolveLanguage'
 import { useI18n } from './useI18n'
 
 afterEach(() => {
@@ -288,6 +289,114 @@ describe('I18nProvider', () => {
 
       expect(paths.some((path) => path.includes('language=de'))).toBe(true)
     })
+  })
+
+  it('persists the resolved account language in the negotiation cookie for the next load', () => {
+    const fetchMock = vi.fn().mockImplementation(() =>
+      Promise.resolve(
+        Response.json({
+          content: [],
+          number: 0,
+          size: 100,
+          totalElements: 0,
+          totalPages: 0,
+          first: true,
+          last: true,
+        }),
+      ),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <I18nProvider>
+        <Probe />
+      </I18nProvider>,
+    )
+
+    act(() => {
+      publishAccountUpdate(createSession(), createAccount('pl'))
+    })
+
+    expect(screen.getByTestId('language')).toHaveTextContent('pl')
+    expect(readCookie(document.cookie, LANGUAGE_COOKIE_NAME)).toBe('pl')
+
+    // Reload continuity: the next full page load resolves before
+    // `/api/account` returns, so a fresh resolution without the account
+    // preference must already land on the account's language at the cookie
+    // tier — even against a different browser language.
+    expect(
+      resolveLanguage({
+        cookieSource: document.cookie,
+        browserLanguages: ['de-DE'],
+      }),
+    ).toBe('pl')
+  })
+
+  it('writes the resolved supported language, not the raw preference value', () => {
+    const fetchMock = vi.fn().mockImplementation(() =>
+      Promise.resolve(
+        Response.json({
+          content: [],
+          number: 0,
+          size: 100,
+          totalElements: 0,
+          totalPages: 0,
+          first: true,
+          last: true,
+        }),
+      ),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <I18nProvider>
+        <Probe />
+      </I18nProvider>,
+    )
+
+    act(() => {
+      publishAccountUpdate(createSession(), createAccount('pl-PL'))
+    })
+
+    expect(screen.getByTestId('language')).toHaveTextContent('pl')
+    expect(readCookie(document.cookie, LANGUAGE_COOKIE_NAME)).toBe('pl')
+  })
+
+  it('leaves the negotiation cookie alone when the account has no supported preference', () => {
+    const fetchMock = vi.fn().mockImplementation(() =>
+      Promise.resolve(
+        Response.json({
+          content: [],
+          number: 0,
+          size: 100,
+          totalElements: 0,
+          totalPages: 0,
+          first: true,
+          last: true,
+        }),
+      ),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(
+      <I18nProvider>
+        <Probe />
+      </I18nProvider>,
+    )
+
+    act(() => {
+      publishAccountUpdate(createSession(), createAccount('xx'))
+    })
+
+    // Preference-less accounts keep following the cookie and browser tiers,
+    // so pinning the browser language into the cookie would change behavior.
+    expect(readCookie(document.cookie, LANGUAGE_COOKIE_NAME)).toBeUndefined()
+    expect(
+      resolveLanguage({
+        cookieSource: document.cookie,
+        browserLanguages: ['de'],
+      }),
+    ).toBe('de')
   })
 
   it('drops the account preference on clear so anonymous selection wins', () => {

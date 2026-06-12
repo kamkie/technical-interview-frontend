@@ -82,7 +82,7 @@ Ship five user-approved UX improvements: globally true localization coverage wit
 | -------------------------- | -------- | ----------- | ---------- | ------------ | -------------------------------------- |
 | T1-localization-coverage   | Complete | Coordinator | None       | 2026-06-12   | Largest packet                         |
 | T2-partial-language-notice | Complete | Coordinator | None       | 2026-06-12   | User-confirmed in session              |
-| T3-language-continuity     | Ready    | Coordinator | None       | 2026-06-12   | Cookie write + account-page alignment  |
+| T3-language-continuity     | Complete | Coordinator | None       | 2026-06-12   | Cookie write + account-page alignment  |
 | T4-copy-and-timestamps     | Ready    | Coordinator | None       | 2026-06-12   | Safest packet                          |
 | T5-mobile-topbar           | Ready    | Coordinator | None       | 2026-06-12   | Theme menu idiom changes all viewports |
 | T6-catalog-chip-search     | Ready    | Coordinator | None       | 2026-06-12   | User-reported chip search issues       |
@@ -185,7 +185,7 @@ Stop conditions:
 
 Result summary:
 
-- Status: pending
+- Status: complete (2026-06-12). `I18nProvider`'s account-value subscription mirrors the resolved supported preference into the `language` cookie (same attributes as the anonymous-menu write: `path=/; max-age=31536000; SameSite=Lax`) at bootstrap, account load, and preference save; reload-resolution test proves the cookie tier yields the account language before `/api/account`. Account select labels/order now match the topbar menu; "No preference — currently following your browser: {language}" hint added; quick menu stays open after save with the shared `MutationFeedback` confirmation (reset on trigger toggle) and gains a final "Language settings" link to `/account`. Two new keys. Recorded decisions: preference-less accounts write no cookie (keeps cookie/browser tiers truthful), and "Clear preference" does not delete the cookie — so after clearing, the UI keeps the last language until cookie/browser tiers change, and the browser-hint copy can be nominally inaccurate while a stale cookie pins the language (edge also reachable pre-T3 via the anonymous menu; accepted). Validation: scoped vitest 51/51, typecheck pass, `npx eslint src scripts` pass, `git diff --check` pass; browser pass not required for this packet.
 
 ### Task Packet: T4-copy-and-timestamps
 
