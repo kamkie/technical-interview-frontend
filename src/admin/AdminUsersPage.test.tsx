@@ -184,7 +184,7 @@ describe('AdminUsersPage', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('selects a user and renders detail with role-grant provenance', async () => {
+  it('selects a user and renders detail with role grant history', async () => {
     mockAdminUsersFetch()
 
     renderAdminUsers()
@@ -200,10 +200,10 @@ describe('AdminUsersPage', () => {
       screen.getByRole('table', { name: 'Admin users' }),
     )
     expect(
-      within(details).getByRole('heading', { name: 'Audit role grants' }),
+      within(details).getByRole('heading', { name: 'Role grant history' }),
     ).toBeInTheDocument()
     expect(
-      within(details).getByRole('heading', { name: 'Replace managed roles' }),
+      within(details).getByRole('heading', { name: 'Edit roles' }),
     ).toBeInTheDocument()
     expect(await within(details).findByText('admin@example.test')).toBeInTheDocument()
     expect(
@@ -231,7 +231,7 @@ describe('AdminUsersPage', () => {
 
     // The list-backed fallback panel shows while users load; once the row is
     // visible the detail renders inline instead.
-    await screen.findByRole('form', { name: 'Replace roles for Reviewer User' })
+    await screen.findByRole('form', { name: 'Edit roles for Reviewer User' })
     const details = screen.getByRole('region', { name: 'User detail' })
 
     expect(details.closest('table')).toBe(
@@ -271,7 +271,7 @@ describe('AdminUsersPage', () => {
       await screen.findByRole('button', { name: 'Details for Reviewer User' }),
     )
     const form = await screen.findByRole('form', {
-      name: 'Replace roles for Reviewer User',
+      name: 'Edit roles for Reviewer User',
     })
 
     fireEvent.click(within(form).getByLabelText('ADMIN'))
@@ -307,7 +307,7 @@ describe('AdminUsersPage', () => {
     renderAdminUsers(`${ADMIN_USERS_ROUTE_PATH}/8`)
 
     const form = await screen.findByRole('form', {
-      name: 'Replace roles for Reviewer User',
+      name: 'Edit roles for Reviewer User',
     })
     fireEvent.click(within(form).getByLabelText('ADMIN'))
     fireEvent.change(within(form).getByLabelText('Operator reason'), {
@@ -346,7 +346,7 @@ describe('AdminUsersPage', () => {
     renderAdminUsers(`${ADMIN_USERS_ROUTE_PATH}/8`)
 
     const form = await screen.findByRole('form', {
-      name: 'Replace roles for Reviewer User',
+      name: 'Edit roles for Reviewer User',
     })
     fireEvent.click(within(form).getByLabelText('ADMIN'))
     fireEvent.change(within(form).getByLabelText('Operator reason'), {
@@ -396,7 +396,7 @@ describe('AdminUsersPage', () => {
     renderAdminUsers(`${ADMIN_USERS_ROUTE_PATH}/42`)
 
     const form = await screen.findByRole('form', {
-      name: 'Replace roles for Kamil Kiewisz',
+      name: 'Edit roles for Kamil Kiewisz',
     })
     fireEvent.click(within(form).getByLabelText('ADMIN'))
     fireEvent.change(within(form).getByLabelText('Operator reason'), {

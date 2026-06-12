@@ -354,7 +354,11 @@ describe('AdminCatalogPage', () => {
     fireEvent.change(within(form).getByLabelText('Book title'), {
       target: { value: 'Effective Java, Third Edition' },
     })
-    expect(within(form).getByText('Updating loaded version 3')).toBeInTheDocument()
+    expect(
+      within(form).getByText(
+        'Editing version 3. Saving will not overwrite changes made by someone else in the meantime.',
+      ),
+    ).toBeInTheDocument()
     // The edit form expands inline inside the books table, under its row.
     expect(form.closest('table')).toBe(
       screen.getByRole('table', { name: 'Admin books' }),

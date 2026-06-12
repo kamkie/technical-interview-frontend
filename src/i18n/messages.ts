@@ -5,7 +5,7 @@
 export const UI_MESSAGES = {
   'ui.account.access-label': 'Account access',
   'ui.account.access-role': 'Access role',
-  'ui.account.account-record': 'Account record',
+  'ui.account.account-record': 'Account ID',
   'ui.account.clear-preference': 'Clear preference',
   'ui.account.contact-unavailable': 'Contact unavailable',
   'ui.account.created': 'Created',
@@ -113,7 +113,8 @@ export const UI_MESSAGES = {
   'ui.admin-catalog.saving-book': 'Saving book...',
   'ui.admin-catalog.sections-label': 'Catalog administration sections',
   'ui.admin-catalog.toolbar-label': 'Admin book table controls',
-  'ui.admin-catalog.version-context': 'Updating loaded version {version}',
+  'ui.admin-catalog.version-context':
+    'Editing version {version}. Saving will not overwrite changes made by someone else in the meantime.',
   'ui.admin-catalog.year-invalid': 'Publication year must be a whole number.',
   'ui.admin-localization.access-message':
     'Admin access is required for localization management.',
@@ -213,10 +214,10 @@ export const UI_MESSAGES = {
   'ui.admin-users.granted': 'Granted',
   'ui.admin-users.granted-by': 'Granted by',
   'ui.admin-users.granted-by-operator': '{login} (ID {id})',
-  'ui.admin-users.grants-caption': 'Role grant provenance',
-  'ui.admin-users.grants-empty': 'No role-grant provenance is available.',
+  'ui.admin-users.grants-caption': 'Role grant history',
+  'ui.admin-users.grants-empty': 'No role grant history is available.',
   'ui.admin-users.grants-region-label': 'Scrollable role grants table',
-  'ui.admin-users.grants-title': 'Audit role grants',
+  'ui.admin-users.grants-title': 'Role grant history',
   'ui.admin-users.identity-label': 'Selected user identity',
   'ui.admin-users.last-login': 'Last login',
   'ui.admin-users.list-description':
@@ -237,15 +238,15 @@ export const UI_MESSAGES = {
   'ui.admin-users.pagination-label': 'Admin user pagination',
   'ui.admin-users.pagination-top-label': 'Admin user pagination top',
   'ui.admin-users.persisted-id-required':
-    'Role replacement requires a persisted user id.',
+    'This user cannot be updated because the account has no ID yet.',
   'ui.admin-users.preferred-language': 'Preferred language',
   'ui.admin-users.provider': 'Provider',
   'ui.admin-users.reason': 'Reason',
   'ui.admin-users.reason-required': 'Operator reason is required.',
   'ui.admin-users.replace-roles-hint':
-    'Submit the complete managed role set with an operator reason.',
-  'ui.admin-users.replace-roles-label': 'Replace roles for {label}',
-  'ui.admin-users.replace-roles-title': 'Replace managed roles',
+    'Select every role this user should have and record a reason. Roles left unselected are removed when you save.',
+  'ui.admin-users.replace-roles-label': 'Edit roles for {label}',
+  'ui.admin-users.replace-roles-title': 'Edit roles',
   'ui.admin-users.replace-status-hint':
     'Block or unblock this account with a recorded operator reason.',
   'ui.admin-users.replace-status-label': 'Replace account status for {label}',
@@ -266,7 +267,7 @@ export const UI_MESSAGES = {
     'You cannot block or unblock your own account.',
   'ui.admin-users.sign-in-message': 'Sign in is required for user management.',
   'ui.admin-users.sign-in-required-hint':
-    'Review application users and role-grant provenance after authenticated admin access is confirmed.',
+    'Sign in with an admin account to review users, roles, and grant history.',
   'ui.admin-users.sign-in-title': 'Sign in required',
   'ui.admin-users.source': 'Source',
   'ui.admin-users.status': 'Status',
@@ -377,22 +378,22 @@ export const UI_MESSAGES = {
     'Review the current profile and manage account preferences for this session.',
   'ui.route.account.title': 'Account settings',
   'ui.route.admin-catalog.description':
-    'Manage book records and categories through backend-authorized catalog tools.',
+    'Add, edit, and organize the books and categories in the catalog.',
   'ui.route.admin-catalog.title': 'Catalog administration',
   'ui.route.admin-localization.description':
-    'Maintain localized messages without treating translated text as program logic.',
+    'Add and edit the translated messages shown across the app.',
   'ui.route.admin-localization.title': 'Localization administration',
   'ui.route.admin-users.description':
-    'Review application users and role-grant provenance through admin workflows.',
+    'Review user accounts, manage roles, and see who granted access.',
   'ui.route.admin-users.title': 'User administration',
   'ui.route.catalog.description':
     'Search the approved collection and review catalog availability.',
   'ui.route.catalog.title': 'Book catalog',
   'ui.route.diagnostics.description':
-    'Review build, runtime, and health evidence for support escalations.',
+    'Check build, runtime, and health details when troubleshooting.',
   'ui.route.diagnostics.title': 'System diagnostics',
   'ui.route.operator.description':
-    'Review operator audit evidence with URL-backed filters, pagination, and read-only details.',
+    'Browse the audit log of who changed what, and when.',
   'ui.route.operator.title': 'Operations console',
   'ui.session.account': 'Account',
   'ui.session.account-endpoint': 'Account endpoint',

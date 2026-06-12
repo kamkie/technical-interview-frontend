@@ -83,7 +83,7 @@ Ship five user-approved UX improvements: globally true localization coverage wit
 | T1-localization-coverage   | Complete | Coordinator | None       | 2026-06-12   | Largest packet                         |
 | T2-partial-language-notice | Complete | Coordinator | None       | 2026-06-12   | User-confirmed in session              |
 | T3-language-continuity     | Complete | Coordinator | None       | 2026-06-12   | Cookie write + account-page alignment  |
-| T4-copy-and-timestamps     | Ready    | Coordinator | None       | 2026-06-12   | Safest packet                          |
+| T4-copy-and-timestamps     | Complete | Coordinator | None       | 2026-06-12   | Safest packet                          |
 | T5-mobile-topbar           | Ready    | Coordinator | None       | 2026-06-12   | Theme menu idiom changes all viewports |
 | T6-catalog-chip-search     | Ready    | Coordinator | None       | 2026-06-12   | User-reported chip search issues       |
 | T7-diagnostics-layout      | Ready    | Coordinator | None       | 2026-06-12   | Fill the two-column hole               |
@@ -215,7 +215,7 @@ Stop conditions:
 
 Result summary:
 
-- Status: pending
+- Status: complete (2026-06-12). Fifteen message defaults rewritten (keys unchanged), including the session-agreed operator and localization ledes, "Replace managed roles" → "Edit roles" with a plain-language complete-set hint, "Updating loaded version N" → stale-save-safe phrasing, and "Account record" → "Account ID"; versioned-update and CSRF semantics untouched. `formatTimestamp` gained an optional `fallback` parameter (default 'Unknown' keeps out-of-scope callers compiling); OperatorPage audit column and AdminUsersPage timestamp cells now pass `t('ui.common.unknown')`. AccountProfile already conformed; AdminCatalogPage renders no timestamps. No pl/de seed mirrors a rewritten string. Validation: scoped vitest 69/69 incl. the read-only T1 call site, typecheck pass, `npx eslint src scripts` pass, `git diff --check` pass, copy reviewed against ROADMAP Product Direction. Residual (T9-owned): `src/operator/auditFormat.ts` hardcodes 'Unknown actor'/'Unknown'; `AuditEntryDetails.tsx`/`OperatorDiagnosticsPage.tsx` call `formatTimestamp` without a localized fallback; OperatorPage signed-out block bypasses `t()`. `docs/specs/SPEC_admin_user_management.md` keeps "provenance" as behavioral (not UI-copy) language — no drift.
 
 ### Task Packet: T5-mobile-topbar
 

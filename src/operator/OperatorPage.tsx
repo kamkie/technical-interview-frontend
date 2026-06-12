@@ -540,6 +540,7 @@ function AuditLogRow({
   index: number
   onSelectEntry: (index: number) => void
 }) {
+  const { t } = useI18n()
   const entryLabel = createAuditEntryLabel(entry, index)
   const detailRowId = `audit-entry-details-${index}`
 
@@ -556,7 +557,7 @@ function AuditLogRow({
   return (
     <>
       <tr className="audit-row" onClick={handleRowClick}>
-        <td>{formatTimestamp(entry.createdAt)}</td>
+        <td>{formatTimestamp(entry.createdAt, t('ui.common.unknown'))}</td>
         <td>
           {formatEnumValue(entry.targetType)}
           <span className="table-subtext">ID {formatOptionalNumber(entry.targetId)}</span>

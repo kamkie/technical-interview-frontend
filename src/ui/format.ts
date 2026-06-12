@@ -3,9 +3,11 @@ const TIMESTAMP_FORMATTER = new Intl.DateTimeFormat(undefined, {
   timeStyle: 'short',
 })
 
-export function formatTimestamp(value: string | undefined) {
+// Callers pass localized fallback text (for example `t('ui.common.unknown')`)
+// for missing values; the English default keeps older call sites compiling.
+export function formatTimestamp(value: string | undefined, fallback = 'Unknown') {
   if (!value) {
-    return 'Unknown'
+    return fallback
   }
 
   const timestamp = new Date(value)

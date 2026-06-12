@@ -822,7 +822,7 @@ function AdminUserRow({
         <td>
           <AccountStatusPill status={user.accountStatus} />
         </td>
-        <td>{formatTimestamp(user.lastLoginAt)}</td>
+        <td>{formatTimestamp(user.lastLoginAt, t('ui.common.unknown'))}</td>
         <td className="audit-expand-cell">
           <button
             aria-controls={selected ? detailRowId : undefined}
@@ -988,7 +988,7 @@ function AdminUserDetail({
           </div>
           <div>
             <dt>{t('ui.admin-users.updated')}</dt>
-            <dd>{formatTimestamp(user.updatedAt)}</dd>
+            <dd>{formatTimestamp(user.updatedAt, t('ui.common.unknown'))}</dd>
           </div>
           <div>
             <dt>{t('ui.admin-users.status')}</dt>
@@ -1000,7 +1000,7 @@ function AdminUserDetail({
             <>
               <div>
                 <dt>{t('ui.admin-users.blocked-at')}</dt>
-                <dd>{formatTimestamp(user.blockedAt)}</dd>
+                <dd>{formatTimestamp(user.blockedAt, t('ui.common.unknown'))}</dd>
               </div>
               <div>
                 <dt>{t('ui.admin-users.blocked-by')}</dt>
@@ -1101,7 +1101,7 @@ function RoleGrantProvenance({
                     {grant.role ?? t('ui.admin-users.unknown-role')}
                   </th>
                   <td>{grant.source ?? t('ui.admin-users.unknown-source')}</td>
-                  <td>{formatTimestamp(grant.grantedAt)}</td>
+                  <td>{formatTimestamp(grant.grantedAt, t('ui.common.unknown'))}</td>
                   <td>{formatGrantingOperator(grant, t)}</td>
                   <td>
                     {grant.reason?.trim()
