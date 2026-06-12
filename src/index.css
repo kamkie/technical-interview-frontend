@@ -91,7 +91,9 @@
   --color-accent-strong-surface: #2c3858;
   --color-on-accent: #10131d;
   --color-eyebrow: #96aee2;
-  --color-rule-red: #c96a60;
+  /* Keep >= 4.5:1 on --color-surface; the route-header call number renders
+     this token as text on the catalog card. */
+  --color-rule-red: #d97f73;
   --color-danger: #e0938a;
   --color-danger-border: #6e3b35;
   --color-danger-surface: #36211e;
@@ -136,7 +138,7 @@
     --color-accent-strong-surface: #2c3858;
     --color-on-accent: #10131d;
     --color-eyebrow: #96aee2;
-    --color-rule-red: #c96a60;
+    --color-rule-red: #d97f73;
     --color-danger: #e0938a;
     --color-danger-border: #6e3b35;
     --color-danger-surface: #36211e;

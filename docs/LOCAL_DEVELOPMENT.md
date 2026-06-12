@@ -335,7 +335,7 @@ Accessibility automation can run without the sibling backend or provider secrets
 npm run a11y
 ```
 
-The command starts Vite in mock mode through `scripts/with-vite.mjs`, launches Playwright Chromium, and runs axe against the selected mock-browser route scope: anonymous catalog/home state, authenticated `/account`, and authenticated `/admin/users` with the mock admin session. It prints the validation date, frontend URL, backend profile (`internal contract-backed mock API`), route coverage, result semantics, and a summary.
+The command starts Vite in mock mode through `scripts/with-vite.mjs`, launches Playwright Chromium, and runs axe against the selected mock-browser route scope: anonymous catalog/home state, authenticated `/account`, and authenticated `/admin/users` with the mock admin session. Each route is scanned in both the light and dark color schemes; every scheme pass runs against a fresh mock server and browser context so it starts from the anonymous session, and the scan fails if the resolved document theme does not match the requested scheme. It prints the validation date, frontend URL, backend profile (`internal contract-backed mock API`), route coverage, result semantics, and a summary.
 
 `npm run a11y` fails locally and in CI on serious or critical automated accessibility violations. Moderate, minor, or unknown-impact findings are printed as advisory output during the first pass and do not fail the command. Missing Playwright, Chromium, axe tooling, or mock-server prerequisites are prerequisite failures that exit nonzero; do not treat them as successful product evidence. If Chromium is unavailable, run:
 

@@ -7,7 +7,8 @@ const DEFAULT_PORT = 5173
 const DEFAULT_TIMEOUT_MS = 10000
 const BACKEND_PROFILE = 'internal contract-backed mock API'
 const SELECTED_FLOW =
-  'mock browser accessibility scan for anonymous catalog/home, authenticated account, and authenticated admin users routes'
+  'mock browser accessibility scan for anonymous catalog/home, authenticated account, and authenticated admin users routes in light and dark mode'
+const COLOR_SCHEMES = ['light', 'dark']
 const FAILING_IMPACTS = new Set(['critical', 'serious'])
 const ADVISORY_IMPACTS = new Set(['moderate', 'minor'])
 const SESSION_PATH = '/api/session'
@@ -69,7 +70,7 @@ async function main() {
   console.log(`Backend profile: ${BACKEND_PROFILE}`)
   console.log(`Selected flow: ${SELECTED_FLOW}`)
   console.log(
-    `Route coverage: anonymous catalog/home, authenticated ${ACCOUNT_ROUTE_PATH}, and authenticated ${ADMIN_USERS_ROUTE_PATH}`,
+    `Route coverage: anonymous catalog/home, authenticated ${ACCOUNT_ROUTE_PATH}, and authenticated ${ADMIN_USERS_ROUTE_PATH}, each scanned in light and dark mode`,
   )
   console.log(
     'Result semantics: serious or critical axe violations fail; moderate and minor violations are advisory; prerequisite skips exit nonzero',
@@ -109,36 +110,47 @@ async function runWithMockServer(config) {
   process.env.FRONTEND_MOCK_API_SCENARIO = 'success'
   delete process.env.FRONTEND_MOCK_API_DELAY_MS
 
-  try {
-    await withViteServer(
-      {
-        host: config.host,
-        mode: 'mock',
-        port: config.port,
-        strictPort: config.strictPort,
-      },
-      async (mockServer) => {
-        pass('mock frontend server', `${mockServer.origin}/ is serving Vite mock mode`)
-        console.log(`Frontend URL: ${mockServer.origin}/`)
-        await runBrowserA11y({ ...config, origin: mockServer.origin })
-      },
-    )
-  } catch (error) {
-    if (
-      error instanceof A11yFailure ||
-      error instanceof A11yPrerequisiteUnavailable
-    ) {
-      throw error
-    }
+  // The mock API keeps the signed-in session on the server, so each
+  // color-scheme pass gets its own Vite server to start from the anonymous
+  // session again.
+  for (const colorScheme of COLOR_SCHEMES) {
+    try {
+      await withViteServer(
+        {
+          host: config.host,
+          mode: 'mock',
+          port: config.port,
+          strictPort: config.strictPort,
+        },
+        async (mockServer) => {
+          pass(
+            `mock frontend server (${colorScheme} mode)`,
+            `${mockServer.origin}/ is serving Vite mock mode`,
+          )
+          console.log(`Frontend URL: ${mockServer.origin}/`)
+          await runBrowserA11y(
+            { ...config, origin: mockServer.origin },
+            colorScheme,
+          )
+        },
+      )
+    } catch (error) {
+      if (
+        error instanceof A11yFailure ||
+        error instanceof A11yPrerequisiteUnavailable
+      ) {
+        throw error
+      }
 
-    skipPrerequisite(
-      'mock frontend server',
-      `could not start or stop Vite mock server: ${error.message}`,
-    )
+      skipPrerequisite(
+        `mock frontend server (${colorScheme} mode)`,
+        `could not start or stop Vite mock server: ${error.message}`,
+      )
+    }
   }
 }
 
-async function runBrowserA11y(config) {
+async function runBrowserA11y(config, colorScheme) {
   const playwright = await importPlaywright()
   const AxeBuilder = await importAxeBuilder()
   let browser
@@ -155,24 +167,27 @@ async function runBrowserA11y(config) {
   }
 
   try {
+    // The UI theme resolves from prefers-color-scheme when no explicit
+    // preference is stored, so the context color scheme selects the theme.
     // The UI language follows the browser locale, so pin English to keep
     // the asserted chrome copy deterministic on non-English host systems.
     const context = await browser.newContext({
       baseURL: config.origin,
-      colorScheme: 'light',
+      colorScheme,
       locale: 'en-US',
     })
     const page = await context.newPage()
+    const schemeLabel = `${colorScheme} mode`
 
-    await scanAnonymousCatalog(page, AxeBuilder, config)
-    await signInAsMockAdmin(page, config)
+    await scanAnonymousCatalog(page, AxeBuilder, config, colorScheme)
+    await signInAsMockAdmin(page, config, schemeLabel)
     await scanAuthenticatedRoute(
       page,
       AxeBuilder,
       config,
       ACCOUNT_ROUTE_PATH,
       [{ role: 'heading', name: 'Language preference' }],
-      'authenticated account route',
+      `authenticated account route (${schemeLabel})`,
     )
     await scanAuthenticatedRoute(
       page,
@@ -183,7 +198,7 @@ async function runBrowserA11y(config) {
         { role: 'heading', name: 'Application users' },
         { role: 'table', name: 'Admin users' },
       ],
-      'authenticated admin users route',
+      `authenticated admin users route (${schemeLabel})`,
     )
 
     await context.close()
@@ -216,7 +231,7 @@ async function importAxeBuilder() {
   }
 }
 
-async function scanAnonymousCatalog(page, AxeBuilder, config) {
+async function scanAnonymousCatalog(page, AxeBuilder, config, colorScheme) {
   await page.goto(new URL('/', config.origin).toString(), {
     waitUntil: 'domcontentloaded',
     timeout: config.timeoutMs,
@@ -228,16 +243,24 @@ async function scanAnonymousCatalog(page, AxeBuilder, config) {
     timeout: config.timeoutMs,
   })
 
-  await scanPage(page, AxeBuilder, 'anonymous catalog/home state')
+  const resolvedTheme = await page.locator('html').getAttribute('data-theme')
+  assertCondition(
+    resolvedTheme === colorScheme,
+    `resolved theme (${colorScheme} mode)`,
+    `document resolved data-theme="${resolvedTheme}"; expected the ${colorScheme} theme so the scan covers it`,
+  )
+
+  await scanPage(page, AxeBuilder, `anonymous catalog/home state (${colorScheme} mode)`)
 }
 
-async function signInAsMockAdmin(page, config) {
+async function signInAsMockAdmin(page, config, schemeLabel) {
   await page.getByRole('button', { name: 'Sign in' }).click()
 
+  const signInStep = `mock admin sign-in (${schemeLabel})`
   const session = await fetchJsonFromPage(page, SESSION_PATH)
   assertCondition(
     session.status === 200,
-    'mock admin sign-in',
+    signInStep,
     `${SESSION_PATH} returned HTTP ${session.status}; expected 200`,
   )
   const provider = session.body?.loginProviders?.find(
@@ -245,7 +268,7 @@ async function signInAsMockAdmin(page, config) {
   )
   assertCondition(
     provider !== undefined,
-    'mock admin sign-in',
+    signInStep,
     'anonymous mock session did not expose a login provider',
   )
 
@@ -261,7 +284,7 @@ async function signInAsMockAdmin(page, config) {
   })
 
   pass(
-    'mock admin sign-in',
+    signInStep,
     `authenticated through discovered ${provider.authorizationPath}`,
   )
 }
