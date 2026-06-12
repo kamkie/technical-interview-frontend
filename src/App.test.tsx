@@ -314,14 +314,18 @@ describe('App', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('renders session bootstrap failures', async () => {
+  it('renders localized session bootstrap failures and recovers through the retry action', async () => {
+    let backendHealthy = false
+
     vi.stubGlobal('fetch', vi.fn().mockImplementation((input: RequestInfo | URL) => {
       if (String(input) === SESSION_PATH) {
         return Promise.resolve(
-          new Response(null, {
-            status: 503,
-            statusText: 'Service Unavailable',
-          }),
+          backendHealthy
+            ? Response.json(createSession())
+            : new Response(null, {
+                status: 503,
+                statusText: 'Service Unavailable',
+              }),
         )
       }
 
@@ -342,8 +346,17 @@ describe('App', () => {
     })
 
     expect(within(sessionDetails).getByRole('alert')).toHaveTextContent(
-      'GET /api/session failed with 503 Service Unavailable',
+      'The service cannot be reached right now. Check your connection or try again shortly.',
     )
+
+    backendHealthy = true
+    fireEvent.click(
+      within(sessionDetails).getByRole('button', { name: 'Try again' }),
+    )
+
+    expect(
+      await screen.findByRole('button', { name: 'Sign in' }),
+    ).toBeInTheDocument()
   })
 
   it('renders authenticated header state and the guarded account profile', async () => {

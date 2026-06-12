@@ -20,7 +20,12 @@ import {
   sameValues,
   trimmedValues,
 } from '../routing/queryParams'
-import { getDisplayMessage, type LoadState } from '../ui/asyncState'
+import { useI18n } from '../i18n/useI18n'
+import {
+  createLoadError,
+  getLoadErrorMessage,
+  type LoadState,
+} from '../ui/asyncState'
 import { formatTimestamp } from '../ui/format'
 import { IconChevronDown } from '../ui/icons'
 import { PaginationControls } from '../ui/PaginationControls'
@@ -127,10 +132,9 @@ export function OperatorPage({ session }: { session: SessionResponse }) {
       })
       .catch((error: unknown) => {
         if (!ignore) {
-          setAuditPageState({
-            status: 'error',
-            message: getDisplayMessage(error, 'Audit logs could not be loaded.'),
-          })
+          setAuditPageState(
+            createLoadError(error, 'Audit logs could not be loaded.'),
+          )
         }
       })
 
@@ -392,6 +396,8 @@ function AuditLogResults({
   selectedIndex: number | null
   state: LoadState<AuditLogPage>
 }) {
+  const { t } = useI18n()
+
   if (state.status === 'loading') {
     return (
       <StateBlock
@@ -405,7 +411,7 @@ function AuditLogResults({
   if (state.status === 'error') {
     return (
       <StateBlock
-        message={state.message}
+        message={getLoadErrorMessage(t, state)}
         title="Audit rows unavailable"
         variant="error"
       />

@@ -1,9 +1,5 @@
 import type { components, paths } from './generated/openapi'
-import {
-  ApiRequestError,
-  parseApiProblem,
-  type FetchImplementation,
-} from './http'
+import { fetchBackendRead, type FetchImplementation } from './http'
 import { appendNumber, appendString, appendStringList } from './query'
 
 export const OPERATOR_SURFACE_PATH = '/api/admin/operator-surface' as const
@@ -81,23 +77,13 @@ async function fetchOperatorJson<T>(
   path: string,
   options: OperatorFetchOptions,
 ) {
-  const response = await (options.fetchImplementation ?? globalThis.fetch)(path, {
-    method: 'GET',
-    credentials: 'same-origin',
-    headers: {
+  const response = await fetchBackendRead(
+    options.fetchImplementation ?? globalThis.fetch,
+    path,
+    {
       Accept: 'application/json',
     },
-  })
-
-  if (!response.ok) {
-    throw new ApiRequestError(
-      'GET',
-      path,
-      response.status,
-      response.statusText || 'Unknown status',
-      await parseApiProblem(response),
-    )
-  }
+  )
 
   return (await response.json()) as T
 }

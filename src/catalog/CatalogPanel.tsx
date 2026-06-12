@@ -9,7 +9,11 @@ import {
   type Category,
 } from '../api/catalog'
 import { useI18n, type UiTranslate } from '../i18n/useI18n'
-import { getDisplayMessage, type LoadState } from '../ui/asyncState'
+import {
+  createLoadError,
+  getLoadErrorMessage,
+  type LoadState,
+} from '../ui/asyncState'
 import { PaginationControls } from '../ui/PaginationControls'
 import { SortableColumnHeader } from '../ui/SortableColumnHeader'
 import { StateBlock, StateMessage } from '../ui/StateBlock'
@@ -52,6 +56,9 @@ export function CatalogPanel() {
   const [booksState, setBooksState] = useState<LoadState<BookPage>>({
     status: 'loading',
   })
+  // Bumped by the error-state retry action to re-run the books effect for an
+  // unchanged query without a page reload.
+  const [booksReloadToken, setBooksReloadToken] = useState(0)
   // The fetching flag is derived by comparing the active query against the
   // last query whose request settled, so no effect has to set state twice.
   const [settledBooksQueryKey, setSettledBooksQueryKey] = useState<
@@ -79,10 +86,9 @@ export function CatalogPanel() {
       })
       .catch((error: unknown) => {
         if (!ignore) {
-          setCategoriesState({
-            status: 'error',
-            message: getDisplayMessage(error, 'Categories could not be loaded.'),
-          })
+          setCategoriesState(
+            createLoadError(error, 'Categories could not be loaded.'),
+          )
         }
       })
 
@@ -105,17 +111,14 @@ export function CatalogPanel() {
       .catch((error: unknown) => {
         if (!ignore) {
           setSettledBooksQueryKey(queryKey)
-          setBooksState({
-            status: 'error',
-            message: getDisplayMessage(error, 'Books could not be loaded.'),
-          })
+          setBooksState(createLoadError(error, 'Books could not be loaded.'))
         }
       })
 
     return () => {
       ignore = true
     }
-  }, [query])
+  }, [query, booksReloadToken])
 
   const categories =
     categoriesState.status === 'ready' ? categoriesState.value : []
@@ -126,6 +129,12 @@ export function CatalogPanel() {
       setSearchParams(new URLSearchParams(canonicalSearch), { replace: true })
     }
   }, [canonicalSearch, currentSearch, setSearchParams])
+
+  function retryBooksLoad() {
+    setSettledBooksQueryKey(null)
+    setBooksState({ status: 'loading' })
+    setBooksReloadToken((current) => current + 1)
+  }
 
   function updateCatalogQuery(nextQuery: CatalogQueryState) {
     const nextSearchParams = catalogQueryToSearchParams(nextQuery)
@@ -312,11 +321,18 @@ export function CatalogPanel() {
         )}
 
         {booksState.status === 'error' && (
-          <StateBlock
-            message={booksState.message}
-            title={t('ui.catalog.error-title')}
-            variant="error"
-          />
+          <StateBlock title={t('ui.catalog.error-title')} variant="error">
+            <StateMessage variant="error">
+              {getLoadErrorMessage(t, booksState)}
+            </StateMessage>
+            <button
+              className="secondary-button state-block-action"
+              type="button"
+              onClick={retryBooksLoad}
+            >
+              {t('ui.common.retry')}
+            </button>
+          </StateBlock>
         )}
 
         {booksState.status === 'ready' && (

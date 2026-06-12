@@ -7,7 +7,12 @@ import {
   type OperatorSurface,
 } from '../api/operator'
 import type { SessionResponse } from '../api/session'
-import { getDisplayMessage, type LoadState } from '../ui/asyncState'
+import { useI18n } from '../i18n/useI18n'
+import {
+  createLoadError,
+  getLoadErrorMessage,
+  type LoadState,
+} from '../ui/asyncState'
 import { formatTimestamp } from '../ui/format'
 import { StateBlock } from '../ui/StateBlock'
 import { formatOptionalNumber } from './auditFormat'
@@ -86,13 +91,9 @@ export function OperatorDiagnosticsPage({
       })
       .catch((error: unknown) => {
         if (!ignore) {
-          setOverviewState({
-            status: 'error',
-            message: getDisplayMessage(
-              error,
-              'Operator overview could not be loaded.',
-            ),
-          })
+          setOverviewState(
+            createLoadError(error, 'Operator overview could not be loaded.'),
+          )
         }
       })
 
@@ -123,6 +124,8 @@ export function OperatorDiagnosticsPage({
 }
 
 function OperatorOverview({ state }: { state: LoadState<OperatorSurface> }) {
+  const { t } = useI18n()
+
   if (state.status === 'loading') {
     return (
       <StateBlock
@@ -136,7 +139,7 @@ function OperatorOverview({ state }: { state: LoadState<OperatorSurface> }) {
   if (state.status === 'error') {
     return (
       <StateBlock
-        message={state.message}
+        message={getLoadErrorMessage(t, state)}
         title="Operator overview unavailable"
         variant="error"
       />

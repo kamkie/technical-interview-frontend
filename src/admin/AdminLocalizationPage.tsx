@@ -30,7 +30,9 @@ import {
   uniqueTrimmedValues,
 } from '../routing/queryParams'
 import {
-  getDisplayMessage,
+  createLoadError,
+  getApiDisplayMessage,
+  getLoadErrorMessage,
   type LoadState,
   type MutationState,
 } from '../ui/asyncState'
@@ -168,13 +170,9 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
       })
       .catch((error: unknown) => {
         if (!ignore) {
-          setLocalizationsState({
-            status: 'error',
-            message: getDisplayMessage(
-              error,
-              'Localization messages could not be loaded.',
-            ),
-          })
+          setLocalizationsState(
+            createLoadError(error, 'Localization messages could not be loaded.'),
+          )
         }
       })
 
@@ -359,7 +357,11 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
     } catch (error: unknown) {
       setMutationState({
         status: 'error',
-        message: getDisplayMessage(error, t('ui.admin-localization.row-load-failed')),
+        message: getApiDisplayMessage(
+          t,
+          error,
+          t('ui.admin-localization.row-load-failed'),
+        ),
       })
     }
   }
@@ -402,7 +404,11 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
     } catch (error: unknown) {
       setMutationState({
         status: 'error',
-        message: getDisplayMessage(error, t('ui.admin-localization.row-save-failed')),
+        message: getApiDisplayMessage(
+          t,
+          error,
+          t('ui.admin-localization.row-save-failed'),
+        ),
       })
     }
   }
@@ -457,7 +463,11 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
     } catch (error: unknown) {
       setMutationState({
         status: 'error',
-        message: getDisplayMessage(error, t('ui.admin-localization.row-delete-failed')),
+        message: getApiDisplayMessage(
+          t,
+          error,
+          t('ui.admin-localization.row-delete-failed'),
+        ),
       })
     }
   }
@@ -671,7 +681,7 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
 
           {localizationsState.status === 'error' && (
             <StateBlock
-              message={localizationsState.message}
+              message={getLoadErrorMessage(t, localizationsState)}
               title={t('ui.admin-localization.error-title')}
               variant="error"
             />

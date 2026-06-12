@@ -58,7 +58,12 @@ import {
   OperatorDiagnosticsPage,
 } from './operator/OperatorDiagnosticsPage'
 import { OPERATOR_ROUTE_PATH, OperatorPage } from './operator/OperatorPage'
-import { getDisplayMessage, type MutationState } from './ui/asyncState'
+import {
+  createLoadError,
+  getApiDisplayMessage,
+  getLoadErrorMessage,
+  type MutationState,
+} from './ui/asyncState'
 import {
   FlagDe,
   FlagEn,
@@ -259,7 +264,7 @@ export function App() {
     } catch (error: unknown) {
       setLogoutState({
         status: 'error',
-        message: getDisplayMessage(error, t('ui.session.logout-failed')),
+        message: getApiDisplayMessage(t, error, t('ui.session.logout-failed')),
       })
     }
   }
@@ -295,6 +300,7 @@ export function App() {
             logoutState={logoutState}
             state={sessionState}
             onLogout={handleLogout}
+            onRetrySession={refreshSession}
           />
         </div>
       </header>
@@ -529,7 +535,7 @@ function QuickLanguageMenu({ session }: { session: SessionResponse }) {
     } catch (error: unknown) {
       setUpdateState({
         status: 'error',
-        message: getDisplayMessage(error, t('ui.language.save-failed')),
+        message: getApiDisplayMessage(t, error, t('ui.language.save-failed')),
       })
     }
   }
@@ -782,10 +788,9 @@ function useSessionBootstrap() {
       const session = await fetchCurrentSession()
       setSessionState({ status: 'ready', session })
     } catch (error: unknown) {
-      setSessionState({
-        status: 'error',
-        message: getDisplayMessage(error, 'Session bootstrap failed.'),
-      })
+      // The empty fallback lets display sites localize the generic
+      // bootstrap-failure message at render time.
+      setSessionState(createLoadError(error, ''))
     }
   }, [])
 
@@ -800,10 +805,7 @@ function useSessionBootstrap() {
       })
       .catch((error: unknown) => {
         if (!ignore) {
-          setSessionState({
-            status: 'error',
-            message: getDisplayMessage(error, 'Session bootstrap failed.'),
-          })
+          setSessionState(createLoadError(error, ''))
         }
       })
 
@@ -818,10 +820,12 @@ function useSessionBootstrap() {
 function SessionAccountMenu({
   logoutState,
   onLogout,
+  onRetrySession,
   state,
 }: {
   logoutState: LogoutState
   onLogout: (session: SessionResponse) => void
+  onRetrySession: () => void
   state: SessionState
 }) {
   const { t } = useI18n()
@@ -864,7 +868,7 @@ function SessionAccountMenu({
             id={panelId}
             role="region"
           >
-            <SessionBootstrapPanel state={state} />
+            <SessionBootstrapPanel state={state} onRetry={onRetrySession} />
           </div>
         )}
       </div>
@@ -984,7 +988,13 @@ function useRouteContext() {
   )
 }
 
-function SessionBootstrapPanel({ state }: { state: SessionState }) {
+function SessionBootstrapPanel({
+  onRetry,
+  state,
+}: {
+  onRetry: () => void
+  state: SessionState
+}) {
   const { t } = useI18n()
 
   return (
@@ -1001,9 +1011,14 @@ function SessionBootstrapPanel({ state }: { state: SessionState }) {
       )}
 
       {state.status === 'error' && (
-        <p className="session-message error" role="alert">
-          {state.message}
-        </p>
+        <>
+          <p className="session-message error" role="alert">
+            {getLoadErrorMessage(t, state) || t('ui.session.bootstrap-failed')}
+          </p>
+          <button className="secondary-button" type="button" onClick={onRetry}>
+            {t('ui.common.retry')}
+          </button>
+        </>
       )}
 
       {state.status === 'ready' && <SessionDetails session={state.session} />}

@@ -9,7 +9,9 @@ import type { SessionResponse } from '../api/session'
 import { publishAccountUpdate } from './useCurrentAccount'
 import { useI18n, type UiTranslate } from '../i18n/useI18n'
 import {
-  getDisplayMessage,
+  createLoadError,
+  getApiDisplayMessage,
+  getLoadErrorMessage,
   type LoadState,
   type MutationState,
 } from '../ui/asyncState'
@@ -38,13 +40,9 @@ export function AccountProfile({ session }: { session: SessionResponse }) {
       })
       .catch((error: unknown) => {
         if (!ignore) {
-          setAccountState({
-            status: 'error',
-            message: getDisplayMessage(
-              error,
-              'Account profile could not be loaded.',
-            ),
-          })
+          setAccountState(
+            createLoadError(error, 'Account profile could not be loaded.'),
+          )
         }
       })
 
@@ -65,7 +63,7 @@ export function AccountProfile({ session }: { session: SessionResponse }) {
 
       {accountState.status === 'error' && (
         <StateBlock
-          message={accountState.message}
+          message={getLoadErrorMessage(t, accountState)}
           title={t('ui.account.error-title')}
           variant="error"
         />
@@ -208,7 +206,7 @@ function LanguagePreferenceForm({
     } catch (error: unknown) {
       setMutationState({
         status: 'error',
-        message: getDisplayMessage(error, t('ui.language.save-failed')),
+        message: getApiDisplayMessage(t, error, t('ui.language.save-failed')),
       })
     }
   }

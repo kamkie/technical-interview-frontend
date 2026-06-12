@@ -1,9 +1,9 @@
 import type { components } from './generated/openapi'
 import {
-  ApiRequestError,
   createJsonReadHeaders,
+  fetchBackendRead,
+  fetchBackendWrite,
   getActiveLanguageHeaders,
-  parseApiProblem,
   type FetchImplementation,
 } from './http'
 import { appendNumber, appendString, appendStringList } from './query'
@@ -72,7 +72,7 @@ export async function fetchLocalizations(
 ): Promise<LocalizationPage> {
   const path = buildLocalizationSearchPath(params)
 
-  return fetchLocalizationJson<LocalizationPage>('GET', path, options)
+  return fetchLocalizationJson<LocalizationPage>(path, options)
 }
 
 export async function fetchLocalization(
@@ -80,7 +80,6 @@ export async function fetchLocalization(
   options: LocalizationFetchOptions = {},
 ): Promise<LocalizationResponse> {
   return fetchLocalizationJson<LocalizationResponse>(
-    'GET',
     getLocalizationPath(id),
     options,
   )
@@ -199,25 +198,14 @@ export function getLocalizationCoverage(
 }
 
 async function fetchLocalizationJson<T>(
-  method: 'GET',
   path: string,
   options: LocalizationFetchOptions,
 ) {
-  const response = await (options.fetchImplementation ?? globalThis.fetch)(path, {
-    method,
-    credentials: 'same-origin',
-    headers: createJsonReadHeaders(options.acceptLanguage),
-  })
-
-  if (!response.ok) {
-    throw new ApiRequestError(
-      method,
-      path,
-      response.status,
-      response.statusText || 'Unknown status',
-      await parseApiProblem(response),
-    )
-  }
+  const response = await fetchBackendRead(
+    options.fetchImplementation ?? globalThis.fetch,
+    path,
+    createJsonReadHeaders(options.acceptLanguage),
+  )
 
   return (await response.json()) as T
 }
@@ -256,29 +244,22 @@ async function fetchLocalizationMutation(
     throw new Error('Localization changes require an authenticated session.')
   }
 
-  const response = await (options.fetchImplementation ?? globalThis.fetch)(path, {
+  return fetchBackendWrite(
+    options.fetchImplementation ?? globalThis.fetch,
     method,
-    credentials: 'same-origin',
-    headers: {
-      Accept: 'application/json',
-      ...getActiveLanguageHeaders(),
-      ...init.headers,
-      ...getCsrfHeaders(session, options.cookieSource),
-    },
-    body: init.body,
-  })
-
-  if (!response.ok) {
-    throw new ApiRequestError(
+    path,
+    {
       method,
-      path,
-      response.status,
-      response.statusText || 'Unknown status',
-      await parseApiProblem(response),
-    )
-  }
-
-  return response
+      credentials: 'same-origin',
+      headers: {
+        Accept: 'application/json',
+        ...getActiveLanguageHeaders(),
+        ...init.headers,
+        ...getCsrfHeaders(session, options.cookieSource),
+      },
+      body: init.body,
+    },
+  )
 }
 
 function createKeyCoverage(

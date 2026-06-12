@@ -1,9 +1,9 @@
 import type { components } from './generated/openapi'
 import {
-  ApiRequestError,
   createJsonReadHeaders,
+  fetchBackendRead,
+  fetchBackendWrite,
   getActiveLanguageHeaders,
-  parseApiProblem,
   type FetchImplementation,
 } from './http'
 import { appendNumber, appendString, appendStringList } from './query'
@@ -51,20 +51,20 @@ export async function fetchBooks(
 ): Promise<BookPage> {
   const path = buildBookSearchPath(params)
 
-  return fetchCatalogJson<BookPage>('GET', path, options)
+  return fetchCatalogJson<BookPage>(path, options)
 }
 
 export async function fetchCategories(
   options: CatalogFetchOptions = {},
 ): Promise<Category[]> {
-  return fetchCatalogJson<Category[]>('GET', CATEGORIES_PATH, options)
+  return fetchCatalogJson<Category[]>(CATEGORIES_PATH, options)
 }
 
 export async function fetchBook(
   id: number,
   options: CatalogFetchOptions = {},
 ): Promise<Book> {
-  return fetchCatalogJson<Book>('GET', getBookPath(id), options)
+  return fetchCatalogJson<Book>(getBookPath(id), options)
 }
 
 export async function createBook(
@@ -167,26 +167,12 @@ export function getCategoryPath(id: number) {
   return `${CATEGORIES_PATH}/${encodeURIComponent(String(id))}`
 }
 
-async function fetchCatalogJson<T>(
-  method: 'GET',
-  path: string,
-  options: CatalogFetchOptions,
-) {
-  const response = await (options.fetchImplementation ?? globalThis.fetch)(path, {
-    method,
-    credentials: 'same-origin',
-    headers: createJsonReadHeaders(options.acceptLanguage),
-  })
-
-  if (!response.ok) {
-    throw new ApiRequestError(
-      method,
-      path,
-      response.status,
-      response.statusText || 'Unknown status',
-      await parseApiProblem(response),
-    )
-  }
+async function fetchCatalogJson<T>(path: string, options: CatalogFetchOptions) {
+  const response = await fetchBackendRead(
+    options.fetchImplementation ?? globalThis.fetch,
+    path,
+    createJsonReadHeaders(options.acceptLanguage),
+  )
 
   return (await response.json()) as T
 }
@@ -234,27 +220,20 @@ async function fetchCatalogMutation(
     throw new Error('Catalog changes require an authenticated session.')
   }
 
-  const response = await (options.fetchImplementation ?? globalThis.fetch)(path, {
+  return fetchBackendWrite(
+    options.fetchImplementation ?? globalThis.fetch,
     method,
-    credentials: 'same-origin',
-    headers: {
-      Accept: 'application/json',
-      ...getActiveLanguageHeaders(),
-      ...init.headers,
-      ...getCsrfHeaders(session, options.cookieSource),
-    },
-    body: init.body,
-  })
-
-  if (!response.ok) {
-    throw new ApiRequestError(
+    path,
+    {
       method,
-      path,
-      response.status,
-      response.statusText || 'Unknown status',
-      await parseApiProblem(response),
-    )
-  }
-
-  return response
+      credentials: 'same-origin',
+      headers: {
+        Accept: 'application/json',
+        ...getActiveLanguageHeaders(),
+        ...init.headers,
+        ...getCsrfHeaders(session, options.cookieSource),
+      },
+      body: init.body,
+    },
+  )
 }

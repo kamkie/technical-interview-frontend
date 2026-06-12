@@ -1,7 +1,8 @@
 import type { components } from './generated/openapi'
 import {
   ApiRequestError,
-  parseApiProblem,
+  fetchBackendRead,
+  fetchBackendWrite,
   type FetchImplementation,
 } from './http'
 
@@ -17,23 +18,9 @@ export type AvailableSessionLoginProvider = SessionLoginProvider & {
 export async function fetchCurrentSession(
   fetchImplementation: FetchImplementation = globalThis.fetch,
 ): Promise<SessionResponse> {
-  const response = await fetchImplementation(SESSION_PATH, {
-    method: 'GET',
-    credentials: 'same-origin',
-    headers: {
-      Accept: 'application/json',
-    },
+  const response = await fetchBackendRead(fetchImplementation, SESSION_PATH, {
+    Accept: 'application/json',
   })
-
-  if (!response.ok) {
-    throw new ApiRequestError(
-      'GET',
-      SESSION_PATH,
-      response.status,
-      response.statusText || 'Unknown status',
-      await parseApiProblem(response),
-    )
-  }
 
   return (await response.json()) as SessionResponse
 }
@@ -49,7 +36,7 @@ export async function logoutCurrentSession(
     throw new Error('Logout is unavailable for the current session.')
   }
 
-  const response = await fetchImplementation(logoutPath, {
+  await fetchBackendWrite(fetchImplementation, 'POST', logoutPath, {
     method: 'POST',
     credentials: 'same-origin',
     headers: {
@@ -57,16 +44,6 @@ export async function logoutCurrentSession(
       ...getCsrfHeaders(session, cookieSource),
     },
   })
-
-  if (!response.ok) {
-    throw new ApiRequestError(
-      'POST',
-      logoutPath,
-      response.status,
-      response.statusText || 'Unknown status',
-      await parseApiProblem(response),
-    )
-  }
 }
 
 export function getLoginProviders(

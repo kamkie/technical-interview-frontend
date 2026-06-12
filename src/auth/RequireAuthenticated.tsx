@@ -5,11 +5,13 @@ import {
   getAvailableLoginProviders,
   type SessionResponse,
 } from '../api/session'
+import { useI18n } from '../i18n/useI18n'
+import { getLoadErrorMessage } from '../ui/asyncState'
 
 export type SessionState =
   | { status: 'loading' }
   | { status: 'ready'; session: SessionResponse }
-  | { status: 'error'; message: string }
+  | { status: 'error'; message: string; unreachable?: boolean }
 
 export function RequireAuthenticated({
   children,
@@ -18,6 +20,8 @@ export function RequireAuthenticated({
   children: ReactNode
   state: SessionState
 }) {
+  const { t } = useI18n()
+
   if (state.status === 'loading') {
     return (
       <section className="auth-guard" aria-labelledby="auth-guard-title">
@@ -34,7 +38,7 @@ export function RequireAuthenticated({
       <section className="auth-guard" aria-labelledby="auth-guard-title">
         <h2 id="auth-guard-title">Session unavailable</h2>
         <p className="session-message error" role="alert">
-          {state.message}
+          {getLoadErrorMessage(t, state) || t('ui.session.bootstrap-failed')}
         </p>
       </section>
     )

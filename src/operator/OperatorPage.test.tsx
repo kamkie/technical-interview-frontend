@@ -306,20 +306,26 @@ describe('OperatorPage', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('surfaces generic transport errors from audit rows', async () => {
-    mockOperatorFetch({
-      auditPage: new Response(null, {
-        status: 503,
-        statusText: 'Service Unavailable',
-      }),
+  it('surfaces unreachable-backend audit failures with localized messaging', async () => {
+    const fetchMock = mockOperatorFetch({
+      auditPage: () =>
+        new Response(null, {
+          status: 503,
+          statusText: 'Service Unavailable',
+        }),
     })
 
     renderOperator()
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'GET /api/admin/audit-logs?page=0&size=20&sort=id%2CDESC failed with 503 Service Unavailable',
+      'The service cannot be reached right now. Check your connection or try again shortly.',
     )
     expect(screen.getByText('Audit rows need attention.')).toBeInTheDocument()
+    expect(
+      screen.queryByText(/failed with 503 Service Unavailable/),
+    ).not.toBeInTheDocument()
+    // The idempotent audit read gets exactly one bounded automatic retry.
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 })
 

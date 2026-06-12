@@ -42,7 +42,9 @@ import {
 } from '../catalog/catalogQuery'
 import { useI18n, type UiTranslate } from '../i18n/useI18n'
 import {
-  getDisplayMessage,
+  createLoadError,
+  getApiDisplayMessage,
+  getLoadErrorMessage,
   type LoadState,
   type MutationState,
 } from '../ui/asyncState'
@@ -206,10 +208,9 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
       })
       .catch((error: unknown) => {
         if (!ignore) {
-          setCategoriesState({
-            status: 'error',
-            message: getDisplayMessage(error, 'Categories could not be loaded.'),
-          })
+          setCategoriesState(
+            createLoadError(error, 'Categories could not be loaded.'),
+          )
         }
       })
 
@@ -229,10 +230,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
       })
       .catch((error: unknown) => {
         if (!ignore) {
-          setBooksState({
-            status: 'error',
-            message: getDisplayMessage(error, 'Books could not be loaded.'),
-          })
+          setBooksState(createLoadError(error, 'Books could not be loaded.'))
         }
       })
 
@@ -470,7 +468,11 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     } catch (error: unknown) {
       setBookMutationState({
         status: 'error',
-        message: getDisplayMessage(error, t('ui.admin-catalog.book-save-failed')),
+        message: getApiDisplayMessage(
+          t,
+          error,
+          t('ui.admin-catalog.book-save-failed'),
+        ),
       })
     }
   }
@@ -495,7 +497,11 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     } catch (error: unknown) {
       setBookMutationState({
         status: 'error',
-        message: getDisplayMessage(error, t('ui.admin-catalog.book-load-failed')),
+        message: getApiDisplayMessage(
+          t,
+          error,
+          t('ui.admin-catalog.book-load-failed'),
+        ),
       })
     }
   }
@@ -523,7 +529,11 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     } catch (error: unknown) {
       setBookMutationState({
         status: 'error',
-        message: getDisplayMessage(error, t('ui.admin-catalog.book-reload-failed')),
+        message: getApiDisplayMessage(
+          t,
+          error,
+          t('ui.admin-catalog.book-reload-failed'),
+        ),
       })
     }
   }
@@ -597,7 +607,11 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     } catch (error: unknown) {
       setBookMutationState({
         status: 'error',
-        message: getDisplayMessage(error, t('ui.admin-catalog.book-delete-failed')),
+        message: getApiDisplayMessage(
+          t,
+          error,
+          t('ui.admin-catalog.book-delete-failed'),
+        ),
       })
     }
   }
@@ -651,7 +665,11 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     } catch (error: unknown) {
       setCategoryMutationState({
         status: 'error',
-        message: getDisplayMessage(error, t('ui.admin-catalog.category-create-failed')),
+        message: getApiDisplayMessage(
+          t,
+          error,
+          t('ui.admin-catalog.category-create-failed'),
+        ),
       })
     }
   }
@@ -688,7 +706,11 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     } catch (error: unknown) {
       setCategoryMutationState({
         status: 'error',
-        message: getDisplayMessage(error, t('ui.admin-catalog.category-update-failed')),
+        message: getApiDisplayMessage(
+          t,
+          error,
+          t('ui.admin-catalog.category-update-failed'),
+        ),
       })
     }
   }
@@ -745,7 +767,11 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
     } catch (error: unknown) {
       setCategoryMutationState({
         status: 'error',
-        message: getDisplayMessage(error, t('ui.admin-catalog.category-delete-failed')),
+        message: getApiDisplayMessage(
+          t,
+          error,
+          t('ui.admin-catalog.category-delete-failed'),
+        ),
       })
     }
   }
@@ -926,7 +952,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
 
           {booksState.status === 'error' && (
             <StateBlock
-              message={booksState.message}
+              message={getLoadErrorMessage(t, booksState)}
               title={t('ui.admin-catalog.books-error-title')}
               variant="error"
             />
@@ -1073,7 +1099,7 @@ function AdminCatalogManager({ session }: { session: SessionResponse }) {
 
         {categoriesState.status === 'error' && (
           <StateBlock
-            message={categoriesState.message}
+            message={getLoadErrorMessage(t, categoriesState)}
             title={t('ui.admin-catalog.categories-error-title')}
             variant="error"
           />

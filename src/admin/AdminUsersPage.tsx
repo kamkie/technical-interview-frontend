@@ -29,7 +29,9 @@ import type { SessionResponse } from '../api/session'
 import { hasAdminRole } from '../auth/roles'
 import { useI18n, type UiTranslate } from '../i18n/useI18n'
 import {
-  getDisplayMessage,
+  createLoadError,
+  getApiDisplayMessage,
+  getLoadErrorMessage,
   type LoadState,
   type MutationState,
 } from '../ui/asyncState'
@@ -225,10 +227,9 @@ function AdminUsersManager({
       })
       .catch((error: unknown) => {
         if (!ignore) {
-          setUsersState({
-            status: 'error',
-            message: getDisplayMessage(error, 'Admin users could not be loaded.'),
-          })
+          setUsersState(
+            createLoadError(error, 'Admin users could not be loaded.'),
+          )
         }
       })
 
@@ -407,7 +408,11 @@ function AdminUsersManager({
     } catch (error: unknown) {
       setRoleMutationState({
         status: 'error',
-        message: getDisplayMessage(error, t('ui.admin-users.roles-update-failed')),
+        message: getApiDisplayMessage(
+          t,
+          error,
+          t('ui.admin-users.roles-update-failed'),
+        ),
       })
     }
   }
@@ -466,7 +471,11 @@ function AdminUsersManager({
     } catch (error: unknown) {
       setStatusMutationState({
         status: 'error',
-        message: getDisplayMessage(error, t('ui.admin-users.status-update-failed')),
+        message: getApiDisplayMessage(
+          t,
+          error,
+          t('ui.admin-users.status-update-failed'),
+        ),
       })
     }
   }
@@ -598,7 +607,7 @@ function AdminUsersManager({
 
           {usersState.status === 'error' && (
             <StateBlock
-              message={usersState.message}
+              message={getLoadErrorMessage(t, usersState)}
               title={t('ui.admin-users.error-title')}
               variant="error"
             />

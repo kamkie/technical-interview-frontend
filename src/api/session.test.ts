@@ -38,7 +38,7 @@ describe('fetchCurrentSession', () => {
     })
   })
 
-  it('raises a typed API error when the session request fails', async () => {
+  it('classifies a 5xx response without problem details as backend-unavailable after a single retry', async () => {
     const fetchImplementation = vi.fn().mockResolvedValue(
       new Response(null, {
         status: 503,
@@ -48,11 +48,55 @@ describe('fetchCurrentSession', () => {
 
     await expect(fetchCurrentSession(fetchImplementation)).rejects.toMatchObject(
       {
+        name: 'BackendUnavailableError',
+        path: SESSION_PATH,
+        status: 503,
+      },
+    )
+    expect(fetchImplementation).toHaveBeenCalledTimes(2)
+  })
+
+  it('raises a typed API error without retry when problem details are present', async () => {
+    const fetchImplementation = vi.fn().mockResolvedValue(
+      Response.json(
+        {
+          status: 503,
+          messageKey: 'error.maintenance',
+          message: 'Przerwa techniczna.',
+          language: 'pl',
+        },
+        {
+          status: 503,
+          statusText: 'Service Unavailable',
+          headers: {
+            'Content-Type': 'application/problem+json',
+          },
+        },
+      ),
+    )
+
+    await expect(fetchCurrentSession(fetchImplementation)).rejects.toMatchObject(
+      {
         name: 'ApiRequestError',
+        message: 'Przerwa techniczna.',
         path: SESSION_PATH,
         status: 503,
       } satisfies Partial<ApiRequestError>,
     )
+    expect(fetchImplementation).toHaveBeenCalledTimes(1)
+  })
+
+  it('retries the idempotent session read once when the fetch itself rejects', async () => {
+    const session = createSession()
+    const fetchImplementation = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValue(Response.json(session))
+
+    await expect(fetchCurrentSession(fetchImplementation)).resolves.toEqual(
+      session,
+    )
+    expect(fetchImplementation).toHaveBeenCalledTimes(2)
   })
 })
 
@@ -84,6 +128,28 @@ describe('logoutCurrentSession', () => {
         'X-XSRF-TOKEN': 'token 1',
       },
     })
+  })
+
+  it('never retries the unsafe logout write when the backend is unreachable', async () => {
+    const session = createSession({
+      authenticated: true,
+      logoutPath: '/api/session/logout',
+    })
+    const fetchImplementation = vi.fn().mockResolvedValue(
+      new Response(null, {
+        status: 503,
+        statusText: 'Service Unavailable',
+      }),
+    )
+
+    await expect(
+      logoutCurrentSession(session, fetchImplementation, 'language=en'),
+    ).rejects.toMatchObject({
+      name: 'BackendUnavailableError',
+      path: '/api/session/logout',
+      status: 503,
+    })
+    expect(fetchImplementation).toHaveBeenCalledTimes(1)
   })
 
   it('does not invent a CSRF header when the readable cookie is missing', async () => {

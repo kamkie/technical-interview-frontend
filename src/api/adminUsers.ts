@@ -1,8 +1,8 @@
 import type { components } from './generated/openapi'
 import {
-  ApiRequestError,
+  fetchBackendRead,
+  fetchBackendWrite,
   getActiveLanguageHeaders,
-  parseApiProblem,
   type FetchImplementation,
 } from './http'
 import { getCsrfHeaders, type SessionResponse } from './session'
@@ -33,27 +33,14 @@ export type AdminUserMutationOptions = {
 export async function fetchAdminUsers(
   options: AdminUsersFetchOptions = {},
 ): Promise<AdminUserAccount[]> {
-  const response = await (options.fetchImplementation ?? globalThis.fetch)(
+  const response = await fetchBackendRead(
+    options.fetchImplementation ?? globalThis.fetch,
     ADMIN_USERS_PATH,
     {
-      method: 'GET',
-      credentials: 'same-origin',
-      headers: {
-        Accept: 'application/json',
-        ...getActiveLanguageHeaders(),
-      },
+      Accept: 'application/json',
+      ...getActiveLanguageHeaders(),
     },
   )
-
-  if (!response.ok) {
-    throw new ApiRequestError(
-      'GET',
-      ADMIN_USERS_PATH,
-      response.status,
-      response.statusText || 'Unknown status',
-      await parseApiProblem(response),
-    )
-  }
 
   return (await response.json()) as AdminUserAccount[]
 }
@@ -73,27 +60,22 @@ export async function replaceAdminUserRoles(
     request.roles,
     request.reason,
   )
-  const response = await (options.fetchImplementation ?? globalThis.fetch)(path, {
-    method: 'PUT',
-    credentials: 'same-origin',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      ...getActiveLanguageHeaders(),
-      ...getCsrfHeaders(session, options.cookieSource),
+  const response = await fetchBackendWrite(
+    options.fetchImplementation ?? globalThis.fetch,
+    'PUT',
+    path,
+    {
+      method: 'PUT',
+      credentials: 'same-origin',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        ...getActiveLanguageHeaders(),
+        ...getCsrfHeaders(session, options.cookieSource),
+      },
+      body: JSON.stringify(normalizedRequest),
     },
-    body: JSON.stringify(normalizedRequest),
-  })
-
-  if (!response.ok) {
-    throw new ApiRequestError(
-      'PUT',
-      path,
-      response.status,
-      response.statusText || 'Unknown status',
-      await parseApiProblem(response),
-    )
-  }
+  )
 
   return (await response.json()) as AdminUserAccount
 }
@@ -115,27 +97,22 @@ export async function replaceAdminUserStatus(
     status: request.status,
     reason: request.reason.trim(),
   }
-  const response = await (options.fetchImplementation ?? globalThis.fetch)(path, {
-    method: 'PUT',
-    credentials: 'same-origin',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      ...getActiveLanguageHeaders(),
-      ...getCsrfHeaders(session, options.cookieSource),
+  const response = await fetchBackendWrite(
+    options.fetchImplementation ?? globalThis.fetch,
+    'PUT',
+    path,
+    {
+      method: 'PUT',
+      credentials: 'same-origin',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        ...getActiveLanguageHeaders(),
+        ...getCsrfHeaders(session, options.cookieSource),
+      },
+      body: JSON.stringify(normalizedRequest),
     },
-    body: JSON.stringify(normalizedRequest),
-  })
-
-  if (!response.ok) {
-    throw new ApiRequestError(
-      'PUT',
-      path,
-      response.status,
-      response.statusText || 'Unknown status',
-      await parseApiProblem(response),
-    )
-  }
+  )
 
   return (await response.json()) as AdminUserAccount
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { fetchCurrentAccount, type UserAccount } from '../api/account'
 import type { SessionResponse } from '../api/session'
-import { getDisplayMessage, type LoadState } from '../ui/asyncState'
+import { createLoadError, type LoadState } from '../ui/asyncState'
 
 const LOADING_STATE: LoadState<UserAccount> = { status: 'loading' }
 
@@ -109,13 +109,10 @@ export function useCurrentAccount(
           if (!ignore) {
             setLoaded({
               session: activeSession,
-              state: {
-                status: 'error',
-                message: getDisplayMessage(
-                  error,
-                  'Account details could not be loaded.',
-                ),
-              },
+              state: createLoadError(
+                error,
+                'Account details could not be loaded.',
+              ),
             })
           }
         })

@@ -201,6 +201,36 @@ describe('CatalogPanel', () => {
     )
   })
 
+  it('recovers from a backend outage through the books error retry action', async () => {
+    let backendHealthy = false
+
+    mockCatalogFetch({
+      books: () =>
+        backendHealthy
+          ? populatedBookPage
+          : new Response(null, {
+              status: 503,
+              statusText: 'Service Unavailable',
+            }),
+    })
+
+    renderCatalogRoute()
+
+    expect(
+      await screen.findByText(
+        'The service cannot be reached right now. Check your connection or try again shortly.',
+      ),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Books could not be displayed'),
+    ).toBeInTheDocument()
+
+    backendHealthy = true
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
+
+    expect(await screen.findByText('Effective Java')).toBeInTheDocument()
+  })
+
   it('keeps stale rows visible with a busy status while results refresh', async () => {
     let resolveSecondBooksRequest: ((response: Response) => void) | undefined
     let bookRequests = 0
