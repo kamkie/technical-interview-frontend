@@ -121,6 +121,9 @@ export const UI_MESSAGES = {
   'ui.admin-localization.blank-message': 'Blank message',
   'ui.admin-localization.cancel-edit': 'Cancel edit',
   'ui.admin-localization.coverage-caption': 'Localization coverage',
+  'ui.admin-localization.coverage-filters-label': 'Coverage matrix filters',
+  'ui.admin-localization.coverage-loading':
+    'Scanning all localization rows...',
   'ui.admin-localization.coverage-partial-hint':
     'Coverage reflects only the visible rows. Narrow by message key without a language filter to add missing locales here.',
   'ui.admin-localization.coverage-region-label':
@@ -134,18 +137,26 @@ export const UI_MESSAGES = {
   'ui.admin-localization.delete-message': 'Delete {label}?',
   'ui.admin-localization.deleted-success': 'Localization deleted.',
   'ui.admin-localization.description': 'Description',
+  'ui.admin-localization.edit-locale-label': 'Edit {language} for {messageKey}',
   'ui.admin-localization.edit-localization': 'Edit localization',
+  'ui.admin-localization.edit-panel-label': 'Edit localization panel',
   'ui.admin-localization.empty-message':
     'No localization rows match these filters.',
   'ui.admin-localization.empty-title': 'No localization rows found',
+  'ui.admin-localization.english-reference': 'English reference: {text}',
   'ui.admin-localization.error-title': 'Localization rows could not be loaded',
   'ui.admin-localization.filters-label': 'Localization filters',
   'ui.admin-localization.hide-coverage': 'Hide coverage',
   'ui.admin-localization.key-count-many': '{count} keys',
   'ui.admin-localization.key-count-one': '{count} key',
   'ui.admin-localization.language': 'Language',
+  'ui.admin-localization.language-coverage-chip': '{language} {percent}%',
   'ui.admin-localization.loading-message': 'Loading localizations...',
   'ui.admin-localization.loading-title': 'Loading localization rows',
+  'ui.admin-localization.matrix-empty':
+    'No keys match the matrix filters.',
+  'ui.admin-localization.matrix-search-label': 'Search coverage keys',
+  'ui.admin-localization.matrix-search-placeholder': 'Type to find a key',
   'ui.admin-localization.message': 'Message',
   'ui.admin-localization.message-key': 'Message key',
   'ui.admin-localization.message-text': 'Message text',

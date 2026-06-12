@@ -1986,6 +1986,13 @@ input[type='search']::-webkit-search-cancel-button:hover {
   background: var(--color-danger-surface);
 }
 
+/* The coverage matrix lists every key from the sweep model; cap its height
+   so the rows table stays reachable and scroll inside the card instead. */
+.catalog-table-scroll.coverage-matrix-scroll {
+  max-height: 24rem;
+  overflow-y: auto;
+}
+
 /* Auth guard ---------------------------------------------------------------------- */
 
 .auth-guard {

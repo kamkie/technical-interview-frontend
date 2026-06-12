@@ -11,6 +11,11 @@ import { getCsrfHeaders, type SessionResponse } from './session'
 
 export const LOCALIZATIONS_PATH = '/api/localizations' as const
 export const DEFAULT_LOCALIZATION_PAGE_SIZE = 20
+// The backend clamps page size at 100; the sweep pages at that clamp.
+export const LOCALIZATION_SWEEP_PAGE_SIZE = 100
+// Safety bound from PLAN-ux-design-followups: beyond this row count the
+// sweep is skipped and coverage degrades to the visible-rows derivation.
+export const LOCALIZATION_SWEEP_ROW_LIMIT = 2000
 export const DEFAULT_LOCALIZATION_SORT = ['messageKey,ASC', 'language,ASC'] as const
 export const SUPPORTED_LOCALIZATION_LANGUAGES = [
   'en',
@@ -66,6 +71,10 @@ export type LocalizationKeyCoverage = {
   status: LocalizationCoverageStatus
 }
 
+export type LocalizationSweepResult =
+  | { status: 'complete'; rows: LocalizationResponse[] }
+  | { status: 'too-large'; totalElements: number }
+
 export async function fetchLocalizations(
   params: LocalizationSearchParams = {},
   options: LocalizationFetchOptions = {},
@@ -73,6 +82,36 @@ export async function fetchLocalizations(
   const path = buildLocalizationSearchPath(params)
 
   return fetchLocalizationJson<LocalizationPage>(path, options)
+}
+
+// Pages through the unfiltered collection at the backend's clamped page
+// size so coverage reflects every row, not only the visible table page. The
+// first response's totalElements gates the safety bound before any further
+// pages are requested.
+export async function sweepLocalizations(
+  options: LocalizationFetchOptions = {},
+): Promise<LocalizationSweepResult> {
+  const rows: LocalizationResponse[] = []
+
+  for (let page = 0; ; page += 1) {
+    const result = await fetchLocalizations(
+      { page, size: LOCALIZATION_SWEEP_PAGE_SIZE },
+      options,
+    )
+
+    if (
+      page === 0 &&
+      (result.totalElements ?? 0) > LOCALIZATION_SWEEP_ROW_LIMIT
+    ) {
+      return { status: 'too-large', totalElements: result.totalElements ?? 0 }
+    }
+
+    rows.push(...(result.content ?? []))
+
+    if (result.last !== false || page + 1 >= (result.totalPages ?? 0)) {
+      return { status: 'complete', rows }
+    }
+  }
 }
 
 export async function fetchLocalization(

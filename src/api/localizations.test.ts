@@ -11,6 +11,7 @@ import {
   fetchLocalizations,
   getLocalizationCoverage,
   getLocalizationPath,
+  sweepLocalizations,
   updateLocalization,
   type LocalizationRequest,
   type LocalizationResponse,
@@ -306,6 +307,92 @@ describe('localizations API client', () => {
         },
       ),
     ).rejects.toThrow('Nie masz uprawnien do edycji tlumaczen.')
+  })
+})
+
+describe('localization sweep', () => {
+  it('pages through the unfiltered collection at the backend clamp size', async () => {
+    const firstRow = createLocalizationRow({ id: 1 })
+    const secondRow = createLocalizationRow({ id: 2, language: 'pl' })
+    const fetchImplementation = vi
+      .fn()
+      .mockResolvedValueOnce(
+        Response.json({
+          content: [firstRow],
+          last: false,
+          number: 0,
+          totalElements: 150,
+          totalPages: 2,
+        }),
+      )
+      .mockResolvedValueOnce(
+        Response.json({
+          content: [secondRow],
+          last: true,
+          number: 1,
+          totalElements: 150,
+          totalPages: 2,
+        }),
+      )
+
+    await expect(
+      sweepLocalizations({ acceptLanguage: '', fetchImplementation }),
+    ).resolves.toEqual({
+      status: 'complete',
+      rows: [firstRow, secondRow],
+    })
+
+    expect(fetchImplementation).toHaveBeenNthCalledWith(
+      1,
+      `${LOCALIZATIONS_PATH}?page=0&size=100`,
+      {
+        method: 'GET',
+        credentials: 'same-origin',
+        headers: {
+          Accept: 'application/json',
+        },
+      },
+    )
+    expect(fetchImplementation).toHaveBeenNthCalledWith(
+      2,
+      `${LOCALIZATIONS_PATH}?page=1&size=100`,
+      expect.objectContaining({ method: 'GET' }),
+    )
+  })
+
+  it('stops after the first page when the row bound is exceeded', async () => {
+    const fetchImplementation = vi.fn().mockResolvedValue(
+      Response.json({
+        content: [createLocalizationRow()],
+        last: false,
+        number: 0,
+        totalElements: 2001,
+        totalPages: 21,
+      }),
+    )
+
+    await expect(
+      sweepLocalizations({ acceptLanguage: '', fetchImplementation }),
+    ).resolves.toEqual({
+      status: 'too-large',
+      totalElements: 2001,
+    })
+    expect(fetchImplementation).toHaveBeenCalledTimes(1)
+  })
+
+  it('completes after a single page when the response omits paging flags', async () => {
+    const row = createLocalizationRow()
+    const fetchImplementation = vi
+      .fn()
+      .mockResolvedValue(Response.json({ content: [row] }))
+
+    await expect(
+      sweepLocalizations({ acceptLanguage: '', fetchImplementation }),
+    ).resolves.toEqual({
+      status: 'complete',
+      rows: [row],
+    })
+    expect(fetchImplementation).toHaveBeenCalledTimes(1)
   })
 })
 

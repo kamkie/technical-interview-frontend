@@ -11,9 +11,11 @@ import {
   fetchLocalization,
   fetchLocalizations,
   getLocalizationCoverage,
+  sweepLocalizations,
   updateLocalization,
   type LocalizationCoverageStatus,
   type LocalizationKeyCoverage,
+  type LocalizationLocaleCoverage,
   type LocalizationPage,
   type LocalizationRequest,
   type LocalizationResponse,
@@ -37,6 +39,7 @@ import {
   type MutationState,
 } from '../ui/asyncState'
 import { ConfirmDialog } from '../ui/ConfirmDialog'
+import { formatTimestamp } from '../ui/format'
 import { MutationFeedback } from '../ui/MutationFeedback'
 import { PaginationControls } from '../ui/PaginationControls'
 import { SortToggleHeader } from '../ui/SortableColumnHeader'
@@ -79,6 +82,14 @@ type LocalizationFormDraft = {
   messageKey: string
   messageText: string
 }
+
+// Client-side coverage model built from a one-time unfiltered sweep of all
+// localization rows. `degraded` covers both the row-count safety bound and
+// sweep failures: coverage then falls back to the visible-rows derivation.
+type CoverageModel =
+  | { status: 'loading' }
+  | { status: 'ready'; rows: readonly LocalizationResponse[] }
+  | { status: 'degraded' }
 
 export function AdminLocalizationPage({ session }: { session: SessionResponse }) {
   const { t } = useI18n()
@@ -149,6 +160,12 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
   const [coverageHidden, setCoverageHidden] = useState(
     () => window.localStorage.getItem(COVERAGE_HIDDEN_STORAGE_KEY) === 'true',
   )
+  const [coverageModel, setCoverageModel] = useState<CoverageModel>({
+    status: 'loading',
+  })
+  const [matrixLanguage, setMatrixLanguage] =
+    useState<SupportedLocalizationLanguage | null>(null)
+  const [matrixSearch, setMatrixSearch] = useState('')
   const [formDraft, setFormDraft] = useState<LocalizationFormDraft>(() =>
     createEmptyLocalizationDraft(),
   )
@@ -181,11 +198,37 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
     }
   }, [query, refreshKey])
 
+  // The coverage model sweeps every row once on mount; mutations afterwards
+  // patch the model locally instead of re-sweeping.
+  useEffect(() => {
+    let ignore = false
+
+    sweepLocalizations()
+      .then((result) => {
+        if (!ignore) {
+          setCoverageModel(
+            result.status === 'complete'
+              ? { status: 'ready', rows: result.rows }
+              : { status: 'degraded' },
+          )
+        }
+      })
+      .catch(() => {
+        if (!ignore) {
+          setCoverageModel({ status: 'degraded' })
+        }
+      })
+
+    return () => {
+      ignore = true
+    }
+  }, [])
+
   const rows =
     localizationsState.status === 'ready'
       ? localizationsState.value.content ?? EMPTY_LOCALIZATIONS
       : EMPTY_LOCALIZATIONS
-  const coverage = useMemo(
+  const visibleCoverage = useMemo(
     () =>
       getLocalizationCoverage(rows, {
         languageFilter: query.language,
@@ -194,6 +237,49 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
       }),
     [localizationsState.status, query.language, query.messageKey, rows],
   )
+  const modelCoverage = useMemo(
+    () =>
+      coverageModel.status === 'ready'
+        ? getLocalizationCoverage(coverageModel.rows)
+        : [],
+    [coverageModel],
+  )
+  const languageCoverage = useMemo(
+    () =>
+      SUPPORTED_LOCALIZATION_LANGUAGES.map((language) => {
+        const complete = modelCoverage.filter(
+          (group) =>
+            group.locales.find((locale) => locale.language === language)
+              ?.status === 'complete',
+        ).length
+
+        return {
+          language,
+          percent:
+            modelCoverage.length === 0
+              ? 100
+              : Math.round((complete / modelCoverage.length) * 100),
+        }
+      }),
+    [modelCoverage],
+  )
+  const matrixCoverage = useMemo(() => {
+    const search = matrixSearch.trim().toLowerCase()
+
+    return modelCoverage.filter((group) => {
+      if (
+        matrixLanguage !== null &&
+        !group.locales.some(
+          (locale) =>
+            locale.language === matrixLanguage && locale.status === 'missing',
+        )
+      ) {
+        return false
+      }
+
+      return search === '' || group.messageKey.toLowerCase().includes(search)
+    })
+  }, [matrixLanguage, matrixSearch, modelCoverage])
   const pageNumber =
     localizationsState.status === 'ready'
       ? localizationsState.value.number ?? query.page
@@ -206,6 +292,32 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
   function refreshLocalizations() {
     setLocalizationsState({ status: 'loading' })
     setRefreshKey((key) => key + 1)
+  }
+
+  function applyCoverageRowSaved(saved: LocalizationResponse) {
+    setCoverageModel((current) => {
+      if (current.status !== 'ready') {
+        return current
+      }
+
+      return {
+        status: 'ready',
+        rows: current.rows.some((row) => row.id === saved.id)
+          ? current.rows.map((row) => (row.id === saved.id ? saved : row))
+          : [...current.rows, saved],
+      }
+    })
+  }
+
+  function applyCoverageRowDeleted(id: number) {
+    setCoverageModel((current) =>
+      current.status === 'ready'
+        ? {
+            status: 'ready',
+            rows: current.rows.filter((row) => row.id !== id),
+          }
+        : current,
+    )
   }
 
   function updateLocalizationQuery(nextQuery: LocalizationQueryState) {
@@ -341,7 +453,10 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
     messageKeyInput.focus({ preventScroll: true })
   }, [formFocusToken])
 
-  async function startEdit(row: LocalizationResponse) {
+  async function startEdit(
+    row: LocalizationResponse,
+    options: { focus?: boolean } = {},
+  ) {
     if (row.id === undefined) {
       return
     }
@@ -354,6 +469,12 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
       setFormMode({ type: 'edit', id: row.id })
       setFormDraft(createLocalizationDraft(currentRow))
       setMutationState({ status: 'idle' })
+
+      // Matrix-opened edits may land in the standalone panel above the rows
+      // table; reuse the create-path scroll-and-focus behavior.
+      if (options.focus === true) {
+        setFormFocusToken((token) => token + 1)
+      }
     } catch (error: unknown) {
       setMutationState({
         status: 'error',
@@ -381,14 +502,16 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
         )
 
         setFormDraft(createLocalizationDraft(updatedLocalization))
+        applyCoverageRowSaved(updatedLocalization)
         setMutationState({
           status: 'success',
           message: t('ui.admin-localization.updated-success'),
         })
         refreshLocalizations()
       } else {
-        await createLocalization(session, request)
+        const createdLocalization = await createLocalization(session, request)
 
+        applyCoverageRowSaved(createdLocalization)
         setFormDraft(
           createEmptyLocalizationDraft({
             language: formDraft.language,
@@ -451,6 +574,8 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
     try {
       await deleteLocalization(session, row.id)
 
+      applyCoverageRowDeleted(row.id)
+
       if (formMode.type === 'edit' && formMode.id === row.id) {
         closeForm()
       }
@@ -486,23 +611,54 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
     setMutationState({ status: 'idle' })
   }
 
-  const missingLocaleCount = coverage.reduce(
+  const statsCoverage =
+    coverageModel.status === 'ready'
+      ? modelCoverage
+      : coverageModel.status === 'degraded'
+        ? visibleCoverage
+        : null
+  const missingLocaleCount = (statsCoverage ?? []).reduce(
     (total, group) =>
       total + group.locales.filter((locale) => locale.status === 'missing').length,
     0,
   )
-  // Coverage is derived from the fetched rows only. When that view is
-  // partial — rows still loading, more pages, or a language filter that
-  // narrows the rows — a locale shown as missing may exist on the server,
-  // so the create shortcuts are suppressed in favor of plain status pills.
+  // Degraded mode only: coverage is derived from the fetched rows. When that
+  // view is partial — rows still loading, more pages, or a language filter
+  // that narrows the rows — a locale shown as missing may exist on the
+  // server, so the create shortcuts are suppressed in favor of status pills.
   const coverageViewPartial =
     query.language !== '' ||
     localizationsState.status !== 'ready' ||
     (localizationsState.value.totalPages ?? 0) > 1
+  // English text shown beside the message-text field as the translation
+  // reference; absent keys simply render no reference line.
+  const englishReferenceText = useMemo(() => {
+    if (formMode.type === 'closed') {
+      return undefined
+    }
+
+    const messageKey = formDraft.messageKey.trim()
+
+    if (messageKey === '') {
+      return undefined
+    }
+
+    const sourceRows =
+      coverageModel.status === 'ready' ? coverageModel.rows : rows
+
+    return sourceRows.find(
+      (row) =>
+        row.messageKey?.trim() === messageKey &&
+        row.language?.trim().toLowerCase() === 'en' &&
+        Boolean(row.messageText?.trim()),
+    )?.messageText
+  }, [coverageModel, formDraft.messageKey, formMode.type, rows])
+  const editTargetVisible =
+    formMode.type === 'edit' && rows.some((row) => row.id === formMode.id)
 
   return (
     <div className="admin-localization-layout">
-      {coverage.length > 0 && (
+      {(coverageModel.status !== 'degraded' || visibleCoverage.length > 0) && (
         <section
           className="workflow-group coverage-widget"
           aria-labelledby="localization-coverage-title"
@@ -514,17 +670,19 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
               </h2>
             </div>
             <div className="section-actions">
-              <span className="coverage-stats">
-                {t('ui.admin-localization.coverage-stats', {
-                  keys: t(
-                    coverage.length === 1
-                      ? 'ui.admin-localization.key-count-one'
-                      : 'ui.admin-localization.key-count-many',
-                    { count: coverage.length },
-                  ),
-                  missing: missingLocaleCount,
-                })}
-              </span>
+              {statsCoverage !== null && (
+                <span className="coverage-stats">
+                  {t('ui.admin-localization.coverage-stats', {
+                    keys: t(
+                      statsCoverage.length === 1
+                        ? 'ui.admin-localization.key-count-one'
+                        : 'ui.admin-localization.key-count-many',
+                      { count: statsCoverage.length },
+                    ),
+                    missing: missingLocaleCount,
+                  })}
+                </span>
+              )}
               <button
                 type="button"
                 aria-expanded={!coverageHidden}
@@ -538,7 +696,69 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
             </div>
           </div>
 
-          {!coverageHidden && (
+          {!coverageHidden && coverageModel.status === 'loading' && (
+            <p className="session-message muted">
+              {t('ui.admin-localization.coverage-loading')}
+            </p>
+          )}
+
+          {!coverageHidden && coverageModel.status === 'ready' && (
+            <>
+              <div
+                aria-label={t('ui.admin-localization.coverage-filters-label')}
+                className="category-filter"
+              >
+                <input
+                  aria-label={t('ui.admin-localization.matrix-search-label')}
+                  className="category-search-input"
+                  placeholder={t(
+                    'ui.admin-localization.matrix-search-placeholder',
+                  )}
+                  type="search"
+                  value={matrixSearch}
+                  onChange={(event) => setMatrixSearch(event.target.value)}
+                />
+                <div className="category-chip-row">
+                  {languageCoverage.map(({ language, percent }) => {
+                    const selected = matrixLanguage === language
+
+                    return (
+                      <button
+                        aria-pressed={selected}
+                        className={`category-chip ${selected ? 'selected' : ''}`}
+                        key={language}
+                        type="button"
+                        onClick={() =>
+                          setMatrixLanguage((current) =>
+                            current === language ? null : language,
+                          )
+                        }
+                      >
+                        {t('ui.admin-localization.language-coverage-chip', {
+                          language,
+                          percent,
+                        })}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              {matrixCoverage.length > 0 ? (
+                <LocalizationCoverageTable
+                  coverage={matrixCoverage}
+                  createMissingEnabled
+                  onCreateMissing={startCreate}
+                  onEditRow={(row) => void startEdit(row, { focus: true })}
+                />
+              ) : (
+                <p className="session-message muted">
+                  {t('ui.admin-localization.matrix-empty')}
+                </p>
+              )}
+            </>
+          )}
+
+          {!coverageHidden && coverageModel.status === 'degraded' && (
             <>
               {coverageViewPartial && (
                 <p className="session-message muted">
@@ -546,7 +766,7 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
                 </p>
               )}
               <LocalizationCoverageTable
-                coverage={coverage}
+                coverage={visibleCoverage}
                 createMissingEnabled={!coverageViewPartial}
                 onCreateMissing={startCreate}
               />
@@ -587,6 +807,25 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
           >
             <LocalizationForm
               draft={formDraft}
+              englishReference={englishReferenceText}
+              mode={formMode}
+              mutationState={mutationState}
+              onClose={closeForm}
+              onDraftChange={updateDraft}
+              onSubmit={(event) => void handleFormSubmit(event)}
+            />
+          </div>
+        )}
+
+        {formMode.type === 'edit' && !editTargetVisible && (
+          <div
+            aria-label={t('ui.admin-localization.edit-panel-label')}
+            className="workflow-group"
+            id="localization-edit-panel"
+          >
+            <LocalizationForm
+              draft={formDraft}
+              englishReference={englishReferenceText}
               mode={formMode}
               mutationState={mutationState}
               onClose={closeForm}
@@ -692,6 +931,7 @@ function AdminLocalizationManager({ session }: { session: SessionResponse }) {
                   formMode.type === 'edit' ? (
                     <LocalizationForm
                       draft={formDraft}
+                      englishReference={englishReferenceText}
                       mode={formMode}
                       mutationState={mutationState}
                       onClose={closeForm}
@@ -749,10 +989,12 @@ function LocalizationCoverageTable({
   coverage,
   createMissingEnabled,
   onCreateMissing,
+  onEditRow,
 }: {
   coverage: readonly LocalizationKeyCoverage[]
   createMissingEnabled: boolean
   onCreateMissing: (messageKey: string, language: string) => void
+  onEditRow?: (row: LocalizationResponse) => void
 }) {
   const { t } = useI18n()
 
@@ -763,7 +1005,7 @@ function LocalizationCoverageTable({
   return (
     <div
       aria-label={t('ui.admin-localization.coverage-region-label')}
-      className="catalog-table-scroll"
+      className="catalog-table-scroll coverage-matrix-scroll"
       role="region"
       tabIndex={0}
     >
@@ -774,56 +1016,91 @@ function LocalizationCoverageTable({
             <th className="plain-column-header" scope="col">
               {t('ui.admin-localization.message-key')}
             </th>
-            <th className="plain-column-header" scope="col">
-              {t('ui.admin-localization.status')}
-            </th>
             {SUPPORTED_LOCALIZATION_LANGUAGES.map((language) => (
               <th className="plain-column-header" key={language} scope="col">
                 {language}
               </th>
             ))}
-            <th className="plain-column-header" scope="col">
-              {t('ui.admin-localization.missing-locales')}
-            </th>
           </tr>
         </thead>
         <tbody>
           {coverage.map((group) => (
             <tr key={group.messageKey}>
               <th scope="row">{group.messageKey}</th>
-              <td>
-                <CoverageStatus status={group.status} />
-              </td>
               {group.locales.map((locale) => (
                 <td key={locale.language}>
-                  {locale.status === 'missing' && createMissingEnabled ? (
-                    <button
-                      className="localization-locale-button missing"
-                      type="button"
-                      aria-label={t('ui.admin-localization.add-locale-label', {
-                        language: locale.language,
-                        messageKey: group.messageKey,
-                      })}
-                      onClick={() =>
-                        onCreateMissing(group.messageKey, locale.language)
-                      }
-                    >
-                      {t('ui.admin-localization.add-locale', {
-                        language: locale.language,
-                      })}
-                    </button>
-                  ) : (
-                    <CoverageStatus status={locale.status} />
-                  )}
+                  <LocalizationCoverageCell
+                    createMissingEnabled={createMissingEnabled}
+                    locale={locale}
+                    messageKey={group.messageKey}
+                    onCreateMissing={onCreateMissing}
+                    onEditRow={onEditRow}
+                  />
                 </td>
               ))}
-              <td>{formatMissingLocales(group, t)}</td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
   )
+}
+
+// Sweep-backed cells are always actionable: an existing row (even a blank or
+// conflicting one) opens that row for editing, and a true gap opens the
+// prefilled create form. Degraded mode omits onEditRow and falls back to the
+// visible-rows pills with optional create shortcuts.
+function LocalizationCoverageCell({
+  createMissingEnabled,
+  locale,
+  messageKey,
+  onCreateMissing,
+  onEditRow,
+}: {
+  createMissingEnabled: boolean
+  locale: LocalizationLocaleCoverage
+  messageKey: string
+  onCreateMissing: (messageKey: string, language: string) => void
+  onEditRow?: (row: LocalizationResponse) => void
+}) {
+  const { t } = useI18n()
+  const existingRow = locale.rows[0]
+
+  if (existingRow !== undefined && onEditRow !== undefined) {
+    return (
+      <button
+        className={`localization-locale-button coverage-pill ${locale.status}`}
+        type="button"
+        aria-label={t('ui.admin-localization.edit-locale-label', {
+          language: locale.language,
+          messageKey,
+        })}
+        onClick={() => onEditRow(existingRow)}
+      >
+        {t(`ui.coverage.${locale.status}`)}
+      </button>
+    )
+  }
+
+  if (locale.status === 'missing' && createMissingEnabled) {
+    return (
+      <button
+        className="localization-locale-button missing"
+        type="button"
+        aria-label={t('ui.admin-localization.add-locale-label', {
+          language: locale.language,
+          messageKey,
+        })}
+        onClick={() => onCreateMissing(messageKey, locale.language)}
+      >
+        {t('ui.admin-localization.add-locale', {
+          language: locale.language,
+        })}
+      </button>
+    )
+  }
+
+  return <CoverageStatus status={locale.status} />
 }
 
 function formatLocalizationSummary(
@@ -972,7 +1249,9 @@ function LocalizationRow({
             ? row.description
             : t('ui.admin-localization.no-description')}
         </td>
-        <td>{row.updatedAt ?? t('ui.common.unknown')}</td>
+        <td>
+          {row.updatedAt ? formatTimestamp(row.updatedAt) : t('ui.common.unknown')}
+        </td>
         <td className="row-actions-cell">
           <div className="row-actions">
             <button
@@ -1007,6 +1286,7 @@ function LocalizationRow({
 
 function LocalizationForm({
   draft,
+  englishReference,
   mode,
   mutationState,
   onClose,
@@ -1014,6 +1294,7 @@ function LocalizationForm({
   onSubmit,
 }: {
   draft: LocalizationFormDraft
+  englishReference?: string
   mode: OpenLocalizationFormMode
   mutationState: MutationState
   onClose: () => void
@@ -1104,6 +1385,14 @@ function LocalizationForm({
           }
         />
       </label>
+
+      {englishReference !== undefined && (
+        <p className="session-message muted">
+          {t('ui.admin-localization.english-reference', {
+            text: englishReference,
+          })}
+        </p>
+      )}
 
       <div className="admin-action-row">
         <button type="submit" disabled={submitting}>
@@ -1224,16 +1513,6 @@ function createLocalizationRequest(
     messageText: draft.messageText.trim(),
     description: draft.description.trim() || undefined,
   }
-}
-
-function formatMissingLocales(group: LocalizationKeyCoverage, t: UiTranslate) {
-  const missingLocales = group.locales
-    .filter((locale) => locale.status === 'missing')
-    .map((locale) => locale.language)
-
-  return missingLocales.length > 0
-    ? missingLocales.join(', ')
-    : t('ui.common.none')
 }
 
 function createLocalizationLabel(row: LocalizationResponse) {

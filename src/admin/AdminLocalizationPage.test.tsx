@@ -20,6 +20,7 @@ import {
   type LocalizationResponse,
 } from '../api/localizations'
 import type { SessionResponse } from '../api/session'
+import { formatTimestamp } from '../ui/format'
 import {
   ADMIN_LOCALIZATION_ROUTE_PATH,
   AdminLocalizationPage,
@@ -62,11 +63,18 @@ describe('AdminLocalizationPage', () => {
     expect(
       screen.getByText('Showing 1-2 of 2 localization rows'),
     ).toBeInTheDocument()
+    expect(
+      screen.getAllByText(formatTimestamp('2026-06-07T09:00:00Z')).length,
+    ).toBeGreaterThan(0)
 
     expect(
       screen.getByRole('heading', { name: 'Locale coverage' }),
     ).toBeInTheDocument()
-    const coverageTable = screen.getByRole('table', {
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${LOCALIZATIONS_PATH}?page=0&size=100`,
+      expect.objectContaining({ method: 'GET' }),
+    )
+    const coverageTable = await screen.findByRole('table', {
       name: 'Localization coverage',
     })
 
@@ -75,7 +83,26 @@ describe('AdminLocalizationPage', () => {
         within(coverageTable).getByRole('columnheader', { name: language }),
       ).toBeInTheDocument()
     }
-    expect(within(coverageTable).getByText('partial')).toBeInTheDocument()
+    expect(
+      within(coverageTable).queryByRole('columnheader', { name: 'Status' }),
+    ).not.toBeInTheDocument()
+    expect(
+      within(coverageTable).queryByRole('columnheader', {
+        name: 'Missing locales',
+      }),
+    ).not.toBeInTheDocument()
+    expect(
+      within(coverageTable).getByRole('button', {
+        name: 'Edit en for account.title',
+      }),
+    ).toBeInTheDocument()
+    expect(
+      within(coverageTable).getByRole('button', {
+        name: 'Add de for account.title',
+      }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'en 100%' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'de 0%' })).toBeInTheDocument()
   })
 
   it('sorts from column headers with composite sort values and resets the page', async () => {
@@ -206,18 +233,21 @@ describe('AdminLocalizationPage', () => {
     const messageKeyInput = within(form).getByLabelText('Message key')
 
     expect(messageKeyInput).toHaveValue('account.title')
+    expect(
+      within(form).getByText('English reference: Account'),
+    ).toBeInTheDocument()
     await waitFor(() => {
       expect(messageKeyInput).toHaveFocus()
     })
   })
 
-  it('suppresses coverage create shortcuts when the result view is partial', async () => {
-    mockAdminLocalizationFetch({
+  it('degrades to suppressed visible-rows coverage beyond the sweep bound', async () => {
+    const fetchMock = mockAdminLocalizationFetch({
       localizations: () =>
         createLocalizationPage({
           last: false,
-          totalElements: 40,
-          totalPages: 2,
+          totalElements: 2400,
+          totalPages: 120,
         }),
     })
 
@@ -229,29 +259,153 @@ describe('AdminLocalizationPage', () => {
       await screen.findByRole('table', { name: 'Localization coverage' }),
     ).toBeInTheDocument()
     expect(
+      await screen.findByText(/Coverage reflects only the visible rows/),
+    ).toBeInTheDocument()
+    expect(
       screen.queryByRole('button', { name: 'Add de for account.title' }),
     ).not.toBeInTheDocument()
     expect(
-      screen.getByText(/Coverage reflects only the visible rows/),
-    ).toBeInTheDocument()
+      screen.queryByLabelText('Search coverage keys'),
+    ).not.toBeInTheDocument()
+    expect(
+      fetchMock.mock.calls.filter(([input]) =>
+        String(input).includes('size=100'),
+      ),
+    ).toHaveLength(1)
   })
 
-  it('suppresses coverage create shortcuts under a language filter', async () => {
-    mockAdminLocalizationFetch()
+  it('keeps the coverage matrix decoupled from rows-table filters', async () => {
+    mockAdminLocalizationFetch({
+      localizations: (path) =>
+        path.includes('size=100')
+          ? createLocalizationPage()
+          : createLocalizationPage({
+              content: [
+                createLocalizationRow({
+                  id: 2,
+                  language: 'pl',
+                  messageText: 'Konto',
+                }),
+              ],
+              numberOfElements: 1,
+              totalElements: 1,
+            }),
+    })
 
     renderAdminLocalization(
       `${ADMIN_LOCALIZATION_ROUTE_PATH}?messageKey=account.title&language=pl`,
     )
 
     expect(
-      await screen.findByRole('table', { name: 'Localization coverage' }),
+      await screen.findByRole('button', { name: 'Add de for account.title' }),
     ).toBeInTheDocument()
     expect(
-      screen.queryByRole('button', { name: 'Add de for account.title' }),
+      screen.getByRole('button', { name: 'Edit en for account.title' }),
+    ).toBeInTheDocument()
+  })
+
+  it('filters the matrix from language chips and key search', async () => {
+    mockAdminLocalizationFetch({
+      localizations: (path) =>
+        path.includes('size=100')
+          ? createLocalizationPage({
+              content: [
+                createLocalizationRow({
+                  id: 1,
+                  language: 'en',
+                  messageText: 'Account',
+                }),
+                createLocalizationRow({
+                  id: 2,
+                  language: 'pl',
+                  messageText: 'Konto',
+                }),
+                createLocalizationRow({
+                  id: 3,
+                  messageKey: 'catalog.title',
+                  language: 'en',
+                  messageText: 'Catalog',
+                }),
+              ],
+              numberOfElements: 3,
+              totalElements: 3,
+            })
+          : createLocalizationPage(),
+    })
+
+    renderAdminLocalization()
+
+    const matrix = await screen.findByRole('table', {
+      name: 'Localization coverage',
+    })
+    expect(within(matrix).getByText('catalog.title')).toBeInTheDocument()
+
+    const plChip = screen.getByRole('button', { name: 'pl 50%' })
+    fireEvent.click(plChip)
+
+    expect(plChip).toHaveAttribute('aria-pressed', 'true')
+    expect(within(matrix).getByText('catalog.title')).toBeInTheDocument()
+    expect(within(matrix).queryByText('account.title')).not.toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Search coverage keys'), {
+      target: { value: 'account' },
+    })
+
+    expect(
+      screen.getByText('No keys match the matrix filters.'),
+    ).toBeInTheDocument()
+
+    fireEvent.click(plChip)
+
+    const filteredMatrix = await screen.findByRole('table', {
+      name: 'Localization coverage',
+    })
+    expect(within(filteredMatrix).getByText('account.title')).toBeInTheDocument()
+    expect(
+      within(filteredMatrix).queryByText('catalog.title'),
     ).not.toBeInTheDocument()
   })
 
-  it('creates a missing locale row and refreshes visible coverage', async () => {
+  it('opens edits from the matrix for rows outside the visible table page', async () => {
+    mockAdminLocalizationFetch({
+      localizationById: createLocalizationRow({
+        id: 2,
+        language: 'pl',
+        messageText: 'Konto',
+      }),
+      localizations: (path) =>
+        path.includes('size=100')
+          ? createLocalizationPage()
+          : createLocalizationPage({
+              content: [
+                createLocalizationRow({
+                  id: 1,
+                  language: 'en',
+                  messageText: 'Account',
+                }),
+              ],
+              last: false,
+              numberOfElements: 1,
+              totalElements: 2,
+              totalPages: 2,
+            }),
+    })
+
+    renderAdminLocalization()
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Edit pl for account.title' }),
+    )
+
+    const form = await screen.findByRole('form', { name: 'Edit localization' })
+    expect(within(form).getByLabelText('Message text')).toHaveValue('Konto')
+    expect(within(form).getByLabelText('Language')).toHaveValue('pl')
+    expect(
+      within(form).getByText('English reference: Account'),
+    ).toBeInTheDocument()
+  })
+
+  it('creates a missing locale row and patches coverage without re-sweeping', async () => {
     document.cookie = 'XSRF-TOKEN=token%201'
     let localizationReads = 0
     const fetchMock = mockAdminLocalizationFetch({
@@ -260,7 +414,21 @@ describe('AdminLocalizationPage', () => {
         language: 'de',
         messageText: 'Konto',
       }),
-      localizations: () => {
+      localizations: (path) => {
+        if (path.includes('size=100')) {
+          return createLocalizationPage({
+            content: [
+              createLocalizationRow({
+                id: 1,
+                language: 'en',
+                messageText: 'Account',
+              }),
+            ],
+            numberOfElements: 1,
+            totalElements: 1,
+          })
+        }
+
         localizationReads += 1
 
         return createLocalizationPage({
@@ -317,9 +485,21 @@ describe('AdminLocalizationPage', () => {
         }),
       })
     })
-    expect(await screen.findByText('Localization created.')).toBeInTheDocument()
+    // Re-query inside waitFor: the post-save list refresh can remount the
+    // form panel, detaching an element captured by findByText.
+    await waitFor(() => {
+      expect(screen.getByText('Localization created.')).toBeInTheDocument()
+    })
     expect(await screen.findByText('Konto')).toBeInTheDocument()
+    expect(
+      await screen.findByRole('button', { name: 'Edit de for account.title' }),
+    ).toBeInTheDocument()
     expect(localizationReads).toBeGreaterThanOrEqual(2)
+    expect(
+      fetchMock.mock.calls.filter(([input]) =>
+        String(input).includes('size=100'),
+      ),
+    ).toHaveLength(1)
   })
 
   it('updates existing rows through a fresh row read and list refresh', async () => {
@@ -336,7 +516,11 @@ describe('AdminLocalizationPage', () => {
         language: 'en',
         messageText: 'Account settings',
       }),
-      localizations: () => {
+      localizations: (path) => {
+        if (path.includes('size=100')) {
+          return createLocalizationPage()
+        }
+
         localizationReads += 1
 
         return createLocalizationPage({
@@ -386,7 +570,11 @@ describe('AdminLocalizationPage', () => {
         }),
       })
     })
-    expect(await screen.findByText('Localization updated.')).toBeInTheDocument()
+    // Re-query inside waitFor: the post-save list refresh can remount the
+    // form panel, detaching an element captured by findByText.
+    await waitFor(() => {
+      expect(screen.getByText('Localization updated.')).toBeInTheDocument()
+    })
     expect(await screen.findAllByText('Account settings')).not.toHaveLength(0)
     expect(localizationReads).toBeGreaterThanOrEqual(2)
   })
@@ -395,7 +583,11 @@ describe('AdminLocalizationPage', () => {
     document.cookie = 'XSRF-TOKEN=token'
     let localizationReads = 0
     const fetchMock = mockAdminLocalizationFetch({
-      localizations: () => {
+      localizations: (path) => {
+        if (path.includes('size=100')) {
+          return createLocalizationPage()
+        }
+
         localizationReads += 1
 
         return createLocalizationPage({
@@ -449,7 +641,11 @@ describe('AdminLocalizationPage', () => {
         body: undefined,
       })
     })
-    expect(await screen.findByText('Localization deleted.')).toBeInTheDocument()
+    // Re-query inside waitFor: the post-delete list refresh can remount the
+    // feedback surface, detaching an element captured by findByText.
+    await waitFor(() => {
+      expect(screen.getByText('Localization deleted.')).toBeInTheDocument()
+    })
     await waitFor(() => {
       expect(
         screen.queryByRole('button', { name: 'Delete account.title en' }),
@@ -535,22 +731,25 @@ describe('AdminLocalizationPage', () => {
   })
 
   it('displays localized backend access failures', async () => {
+    // Factory: the rows-table read and the coverage sweep each consume their
+    // own problem Response body.
     mockAdminLocalizationFetch({
-      localizations: Response.json(
-        {
-          status: 403,
-          messageKey: 'error.localization.access_denied',
-          message: 'Nie masz dostepu do tlumaczen.',
-          language: 'pl',
-        },
-        {
-          status: 403,
-          statusText: 'Forbidden',
-          headers: {
-            'Content-Type': 'application/problem+json',
+      localizations: () =>
+        Response.json(
+          {
+            status: 403,
+            messageKey: 'error.localization.access_denied',
+            message: 'Nie masz dostepu do tlumaczen.',
+            language: 'pl',
           },
-        },
-      ),
+          {
+            status: 403,
+            statusText: 'Forbidden',
+            headers: {
+              'Content-Type': 'application/problem+json',
+            },
+          },
+        ),
     })
 
     const { container } = renderAdminLocalization()

@@ -2,7 +2,7 @@
 
 Plan-ID: PLAN-ux-design-followups
 
-Status: Draft
+Status: Approved
 
 Workers: 1
 
@@ -12,11 +12,11 @@ Filename: `.agents/plans/PLAN-ux-design-followups.md`
 
 ## Readiness
 
-- Plan readiness: Design decisions are resolved from the 2026-06-12 interactive design session; implementation approval is not granted yet.
-- Approved by:
-- Approved at:
+- Plan readiness: Design decisions are resolved from the 2026-06-12 interactive design session; implementation approved.
+- Approved by: Kamil Kiewisz (user request: "implement PLAN-ux-design-followups.md")
+- Approved at: 2026-06-12T18:11:00+02:00
 - Open questions: No blocking questions; see `## Assumptions` for recorded defaults.
-- Implementation progress: Not started.
+- Implementation progress: In progress.
 
 Use `Status: Approved` only after explicit user approval is recorded. Creating or updating this plan is not implementation approval.
 
@@ -24,6 +24,7 @@ Use `Status: Approved` only after explicit user approval is recorded. Creating o
 
 - 2026-06-12T18:30:00+02:00: none -> Draft by Claude (interactive design session with user); plan created.
 - 2026-06-12T19:10:00+02:00: Draft updated by Claude; user-reported issues added as T6-T9 (chip search truncation and layout jump, diagnostics empty space, double connection error, translation caching and hardcoded-string gaps).
+- 2026-06-12T18:11:00+02:00 (later session): Draft -> Approved by Kamil Kiewisz via the request "implement PLAN-ux-design-followups.md"; execution started.
 
 ## Goal
 
@@ -77,17 +78,17 @@ Ship five user-approved UX improvements: globally true localization coverage wit
 
 ## Progress Tracker
 
-| Packet                     | Status | Owner       | Depends On | Last Updated | Notes                                  |
-| -------------------------- | ------ | ----------- | ---------- | ------------ | -------------------------------------- |
-| T1-localization-coverage   | Ready  | Coordinator | None       | 2026-06-12   | Largest packet                         |
-| T2-partial-language-notice | Ready  | Coordinator | None       | 2026-06-12   | User-confirmed in session              |
-| T3-language-continuity     | Ready  | Coordinator | None       | 2026-06-12   | Cookie write + account-page alignment  |
-| T4-copy-and-timestamps     | Ready  | Coordinator | None       | 2026-06-12   | Safest packet                          |
-| T5-mobile-topbar           | Ready  | Coordinator | None       | 2026-06-12   | Theme menu idiom changes all viewports |
-| T6-catalog-chip-search     | Ready  | Coordinator | None       | 2026-06-12   | User-reported chip search issues       |
-| T7-diagnostics-layout      | Ready  | Coordinator | None       | 2026-06-12   | Fill the two-column hole               |
-| T8-connection-errors       | Ready  | Coordinator | None       | 2026-06-12   | Repro required first                   |
-| T9-i18n-cache-and-gaps     | Ready  | Coordinator | None       | 2026-06-12   | Session cache + hardcoded-string audit |
+| Packet                     | Status   | Owner       | Depends On | Last Updated | Notes                                  |
+| -------------------------- | -------- | ----------- | ---------- | ------------ | -------------------------------------- |
+| T1-localization-coverage   | Complete | Coordinator | None       | 2026-06-12   | Largest packet                         |
+| T2-partial-language-notice | Ready    | Coordinator | None       | 2026-06-12   | User-confirmed in session              |
+| T3-language-continuity     | Ready    | Coordinator | None       | 2026-06-12   | Cookie write + account-page alignment  |
+| T4-copy-and-timestamps     | Ready    | Coordinator | None       | 2026-06-12   | Safest packet                          |
+| T5-mobile-topbar           | Ready    | Coordinator | None       | 2026-06-12   | Theme menu idiom changes all viewports |
+| T6-catalog-chip-search     | Ready    | Coordinator | None       | 2026-06-12   | User-reported chip search issues       |
+| T7-diagnostics-layout      | Ready    | Coordinator | None       | 2026-06-12   | Fill the two-column hole               |
+| T8-connection-errors       | Ready    | Coordinator | None       | 2026-06-12   | Repro required first                   |
+| T9-i18n-cache-and-gaps     | Ready    | Coordinator | None       | 2026-06-12   | Session cache + hardcoded-string audit |
 
 ## Task Packets
 
@@ -109,7 +110,7 @@ Goal:
 
 Write scope:
 
-- `src/admin/AdminLocalizationPage.tsx`, `src/admin/AdminLocalizationPage.test.tsx`, `src/api/localizations.ts` (+ test), `src/index.css` (matrix sizing only).
+- `src/admin/AdminLocalizationPage.tsx`, `src/admin/AdminLocalizationPage.test.tsx`, `src/api/localizations.ts` (+ test), `src/index.css` (matrix sizing only), `src/i18n/messages.ts` (new `ui.admin-localization.*` keys only; scope added 2026-06-12 by coordinator because the packet's new UI copy requires keys).
 
 Dependencies: none.
 
@@ -123,7 +124,7 @@ Stop conditions:
 
 Result summary:
 
-- Status: pending
+- Status: complete (2026-06-12). `sweepLocalizations` pages `GET /api/localizations?size=100` unfiltered with the 2,000-row `too-large` bail-out; the page holds a `loading | ready | degraded` coverage model patched locally after mutations (no re-sweep). Matrix decoupled from table filters/pagination, STATUS/MISSING LOCALES columns dropped, height capped at 24rem with internal scroll; all cells actionable (add via prefilled `startCreate`, edit via standalone panel for off-page rows). Degraded path keeps the old visible-rows derivation, hint, and create suppression. English reference shown in the form; UPDATED column uses `formatTimestamp`. Validation: scoped vitest 35/35 (stabilized by coordinator: success-feedback assertions re-query inside `waitFor` because the post-save refresh remounts the form panel), `npm run typecheck` pass, `npx eslint src scripts` pass, `git diff --check` pass, mock-mode preview smoke on port 5199 (sweep request shape, chip filtering, off-page edit, English reference, zero console errors). Known follow-ups: matrix reuses `category-chip`/`category-search-input` classes so T6 CSS changes also affect this page; `ui.admin-localization.status`/`.missing-locales` keys now unused (left for a cleanup outside this packet's scope).
 
 ### Task Packet: T2-partial-language-notice
 
