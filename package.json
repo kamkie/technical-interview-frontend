@@ -39,9 +39,9 @@
     "api:types:check": "node scripts/generate-openapi-types.mjs --check"
   },
   "dependencies": {
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7",
-    "react-router-dom": "^7.17.0"
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.1"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
