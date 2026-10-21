@@ -572,9 +572,11 @@ function QuickLanguageMenu({ session }: { session: SessionResponse }) {
         ) : (
           <IconGlobe height={14} width={14} />
         )}
-        <span aria-hidden="true" className="language-code">
-          {currentOption ? currentOption.value.toUpperCase() : '–'}
-        </span>
+        <span
+          aria-hidden="true"
+          className="language-code"
+          data-code={currentOption ? currentOption.value.toUpperCase() : '–'}
+        />
         <IconChevronDown className="menu-caret" height={14} width={14} />
       </button>
       {open && (
@@ -658,9 +660,11 @@ function AnonymousLanguageMenu() {
         ) : (
           <IconGlobe height={14} width={14} />
         )}
-        <span aria-hidden="true" className="language-code">
-          {currentOption ? currentOption.value.toUpperCase() : '–'}
-        </span>
+        <span
+          aria-hidden="true"
+          className="language-code"
+          data-code={currentOption ? currentOption.value.toUpperCase() : '–'}
+        />
         <IconChevronDown className="menu-caret" height={14} width={14} />
       </button>
       {open && (
