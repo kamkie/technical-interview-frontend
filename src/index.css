@@ -570,6 +570,10 @@ input[type='radio'] {
   letter-spacing: 0.06em;
 }
 
+.language-code::before {
+  content: attr(data-code);
+}
+
 .language-flag {
   flex: 0 0 auto;
   border-radius: 2px;
