@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.23.0
 
-FROM node:24-alpine AS build
+FROM node:25-alpine AS build
 
 WORKDIR /workspace
 
@@ -14,7 +14,7 @@ COPY docs/backend ./docs/backend
 COPY src ./src
 RUN npm run build
 
-FROM nginxinc/nginx-unprivileged:1.31-alpine@sha256:901e944d1f4fc2bd077e8f5568b98c1f6f8cdacf6b97a87747c43134a339b9a7
+FROM nginxinc/nginx-unprivileged:1.31-alpine@sha256:b5047b9b76845eac124358373c6852377c52e4b05834a47647e955dd91cb8f1e
 
 # CVE-2026-45447: base image ships openssl 3.5.6-r0; remove the upgrade once a digest bump brings 3.5.7-r0.
 USER root
